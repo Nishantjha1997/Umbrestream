@@ -1,6 +1,6 @@
 import { Movie, TV } from "tmdb-ts/dist/types";
 
-export type ContentType = "movie" | "tv";
+export type ContentType = "movie" | "tv" | "anime";
 
 export type Params<T> = {
   params: Promise<T>;

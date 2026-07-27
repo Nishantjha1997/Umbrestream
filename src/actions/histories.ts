@@ -1,6 +1,7 @@
 "use server";
 
 import { tmdb } from "@/api/tmdb";
+import { anilistApi } from "@/api/anilist";
 import { UnifiedPlayerEventData } from "@/hooks/usePlayerEvents";
 import { ActionResponse } from "@/types";
 import { HistoryDetail } from "@/types/movie";
@@ -44,17 +45,45 @@ export const syncHistory = async (
     }
 
     // Validate type
-    if (!["movie", "tv"].includes(data.mediaType)) {
+    if (!["movie", "tv", "anime"].includes(data.mediaType)) {
       return {
         success: false,
-        message: 'Invalid content type. Must be "movie" or "tv"',
+        message: 'Invalid content type. Must be "movie", "tv", or "anime"',
       };
     }
 
-    const media =
-      data.mediaType === "movie"
-        ? await tmdb.movies.details(Number(data.mediaId))
-        : await tmdb.tvShows.details(Number(data.mediaId));
+    let media: any;
+    if (data.mediaType === "movie") {
+      media = await tmdb.movies.details(Number(data.mediaId));
+    } else if (data.mediaType === "tv") {
+      media = await tmdb.tvShows.details(Number(data.mediaId));
+    } else if (data.mediaType === "anime") {
+      media = await anilistApi.details(Number(data.mediaId));
+    }
+
+    if (!media) {
+      return {
+        success: false,
+        message: "Failed to retrieve media details",
+      };
+    }
+
+    // Map properties based on media type
+    const isAnime = data.mediaType === "anime";
+    const releaseDate = isAnime
+      ? (media.startDate?.year
+          ? `${media.startDate.year}-${String(media.startDate.month || 1).padStart(2, "0")}-${String(media.startDate.day || 1).padStart(2, "0")}`
+          : new Date().toISOString().split("T")[0])
+      : ("release_date" in media ? media.release_date : media.first_air_date);
+
+    const titleStr = isAnime
+      ? (media.title.english || media.title.romaji || "Untitled")
+      : ("title" in media ? mutateMovieTitle(media) : mutateTvShowTitle(media));
+
+    const voteAverage = isAnime ? (media.averageScore || 0) / 10 : media.vote_average;
+    const isAdult = isAnime ? (media.isAdult || false) : ("adult" in media ? media.adult : false);
+    const posterPath = isAnime ? (media.coverImage.extraLarge || media.coverImage.large || "") : media.poster_path;
+    const backdropPath = isAnime ? (media.bannerImage || "") : media.backdrop_path;
 
     // Insert or update history
     const { data: history, error } = await supabase
@@ -69,12 +98,12 @@ export const syncHistory = async (
           duration: data.duration,
           last_position: data.currentTime,
           completed: completed || false,
-          adult: "adult" in media ? media.adult : false,
-          backdrop_path: media.backdrop_path,
-          poster_path: media.poster_path,
-          release_date: "release_date" in media ? media.release_date : media.first_air_date,
-          title: "title" in media ? mutateMovieTitle(media) : mutateTvShowTitle(media),
-          vote_average: media.vote_average,
+          adult: isAdult,
+          backdrop_path: backdropPath,
+          poster_path: posterPath,
+          release_date: releaseDate,
+          title: titleStr,
+          vote_average: voteAverage,
         },
         {
           onConflict: "user_id,media_id,type,season,episode",

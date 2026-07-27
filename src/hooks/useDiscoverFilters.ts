@@ -1,14 +1,15 @@
-import { queryClient as q } from "@/app/providers";
+import { useQueryClient } from "@tanstack/react-query";
 import { siteConfig } from "@/config/site";
 import { DISCOVER_MOVIES_VALID_QUERY_TYPES, DISCOVER_TVS_VALID_QUERY_TYPES } from "@/types/movie";
 import { parseAsSet } from "@/utils/parsers";
 import { useQueryState, parseAsStringLiteral } from "nuqs";
 import { useCallback, useMemo, useEffect } from "react";
 
-const VALID_CONTENT_TYPES = ["movie", "tv"] as const;
+const VALID_CONTENT_TYPES = ["movie", "tv", "anime"] as const;
 const DEFAULT_QUERY_TYPE = "discover";
 
 const useDiscoverFilters = () => {
+  const q = useQueryClient();
   const { movies, tvShows } = siteConfig.queryLists;
 
   const [genres, setGenres] = useQueryState("genres", parseAsSet.withDefault(new Set([])));
@@ -27,7 +28,7 @@ const useDiscoverFilters = () => {
   const types = useMemo(
     () => [
       { name: "Discover", key: DEFAULT_QUERY_TYPE },
-      ...(content === "movie" ? movies : tvShows).map(({ name, param }) => ({
+      ...((content === "movie" ? movies : tvShows) || []).map(({ name, param }) => ({
         name: name.replace(/(Movies|TV Shows)/g, "").trim(),
         key: param,
       })),
@@ -59,7 +60,7 @@ const useDiscoverFilters = () => {
 
   useEffect(() => {
     clearQueries();
-  }, [content, queryType, genresString]);
+  }, [content, queryType, genresString, clearQueries]);
 
   return {
     types,
@@ -75,3 +76,4 @@ const useDiscoverFilters = () => {
 };
 
 export default useDiscoverFilters;
+

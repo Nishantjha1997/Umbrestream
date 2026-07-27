@@ -65,6 +65,9 @@ const TvShowPlayer: React.FC<TvShowPlayerProps> = ({
       <AdsWarning />
 
       <div className={cn("relative", SpacingClasses.reset)}>
+        {/* Top hover-sensor zone to capture mouse activity and show the header overlay */}
+        <div className="absolute top-0 left-0 right-0 h-20 z-20" />
+
         <TvShowPlayerHeader
           id={id}
           episode={episode}
@@ -82,7 +85,7 @@ const TvShowPlayer: React.FC<TvShowPlayerProps> = ({
               allowFullScreen
               key={PLAYER.title}
               src={PLAYER.source}
-              className={cn("z-10 h-full", { "pointer-events-none": idle && !mobile })}
+              className="z-10 h-full w-full border-none"
             />
           )}
         </Card>

@@ -30,7 +30,7 @@ import { IoIosClose, IoIosMail, IoIosRocket, IoIosShareAlt, IoMdHelpCircle } fro
 import { IoEye, IoEyeOff, IoGrid, IoMenuOutline } from "react-icons/io5";
 import { LuHistory, LuPlay } from "react-icons/lu";
 import { MdContentCopy, MdMovie } from "react-icons/md";
-import { PiTelevisionFill } from "react-icons/pi";
+import { PiTelevisionFill, PiFlowerLotusFill } from "react-icons/pi";
 import { RiLockPasswordFill, RiRobot3Fill } from "react-icons/ri";
 import { TbPlayerTrackNextFilled, TbPlayerTrackPrevFilled } from "react-icons/tb";
 import { TiThList } from "react-icons/ti";
@@ -39,6 +39,7 @@ export {
   FaAd as Ads,
   HiArrowLongLeft as ArrowLeft,
   GoArrowUpLeft as ArrowUpLeft,
+  PiFlowerLotusFill as Anime,
   FaCalendarAlt as Calendar,
   FaCheck as Check,
   FaChevronLeft as ChevronLeft,

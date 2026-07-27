@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/utils/supabase/client";
 import type { User } from "@supabase/supabase-js";
-import { queryClient } from "@/app/providers";
 import { addToast } from "@heroui/react";
 
 type AuthUserData = User & {
@@ -56,6 +55,10 @@ const fetchUser = async (): Promise<AuthUserData | null> => {
 
 const useSupabaseUser = () => {
   const supabase = createClient();
+  // Read from context rather than a module singleton: providers.tsx creates the
+  // QueryClient inside the component (via useState), so there's no exported
+  // instance to import.
+  const queryClient = useQueryClient();
 
   const query = useQuery({
     queryKey: ["supabase-user"],

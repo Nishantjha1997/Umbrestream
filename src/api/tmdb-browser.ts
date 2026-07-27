@@ -70,6 +70,10 @@ export const tmdbBrowser = {
       proxy<AppendToResponse<MovieDetails, T, "movie">>(`movie/${id}`, {
         append_to_response: appendToResponse?.join(","),
       }),
+    recommendations: <T = TrendingResult>(id: number, p: { page?: number } = {}) =>
+      proxy<T>(`movie/${id}/recommendations`, p),
+    similar: <T = TrendingResult>(id: number, p: { page?: number } = {}) =>
+      proxy<T>(`movie/${id}/similar`, p),
   },
   tvShows: {
     popular: <T>(p: { page?: number } = {}) => proxy<T>("tv/popular", p),
@@ -86,6 +90,10 @@ export const tmdbBrowser = {
       }),
     season: (tvId: number, seasonNumber: number) =>
       proxy<SeasonDetails>(`tv/${tvId}/season/${seasonNumber}`),
+    recommendations: <T = TrendingResult>(id: number, p: { page?: number } = {}) =>
+      proxy<T>(`tv/${id}/recommendations`, p),
+    similar: <T = TrendingResult>(id: number, p: { page?: number } = {}) =>
+      proxy<T>(`tv/${id}/similar`, p),
   },
   search: {
     multi: <T>(p: { query: string; page?: number }) => proxy<T>("search/multi", p),

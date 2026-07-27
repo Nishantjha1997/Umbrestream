@@ -4,7 +4,7 @@ import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 
 // Types
-type ContentType = "movie" | "tv";
+type ContentType = "movie" | "tv" | "anime";
 type FilterType = ContentType | "all";
 
 interface WatchlistItem {
@@ -70,10 +70,10 @@ export async function addToWatchlist(item: WatchlistItem): Promise<ActionRespons
     }
 
     // Validate type
-    if (!["movie", "tv"].includes(item.type)) {
+    if (!["movie", "tv", "anime"].includes(item.type)) {
       return {
         success: false,
-        error: 'Invalid content type. Must be "movie" or "tv"',
+        error: 'Invalid content type. Must be "movie", "tv", or "anime"',
       };
     }
 
@@ -156,7 +156,7 @@ export async function removeFromWatchlist(id: number, type: ContentType): Promis
     }
 
     // Validate type
-    if (!["movie", "tv"].includes(type)) {
+    if (!["movie", "tv", "anime"].includes(type)) {
       return {
         success: false,
         error: "Invalid content type",
@@ -216,7 +216,7 @@ export const removeAllWatchlist = async (type: ContentType): Promise<ActionRespo
     }
 
     // Validate type
-    if (!["movie", "tv"].includes(type)) {
+    if (!["movie", "tv", "anime"].includes(type)) {
       return {
         success: false,
         error: "Invalid content type",
@@ -348,7 +348,7 @@ export async function getWatchlist(
       .range(offset, offset + limit - 1);
 
     // Apply type filter if not 'all'
-    if (filterType !== "all" && ["movie", "tv"].includes(filterType)) {
+    if (filterType !== "all" && ["movie", "tv", "anime"].includes(filterType)) {
       query = query.eq("type", filterType);
     }
 

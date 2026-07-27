@@ -133,6 +133,8 @@ export const anilistApi = {
 
   search: (query: string, page = 1) => fetchPage({ search: query, page, perPage: 20 }),
 
+  discover: (vars: PageQueryVars) => fetchPage(vars),
+
   details: async (id: number): Promise<AniListMediaDetail | null> => {
     const query = `
       query ($id: Int) {

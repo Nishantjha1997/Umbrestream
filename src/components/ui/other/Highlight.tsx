@@ -34,7 +34,7 @@ const Highlight: React.FC<HighlightProps> = ({
   return (
     <p {...props}>
       {parts.map((part, i) =>
-        regex.test(part) ? (
+        new RegExp(`^(${escapedTerms.join("|")})$`, "i").test(part) ? (
           <mark
             key={i}
             className={cn({

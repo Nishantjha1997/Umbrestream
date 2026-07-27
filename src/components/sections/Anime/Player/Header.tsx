@@ -1,6 +1,6 @@
 import { cn } from "@/utils/helpers";
 import { ArrowLeft, Next, Prev, Server } from "@/utils/icons";
-import ActionButton from "./ActionButton";
+import PlayerActionButton from "@/components/ui/button/PlayerActionButton";
 
 interface AnimePlayerHeaderProps {
   id: number;
@@ -33,36 +33,38 @@ const AnimePlayerHeader: React.FC<AnimePlayerHeaderProps> = ({
         { "opacity-0": hidden },
       )}
     >
-      <ActionButton label="Back" href={`/anime/${id}`}>
+      <PlayerActionButton label="Back" href={`/anime/${id}`} color="secondary">
         <ArrowLeft size={42} />
-      </ActionButton>
+      </PlayerActionButton>
       <div className="absolute left-1/2 hidden -translate-x-1/2 flex-col justify-center text-center sm:flex">
         <p className="text-sm text-white text-shadow-lg sm:text-lg lg:text-xl">{animeTitle}</p>
-        <p className="text-xs text-purple-400 text-shadow-lg sm:text-sm lg:text-base">
+        <p className="text-xs text-secondary text-shadow-lg sm:text-sm lg:text-base">
           Episode {episode}
           {totalEpisodes ? ` of ${totalEpisodes}` : ""}
         </p>
       </div>
       <div className="flex items-center gap-4">
-        <ActionButton
+        <PlayerActionButton
           disabled={!hasPrev}
           label="Previous Episode"
           tooltip="Previous Episode"
           href={`/anime/${id}/player/${episode - 1}?src=${selectedSource}`}
+          color="secondary"
         >
           <Prev size={42} />
-        </ActionButton>
-        <ActionButton
+        </PlayerActionButton>
+        <PlayerActionButton
           disabled={!hasNext}
           label="Next Episode"
           tooltip="Next Episode"
           href={`/anime/${id}/player/${episode + 1}?src=${selectedSource}`}
+          color="secondary"
         >
           <Next size={42} />
-        </ActionButton>
-        <ActionButton label="Sources" tooltip="Sources" onClick={onOpenSource}>
+        </PlayerActionButton>
+        <PlayerActionButton label="Sources" tooltip="Sources" onClick={onOpenSource} color="secondary">
           <Server size={34} />
-        </ActionButton>
+        </PlayerActionButton>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import { cn } from "@/utils/helpers";
 import { ArrowLeft, Server } from "@/utils/icons";
-import ActionButton from "./ActionButton";
+import PlayerActionButton from "@/components/ui/button/PlayerActionButton";
 
 interface MoviePlayerHeaderProps {
   id: number;
@@ -24,16 +24,16 @@ const MoviePlayerHeader: React.FC<MoviePlayerHeaderProps> = ({
         { "opacity-0": hidden },
       )}
     >
-      <ActionButton label="Back" href={`/movie/${id}`}>
+      <PlayerActionButton label="Back" href={`/movie/${id}`} color="primary">
         <ArrowLeft size={42} />
-      </ActionButton>
+      </PlayerActionButton>
       <div className="absolute left-1/2 hidden -translate-x-1/2 flex-col justify-center text-center sm:flex">
         <p className="text-sm text-white text-shadow-lg sm:text-lg lg:text-xl">{movieName}</p>
       </div>
       <div className="flex items-center gap-4">
-        <ActionButton label="Sources" tooltip="Sources" onClick={onOpenSource}>
+        <PlayerActionButton label="Sources" tooltip="Sources" onClick={onOpenSource} color="primary">
           <Server size={34} />
-        </ActionButton>
+        </PlayerActionButton>
       </div>
     </div>
   );

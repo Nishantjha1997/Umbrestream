@@ -79,7 +79,7 @@ const SearchFilter: React.FC<SearchFilterProps> = ({ isLoading, onSearchSubmit, 
         <div className="flex items-center justify-center gap-2">
           <SearchInput
             autoFocus
-            placeholder={`Search your favorite ${content === "movie" ? "movies" : "TV shows"}...`}
+            placeholder={`Search your favorite ${content === "movie" ? "movies" : content === "tv" ? "TV shows" : "anime"}...`}
             isLoading={isLoading}
             value={searchQuery}
             onValueChange={(val) => {

@@ -107,14 +107,42 @@ export function usePlayerEvents(options: UsePlayerEventsOptions = {}) {
 
   const eventDataRef = useRef<UnifiedPlayerEventData | null>(null);
 
+  // Track latest state to avoid stale closures in event listeners
+  const stateRef = useRef({
+    user,
+    metadata,
+    saveHistory,
+    lastCurrentTime,
+    onPlay,
+    onPause,
+    onSeeked,
+    onEnded,
+    onTimeUpdate,
+  });
+
+  useEffect(() => {
+    stateRef.current = {
+      user,
+      metadata,
+      saveHistory,
+      lastCurrentTime,
+      onPlay,
+      onPause,
+      onSeeked,
+      onEnded,
+      onTimeUpdate,
+    };
+  }, [user, metadata, saveHistory, lastCurrentTime, onPlay, onPause, onSeeked, onEnded, onTimeUpdate]);
+
   const syncToServer = async (data: UnifiedPlayerEventData, completed?: boolean) => {
-    if (!saveHistory || !user) return;
-    if (diff(data.currentTime, lastCurrentTime) <= 5) return; // prevent spam
+    const state = stateRef.current;
+    if (!state.saveHistory || !state.user) return;
+    if (diff(data.currentTime, state.lastCurrentTime) <= 5) return; // prevent spam
 
     const payload: UnifiedPlayerEventData = {
       ...data,
-      season: data.season || metadata?.season || 0,
-      episode: data.episode || metadata?.episode || 0,
+      season: data.season || state.metadata?.season || 0,
+      episode: data.episode || state.metadata?.episode || 0,
     };
 
     const { success, message } = await syncHistory(payload, completed);
@@ -127,11 +155,12 @@ export function usePlayerEvents(options: UsePlayerEventsOptions = {}) {
     if (documentState === "visible") return;
     if (!eventDataRef.current) return;
     syncToServer(eventDataRef.current);
-  }, [documentState, lastCurrentTime]);
+  }, [documentState, saveHistory, user]);
 
   useEffect(() => {
     const handleBeforeUnload = () => {
-      if (!saveHistory || !user) return;
+      const state = stateRef.current;
+      if (!state.saveHistory || !state.user) return;
       if (!eventDataRef.current) return;
 
       const payload = {
@@ -159,29 +188,31 @@ export function usePlayerEvents(options: UsePlayerEventsOptions = {}) {
       eventDataRef.current = parsed;
       setLastEvent(parsed.event);
 
+      const state = stateRef.current;
+
       switch (parsed.event) {
         case "play":
           setIsPlaying(true);
-          onPlay?.(parsed);
+          state.onPlay?.(parsed);
           break;
         case "pause":
           setIsPlaying(false);
-          onPause?.(parsed);
+          state.onPause?.(parsed);
           break;
         case "ended":
           setIsPlaying(false);
           syncToServer(parsed, true);
-          onEnded?.(parsed);
+          state.onEnded?.(parsed);
           break;
         case "seeked":
           setCurrentTime(parsed.currentTime);
           setDuration(parsed.duration);
-          onSeeked?.(parsed);
+          state.onSeeked?.(parsed);
           break;
         case "timeupdate":
           setCurrentTime(parsed.currentTime);
           setDuration(parsed.duration);
-          onTimeUpdate?.(parsed);
+          state.onTimeUpdate?.(parsed);
           break;
       }
     };

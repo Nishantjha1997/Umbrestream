@@ -29,6 +29,8 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   experimental: {
+    cpus: 1,
+    workerThreads: false,
     // Barrel-import optimization: without this, importing one icon from
     // react-icons/io5 (etc.) pulls the whole package into the dev/build
     // graph. These are the heaviest barrel-style deps in use.

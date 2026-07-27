@@ -1,5 +1,3 @@
-"use client";
-
 import { tmdbBrowser } from "@/api/tmdb-browser";
 import { DiscoverMoviesFetchQueryType } from "@/types/movie";
 import { MovieDiscoverResult } from "tmdb-ts/dist/types/discover";
@@ -10,7 +8,7 @@ interface FetchDiscoverMovies {
   genres?: string;
 }
 
-const useFetchDiscoverMovies = ({
+const fetchDiscoverMovies = ({
   page = 1,
   type = "discover",
   genres,
@@ -31,4 +29,4 @@ const useFetchDiscoverMovies = ({
   return queryData();
 };
 
-export default useFetchDiscoverMovies;
+export default fetchDiscoverMovies;

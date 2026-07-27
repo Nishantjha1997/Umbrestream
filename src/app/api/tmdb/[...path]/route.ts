@@ -46,6 +46,16 @@ const WINDOW_MS = 60_000;
 
 function underLimit(key: string): boolean {
   const now = Date.now();
+
+  // Prune expired entries periodically to prevent memory leaks
+  if (hits.size > 100 && Math.random() < 0.05) {
+    for (const [k, v] of hits.entries()) {
+      if (now > v.resetAt) {
+        hits.delete(k);
+      }
+    }
+  }
+
   const entry = hits.get(key);
   if (!entry || now > entry.resetAt) {
     hits.set(key, { count: 1, resetAt: now + WINDOW_MS });

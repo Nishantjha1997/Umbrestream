@@ -48,7 +48,7 @@ const AnimePosterCard: React.FC<AnimePosterCardProps> = ({ anime, variant = "ful
   const callback = useCallback(() => {
     handlers.open();
     setTimeout(() => startVibration([100]), 300);
-  }, []);
+  }, [handlers, startVibration]);
 
   const longPress = useLongPress(mobile ? callback : null, {
     cancelOnMovement: true,

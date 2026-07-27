@@ -2,31 +2,41 @@ import { cn } from "@/utils/helpers";
 import { Tooltip } from "@heroui/react";
 import Link from "next/link";
 
-interface ActionButtonProps {
+interface PlayerActionButtonProps {
   label: string;
   children: React.ReactNode;
   href?: string;
   onClick?: () => void;
   tooltip?: string;
   disabled?: boolean;
+  color?: "primary" | "warning" | "secondary" | "default";
 }
 
-const ActionButton: React.FC<ActionButtonProps> = ({
+const PlayerActionButton: React.FC<PlayerActionButtonProps> = ({
   label,
   href = "",
   children,
   onClick,
   tooltip,
   disabled,
+  color = "primary",
 }) => {
+  const hoverColors = {
+    primary: "hover:[&>svg]:text-primary",
+    warning: "hover:[&>svg]:text-warning",
+    secondary: "hover:[&>svg]:text-secondary",
+    default: "hover:[&>svg]:text-default",
+  };
+
   const Button = (
     <Tooltip content={tooltip} isDisabled={disabled || !tooltip} showArrow placement="bottom">
       <button
+        type="button"
         aria-label={label}
         onClick={onClick}
         disabled={disabled}
         className={cn("group drop-shadow-md [&>svg]:transition-all", {
-          "hover:[&>svg]:scale-125 [&>svg]:hover:text-warning": !disabled,
+          [`hover:[&>svg]:scale-125 ${hoverColors[color]}`]: !disabled,
           "cursor-not-allowed opacity-50": disabled,
         })}
       >
@@ -44,4 +54,4 @@ const ActionButton: React.FC<ActionButtonProps> = ({
   );
 };
 
-export default ActionButton;
+export default PlayerActionButton;

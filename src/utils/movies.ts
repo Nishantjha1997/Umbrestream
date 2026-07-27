@@ -107,6 +107,9 @@ export const getImageUrl = (
   type: "poster" | "backdrop" | "title" | "avatar" = "poster",
   fullSize?: boolean,
 ): string => {
+  if (path && (path.startsWith("http://") || path.startsWith("https://"))) {
+    return path;
+  }
   const size = fullSize ? "original" : "w500";
   const fallback =
     type === "poster"
@@ -114,7 +117,7 @@ export const getImageUrl = (
       : type === "backdrop"
         ? "https://wallpapercave.com/wp/wp1945939.jpg"
         : "";
-  return path ? `http://image.tmdb.org/t/p/${size}/${path}` : fallback;
+  return path ? `https://image.tmdb.org/t/p/${size}/${path}` : fallback;
 };
 
 /**

@@ -1,0 +1,9 @@
+{
+  "appId": "com.umbrestream.app",
+  "appName": "Umbra",
+  "webDir": "out",
+  "server": {
+    "url": "https://umbrestream.vercel.app",
+    "cleartext": true
+  }
+}

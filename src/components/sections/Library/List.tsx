@@ -1,7 +1,7 @@
 "use client";
 
 import { getWatchlist, removeAllWatchlist } from "@/actions/library";
-import { queryClient } from "@/app/providers";
+import { useQueryClient } from "@tanstack/react-query";
 import BackToTopButton from "@/components/ui/button/BackToTopButton";
 import ContentTypeSelection from "@/components/ui/other/ContentTypeSelection";
 import useDiscoverFilters from "@/hooks/useDiscoverFilters";
@@ -14,12 +14,13 @@ import { useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { Suspense, useEffect, useMemo, useState, useTransition } from "react";
 import MoviePosterCard from "../Movie/Cards/Poster";
 import TvShowPosterCard from "../TV/Cards/Poster";
+import AnimePosterCard from "../Anime/Cards/Poster";
 import { getLoadingLabel } from "@/utils/movies";
 import { ITEMS_PER_PAGE } from "@/utils/constants";
 import ConfirmationModal from "@/components/ui/overlay/ConfirmationModal";
 
 type SortOption = "title" | "release_date" | "vote_average" | "created_at";
-type FilterType = "movie" | "tv" | "all";
+type FilterType = "movie" | "tv" | "anime" | "all";
 
 const SORT_OPTIONS: { key: SortOption; label: string }[] = [
   { key: "title", label: "Title" },
@@ -29,6 +30,7 @@ const SORT_OPTIONS: { key: SortOption; label: string }[] = [
 ];
 
 const LibraryList = () => {
+  const queryClient = useQueryClient();
   const { ref, inViewport } = useInViewport();
   const { content } = useDiscoverFilters();
   const { data: user, isLoading: isUserLoading } = useSupabaseUser();
@@ -61,7 +63,7 @@ const LibraryList = () => {
   }, [inViewport]);
 
   const clearWatchlistMutation = useMutation({
-    mutationFn: async (type: "movie" | "tv") => {
+    mutationFn: async (type: "movie" | "tv" | "anime") => {
       if (!user) throw new Error("User not authenticated");
       const result = await removeAllWatchlist(type);
       if (!result.success) {
@@ -74,8 +76,12 @@ const LibraryList = () => {
     onSuccess: ({ type, count }) => {
       queryClient.invalidateQueries({ queryKey: ["watchlist"] });
 
+      let label = "movies";
+      if (type === "tv") label = "TV shows";
+      if (type === "anime") label = "anime";
+
       addToast({
-        title: `Cleared ${count} ${type === "movie" ? "movies" : "TV shows"} from your watchlist!`,
+        title: `Cleared ${count} ${label} from your watchlist!`,
         color: "success",
         icon: <Trash />,
       });
@@ -157,7 +163,7 @@ const LibraryList = () => {
               }}
               isLoading={clearWatchlistMutation.isPending || isPending}
             >
-              Clear {content === "movie" ? "Movies" : "TV Shows"} from Watchlist
+              Clear {content === "movie" ? "Movies" : content === "tv" ? "TV Shows" : "Anime"} from Watchlist
             </Button>
           )}
         </div>
@@ -166,7 +172,7 @@ const LibraryList = () => {
             size="lg"
             variant="simple"
             className="absolute-center mt-[30vh]"
-            color={content === "movie" ? "primary" : "warning"}
+            color={content === "movie" ? "primary" : content === "tv" ? "warning" : "secondary"}
           />
         ) : hasItems ? (
           <>
@@ -186,6 +192,30 @@ const LibraryList = () => {
                           name: data.title,
                           poster_path: data.poster_path || "",
                           vote_average: data.vote_average,
+                        }}
+                      />
+                    </Suspense>
+                  );
+                }
+                if (data.type === "anime") {
+                  return (
+                    <Suspense key={`anime-${data.id}`}>
+                      <AnimePosterCard
+                        variant="bordered"
+                        anime={{
+                          id: data.id,
+                          title: { english: data.title, romaji: data.title, native: data.title },
+                          coverImage: {
+                            extraLarge: data.poster_path || "",
+                            large: data.poster_path || "",
+                            medium: data.poster_path || "",
+                            color: null,
+                          },
+                          format: null,
+                          episodes: null,
+                          averageScore: data.vote_average * 10,
+                          seasonYear: null,
+                          isAdult: data.adult,
                         }}
                       />
                     </Suspense>
@@ -216,7 +246,7 @@ const LibraryList = () => {
                   size="lg"
                   variant="wave"
                   label={getLoadingLabel()}
-                  color={content === "movie" ? "primary" : "warning"}
+                  color={content === "movie" ? "primary" : content === "tv" ? "warning" : "secondary"}
                 />
               )}
               {!hasNextPage && !isFetchingNextPage && sortedWatchlist.length > 0 && (

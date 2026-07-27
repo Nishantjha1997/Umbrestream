@@ -49,6 +49,9 @@ const AnimePlayer: React.FC<AnimePlayerProps> = ({ anime, episode, startAt }) =>
       <AdsWarning />
 
       <div className={cn("relative", SpacingClasses.reset)}>
+        {/* Top hover-sensor zone to capture mouse activity and show the header overlay */}
+        <div className="absolute top-0 left-0 right-0 h-20 z-20" />
+
         <AnimePlayerHeader
           id={anime.id}
           animeTitle={animeTitle}
@@ -65,7 +68,7 @@ const AnimePlayer: React.FC<AnimePlayerProps> = ({ anime, episode, startAt }) =>
               allowFullScreen
               key={PLAYER.title}
               src={PLAYER.source}
-              className={cn("z-10 h-full w-full border-none", { "pointer-events-none": idle && !mobile })}
+              className="z-10 h-full w-full border-none"
             />
           )}
         </Card>

@@ -9,7 +9,7 @@ import useDeviceVibration from "@/hooks/useDeviceVibration";
 import useSupabaseUser from "@/hooks/useSupabaseUser";
 import { SavedMovieDetails } from "@/types/movie";
 import { addToWatchlist, removeFromWatchlist, checkInWatchlist } from "@/actions/library";
-import { queryClient } from "@/app/providers";
+import { useQueryClient } from "@tanstack/react-query";
 import { usePathname } from "next/navigation";
 
 interface BookmarkButtonProps {
@@ -18,6 +18,7 @@ interface BookmarkButtonProps {
 }
 
 const BookmarkButton: React.FC<BookmarkButtonProps> = ({ data, isTooltipDisabled }) => {
+  const queryClient = useQueryClient();
   const pathname = usePathname();
   const { startVibration } = useDeviceVibration();
   const { data: user, isLoading: isUserLoading } = useSupabaseUser();

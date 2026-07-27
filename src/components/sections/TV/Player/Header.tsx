@@ -1,6 +1,6 @@
 import { cn } from "@/utils/helpers";
 import { ArrowLeft, List, Next, Prev, Server } from "@/utils/icons";
-import ActionButton from "./ActionButton";
+import PlayerActionButton from "@/components/ui/button/PlayerActionButton";
 import { TvShowPlayerProps } from "./Player";
 
 interface TvShowPlayerHeaderProps extends Omit<TvShowPlayerProps, "episodes" | "tv" | "startAt"> {
@@ -31,9 +31,9 @@ const TvShowPlayerHeader: React.FC<TvShowPlayerHeaderProps> = ({
         { "opacity-0": hidden },
       )}
     >
-      <ActionButton label="Back" href={`/tv/${id}`}>
+      <PlayerActionButton label="Back" href={`/tv/${id}`} color="warning">
         <ArrowLeft size={42} />
-      </ActionButton>
+      </PlayerActionButton>
       <div className="absolute left-1/2 hidden -translate-x-1/2 flex-col justify-center text-center sm:flex">
         <p className="text-sm text-white text-shadow-lg sm:text-lg lg:text-xl">{seriesName}</p>
         <p className="text-xs text-gray-200 text-shadow-lg sm:text-sm lg:text-base">
@@ -41,28 +41,30 @@ const TvShowPlayerHeader: React.FC<TvShowPlayerHeaderProps> = ({
         </p>
       </div>
       <div className="flex items-center gap-4">
-        <ActionButton
+        <PlayerActionButton
           disabled={!prevEpisodeNumber}
           label="Previous Episode"
           tooltip="Previous Episode"
           href={`/tv/${id}/${episode.season_number}/${prevEpisodeNumber}/player?src=${selectedSource}`}
+          color="warning"
         >
           <Prev size={42} />
-        </ActionButton>
-        <ActionButton
+        </PlayerActionButton>
+        <PlayerActionButton
           disabled={!nextEpisodeNumber}
           label="Next Episode"
           tooltip="Next Episode"
           href={`/tv/${id}/${episode.season_number}/${nextEpisodeNumber}/player?src=${selectedSource}`}
+          color="warning"
         >
           <Next size={42} />
-        </ActionButton>
-        <ActionButton label="Sources" tooltip="Sources" onClick={onOpenSource}>
+        </PlayerActionButton>
+        <PlayerActionButton label="Sources" tooltip="Sources" onClick={onOpenSource} color="warning">
           <Server size={34} />
-        </ActionButton>
-        <ActionButton label="Episodes" tooltip="Episodes" onClick={onOpenEpisode}>
+        </PlayerActionButton>
+        <PlayerActionButton label="Episodes" tooltip="Episodes" onClick={onOpenEpisode} color="warning">
           <List size={34} />
-        </ActionButton>
+        </PlayerActionButton>
       </div>
     </div>
   );
