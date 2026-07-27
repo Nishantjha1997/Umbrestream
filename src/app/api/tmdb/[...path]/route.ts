@@ -4,16 +4,18 @@ const TMDB_BASE = "https://api.themoviedb.org/3";
 
 /**
  * Allowlist by shape. Without this the route is an open relay: anyone could
- * drive arbitrary TMDB endpoints through our key, and a path like
- * `../../..` would let them reach further still.
+ * drive arbitrary TMDB endpoints through our token, and traversal segments
+ * would let them reach further still.
  */
 const ALLOWED: RegExp[] = [
   /^trending\/(all|movie|tv)\/(day|week)$/,
   /^discover\/(movie|tv)$/,
+  /^movie\/(popular|top_rated|now_playing|upcoming)$/,
+  /^tv\/(popular|top_rated|airing_today|on_the_air)$/,
   /^(movie|tv)\/\d+$/,
   /^(movie|tv)\/\d+\/(recommendations|similar|credits|videos|images|keywords|external_ids)$/,
   /^tv\/\d+\/season\/\d+$/,
-  /^search\/(multi|movie|tv)$/,
+  /^search\/(multi|movie|tv|person)$/,
   /^genre\/(movie|tv)\/list$/,
 ];
 
@@ -36,8 +38,8 @@ const SAFE_PARAMS = new Set([
   "append_to_response",
 ]);
 
-// Per-instance only. On serverless this resets per cold start — back it with
-// Redis before this is exposed to anyone but you.
+// Per-instance only. Resets on cold start; back it with Redis before this is
+// reachable by anyone but you.
 const hits = new Map<string, { count: number; resetAt: number }>();
 const LIMIT = 60;
 const WINDOW_MS = 60_000;
@@ -54,10 +56,8 @@ function underLimit(key: string): boolean {
   return true;
 }
 
-export async function GET(
-  req: NextRequest,
-  ctx: { params: Promise<{ path: string[] }> },
-) {
+export async function GET(req: NextRequest, ctx: { params: Promise<{ path: string[] }> }) {
+  // Next 16: params is a Promise. Synchronous access was removed.
   const { path } = await ctx.params;
   const endpoint = path.join("/");
 
@@ -65,7 +65,7 @@ export async function GET(
     return NextResponse.json({ error: "Endpoint not allowed" }, { status: 403 });
   }
 
-  const token = process.env.TMDB_READ_TOKEN;
+  const token = process.env.TMDB_ACCESS_TOKEN;
   if (!token) {
     return NextResponse.json({ error: "Server not configured" }, { status: 503 });
   }

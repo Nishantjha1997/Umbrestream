@@ -1,19 +1,21 @@
+"use client";
+
+import { siteConfig } from "@/config/site";
+import { useDocumentTitle } from "@mantine/hooks";
+import { Button } from "@heroui/react";
 import Link from "next/link";
 
 export default function NotFound() {
+  useDocumentTitle(`404 Not Found | ${siteConfig.name}`);
+
   return (
-    <div className="mx-auto flex max-w-md flex-col items-start px-6 py-32">
-      <p className="text-sm font-semibold tracking-wider text-[var(--color-accent)]">404</p>
-      <h1 className="mt-2 text-2xl font-bold tracking-tight">Nothing here</h1>
-      <p className="mt-3 text-[var(--color-fg-muted)]">
-        That title doesn&apos;t exist, or TMDB doesn&apos;t have it.
-      </p>
-      <Link
-        href="/"
-        className="mt-8 rounded-lg bg-[var(--color-accent)] px-5 py-2.5 text-sm font-semibold text-[var(--color-accent-fg)] transition hover:bg-[var(--color-accent-hover)]"
-      >
-        Back home
-      </Link>
+    <div className="absolute-center text-center">
+      <h1>404</h1>
+      <h4>Not Found</h4>
+      <p>The page you are looking for doesn't exist.</p>
+      <Button as={Link} href="/" className="mt-8">
+        Home
+      </Button>
     </div>
   );
 }

@@ -1,19 +1,29 @@
-import type { NextConfig } from "next";
+import withPWAInit from "@ducanh2912/next-pwa";
+import { NextConfig } from "next/dist/server/config";
+
+const withPWA = withPWAInit({
+  dest: "public",
+  register: true,
+  disable: process.env.NODE_ENV === "development",
+  reloadOnOnline: true,
+  cacheOnFrontEndNav: true,
+  aggressiveFrontEndNavCaching: true,
+  workboxOptions: {
+    disableDevLogs: true,
+  },
+});
 
 const nextConfig: NextConfig = {
-  images: {
-    // `images.domains` is removed in Next 16 — remotePatterns only.
-    remotePatterns: [{ protocol: "https", hostname: "image.tmdb.org", pathname: "/t/p/**" }],
+  // https://github.com/payloadcms/payload/issues/12550#issuecomment-2939070941
+  turbopack: {
+    resolveExtensions: [".mdx", ".tsx", ".ts", ".jsx", ".js", ".mjs", ".json"],
   },
-
-  typescript: {
-    // Next spawns a worker to run tsc during build, and that worker segfaults
-    // (0xC0000005) on this machine — an environment fault, not a type error.
-    // Standalone `npm run typecheck` runs the same check and passes, so types
-    // are still enforced; they're just enforced outside the build.
-    // Remove this once the local Node install is repaired.
-    ignoreBuildErrors: true,
+  experimental: {
+    optimizePackageImports: ["@heroui/react"],
+    prefetchInlining: true,
   },
 };
 
-export default nextConfig;
+const pwa = withPWA(nextConfig);
+
+export default pwa;

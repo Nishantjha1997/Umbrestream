@@ -1,132 +1,15 @@
-import { ContentRow } from "@/components/media/ContentRow";
-import { HeroBanner } from "@/components/media/HeroBanner";
-import { isTmdbConfigured, tmdb } from "@/lib/tmdb/client";
-import { normalizeList, type TmdbPage } from "@/lib/tmdb/normalize";
-import type { MediaType, Title } from "@/types/title";
+import { NextPage } from "next";
+import dynamic from "next/dynamic";
+const ContinueWatching = dynamic(() => import("@/components/sections/Home/ContinueWatching"));
+const HomePageList = dynamic(() => import("@/components/sections/Home/List"));
 
-interface Row {
-  heading: string;
-  titles: Title[];
-}
-
-const SPECS: {
-  heading: string;
-  endpoint: string;
-  params: Record<string, string>;
-  fallback: MediaType;
-}[] = [
-  { heading: "Trending This Week", endpoint: "trending/all/week", params: {}, fallback: "movie" },
-  { heading: "Popular Movies", endpoint: "movie/popular", params: {}, fallback: "movie" },
-  { heading: "Popular Shows", endpoint: "tv/popular", params: {}, fallback: "tv" },
-  { heading: "Top Rated", endpoint: "movie/top_rated", params: {}, fallback: "movie" },
-  {
-    heading: "Animation",
-    endpoint: "discover/movie",
-    params: { with_genres: "16", sort_by: "popularity.desc" },
-    fallback: "movie",
-  },
-];
-
-async function loadRows(): Promise<Row[]> {
-  const settled = await Promise.allSettled(
-    SPECS.map((s) => tmdb<TmdbPage>(s.endpoint, s.params)),
-  );
-
-  return settled.flatMap((result, i) => {
-    if (result.status === "rejected") {
-      // Without this the row just vanishes and there is nothing to debug.
-      console.warn(`[home] row "${SPECS[i].heading}" failed:`, result.reason);
-      return [];
-    }
-    const titles = normalizeList(result.value, SPECS[i].fallback);
-    return titles.length ? [{ heading: SPECS[i].heading, titles }] : [];
-  });
-}
-
-export default async function HomePage() {
-  if (!isTmdbConfigured()) return <SetupNotice />;
-
-  const rows = await loadRows();
-
-  if (rows.length === 0) {
-    return (
-      <Shell>
-        <p className="text-[var(--color-fg-muted)]">
-          Connected, but TMDB returned nothing. Check that your token is a valid{" "}
-          <strong className="text-[var(--color-fg)]">API Read Access Token</strong>.
-        </p>
-      </Shell>
-    );
-  }
-
-  // Feature the first trending title that actually has artwork to fill a
-  // full-bleed hero; a missing backdrop leaves a black slab.
-  const hero = rows[0].titles.find((t) => t.backdropUrl);
-
+const HomePage: NextPage = () => {
   return (
-    <div className="pb-16">
-      {hero && <HeroBanner title={hero} />}
-
-      <div className={`space-y-10 ${hero ? "-mt-8 relative z-10" : "pt-8"}`}>
-        {rows.map((row, i) => (
-          <ContentRow
-            key={row.heading}
-            heading={row.heading}
-            titles={row.titles}
-            priority={i === 0}
-          />
-        ))}
-      </div>
-
-      <footer className="px-4 pt-10 text-xs leading-relaxed text-[var(--color-fg-subtle)] md:px-8">
-        This product uses the TMDB API but is not endorsed or certified by TMDB.
-      </footer>
+    <div className="flex flex-col gap-3 md:gap-8">
+      <ContinueWatching />
+      <HomePageList />
     </div>
   );
-}
+};
 
-function Shell({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="mx-auto max-w-2xl px-6 py-24">
-      <h1 className="mb-4 text-2xl font-bold tracking-tight">Umbra</h1>
-      {children}
-    </div>
-  );
-}
-
-function SetupNotice() {
-  return (
-    <Shell>
-      <p className="mb-6 text-[var(--color-fg-muted)]">
-        No TMDB token found. Add one to see anything here.
-      </p>
-      <ol className="space-y-3 text-sm text-[var(--color-fg-muted)]">
-        <li>
-          <span className="mr-2 text-[var(--color-accent)]">1.</span>
-          Create a free key at{" "}
-          <a
-            href="https://www.themoviedb.org/settings/api"
-            target="_blank"
-            rel="noreferrer"
-            className="text-[var(--color-accent-hover)] underline underline-offset-2"
-          >
-            themoviedb.org/settings/api
-          </a>
-          .
-        </li>
-        <li>
-          <span className="mr-2 text-[var(--color-accent)]">2.</span>
-          Copy <code className="rounded bg-[var(--color-surface-2)] px-1.5 py-0.5">.env.example</code>{" "}
-          to <code className="rounded bg-[var(--color-surface-2)] px-1.5 py-0.5">.env.local</code>.
-        </li>
-        <li>
-          <span className="mr-2 text-[var(--color-accent)]">3.</span>
-          Paste the <strong className="text-[var(--color-fg)]">API Read Access Token</strong> (the
-          long JWT, not the short v3 key) as{" "}
-          <code className="rounded bg-[var(--color-surface-2)] px-1.5 py-0.5">TMDB_READ_TOKEN</code>,
-          then restart the dev server.
-        </li>
-      </ol>
-    </Shell>
-  );
-}
+export default HomePage;
