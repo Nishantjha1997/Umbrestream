@@ -15,7 +15,7 @@ const BottomNavbar = () => {
     show && (
       <>
         <div className="pt-20 md:hidden" />
-        <div className="fixed bottom-0 left-0 z-50 block h-fit w-full translate-y-px border-t border-white/10 bg-background/70 py-2 backdrop-blur-xl transition-all duration-300 motion-reduce:transition-none md:hidden dark:bg-background/80">
+        <div className="glass-chrome fixed bottom-0 left-0 z-50 block h-fit w-full translate-y-px border-t py-2 transition-all duration-(--duration-base) motion-reduce:transition-none md:hidden">
           <div
             className="mx-auto grid h-full max-w-lg"
             style={{ gridTemplateColumns: `repeat(${siteConfig.navItems.length}, minmax(0, 1fr))` }}

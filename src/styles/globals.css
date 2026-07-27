@@ -13,6 +13,49 @@
 
   --font-poppins: var(--font-poppins);
 
+  /* ─────────────────────────────────────────────────────────────
+     Motion: duration scale.
+     Pick by intent, not by feel. Anything responding to direct
+     input should be --duration-fast or quicker.
+     ───────────────────────────────────────────────────────────── */
+  --duration-instant: 100ms;
+  --duration-fast: 180ms;
+  --duration-base: 280ms;
+  --duration-slow: 450ms;
+  --duration-cinematic: 800ms;
+
+  /* ─────────────────────────────────────────────────────────────
+     Motion: easing. Decelerate on enter, accelerate on exit.
+     ───────────────────────────────────────────────────────────── */
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-quint: cubic-bezier(0.64, 0, 0.78, 0);
+  --ease-in-out-quint: cubic-bezier(0.83, 0, 0.17, 1);
+  /* Slight overshoot. Press releases and card lifts only — used
+     broadly it reads as bouncy rather than precise. */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ─────────────────────────────────────────────────────────────
+     Material. Three blur tiers, consumed via the glass-* utilities
+     below — don't reach for these directly.
+     ───────────────────────────────────────────────────────────── */
+  --glass-blur-sm: 12px;
+  --glass-blur-md: 24px;
+  --glass-blur-lg: 40px;
+  /* Saturation boost is what separates real material from grey haze. */
+  --glass-saturate: 180%;
+
+  /* ─────────────────────────────────────────────────────────────
+     Elevation. Dark-first: near-black backgrounds swallow ordinary
+     drop shadows, so these lean on depth of spread, not darkness.
+     ───────────────────────────────────────────────────────────── */
+  --elevation-card: 0 1px 2px rgb(0 0 0 / 0.4);
+  --elevation-lift: 0 12px 32px -8px rgb(0 0 0 / 0.7);
+  --elevation-panel: 0 24px 64px -12px rgb(0 0 0 / 0.85);
+
+  --radius-card: 0.75rem;
+  --radius-panel: 1rem;
+  --radius-hero: 1.25rem;
+
   @keyframes shine {
     0% {
       background-position: 100%;
@@ -67,6 +110,41 @@
   iframe {
     @apply border-none;
   }
+}
+
+/* ───────────────────────────────────────────────────────────────
+   Material tiers. Every translucent surface uses one of these three
+   — do not hand-roll a bespoke bg-*/NN + backdrop-blur-* pair.
+
+   Two things make these read as material rather than grey fog:
+   the saturate() boost, and keeping the background genuinely
+   translucent. Push opacity past ~0.6 and the blur stops reading.
+
+   -webkit- prefixes are required for Safari, which matters
+   disproportionately for an Apple-TV-like audience.
+   ─────────────────────────────────────────────────────────────── */
+
+/* Tier 1 — persistent chrome: nav bars, sticky headers. */
+@utility glass-chrome {
+  @apply border-black/10 bg-white/70 dark:border-white/10 dark:bg-black/40;
+  backdrop-filter: blur(var(--glass-blur-md)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-blur-md)) saturate(var(--glass-saturate));
+}
+
+/* Tier 2 — floating surfaces: hover previews, dropdowns, drawers. */
+@utility glass-panel {
+  @apply border-black/10 bg-white/80 dark:border-white/12 dark:bg-black/55;
+  backdrop-filter: blur(var(--glass-blur-lg)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-blur-lg)) saturate(var(--glass-saturate));
+  box-shadow: var(--elevation-panel);
+}
+
+/* Tier 3 — controls sitting directly on artwork: play buttons, badges.
+   Always dark regardless of theme, since it sits over imagery. */
+@utility glass-control {
+  @apply border-white/20 bg-black/35 text-white;
+  backdrop-filter: blur(var(--glass-blur-sm)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-blur-sm)) saturate(var(--glass-saturate));
 }
 
 @utility embla {

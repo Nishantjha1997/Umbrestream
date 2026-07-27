@@ -51,7 +51,8 @@ export default function VaulDrawer({
       <Drawer.Portal>
         <Drawer.Overlay
           className={cn("fixed inset-0 z-9998 bg-black/70", classNames?.overlay, {
-            "backdrop-blur-xs": backdrop === "blur",
+            // Was backdrop-blur-xs — the weakest step, barely perceptible.
+            "backdrop-blur-md": backdrop === "blur",
             "bg-transparent": backdrop === "transparent",
           })}
         />
