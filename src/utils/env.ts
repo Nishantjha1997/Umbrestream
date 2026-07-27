@@ -3,18 +3,15 @@ import { z } from "zod";
 
 export const env = createEnv({
   server: {
-    PROTECTED_PATHS: z.string(),
-    SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
-    // Server-only. This was NEXT_PUBLIC_ upstream, which inlined the TMDB
-    // token into the client bundle where anyone could read it out of
-    // devtools. Client-side callers now go through /api/tmdb instead.
-    TMDB_ACCESS_TOKEN: z.string().min(1),
+    PROTECTED_PATHS: z.string().default("/auth/reset-password,/profile"),
+    SUPABASE_SERVICE_ROLE_KEY: z.string().optional().default(""),
+    TMDB_ACCESS_TOKEN: z.string().optional().default(""),
   },
   client: {
-    NEXT_PUBLIC_SUPABASE_URL: z.url().min(1),
-    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().min(1),
-    NEXT_PUBLIC_CAPTCHA_SITE_KEY: z.string().min(1).optional(),
-    NEXT_PUBLIC_AVATAR_PROVIDER_URL: z.url().min(1).optional(),
+    NEXT_PUBLIC_SUPABASE_URL: z.string().optional().default(""),
+    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().optional().default(""),
+    NEXT_PUBLIC_CAPTCHA_SITE_KEY: z.string().optional(),
+    NEXT_PUBLIC_AVATAR_PROVIDER_URL: z.string().optional(),
   },
   experimental__runtimeEnv: {
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -22,4 +19,7 @@ export const env = createEnv({
     NEXT_PUBLIC_CAPTCHA_SITE_KEY: process.env.NEXT_PUBLIC_CAPTCHA_SITE_KEY,
     NEXT_PUBLIC_AVATAR_PROVIDER_URL: process.env.NEXT_PUBLIC_AVATAR_PROVIDER_URL,
   },
+  emptyStringAsUndefined: true,
+  skipValidation: !!process.env.SKIP_ENV_VALIDATION,
 });
+

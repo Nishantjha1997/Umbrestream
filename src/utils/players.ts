@@ -224,3 +224,87 @@ export const getTvShowPlayers = (
     },
   ];
 };
+
+/**
+ * Generates a list of anime players with their respective titles and source URLs.
+ * Each player is constructed using the provided AniList ID and episode number.
+ *
+ * @param {string | number} id - The AniList ID of the anime.
+ * @param {number} episode - The episode number.
+ * @param {number} [startAt] - Optional start position in seconds.
+ * @returns {PlayersProps[]} - Array of player sources.
+ */
+export const getAnimePlayers = (
+  id: string | number,
+  episode: number,
+  startAt?: number,
+): PlayersProps[] => {
+  return [
+    {
+      title: "VidLink Anime",
+      source: `https://vidlink.pro/anime/${id}/${episode}?primaryColor=8b5cf6&secondaryColor=a2a2a2&iconColor=eefdec&autoplay=false&startAt=${startAt || ""}`,
+      recommended: true,
+      fast: true,
+      ads: true,
+      resumable: true,
+    },
+    {
+      title: "VidLink Anime 2",
+      source: `https://vidlink.pro/anime/${id}/${episode}?primaryColor=8b5cf6&autoplay=false`,
+      recommended: true,
+      fast: true,
+      ads: true,
+      resumable: true,
+    },
+    {
+      title: "VidSrc Anime 1",
+      source: `https://vidsrc.icu/embed/anime/${id}/${episode}`,
+      recommended: true,
+      fast: true,
+      ads: true,
+    },
+    {
+      title: "VidSrc Anime 2",
+      source: `https://vidsrc.cc/v3/embed/anime/${id}/${episode}?autoPlay=false`,
+      fast: true,
+      ads: true,
+    },
+    {
+      title: "<Embed> Anime",
+      source: `https://embed.su/embed/anime/${id}/${episode}`,
+      recommended: true,
+      ads: true,
+    },
+    {
+      title: "AutoEmbed Anime 1",
+      source: `https://player.autoembed.cc/embed/anime/${id}/${episode}`,
+      fast: true,
+      ads: true,
+    },
+    {
+      title: "AutoEmbed Anime 2",
+      source: `https://autoembed.co/anime/anilist/${id}-${episode}`,
+      fast: true,
+      ads: true,
+    },
+    {
+      title: "VidKing Anime",
+      source: `https://www.vidking.net/embed/anime/${id}/${episode}?color=8b5cf6&autoplay=false`,
+      recommended: true,
+      fast: true,
+      resumable: true,
+    },
+    {
+      title: "SuperEmbed Anime",
+      source: `https://multiembed.mov/directstream.php?video_id=${id}&anilist=1&e=${episode}`,
+      fast: true,
+      ads: true,
+    },
+    {
+      title: "2Embed Anime",
+      source: `https://www.2embed.cc/embedanime/${id}&e=${episode}`,
+      ads: true,
+    },
+  ];
+};
+
