@@ -32,13 +32,17 @@ const TopNavbar = () => {
       position="sticky"
       maxWidth="full"
       classNames={{ wrapper: "px-2 md:px-4" }}
-      className={cn("inset-0 h-min bg-transparent", {
-        "bg-background": show,
-      })}
+      className={cn(
+        "inset-0 h-min bg-transparent transition-all duration-300 motion-reduce:transition-none",
+        {
+          "border-b border-white/10 bg-background/70 backdrop-blur-xl dark:bg-background/80":
+            show,
+        },
+      )}
     >
       {!show && (
         <div
-          className="border-background bg-background absolute inset-0 h-full w-full border-b"
+          className="absolute inset-0 h-full w-full border-b border-white/10 bg-background/70 backdrop-blur-xl transition-opacity duration-300 motion-reduce:transition-none dark:bg-background/80"
           style={{ opacity: opacity }}
         />
       )}

@@ -1,7 +1,7 @@
 create table public.watchlist (
   user_id uuid not null references auth.users(id) on delete cascade,
   id integer not null,
-  type text not null check (type in ('movie','tv')),
+  type text not null check (type in ('movie','tv','anime')),
   adult boolean not null,
   backdrop_path text,
   poster_path text,

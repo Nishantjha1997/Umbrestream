@@ -118,8 +118,8 @@ the cheaper path.
 
 ## 3. Attribution — keep this intact
 
-This project is built on [cinextma](https://github.com/gogetta69), MIT
-licensed, **Copyright (c) 2025 Wisnu Wirayuda**.
+This project is built on [cinextma](https://github.com/wisnuwirayuda15/cinextma),
+MIT licensed, **Copyright (c) 2025 Wisnu Wirayuda**.
 
 MIT lets you do essentially anything — use, modify, sell, close-source your
 additions — on **one** condition: the copyright notice and license text must

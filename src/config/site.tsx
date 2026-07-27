@@ -13,6 +13,7 @@ import {
   IoMoon,
 } from "react-icons/io5";
 import { TbFolder, TbFolderFilled } from "react-icons/tb";
+import { PiFlowerLotusLight, PiFlowerLotusFill } from "react-icons/pi";
 
 /**
  * Matches QueryList<T>["query"]'s return shape. HomeList.tsx calls these
@@ -29,8 +30,8 @@ type PagedResult<T> = {
 };
 
 export const siteConfig: SiteConfigType = {
-  name: "Cinextma",
-  description: "Your only choice for a free movies and tv shows streaming website.",
+  name: "Umbra",
+  description: "Discover movies, TV shows, and anime in one place.",
   favicon: "/favicon.ico",
   navItems: [
     {
@@ -44,6 +45,12 @@ export const siteConfig: SiteConfigType = {
       href: "/discover",
       icon: <IoCompassOutline className="size-full" />,
       activeIcon: <IoCompass className="size-full" />,
+    },
+    {
+      label: "Anime",
+      href: "/anime",
+      icon: <PiFlowerLotusLight className="size-full" />,
+      activeIcon: <PiFlowerLotusFill className="size-full" />,
     },
     {
       label: "Search",
