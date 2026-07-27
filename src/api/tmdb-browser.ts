@@ -1,3 +1,12 @@
+import type {
+  AppendToResponse,
+  AppendToResponseMovieKey,
+  AppendToResponseTvKey,
+  MovieDetails,
+  TvShowDetails,
+  SeasonDetails,
+} from "tmdb-ts";
+
 /**
  * Browser-safe TMDB access.
  *
@@ -49,16 +58,34 @@ export const tmdbBrowser = {
     ) => proxy<T>(`trending/${media}/${window}`, p),
   },
   movies: {
-    popular: <T>(p: { page?: number }) => proxy<T>("movie/popular", p),
-    topRated: <T>(p: { page?: number }) => proxy<T>("movie/top_rated", p),
-    nowPlaying: <T>(p: { page?: number }) => proxy<T>("movie/now_playing", p),
-    upcoming: <T>(p: { page?: number }) => proxy<T>("movie/upcoming", p),
+    popular: <T>(p: { page?: number } = {}) => proxy<T>("movie/popular", p),
+    topRated: <T>(p: { page?: number } = {}) => proxy<T>("movie/top_rated", p),
+    nowPlaying: <T>(p: { page?: number } = {}) => proxy<T>("movie/now_playing", p),
+    upcoming: <T>(p: { page?: number } = {}) => proxy<T>("movie/upcoming", p),
+    /** Mirrors tmdb-ts's `tmdb.movies.details(id, appendToResponse)`. */
+    details: <T extends AppendToResponseMovieKey[] | undefined = undefined>(
+      id: number,
+      appendToResponse?: T,
+    ) =>
+      proxy<AppendToResponse<MovieDetails, T, "movie">>(`movie/${id}`, {
+        append_to_response: appendToResponse?.join(","),
+      }),
   },
   tvShows: {
-    popular: <T>(p: { page?: number }) => proxy<T>("tv/popular", p),
-    topRated: <T>(p: { page?: number }) => proxy<T>("tv/top_rated", p),
-    airingToday: <T>(p: { page?: number }) => proxy<T>("tv/airing_today", p),
-    onTheAir: <T>(p: { page?: number }) => proxy<T>("tv/on_the_air", p),
+    popular: <T>(p: { page?: number } = {}) => proxy<T>("tv/popular", p),
+    topRated: <T>(p: { page?: number } = {}) => proxy<T>("tv/top_rated", p),
+    airingToday: <T>(p: { page?: number } = {}) => proxy<T>("tv/airing_today", p),
+    onTheAir: <T>(p: { page?: number } = {}) => proxy<T>("tv/on_the_air", p),
+    /** Mirrors tmdb-ts's `tmdb.tvShows.details(id, appendToResponse)`. */
+    details: <T extends AppendToResponseTvKey[] | undefined = undefined>(
+      id: number,
+      appendToResponse?: T,
+    ) =>
+      proxy<AppendToResponse<TvShowDetails, T, "tvShow">>(`tv/${id}`, {
+        append_to_response: appendToResponse?.join(","),
+      }),
+    season: (tvId: number, seasonNumber: number) =>
+      proxy<SeasonDetails>(`tv/${tvId}/season/${seasonNumber}`),
   },
   search: {
     multi: <T>(p: { query: string; page?: number }) => proxy<T>("search/multi", p),

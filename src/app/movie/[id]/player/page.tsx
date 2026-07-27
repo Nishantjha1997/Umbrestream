@@ -1,6 +1,6 @@
 "use client";
 
-import { tmdb } from "@/api/tmdb";
+import { tmdbBrowser } from "@/api/tmdb-browser";
 import { getMovieLastPosition } from "@/actions/histories";
 import MoviePlayer from "@/components/sections/Movie/Player/Player";
 import { Params } from "@/types";
@@ -19,7 +19,7 @@ const MoviePlayerPage: NextPage<Params<{ id: number }>> = ({ params }) => {
     isPending,
     error,
   } = useQuery({
-    queryFn: () => tmdb.movies.details(id),
+    queryFn: () => tmdbBrowser.movies.details(id),
     queryKey: ["movie-player-detail", id],
   });
 

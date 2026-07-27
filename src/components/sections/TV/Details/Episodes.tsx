@@ -1,4 +1,4 @@
-import { tmdb } from "@/api/tmdb";
+import { tmdbBrowser } from "@/api/tmdb-browser";
 import useBreakpoints from "@/hooks/useBreakpoints";
 import { cn, formatDate, isEmpty } from "@/utils/helpers";
 import { PlayOutline } from "@/utils/icons";
@@ -32,7 +32,7 @@ const TvShowEpisodesSelection: React.FC<TvShowEpisodesSelectionProps> = ({
   filters: { searchQuery, sortedByName, layout } = {},
 }) => {
   const { data, isPending } = useQuery({
-    queryFn: () => tmdb.tvShows.season(id, seasonNumber),
+    queryFn: () => tmdbBrowser.tvShows.season(id, seasonNumber),
     queryKey: ["tv-show-episodes", id, seasonNumber],
   });
 

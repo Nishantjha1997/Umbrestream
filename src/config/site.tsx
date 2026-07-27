@@ -1,5 +1,6 @@
-import { tmdb } from "@/api/tmdb";
+import { tmdbBrowser } from "@/api/tmdb-browser";
 import { SiteConfigType } from "@/types";
+import { Movie, TV } from "tmdb-ts/dist/types";
 import { BiSearchAlt2, BiSolidSearchAlt2 } from "react-icons/bi";
 import { GoHomeFill, GoHome } from "react-icons/go";
 import { HiComputerDesktop } from "react-icons/hi2";
@@ -12,6 +13,20 @@ import {
   IoMoon,
 } from "react-icons/io5";
 import { TbFolder, TbFolderFilled } from "react-icons/tb";
+
+/**
+ * Matches QueryList<T>["query"]'s return shape. HomeList.tsx calls these
+ * closures from inside a Client Component via react-query, so they must go
+ * through tmdbBrowser (the /api/tmdb proxy) rather than the server-only
+ * tmdb client — that's the whole reason this file used to need a
+ * NEXT_PUBLIC_ token.
+ */
+type PagedResult<T> = {
+  page: number;
+  results: T[];
+  total_results: number;
+  total_pages: number;
+};
 
 export const siteConfig: SiteConfigType = {
   name: "Cinextma",
@@ -67,62 +82,59 @@ export const siteConfig: SiteConfigType = {
     movies: [
       {
         name: "Today's Trending Movies",
-        query: () => tmdb.trending.trending("movie", "day"),
+        query: () => tmdbBrowser.trending.trending<PagedResult<Movie>>("movie", "day"),
         param: "todayTrending",
       },
       {
         name: "This Week's Trending Movies",
-        query: () => tmdb.trending.trending("movie", "week"),
+        query: () => tmdbBrowser.trending.trending<PagedResult<Movie>>("movie", "week"),
         param: "thisWeekTrending",
       },
       {
         name: "Popular Movies",
-        query: () => tmdb.movies.popular(),
+        query: () => tmdbBrowser.movies.popular<PagedResult<Movie>>(),
         param: "popular",
       },
       {
         name: "Now Playing Movies",
-        query: () => tmdb.movies.nowPlaying(),
+        query: () => tmdbBrowser.movies.nowPlaying<PagedResult<Movie>>(),
         param: "nowPlaying",
       },
       {
         name: "Upcoming Movies",
-        query: () => tmdb.movies.upcoming(),
+        query: () => tmdbBrowser.movies.upcoming<PagedResult<Movie>>(),
         param: "upcoming",
       },
       {
         name: "Top Rated Movies",
-        query: () => tmdb.movies.topRated(),
+        query: () => tmdbBrowser.movies.topRated<PagedResult<Movie>>(),
         param: "topRated",
       },
     ],
     tvShows: [
       {
         name: "Today's Trending TV Shows",
-        query: () => tmdb.trending.trending("tv", "day"),
+        query: () => tmdbBrowser.trending.trending<PagedResult<TV>>("tv", "day"),
         param: "todayTrending",
       },
       {
         name: "This Week's Trending TV Shows",
-        query: () => tmdb.trending.trending("tv", "week"),
+        query: () => tmdbBrowser.trending.trending<PagedResult<TV>>("tv", "week"),
         param: "thisWeekTrending",
       },
       {
         name: "Popular TV Shows",
-        // @ts-expect-error: Property 'adult' is missing in type 'PopularTvShowResult' but required in type 'TV'.
-        query: () => tmdb.tvShows.popular(),
+        query: () => tmdbBrowser.tvShows.popular<PagedResult<TV>>(),
         param: "popular",
       },
       {
         name: "On The Air TV Shows",
-        // @ts-expect-error: Property 'adult' is missing in type 'OnTheAirResult' but required in type 'TV'.
-        query: () => tmdb.tvShows.onTheAir(),
+        query: () => tmdbBrowser.tvShows.onTheAir<PagedResult<TV>>(),
         param: "onTheAir",
       },
       {
         name: "Top Rated TV Shows",
-        // @ts-expect-error: Property 'adult' is missing in type 'TopRatedTvShowResult' but required in type 'TV'.
-        query: () => tmdb.tvShows.topRated(),
+        query: () => tmdbBrowser.tvShows.topRated<PagedResult<TV>>(),
         param: "topRated",
       },
     ],
