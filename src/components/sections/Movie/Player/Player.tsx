@@ -15,6 +15,9 @@ const AdsWarning = dynamic(() => import("@/components/ui/overlay/AdsWarning"));
 const MoviePlayerHeader = dynamic(() => import("./Header"));
 const MoviePlayerSourceSelection = dynamic(() => import("./SourceSelection"));
 
+import { useServerHealth } from "@/hooks/useServerHealth";
+import { useEffect } from "react";
+
 interface MoviePlayerProps {
   movie: MovieDetails;
   startAt?: number;
@@ -35,6 +38,19 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, startAt }) => {
     "src",
     parseAsInteger.withDefault(0),
   );
+
+  const healthMap = useServerHealth(players, true);
+
+  // Auto-switch to the first online server if the selected server is detected as offline
+  useEffect(() => {
+    if (healthMap[selectedSource] === "offline") {
+      const firstOnlineIndex = players.findIndex((_, idx) => healthMap[idx] === "online");
+      if (firstOnlineIndex !== -1 && firstOnlineIndex !== selectedSource) {
+        console.info(`Auto-switching from offline server #${selectedSource} to online server #${firstOnlineIndex}`);
+        setSelectedSource(firstOnlineIndex);
+      }
+    }
+  }, [healthMap, selectedSource, players, setSelectedSource]);
 
   usePlayerEvents({ saveHistory: true });
   useDocumentTitle(`Play ${title} | ${siteConfig.name}`);

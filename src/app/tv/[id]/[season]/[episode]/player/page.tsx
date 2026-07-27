@@ -39,7 +39,7 @@ const TvShowPlayerPage: NextPage<Params<{ id: number; season: number; episode: n
     queryKey: ["tv-show-player-start-at", id, season, episode],
   });
 
-  if (isPendingTv || isPendingSeason || isPendingStartAt) {
+  if (isPendingTv || isPendingSeason) {
     return <Spinner size="lg" className="absolute-center" color="warning" variant="simple" />;
   }
 

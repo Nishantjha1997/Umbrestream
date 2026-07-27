@@ -13,6 +13,9 @@ import { useMemo } from "react";
 import type { AniListMediaDetail } from "@/types/anilist";
 import { usePlayerEvents } from "@/hooks/usePlayerEvents";
 
+import { useServerHealth } from "@/hooks/useServerHealth";
+import { useEffect } from "react";
+
 const AdsWarning = dynamic(() => import("@/components/ui/overlay/AdsWarning"));
 const AnimePlayerHeader = dynamic(() => import("./Header"));
 const AnimePlayerSourceSelection = dynamic(() => import("./SourceSelection"));
@@ -38,6 +41,19 @@ const AnimePlayer: React.FC<AnimePlayerProps> = ({ anime, episode, startAt }) =>
     "src",
     parseAsInteger.withDefault(0),
   );
+
+  const healthMap = useServerHealth(players, true);
+
+  // Auto-switch to the first online server if the selected server is detected as offline
+  useEffect(() => {
+    if (healthMap[selectedSource] === "offline") {
+      const firstOnlineIndex = players.findIndex((_, idx) => healthMap[idx] === "online");
+      if (firstOnlineIndex !== -1 && firstOnlineIndex !== selectedSource) {
+        console.info(`Auto-switching Anime player from offline server #${selectedSource} to online server #${firstOnlineIndex}`);
+        setSelectedSource(firstOnlineIndex);
+      }
+    }
+  }, [healthMap, selectedSource, players, setSelectedSource]);
 
   usePlayerEvents({ saveHistory: true });
   useDocumentTitle(`Play ${animeTitle} - Ep ${episode} | ${siteConfig.name}`);

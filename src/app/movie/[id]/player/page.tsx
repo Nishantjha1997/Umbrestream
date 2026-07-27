@@ -28,7 +28,7 @@ const MoviePlayerPage: NextPage<Params<{ id: number }>> = ({ params }) => {
     queryKey: ["movie-player-start-at", id],
   });
 
-  if (isPending || isPendingStartAt) {
+  if (isPending) {
     return <Spinner size="lg" className="absolute-center" variant="simple" />;
   }
 
