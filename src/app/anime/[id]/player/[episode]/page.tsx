@@ -57,9 +57,6 @@ const AnimePlayerPage: NextPage<Params<{ id: number; episode: number }>> = ({ pa
   const episodeNumber = Number(episode);
   if (!Number.isFinite(episodeNumber) || episodeNumber < 1) notFound();
 
-  const episodeCount = anime.episodes;
-  if (episodeCount && episodeNumber > episodeCount) notFound();
-
   return <AnimePlayer anime={anime} episode={episodeNumber} />;
 };
 

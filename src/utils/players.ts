@@ -1,6 +1,14 @@
 import { PlayersProps } from "@/types";
 
 /**
+ * Helper to construct clean startAt query parameters.
+ * Prevents invalid/empty `&startAt=` parameters from breaking player embed scripts.
+ */
+const getStartAtParam = (startAt?: number): string => {
+  return startAt && startAt > 0 ? `&startAt=${Math.floor(startAt)}` : "";
+};
+
+/**
  * Generates a list of movie players with their respective titles and source URLs.
  * Priority order matches ARISE top-performing servers: VidLink -> VidKing -> Embed.su -> AutoEmbed -> VidSrc.
  *
@@ -9,10 +17,12 @@ import { PlayersProps } from "@/types";
  * @returns {PlayersProps[]} - An array of player objects.
  */
 export const getMoviePlayers = (id: string | number, startAt?: number): PlayersProps[] => {
+  const startParam = getStartAtParam(startAt);
+
   return [
     {
       title: "VidLink",
-      source: `https://vidlink.pro/movie/${id}?player=jw&primaryColor=006fee&secondaryColor=a2a2a2&iconColor=eefdec&autoplay=false&startAt=${startAt || ""}`,
+      source: `https://vidlink.pro/movie/${id}?player=jw&primaryColor=006fee&secondaryColor=a2a2a2&iconColor=eefdec&autoplay=false${startParam}`,
       recommended: true,
       fast: true,
       ads: true,
@@ -20,7 +30,7 @@ export const getMoviePlayers = (id: string | number, startAt?: number): PlayersP
     },
     {
       title: "VidLink 2",
-      source: `https://vidlink.pro/movie/${id}?primaryColor=006fee&autoplay=false&startAt=${startAt || ""}`,
+      source: `https://vidlink.pro/movie/${id}?primaryColor=006fee&autoplay=false${startParam}`,
       recommended: true,
       fast: true,
       ads: true,
@@ -119,10 +129,12 @@ export const getTvShowPlayers = (
   episode: number,
   startAt?: number,
 ): PlayersProps[] => {
+  const startParam = getStartAtParam(startAt);
+
   return [
     {
       title: "VidLink",
-      source: `https://vidlink.pro/tv/${id}/${season}/${episode}?player=jw&primaryColor=f5a524&secondaryColor=a2a2a2&iconColor=eefdec&autoplay=false&startAt=${startAt || ""}`,
+      source: `https://vidlink.pro/tv/${id}/${season}/${episode}?player=jw&primaryColor=f5a524&secondaryColor=a2a2a2&iconColor=eefdec&autoplay=false${startParam}`,
       recommended: true,
       fast: true,
       ads: true,
@@ -130,7 +142,7 @@ export const getTvShowPlayers = (
     },
     {
       title: "VidLink 2",
-      source: `https://vidlink.pro/tv/${id}/${season}/${episode}?primaryColor=f5a524&autoplay=false&startAt=${startAt || ""}`,
+      source: `https://vidlink.pro/tv/${id}/${season}/${episode}?primaryColor=f5a524&autoplay=false${startParam}`,
       recommended: true,
       fast: true,
       ads: true,
@@ -227,10 +239,12 @@ export const getAnimePlayers = (
   episode: number,
   startAt?: number,
 ): PlayersProps[] => {
+  const startParam = getStartAtParam(startAt);
+
   return [
     {
       title: "VidLink Anime",
-      source: `https://vidlink.pro/anime/${id}/${episode}?primaryColor=8b5cf6&secondaryColor=a2a2a2&iconColor=eefdec&autoplay=false&startAt=${startAt || ""}`,
+      source: `https://vidlink.pro/anime/${id}/${episode}?primaryColor=8b5cf6&secondaryColor=a2a2a2&iconColor=eefdec&autoplay=false${startParam}`,
       recommended: true,
       fast: true,
       ads: true,

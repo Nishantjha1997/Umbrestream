@@ -49,19 +49,13 @@ const TvShowPlayerPage: NextPage<Params<{ id: number; season: number; episode: n
 
   if (!EPISODE || errorTv || errorSeason) notFound();
 
-  const isNotReleased = new Date(EPISODE.air_date) > new Date();
-
-  if (isNotReleased) notFound();
-
   const currentEpisodeIndex = seasonDetail.episodes.findIndex(
     (e) => e.episode_number === EPISODE.episode_number,
   );
 
   const nextEpisodeNumber =
     currentEpisodeIndex < seasonDetail.episodes.length - 1
-      ? new Date(seasonDetail.episodes[currentEpisodeIndex + 1].air_date) > new Date()
-        ? null
-        : seasonDetail.episodes[currentEpisodeIndex + 1].episode_number
+      ? seasonDetail.episodes[currentEpisodeIndex + 1].episode_number
       : null;
 
   const prevEpisodeNumber =

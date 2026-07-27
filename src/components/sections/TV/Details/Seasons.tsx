@@ -28,13 +28,17 @@ interface Props {
 }
 
 const TvShowsSeasonsSelection = forwardRef<HTMLElement, Props>(({ id, seasons }, ref) => {
-  const FILTERED_SEASONS = useMemo(() => seasons.filter((s) => s.season_number > 0), [seasons]);
+  const DISPLAY_SEASONS = useMemo(() => {
+    const regular = seasons.filter((s) => s.season_number > 0);
+    return regular.length > 0 ? regular : seasons;
+  }, [seasons]);
+
   const [sortedByName, { toggle, close }] = useDisclosure(false);
   const [search, setSearch] = useState("");
   const [searchQuery] = useDebouncedValue(search, 300);
   const [layout, setLayout] = useState<"list" | "grid">("list");
   const [seasonNumber, setSeasonNumber] = useState(() =>
-    FILTERED_SEASONS[0].season_number.toString(),
+    DISPLAY_SEASONS[0]?.season_number?.toString() || "1",
   );
 
   return (
@@ -53,7 +57,7 @@ const TvShowsSeasonsSelection = forwardRef<HTMLElement, Props>(({ id, seasons },
               setSeasonNumber(e.target.value);
             }}
           >
-            {FILTERED_SEASONS.map(({ season_number, name }) => (
+            {DISPLAY_SEASONS.map(({ season_number, name }) => (
               <SelectItem key={season_number.toString()}>{name}</SelectItem>
             ))}
           </Select>
