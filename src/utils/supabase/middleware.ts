@@ -1,13 +1,9 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { env } from "../env";
+import { isSupabaseConfigured } from "./config";
 
 const PROTECTED_PATHS = env.PROTECTED_PATHS?.split(",").filter(Boolean) ?? [];
-
-/** `createServerClient` throws outright on empty credentials. */
-const isSupabaseConfigured = Boolean(
-  env.NEXT_PUBLIC_SUPABASE_URL && env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
-);
 
 export async function updateSession(request: NextRequest) {
   const supabaseResponse = NextResponse.next({ request });

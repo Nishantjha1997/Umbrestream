@@ -11,14 +11,22 @@ export const metadata: Metadata = {
 };
 
 const getUser = cache(async () => {
-  const supabase = await createClient();
+  // This runs during prerender, so an unconfigured or unreachable Supabase must
+  // resolve to "not signed in" — the page already renders UnauthorizedNotice for
+  // that case. Letting it throw fails the whole build instead.
+  try {
+    const supabase = await createClient();
 
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
 
-  return { user, error };
+    return { user, error };
+  } catch (error) {
+    console.error("[library] Could not resolve user:", error);
+    return { user: null, error };
+  }
 });
 
 const LibraryPage: NextPage = async () => {

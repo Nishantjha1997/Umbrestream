@@ -1,7 +1,6 @@
 "use client";
 
 import { Google } from "@/utils/icons";
-import { createClient } from "@/utils/supabase/client";
 import { addToast, Button } from "@heroui/react";
 import { useCallback } from "react";
 
@@ -10,7 +9,9 @@ type GoogleLoginButtonProps = Omit<
   "children" | "startContent" | "onPress"
 >;
 
-const supabase = createClient();
+// NOTE: no module-scope createClient() here. Doing so runs at import time,
+// which is exactly how a missing env var became a page-wide hydration crash.
+// Create the client inside the handler if/when OAuth is re-enabled.
 
 const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({ variant = "faded", ...props }) => {
   const handleGoogleLogin = useCallback(async () => {
