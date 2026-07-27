@@ -16,12 +16,12 @@ export async function generateMetadata(props: {
   params: Promise<{ mediaType: string; id: string }>;
 }) {
   const { mediaType, id } = await props.params;
-  if (!isTmdbConfigured() || !isDetailMediaType(mediaType)) return { title: "Cineboard" };
+  if (!isTmdbConfigured() || !isDetailMediaType(mediaType)) return { title: "Umbra" };
 
   const detail = await fetchTitleDetail(mediaType, Number(id));
   return detail
-    ? { title: `${detail.title} — Cineboard`, description: detail.overview.slice(0, 160) }
-    : { title: "Not found — Cineboard" };
+    ? { title: `${detail.title} — Umbra`, description: detail.overview.slice(0, 160) }
+    : { title: "Not found — Umbra" };
 }
 
 export default async function TitlePage(props: {

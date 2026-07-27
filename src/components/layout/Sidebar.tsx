@@ -24,7 +24,7 @@ export function Sidebar() {
     <aside className="sticky top-0 hidden h-dvh w-56 shrink-0 flex-col border-r border-[var(--color-border)] bg-[var(--color-bg)] md:flex">
       <Link href="/" className="flex h-16 items-center px-5 text-xl font-bold tracking-tight">
         <span className="text-[var(--color-accent)]">◆</span>
-        <span className="ml-2">Cineboard</span>
+        <span className="ml-2">Umbra</span>
       </Link>
 
       <nav className="flex-1 overflow-y-auto px-3 pb-6">

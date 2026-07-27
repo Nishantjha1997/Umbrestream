@@ -10,7 +10,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Cineboard",
+  title: "Umbra",
   description: "Browse movies, TV and anime.",
 };
 

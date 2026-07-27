@@ -1,7 +1,27 @@
-# Cineboard — Build Plan
+# Umbra — Build Plan
 
 **Scope:** Personal hobby project. TMDB metadata, AMOLED UI, local-first, not publicly hosted.
-**Repo root:** this directory.
+**Project name:** Umbra
+**Repo root:** this directory — `My Web Sites/umbra/`
+
+## Where everything lives
+
+```
+My Web Sites/                    <- workspace, NOT the repo
+├── umbra/                       <- THE PROJECT. git repo root. all work happens here.
+│   ├── PROJECT_PLAN.md          <- this file
+│   ├── CONTRIBUTING.md          <- git workflow + known environment faults
+│   ├── src/ scripts/ public/
+│   └── .git/
+└── _reference_do_not_ship/      <- HTTrack mirror of a third party's site.
+                                    Visual reference only. Outside the repo on
+                                    purpose so `git add -A` can never catch it.
+                                    Do not copy code or CSS out of it, and never
+                                    move it inside umbra/.
+```
+
+Anything you create for this project goes under `umbra/`. Nothing is written to
+the workspace root.
 **Audience:** Implementing engineers and coding agents (Codex, Claude subagents).
 **Last updated:** 2026-07-27
 
@@ -39,7 +59,7 @@ the bundled docs. Don't migrate it to `use cache` unless you also enable
 Scaffolded, typechecked, and committed to disk:
 
 ```
-cineboard/
+umbra/
 ├── src/
 │   ├── app/
 │   │   ├── layout.tsx              # Sidebar shell, Inter, AMOLED viewport

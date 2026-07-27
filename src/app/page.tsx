@@ -65,7 +65,7 @@ export default async function HomePage() {
 function Shell({ children }: { children: React.ReactNode }) {
   return (
     <div className="mx-auto max-w-2xl px-6 py-24">
-      <h1 className="mb-4 text-2xl font-bold tracking-tight">Cineboard</h1>
+      <h1 className="mb-4 text-2xl font-bold tracking-tight">Umbra</h1>
       {children}
     </div>
   );
