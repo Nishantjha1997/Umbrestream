@@ -12,7 +12,8 @@ import { useInViewport } from "@mantine/hooks";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { notFound } from "next/navigation";
 import { useEffect } from "react";
-import TvShowPosterCard from "../TV/Cards/Poster";
+import PosterCard from "@/components/media/PosterCard";
+import { fromTvShow } from "@/utils/normalize-media";
 
 const TvShowDiscoverList = () => {
   const { ref, inViewport } = useInViewport();
@@ -44,7 +45,7 @@ const TvShowDiscoverList = () => {
       <div className="flex flex-col items-center justify-center gap-10">
         <div className="movie-grid">
           <Loop count={20} prefix="SkeletonDiscoverPosterCard">
-            <PosterCardSkeleton variant="bordered" />
+            <PosterCardSkeleton />
           </Loop>
         </div>
       </div>
@@ -56,7 +57,7 @@ const TvShowDiscoverList = () => {
       <div className="movie-grid">
         {data.pages.map((page) => {
           return page.results.map((tv) => {
-            return <TvShowPosterCard key={tv.id} tv={tv} variant="bordered" />;
+            return <PosterCard key={tv.id} media={fromTvShow(tv)} variant="grid" />;
           });
         })}
       </div>

@@ -9,7 +9,7 @@ import { Suspense, use } from "react";
 import dynamic from "next/dynamic";
 import { NextPage } from "next";
 
-const BackdropSection = dynamic(() => import("@/components/sections/Anime/Detail/Backdrop"));
+const MediaBackdrop = dynamic(() => import("@/components/media/MediaBackdrop"));
 const OverviewSection = dynamic(() => import("@/components/sections/Anime/Detail/Overview"));
 const StudiosSection = dynamic(() => import("@/components/sections/Anime/Detail/Studios"));
 const RelatedSection = dynamic(() => import("@/components/sections/Anime/Detail/Related"));
@@ -64,7 +64,20 @@ const AnimeDetailPage: NextPage<Params<{ id: number }>> = ({ params }) => {
         }
       >
         <div className="flex flex-col gap-10">
-          <BackdropSection anime={anime} />
+          {/* AniList has no wordmark art, so `logoUrl` is deliberately omitted —
+              the anime title is rendered by the Overview section below. Banner
+              art is optional too; falling back to the cover, then to a block
+              tinted with the cover's dominant colour. */}
+          <MediaBackdrop
+            alt={anime.title.english ?? anime.title.romaji ?? anime.title.native ?? "Untitled"}
+            backdropUrl={
+              anime.bannerImage ??
+              anime.coverImage.extraLarge ??
+              anime.coverImage.large ??
+              undefined
+            }
+            fallbackColor={anime.coverImage.color ?? undefined}
+          />
           <OverviewSection anime={anime} />
           <AnimeEpisodesSelection anime={anime} />
           <StudiosSection studios={anime.studios} />

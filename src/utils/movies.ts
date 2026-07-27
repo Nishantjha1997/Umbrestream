@@ -120,6 +120,26 @@ export const getImageUrl = (
   return path ? `https://image.tmdb.org/t/p/${size}/${path}` : fallback;
 };
 
+/** Minimal structural shape of a TMDB `images.logos` entry. */
+type TmdbLogo = { iso_639_1: string | null; file_path: string };
+
+/**
+ * Resolves TMDB's English wordmark art to an absolute URL, or `undefined` when
+ * the title has none.
+ *
+ * Both TMDB detail backdrops need this and neither should be reaching into
+ * `images.logos` inline. AniList exposes no equivalent, so the anime call site
+ * simply omits the logo.
+ *
+ * @param logos The `images.logos` array from an `AppendToResponse<…, "images">`.
+ * @returns An absolute image URL, or `undefined` if there is no English logo.
+ */
+export const getEnglishLogoUrl = (logos?: readonly TmdbLogo[]): string | undefined => {
+  const path = logos?.find((logo) => logo.iso_639_1 === "en")?.file_path;
+  if (!path) return undefined;
+  return getImageUrl(path, "title") || undefined;
+};
+
 /**
  * Returns the title of a movie in the given language. If the movie is in the given language, the original title is used.
  * Otherwise, the title is used. If the movie is not provided, an empty string is returned.

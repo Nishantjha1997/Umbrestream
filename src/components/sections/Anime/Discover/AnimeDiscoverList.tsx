@@ -6,7 +6,8 @@ import { useInViewport } from "@mantine/hooks";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { notFound, useSearchParams } from "next/navigation";
 import { memo, useEffect } from "react";
-import AnimePosterCard from "../Cards/Poster";
+import PosterCard from "@/components/media/PosterCard";
+import { fromAnime } from "@/utils/normalize-media";
 import { anilistApi, currentAniListSeason } from "@/api/anilist";
 import Loop from "@/components/ui/other/Loop";
 import PosterCardSkeleton from "@/components/ui/other/PosterCardSkeleton";
@@ -70,7 +71,7 @@ const AnimeDiscoverList = () => {
         <SectionTitle color="secondary">{title}</SectionTitle>
         <div className="movie-grid">
           <Loop count={24} prefix="SkeletonDiscoverAnimePosterCard">
-            <PosterCardSkeleton variant="bordered" />
+            <PosterCardSkeleton />
           </Loop>
         </div>
       </div>
@@ -83,7 +84,7 @@ const AnimeDiscoverList = () => {
       <div className="movie-grid">
         {data.pages.map((page) => {
           return page.media.map((anime) => {
-            return <AnimePosterCard key={anime.id} anime={anime} variant="bordered" />;
+            return <PosterCard key={anime.id} media={fromAnime(anime)} variant="grid" />;
           });
         })}
       </div>

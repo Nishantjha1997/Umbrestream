@@ -1,18 +1,21 @@
 "use client";
 
-import { Image, Chip, Button } from "@heroui/react";
+import { Image, Button } from "@heroui/react";
 import { useDocumentTitle } from "@mantine/hooks";
+import { useState } from "react";
 import { siteConfig } from "@/config/site";
-import { FaCirclePlay } from "react-icons/fa6";
 import Rating from "@/components/ui/other/Rating";
-import SectionTitle from "@/components/ui/other/SectionTitle";
 import AnimeGenres from "@/components/sections/Anime/Detail/Genres";
-import { Calendar, Clock, List, Youtube } from "@/utils/icons";
+import { PlayFilled, Youtube } from "@/utils/icons";
 import Link from "next/link";
 import { intervalToDuration } from "date-fns";
+import { cn } from "@/utils/helpers";
 import { AniListFormat, AniListMediaDetail, AniListStatus } from "@/types/anilist";
 
 const FALLBACK_POSTER = "https://dancyflix.com/placeholder.png";
+
+/** Past this many characters the synopsis is clamped behind a More/Less toggle. */
+const SYNOPSIS_CLAMP_THRESHOLD = 420;
 
 const FORMAT_LABELS: Record<AniListFormat, string> = {
   TV: "TV",
@@ -61,11 +64,25 @@ const cleanDescription = (html: string): string =>
     .replace(/&amp;/g, "&")
     .trim();
 
+/**
+ * One metadata line, rendered as a real list so the separators are CSS
+ * pseudo-elements rather than flex children. Bullets can therefore never wrap
+ * onto a line of their own, and the row degrades to a plain list if CSS
+ * (or `::before` content) is unavailable.
+ */
+const MetaItem: React.FC<React.PropsWithChildren> = ({ children }) => (
+  <li className="flex items-center before:mr-2 before:text-default-600 before:content-['•'] first:before:content-none">
+    {children}
+  </li>
+);
+
 interface AnimeOverviewSectionProps {
   anime: AniListMediaDetail;
 }
 
 const AnimeOverviewSection: React.FC<AnimeOverviewSectionProps> = ({ anime }) => {
+  const [expanded, setExpanded] = useState(false);
+
   const primaryTitle =
     anime.title.english ?? anime.title.romaji ?? anime.title.native ?? "Untitled";
   const altTitles = Array.from(
@@ -76,7 +93,10 @@ const AnimeOverviewSection: React.FC<AnimeOverviewSectionProps> = ({ anime }) =>
     ),
   );
   const posterImage =
-    anime.coverImage.extraLarge ?? anime.coverImage.large ?? anime.coverImage.medium ?? FALLBACK_POSTER;
+    anime.coverImage.extraLarge ??
+    anime.coverImage.large ??
+    anime.coverImage.medium ??
+    FALLBACK_POSTER;
 
   const seasonYearLabel =
     anime.season && anime.seasonYear
@@ -87,126 +107,128 @@ const AnimeOverviewSection: React.FC<AnimeOverviewSectionProps> = ({ anime }) =>
           ? `${anime.startDate.year}`
           : null;
 
+  // Deliberately text-only and icon-free: the metadata line is secondary to the
+  // artwork and the title, and icons turn it back into a dense IMDb-style strip.
+  const facts: string[] = [];
+  if (anime.format) facts.push(FORMAT_LABELS[anime.format]);
+  if (seasonYearLabel) facts.push(seasonYearLabel);
+  if (anime.episodes != null) {
+    facts.push(`${anime.episodes} episode${anime.episodes === 1 ? "" : "s"}`);
+  }
+  if (anime.duration != null) facts.push(`${anime.duration} min`);
+  if (anime.status) facts.push(STATUS_LABELS[anime.status]);
+
+  const synopsis = anime.description ? cleanDescription(anime.description) : "";
+  const isLongSynopsis = synopsis.length > SYNOPSIS_CLAMP_THRESHOLD;
+  const isMovie = anime.format === "MOVIE";
+
+  // NOTE: a presentational child shouldn't own the document title (§8). Moving
+  // this to route metadata means editing `src/app/anime/[id]/page.tsx`, which is
+  // owned by another agent, so the call stays here for now.
   useDocumentTitle(`${primaryTitle} | ${siteConfig.name}`);
 
   return (
     <section id="overview" className="relative z-3 flex flex-col gap-8 pt-[20vh] md:pt-[40vh]">
-      <div className="md:grid md:grid-cols-[auto_1fr] md:gap-6">
+      <div className="flex flex-col gap-6 md:grid md:grid-cols-[auto_1fr] md:gap-8">
         <Image
-          isBlurred
-          shadow="md"
+          radius="none"
           alt={primaryTitle}
           classNames={{
-            wrapper: "w-52 max-h-min aspect-2/3 hidden md:block",
+            wrapper:
+              "hidden aspect-2/3 max-h-min w-52 overflow-hidden rounded-(--radius-card) shadow-(--elevation-lift) md:block",
           }}
           className="object-cover object-center"
           src={posterImage}
         />
 
-        <div className="flex flex-col gap-8">
-          <div id="title" className="flex flex-col gap-1 md:gap-2">
-            <div className="flex gap-3">
-              <Chip
-                color="secondary"
-                variant="faded"
-                className="md:text-md text-xs"
-                classNames={{ content: "font-bold" }}
-              >
-                Anime
-              </Chip>
+        <div className="flex flex-col gap-6 md:gap-7">
+          <header id="title" className="flex flex-col gap-3">
+            <div className="flex items-center gap-2 text-[11px] font-semibold tracking-[0.16em] text-default-500 uppercase">
+              <span>Anime</span>
               {anime.isAdult && (
-                <Chip color="danger" variant="faded">
+                <span className="rounded-full border border-danger-400/40 px-2 py-0.5 text-danger-400">
                   18+
-                </Chip>
+                </span>
               )}
             </div>
-            <h2 className="text-2xl font-black md:text-4xl">{primaryTitle}</h2>
+
+            <h1 className="text-3xl font-semibold tracking-tight text-balance md:text-5xl">
+              {primaryTitle}
+            </h1>
+
             {altTitles.length > 0 && (
-              <p className="text-default-500 text-xs md:text-sm">{altTitles.join(" · ")}</p>
+              <p className="text-xs text-default-500 md:text-sm">{altTitles.join(" · ")}</p>
             )}
-            <div className="md:text-md flex flex-wrap items-center gap-1 text-xs md:gap-2">
-              {anime.format && (
-                <>
-                  <span>{FORMAT_LABELS[anime.format]}</span>
-                  <p>&#8226;</p>
-                </>
+
+            <ul className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-default-400 md:text-sm">
+              {facts.map((fact) => (
+                <MetaItem key={fact}>{fact}</MetaItem>
+              ))}
+              {anime.averageScore != null && (
+                <MetaItem>
+                  <Rating rate={anime.averageScore / 10} />
+                </MetaItem>
               )}
-              {anime.status && (
-                <>
-                  <span>{STATUS_LABELS[anime.status]}</span>
-                  <p>&#8226;</p>
-                </>
-              )}
-              {anime.episodes != null && (
-                <>
-                  <div className="flex items-center gap-1">
-                    <List />
-                    <span>
-                      {anime.episodes} Episode{anime.episodes > 1 ? "s" : ""}
-                    </span>
-                  </div>
-                  <p>&#8226;</p>
-                </>
-              )}
-              {anime.duration != null && (
-                <>
-                  <div className="flex items-center gap-1">
-                    <Clock />
-                    <span>{anime.duration} min</span>
-                  </div>
-                  <p>&#8226;</p>
-                </>
-              )}
-              {seasonYearLabel && (
-                <>
-                  <div className="flex items-center gap-1">
-                    <Calendar />
-                    <span>{seasonYearLabel}</span>
-                  </div>
-                  <p>&#8226;</p>
-                </>
-              )}
-              <Rating rate={(anime.averageScore ?? 0) / 10} />
-            </div>
+            </ul>
+
             {anime.status === "RELEASING" && anime.nextAiringEpisode && (
-              <p className="text-xs text-secondary-500 md:text-sm">
+              <p className="text-xs text-default-500 md:text-sm">
                 Episode {anime.nextAiringEpisode.episode} airs{" "}
                 {formatTimeUntil(anime.nextAiringEpisode.timeUntilAiring)}
               </p>
             )}
-            <AnimeGenres genres={anime.genres} />
-          </div>
+          </header>
 
-          <div id="action" className="flex w-full flex-wrap gap-2">
+          {/* One dominant action. A flat, high-contrast pill rather than
+              `variant="shadow"`, which emits a coloured glow (§9). */}
+          <div id="action" className="flex w-full flex-wrap items-center gap-3">
             <Button
               as={Link}
+              size="lg"
+              radius="full"
               href={`/anime/${anime.id}/player/1`}
-              color="secondary"
-              variant="shadow"
-              startContent={<FaCirclePlay size={22} />}
+              className="bg-foreground px-7 font-semibold text-background transition-transform duration-(--duration-fast) ease-(--ease-out-quint) hover:scale-[1.02] active:scale-[0.98] motion-reduce:transition-none motion-reduce:hover:scale-100"
+              startContent={<PlayFilled size={15} />}
             >
-              Play Episode 1
+              {isMovie ? "Play" : "Play Episode 1"}
             </Button>
             {anime.trailer?.site === "youtube" && (
               <Button
                 as="a"
+                size="lg"
+                radius="full"
+                variant="bordered"
                 href={`https://www.youtube.com/watch?v=${anime.trailer.id}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                color="danger"
-                variant="shadow"
-                startContent={<Youtube size={22} />}
+                className="border-default-300/50 font-medium text-foreground transition-colors duration-(--duration-fast) ease-(--ease-out-quint) hover:border-default-400 motion-reduce:transition-none"
+                startContent={<Youtube size={18} />}
               >
                 Trailer
               </Button>
             )}
           </div>
 
-          <div id="story" className="flex flex-col gap-2">
-            <SectionTitle color="secondary">Story Line</SectionTitle>
-            <p className="whitespace-pre-line text-sm">
-              {anime.description ? cleanDescription(anime.description) : "No synopsis available."}
+          <div id="story" className="flex flex-col gap-3">
+            <p
+              className={cn(
+                "max-w-[68ch] text-sm leading-relaxed whitespace-pre-line text-default-500 md:text-base",
+                isLongSynopsis && !expanded && "line-clamp-4",
+              )}
+            >
+              {synopsis || "No synopsis available."}
             </p>
+            {isLongSynopsis && (
+              <button
+                type="button"
+                aria-expanded={expanded}
+                onClick={() => setExpanded((value) => !value)}
+                className="w-fit rounded-full text-xs font-semibold tracking-wide text-default-400 uppercase transition-colors duration-(--duration-fast) ease-(--ease-out-quint) hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground motion-reduce:transition-none"
+              >
+                {expanded ? "Show less" : "Show more"}
+              </button>
+            )}
+            <AnimeGenres genres={anime.genres} />
           </div>
         </div>
       </div>

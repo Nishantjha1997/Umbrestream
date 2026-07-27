@@ -12,15 +12,47 @@ import { addToast, Button, Select, SelectItem, Spinner } from "@heroui/react";
 import { useDisclosure, useInViewport } from "@mantine/hooks";
 import { useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { Suspense, useEffect, useMemo, useState, useTransition } from "react";
-import MoviePosterCard from "../Movie/Cards/Poster";
-import TvShowPosterCard from "../TV/Cards/Poster";
-import AnimePosterCard from "../Anime/Cards/Poster";
-import { getLoadingLabel } from "@/utils/movies";
+import PosterCard from "@/components/media/PosterCard";
+import type { MediaSummary } from "@/types/media";
+import { getImageUrl, getLoadingLabel } from "@/utils/movies";
 import { ITEMS_PER_PAGE } from "@/utils/constants";
 import ConfirmationModal from "@/components/ui/overlay/ConfirmationModal";
 
 type SortOption = "title" | "release_date" | "vote_average" | "created_at";
 type FilterType = "movie" | "tv" | "anime" | "all";
+
+/**
+ * A watchlist row is already flat — it is this app's own denormalized copy of
+ * a TMDB/AniList record, not a source payload — so it maps straight onto
+ * MediaSummary. This replaces three blocks that faked a `Movie`/`TV`/
+ * `AniListMediaSummary` object (two of them behind `@ts-expect-error`) purely
+ * to satisfy the old per-type card components.
+ */
+const toMediaSummary = (item: {
+  id: number;
+  type: "movie" | "tv" | "anime";
+  title: string;
+  adult: boolean;
+  poster_path?: string | null;
+  backdrop_path: string;
+  release_date: string;
+  vote_average: number;
+}): MediaSummary => {
+  const year = Number.parseInt(String(item.release_date ?? "").slice(0, 4), 10);
+  return {
+    kind: item.type,
+    id: item.id,
+    href: `/${item.type}/${item.id}`,
+    title: item.title,
+    // getImageUrl passes absolute URLs through, so AniList covers stored in
+    // this column survive alongside TMDB's relative paths.
+    posterUrl: getImageUrl(item.poster_path ?? undefined, "poster"),
+    backdropUrl: item.backdrop_path ? getImageUrl(item.backdrop_path, "backdrop") : undefined,
+    year: Number.isFinite(year) ? year : undefined,
+    rating: item.vote_average,
+    isAdult: Boolean(item.adult),
+  };
+};
 
 const SORT_OPTIONS: { key: SortOption; label: string }[] = [
   { key: "title", label: "Title" },
@@ -177,68 +209,11 @@ const LibraryList = () => {
         ) : hasItems ? (
           <>
             <div className="movie-grid">
-              {sortedWatchlist.map((data) => {
-                if (data.type === "tv") {
-                  return (
-                    <Suspense key={`tv-${data.id}`}>
-                      <TvShowPosterCard
-                        variant="bordered"
-                        // @ts-expect-error: Type conversion for compatibility
-                        tv={{
-                          adult: data.adult,
-                          backdrop_path: data.backdrop_path,
-                          first_air_date: data.release_date,
-                          id: data.id,
-                          name: data.title,
-                          poster_path: data.poster_path || "",
-                          vote_average: data.vote_average,
-                        }}
-                      />
-                    </Suspense>
-                  );
-                }
-                if (data.type === "anime") {
-                  return (
-                    <Suspense key={`anime-${data.id}`}>
-                      <AnimePosterCard
-                        variant="bordered"
-                        anime={{
-                          id: data.id,
-                          title: { english: data.title, romaji: data.title, native: data.title },
-                          coverImage: {
-                            extraLarge: data.poster_path || "",
-                            large: data.poster_path || "",
-                            medium: data.poster_path || "",
-                            color: null,
-                          },
-                          format: null,
-                          episodes: null,
-                          averageScore: data.vote_average * 10,
-                          seasonYear: null,
-                          isAdult: data.adult,
-                        }}
-                      />
-                    </Suspense>
-                  );
-                }
-                return (
-                  <Suspense key={`movie-${data.id}`}>
-                    <MoviePosterCard
-                      variant="bordered"
-                      // @ts-expect-error: Type conversion for compatibility
-                      movie={{
-                        adult: data.adult,
-                        backdrop_path: data.backdrop_path,
-                        id: data.id,
-                        poster_path: data.poster_path || "",
-                        release_date: data.release_date,
-                        title: data.title,
-                        vote_average: data.vote_average,
-                      }}
-                    />
-                  </Suspense>
-                );
-              })}
+              {sortedWatchlist.map((item) => (
+                <Suspense key={`${item.type}-${item.id}`}>
+                  <PosterCard media={toMediaSummary(item)} variant="grid" />
+                </Suspense>
+              ))}
             </div>
             <div ref={ref} className="flex h-24 items-center justify-center">
               {isFetchingNextPage && (

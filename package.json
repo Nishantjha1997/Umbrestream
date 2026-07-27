@@ -20,6 +20,7 @@
   "dependencies": {
     "@bprogress/next": "^3.2.12",
     "@ducanh2912/next-pwa": "^10.2.9",
+    "@fontsource-variable/inter": "^5.3.0",
     "@heroui/react": "^2.8.3",
     "@hookform/resolvers": "^5.2.1",
     "@mantine/hooks": "^8.2.4",

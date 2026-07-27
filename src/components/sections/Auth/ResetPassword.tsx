@@ -1,34 +1,51 @@
 import { resetPassword } from "@/actions/auth";
 import PasswordInput from "@/components/ui/input/PasswordInput";
 import { ResetPasswordFormSchema } from "@/schemas/auth";
+import type { AuthFieldErrors } from "@/schemas/auth";
 import { CAPTCHA_SITE_KEY, isCaptchaEnabled } from "@/utils/captcha";
 import { isEmpty } from "@/utils/helpers";
 import { LockPassword } from "@/utils/icons";
 import { useRouter } from "@bprogress/next/app";
-import { addToast, Button } from "@heroui/react";
+import { Button } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Turnstile } from "@marsidev/react-turnstile";
 import { useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
+import FormAlert from "./FormAlert";
+
+const RESET_FIELDS = ["password", "confirm"] as const;
 
 const AuthResetPasswordForm: React.FC = () => {
   const router = useRouter();
   const [isVerifying, setIsVerifying] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const {
     watch,
     register,
     setValue,
+    setError,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(ResetPasswordFormSchema),
-    mode: "onChange",
+    mode: "onTouched",
     defaultValues: {
       password: "",
       confirm: "",
     },
   });
+
+  const applyFieldErrors = useCallback(
+    (fieldErrors?: AuthFieldErrors) => {
+      if (!fieldErrors) return;
+      for (const field of RESET_FIELDS) {
+        const message = fieldErrors[field];
+        if (message) setError(field, { type: "server", message });
+      }
+    },
+    [setError],
+  );
 
   const onSubmit = handleSubmit(async (data) => {
     if (isCaptchaEnabled && isEmpty(data.captchaToken)) {
@@ -36,14 +53,13 @@ const AuthResetPasswordForm: React.FC = () => {
       return;
     }
 
-    const { success, message } = await resetPassword(data);
+    setFormError(null);
 
-    addToast({
-      title: message,
-      color: success ? "success" : "danger",
-    });
+    const { success, message, fieldErrors } = await resetPassword(data);
 
     if (!success) {
+      applyFieldErrors(fieldErrors);
+      setFormError(message ?? "Something went wrong. Please try again.");
       setValue("captchaToken", undefined);
       setIsVerifying(false);
       return;
@@ -67,12 +83,16 @@ const AuthResetPasswordForm: React.FC = () => {
     return "Reset Password";
   }, [isSubmitting, isVerifying]);
 
+  const isBusy = isSubmitting || isVerifying;
+
   return (
     <form className="flex flex-col gap-3" onSubmit={onSubmit}>
-      <p className="text-small text-foreground-500 mb-4 text-center">
+      <p className="text-small text-foreground-500 mb-2 text-center">
         Please enter your new password to continue your streaming journey
       </p>
+      {formError && <FormAlert onDismiss={() => setFormError(null)}>{formError}</FormAlert>}
       <PasswordInput
+        withStrengthMeter
         {...register("password")}
         value={watch("password")}
         isInvalid={!!errors.password?.message}
@@ -81,7 +101,9 @@ const AuthResetPasswordForm: React.FC = () => {
         variant="underlined"
         label="New Password"
         placeholder="Enter your new password"
+        autoComplete="new-password"
         startContent={<LockPassword className="text-xl" />}
+        isDisabled={isBusy}
       />
       <PasswordInput
         {...register("confirm")}
@@ -91,7 +113,9 @@ const AuthResetPasswordForm: React.FC = () => {
         variant="underlined"
         label="Confirm Password"
         placeholder="Confirm your new password"
+        autoComplete="new-password"
         startContent={<LockPassword className="text-xl" />}
+        isDisabled={isBusy}
       />
       {isCaptchaEnabled && isVerifying && (
         <Turnstile
@@ -104,8 +128,8 @@ const AuthResetPasswordForm: React.FC = () => {
         className="mt-3 w-full"
         color="primary"
         type="submit"
-        variant="shadow"
-        isLoading={isSubmitting || isVerifying}
+        variant="solid"
+        isLoading={isBusy}
       >
         {getButtonText()}
       </Button>

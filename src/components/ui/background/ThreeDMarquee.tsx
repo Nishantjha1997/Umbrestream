@@ -3,7 +3,7 @@
 "use client";
 
 import { cn } from "@/utils/helpers";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 
 export interface ThreeDMarqueeProps extends React.HTMLAttributes<HTMLDivElement> {
   images: string[];
@@ -11,6 +11,12 @@ export interface ThreeDMarqueeProps extends React.HTMLAttributes<HTMLDivElement>
 }
 
 const ThreeDMarquee: React.FC<ThreeDMarqueeProps> = ({ images, className, aspect, ...props }) => {
+  /**
+   * Four columns drifting 500px up and down forever, with no guard, was the
+   * largest untamed animation in the app (§5.8). Reduced motion freezes the
+   * wall in place — the composition still reads, it just stops moving.
+   */
+  const reduceMotion = useReducedMotion();
   const chunkSize = Math.ceil(images.length / 4);
   const chunks = Array.from({ length: 4 }, (_, colIndex) => {
     const start = colIndex * chunkSize;
@@ -18,7 +24,11 @@ const ThreeDMarquee: React.FC<ThreeDMarqueeProps> = ({ images, className, aspect
   });
 
   return (
-    <div {...props} className={cn("mx-auto block size-full overflow-hidden", className)}>
+    <div
+      aria-hidden
+      {...props}
+      className={cn("mx-auto block size-full overflow-hidden", className)}
+    >
       <div className="flex size-full items-center justify-center">
         <div className="size-[1400px] shrink-0 -translate-x-32 scale-75 md:scale-100">
           <div
@@ -32,12 +42,16 @@ const ThreeDMarquee: React.FC<ThreeDMarqueeProps> = ({ images, className, aspect
               <motion.div
                 key={colIndex + "marquee"}
                 className="flex flex-col items-start gap-8"
-                animate={{ y: colIndex % 2 === 0 ? 500 : -500 }}
-                transition={{
-                  repeat: Infinity,
-                  repeatType: "reverse",
-                  duration: colIndex % 2 === 0 ? 10 : 15,
-                }}
+                animate={reduceMotion ? undefined : { y: colIndex % 2 === 0 ? 500 : -500 }}
+                transition={
+                  reduceMotion
+                    ? undefined
+                    : {
+                        repeat: Infinity,
+                        repeatType: "reverse",
+                        duration: colIndex % 2 === 0 ? 10 : 15,
+                      }
+                }
               >
                 <GridLineVertical className="-left-4" offset="80px" />
                 {subarray.map((image, imageIndex) => (
@@ -46,16 +60,21 @@ const ThreeDMarquee: React.FC<ThreeDMarqueeProps> = ({ images, className, aspect
                     <motion.img
                       src={image}
                       key={imageIndex + image}
-                      alt={`Image ${imageIndex + 1}`}
+                      // Purely decorative: the wall carries no information a
+                      // screen reader needs, and 40 "Image 7" announcements
+                      // would bury the form it sits behind.
+                      alt=""
                       width={aspect === "video" ? 970 : 600}
                       height={aspect === "video" ? 700 : 400}
-                      whileHover={{
-                        y: -40,
-                      }}
-                      transition={{
-                        duration: 0.3,
-                        ease: "easeInOut",
-                      }}
+                      whileHover={reduceMotion ? undefined : { y: -40 }}
+                      transition={
+                        reduceMotion
+                          ? undefined
+                          : {
+                              duration: 0.3,
+                              ease: [0.22, 1, 0.36, 1],
+                            }
+                      }
                       className={cn(
                         "rounded-lg object-cover ring-3 ring-gray-950/5 hover:shadow-2xl",
                         {

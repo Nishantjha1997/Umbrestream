@@ -9,10 +9,11 @@ import { notFound } from "next/navigation";
 import { Suspense, use } from "react";
 import dynamic from "next/dynamic";
 import { NextPage } from "next";
+import { getEnglishLogoUrl, getImageUrl, mutateTvShowTitle } from "@/utils/movies";
 const PhotosSection = dynamic(() => import("@/components/ui/other/PhotosSection"));
 const TvShowRelatedSection = dynamic(() => import("@/components/sections/TV/Details/Related"));
 const TvShowCastsSection = dynamic(() => import("@/components/sections/TV/Details/Casts"));
-const TvShowBackdropSection = dynamic(() => import("@/components/sections/TV/Details/Backdrop"));
+const MediaBackdrop = dynamic(() => import("@/components/media/MediaBackdrop"));
 const TvShowOverviewSection = dynamic(() => import("@/components/sections/TV/Details/Overview"));
 const TvShowsSeasonsSelection = dynamic(() => import("@/components/sections/TV/Details/Seasons"));
 
@@ -59,7 +60,11 @@ const TVShowDetailPage: NextPage<Params<{ id: number }>> = ({ params }) => {
         }
       >
         <div className="flex flex-col gap-10">
-          <TvShowBackdropSection tv={tv} />
+          <MediaBackdrop
+            alt={mutateTvShowTitle(tv)}
+            backdropUrl={getImageUrl(tv.backdrop_path, "backdrop", true)}
+            logoUrl={getEnglishLogoUrl(tv.images.logos)}
+          />
           <TvShowOverviewSection
             onViewEpisodesClick={() => scrollIntoView({ alignment: "center" })}
             tv={tv}

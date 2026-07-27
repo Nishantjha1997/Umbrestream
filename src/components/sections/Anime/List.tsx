@@ -2,7 +2,7 @@
 
 import { animeQueryLists } from "@/config/anime-lists";
 import dynamic from "next/dynamic";
-const AnimeHomeList = dynamic(() => import("@/components/sections/Anime/HomeList"));
+const MediaRow = dynamic(() => import("@/components/media/MediaRow"));
 
 /**
  * Client-side row mapper for the anime home page.
@@ -17,8 +17,8 @@ const AnimeHomeList = dynamic(() => import("@/components/sections/Anime/HomeList
 const AnimePageList: React.FC = () => {
   return (
     <div className="flex flex-col gap-3 md:gap-8">
-      {animeQueryLists.map((list) => (
-        <AnimeHomeList key={list.name} {...list} />
+      {animeQueryLists.map((list, i) => (
+        <MediaRow key={list.name} kind="anime" priority={i === 0} {...list} />
       ))}
     </div>
   );

@@ -2,7 +2,8 @@
 
 import { tmdbBrowser } from "@/api/tmdb-browser";
 import { useQueryClient } from "@tanstack/react-query";
-import TvShowHomeCard from "@/components/sections/TV/Cards/Poster";
+import PosterCard from "@/components/media/PosterCard";
+import { fromAnime, fromMovie, fromTvShow } from "@/utils/normalize-media";
 import BackToTopButton from "@/components/ui/button/BackToTopButton";
 import useDiscoverFilters from "@/hooks/useDiscoverFilters";
 import { ContentType } from "@/types";
@@ -12,9 +13,7 @@ import { Spinner } from "@heroui/react";
 import { useInViewport } from "@mantine/hooks";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { Movie, Search, TV } from "tmdb-ts/dist/types";
-import MoviePosterCard from "../Movie/Cards/Poster";
-import AnimePosterCard from "../Anime/Cards/Poster";
+import { Movie, TV } from "tmdb-ts/dist/types";
 import SearchFilter from "./Filter";
 import { anilistApi } from "@/api/anilist";
 
@@ -110,19 +109,19 @@ const SearchList = () => {
             {content === "movie" &&
               data?.pages.map((page) =>
                 (page as any).results.map((movie: any) => (
-                  <MoviePosterCard key={movie.id} movie={movie as Movie} variant="bordered" />
+                  <PosterCard key={movie.id} media={fromMovie(movie as Movie)} variant="grid" />
                 ))
               )}
             {content === "tv" &&
               data?.pages.map((page) =>
                 (page as any).results.map((tv: any) => (
-                  <TvShowHomeCard key={tv.id} tv={tv as TV} variant="bordered" />
+                  <PosterCard key={tv.id} media={fromTvShow(tv as TV)} variant="grid" />
                 ))
               )}
             {content === "anime" &&
               data?.pages.map((page) =>
                 (page as any).media.map((anime: any) => (
-                  <AnimePosterCard key={anime.id} anime={anime} variant="bordered" />
+                  <PosterCard key={anime.id} media={fromAnime(anime)} variant="grid" />
                 ))
               )}
           </div>

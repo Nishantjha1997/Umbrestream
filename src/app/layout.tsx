@@ -1,6 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { siteConfig } from "@/config/site";
-import { Poppins } from "@/utils/fonts";
+// Inter Variable's @font-face rules (§1.4). Imported before `globals.css` so
+// the faces are declared ahead of the stylesheet that binds them to
+// `--font-sans`; the family itself is applied via Tailwind's default sans, so
+// no wrapper class is needed. Saira is loaded per-component by `BrandLogo`.
+import "@fontsource-variable/inter";
 import "../styles/globals.css";
 import "../styles/lightbox.css";
 import Providers from "./providers";
@@ -54,7 +58,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html suppressHydrationWarning lang="en">
-      <body className={cn("bg-background min-h-dvh antialiased select-none", Poppins.className)}>
+      <body className={cn("bg-background min-h-dvh font-sans antialiased select-none")}>
         <Suspense>
           <NuqsAdapter>
             <Providers>

@@ -11,7 +11,22 @@
 @theme {
   --animate-shine: shine 3s linear infinite;
 
-  --font-poppins: var(--font-poppins);
+  /* ─────────────────────────────────────────────────────────────
+     Typography (§1.4). Inter Variable, self-hosted via
+     `@fontsource-variable/inter` — its @font-face rules are imported
+     once in `src/app/layout.tsx`.
+
+     Poppins is gone: a geometric rounded sans reads friendly, and
+     this UI wants the neutral grotesque register of SF Pro. Overriding
+     `--font-sans` also moves Tailwind's `--default-font-family`, so
+     every unstyled element inherits Inter without a wrapper class.
+
+     Saira survives for the wordmark only (`BrandLogo`); it is loaded
+     through `next/font/google` and applied by class, not by token.
+     ───────────────────────────────────────────────────────────── */
+  --font-sans:
+    "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
 
   /* ─────────────────────────────────────────────────────────────
      Motion: duration scale.
@@ -83,29 +98,12 @@
     border-color: var(--color-gray-200, currentcolor);
   }
 
-  h1 {
-    @apply text-3xl font-black md:text-4xl;
-  }
-
-  h2 {
-    @apply text-2xl font-bold md:text-3xl;
-  }
-
-  h3 {
-    @apply text-xl font-bold md:text-2xl;
-  }
-
-  h4 {
-    @apply text-lg font-semibold md:text-xl;
-  }
-
-  h5 {
-    @apply text-base font-medium md:text-lg;
-  }
-
-  h6 {
-    @apply text-sm font-normal md:text-base;
-  }
+  /* NOTE (§1.4): the global `h1 → text-3xl font-black` … `h6` block that used
+     to live here has been deleted on purpose. Styling elements globally means
+     every component fights the cascade to look right, and `font-black` on
+     every `h1` is most of why the old UI read heavy. Headings are now styled
+     where they are rendered — see `SectionTitle` for section/shelf headers.
+     Do not reintroduce element-level typography here. */
 
   iframe {
     @apply border-none;
@@ -145,6 +143,32 @@
   @apply border-white/20 bg-black/35 text-white;
   backdrop-filter: blur(var(--glass-blur-sm)) saturate(var(--glass-saturate));
   -webkit-backdrop-filter: blur(var(--glass-blur-sm)) saturate(var(--glass-saturate));
+}
+
+/* ───────────────────────────────────────────────────────────────
+   Shelf card reveal. The per-card delay is set inline by
+   <PosterCard index>, capped at 8 cards so a 20-card row doesn't
+   take two seconds to finish arriving (§4).
+   ─────────────────────────────────────────────────────────────── */
+@keyframes shelf-reveal-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@utility shelf-reveal {
+  animation: shelf-reveal-in var(--duration-slow) var(--ease-out-quint) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shelf-reveal {
+    animation: none;
+  }
 }
 
 @utility embla {

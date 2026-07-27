@@ -16,7 +16,7 @@ import { TbFolder, TbFolderFilled } from "react-icons/tb";
 import { PiFlowerLotusLight, PiFlowerLotusFill } from "react-icons/pi";
 
 /**
- * Matches QueryList<T>["query"]'s return shape. HomeList.tsx calls these
+ * Matches QueryList<T>["query"]'s return shape. MediaRow.tsx calls these
  * closures from inside a Client Component via react-query, so they must go
  * through tmdbBrowser (the /api/tmdb proxy) rather than the server-only
  * tmdb client — that's the whole reason this file used to need a

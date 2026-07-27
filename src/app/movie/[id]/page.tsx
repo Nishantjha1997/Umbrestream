@@ -10,8 +10,9 @@ import { Image } from "tmdb-ts";
 import dynamic from "next/dynamic";
 import { Params } from "@/types";
 import { NextPage } from "next";
+import { getEnglishLogoUrl, getImageUrl, mutateMovieTitle } from "@/utils/movies";
 const PhotosSection = dynamic(() => import("@/components/ui/other/PhotosSection"));
-const BackdropSection = dynamic(() => import("@/components/sections/Movie/Detail/Backdrop"));
+const MediaBackdrop = dynamic(() => import("@/components/media/MediaBackdrop"));
 const OverviewSection = dynamic(() => import("@/components/sections/Movie/Detail/Overview"));
 const CastsSection = dynamic(() => import("@/components/sections/Movie/Detail/Casts"));
 const RelatedSection = dynamic(() => import("@/components/sections/Movie/Detail/Related"));
@@ -48,7 +49,11 @@ const MovieDetailPage: NextPage<Params<{ id: number }>> = ({ params }) => {
     <div className="mx-auto max-w-5xl">
       <Suspense fallback={<Spinner size="lg" className="absolute-center" variant="simple" />}>
         <div className="flex flex-col gap-10">
-          <BackdropSection movie={movie} />
+          <MediaBackdrop
+            alt={mutateMovieTitle(movie)}
+            backdropUrl={getImageUrl(movie.backdrop_path, "backdrop", true)}
+            logoUrl={getEnglishLogoUrl(movie.images.logos)}
+          />
           <OverviewSection movie={movie} />
           <CastsSection casts={movie.credits.cast as Cast[]} />
           <PhotosSection images={movie.images.backdrops as Image[]} />

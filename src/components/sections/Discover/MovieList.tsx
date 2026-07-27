@@ -6,7 +6,8 @@ import { useInViewport } from "@mantine/hooks";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { notFound } from "next/navigation";
 import { memo, useEffect } from "react";
-import MoviePosterCard from "../Movie/Cards/Poster";
+import PosterCard from "@/components/media/PosterCard";
+import { fromMovie } from "@/utils/normalize-media";
 import useDiscoverFilters from "@/hooks/useDiscoverFilters";
 import fetchDiscoverMovies from "@/hooks/fetchDiscoverMovies";
 import { DiscoverMoviesFetchQueryType } from "@/types/movie";
@@ -45,7 +46,7 @@ const MovieDiscoverList = () => {
       <div className="flex flex-col items-center justify-center gap-10">
         <div className="movie-grid">
           <Loop count={20} prefix="SkeletonDiscoverPosterCard">
-            <PosterCardSkeleton variant="bordered" />
+            <PosterCardSkeleton />
           </Loop>
         </div>
       </div>
@@ -57,7 +58,7 @@ const MovieDiscoverList = () => {
       <div className="movie-grid">
         {data.pages.map((page) => {
           return page.results.map((movie) => {
-            return <MoviePosterCard key={movie.id} movie={movie} variant="bordered" />;
+            return <PosterCard key={movie.id} media={fromMovie(movie)} variant="grid" />;
           });
         })}
       </div>

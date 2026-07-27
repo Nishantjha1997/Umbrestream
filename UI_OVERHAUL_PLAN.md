@@ -396,10 +396,21 @@ tab that does nothing.
 
 ## §4 — Motion system
 
-Migrate `framer-motion` → the `motion` package (v12 renamed; `motion` is already
-a dependency). Then establish a real vocabulary — currently there is none:
+Migrate `framer-motion` → the `motion` package (v12 renamed — same library).
+
+**Correction to an earlier draft of this doc:** `motion` is **not** currently
+installed. `package.json` lists only `framer-motion@^12.23.12` and
+`node_modules/motion` does not exist — it was a dependency of the original
+scaffold and was lost in the rebase onto cinextma. So this needs a real
+`npm i motion` plus dropping `framer-motion`, not just an import swap.
+
+Import sites to change in one pass: `ui/background/ThreeDMarquee.tsx`,
+`sections/Auth/Forms.tsx`, `sections/Search/Filter.tsx`, and
+`media/MediaBackdrop.tsx`.
+
+Then establish a real vocabulary — currently there is none:
 4 `tailwindcss-motion` presets used decoratively, one custom keyframe, and
-`framer-motion` imported in only 3 files (none in browse).
+`framer-motion` imported in only 4 files.
 
 Define in `src/utils/motion.ts`:
 
@@ -657,7 +668,8 @@ presets), `yet-another-react-lightbox`.
 
 **Add:** `@fontsource-variable/inter` (§1.4).
 
-**Migrate:** `framer-motion` → `motion` (same library, current name).
+**Migrate:** `framer-motion` → `motion` (same library, current name). Note this
+is a real install, not just a rename — see §4.
 
 **Do not add:** a second toast library, a second carousel, a component kit that
 overlaps HeroUI, or a CSS-in-JS runtime. The fix for toasts is HeroUI config +
