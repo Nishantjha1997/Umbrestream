@@ -2,12 +2,11 @@ import { PlayersProps } from "@/types";
 
 /**
  * Generates a list of movie players with their respective titles and source URLs.
- * Each player is constructed using the provided movie ID.
+ * Priority order matches ARISE top-performing servers: VidLink -> VidKing -> Embed.su -> AutoEmbed -> VidSrc.
  *
  * @param {string | number} id - The ID of the movie to be embedded in the player URLs.
  * @param {number} [startAt] - The start position in seconds to be embedded in the player URLs. Optional.
- * @returns {PlayersProps[]} - An array of objects, each containing
- * the title of the player and the corresponding source URL.
+ * @returns {PlayersProps[]} - An array of player objects.
  */
 export const getMoviePlayers = (id: string | number, startAt?: number): PlayersProps[] => {
   return [
@@ -21,7 +20,7 @@ export const getMoviePlayers = (id: string | number, startAt?: number): PlayersP
     },
     {
       title: "VidLink 2",
-      source: `https://vidlink.pro/movie/${id}?primaryColor=006fee&autoplay=false&startAt=${startAt}`,
+      source: `https://vidlink.pro/movie/${id}?primaryColor=006fee&autoplay=false&startAt=${startAt || ""}`,
       recommended: true,
       fast: true,
       ads: true,
@@ -29,17 +28,50 @@ export const getMoviePlayers = (id: string | number, startAt?: number): PlayersP
     },
     {
       title: "VidKing",
-      // NOTE: VidKing has a known issue with the `progress` query parameter where it stuck at that timestamp.
-      // Currently, this player can save playback progress but cannot resume from a specific timestamp.
-      // The `progress` parameter is commented out in the source URL until this is resolved.
-      source: `https://www.vidking.net/embed/movie/${id}?color=006fee&autoplay=false`, //&progress=${startAt || ""}`,
+      source: `https://www.vidking.net/embed/movie/${id}?color=006fee&autoplay=false`,
       recommended: true,
       fast: true,
       resumable: true,
     },
     {
-      title: "<Embed>",
+      title: "<Embed> (Embed.su)",
       source: `https://embed.su/embed/movie/${id}`,
+      recommended: true,
+      fast: true,
+      ads: true,
+    },
+    {
+      title: "AutoEmbed 1",
+      source: `https://autoembed.co/movie/tmdb/${id}`,
+      fast: true,
+      ads: true,
+    },
+    {
+      title: "AutoEmbed 2",
+      source: `https://player.autoembed.cc/embed/movie/${id}`,
+      fast: true,
+      ads: true,
+    },
+    {
+      title: "VidSrc v3",
+      source: `https://vidsrc.cc/v3/embed/movie/${id}?autoPlay=false`,
+      recommended: true,
+      fast: true,
+      ads: true,
+    },
+    {
+      title: "VidSrc ICU",
+      source: `https://vidsrc.icu/embed/movie/${id}`,
+      ads: true,
+    },
+    {
+      title: "VidSrc TO",
+      source: `https://vidsrc.to/embed/movie/${id}`,
+      ads: true,
+    },
+    {
+      title: "VidSrc XYZ",
+      source: `https://vidsrc.xyz/embed/movie/${id}`,
       ads: true,
     },
     {
@@ -59,46 +91,8 @@ export const getMoviePlayers = (id: string | number, startAt?: number): PlayersP
       ads: true,
     },
     {
-      title: "AutoEmbed 1",
-      source: `https://autoembed.co/movie/tmdb/${id}`,
-      fast: true,
-      ads: true,
-    },
-    {
-      title: "AutoEmbed 2",
-      source: `https://player.autoembed.cc/embed/movie/${id}`,
-      ads: true,
-    },
-    {
       title: "2Embed",
       source: `https://www.2embed.cc/embed/${id}`,
-      ads: true,
-    },
-    {
-      title: "VidSrc 1",
-      source: `https://vidsrc.xyz/embed/movie/${id}`,
-      ads: true,
-    },
-    {
-      title: "VidSrc 2",
-      source: `https://vidsrc.to/embed/movie/${id}`,
-      ads: true,
-    },
-    {
-      title: "VidSrc 3",
-      source: `https://vidsrc.icu/embed/movie/${id}`,
-      ads: true,
-    },
-    {
-      title: "VidSrc 4",
-      source: `https://vidsrc.cc/v2/embed/movie/${id}?autoPlay=false`,
-      ads: true,
-    },
-    {
-      title: "VidSrc 5",
-      source: `https://vidsrc.cc/v3/embed/movie/${id}?autoPlay=false`,
-      recommended: true,
-      fast: true,
       ads: true,
     },
     {
@@ -111,14 +105,13 @@ export const getMoviePlayers = (id: string | number, startAt?: number): PlayersP
 
 /**
  * Generates a list of TV show players with their respective titles and source URLs.
- * Each player is constructed using the provided TV show ID, season, and episode.
+ * Priority order matches ARISE top-performing servers: VidLink -> VidKing -> Embed.su -> AutoEmbed -> VidSrc.
  *
- * @param {string | number} id - The ID of the TV show to be embedded in the player URLs.
- * @param {string | number} [season] - The season number of the TV show episode to be embedded.
- * @param {string | number} [episode] - The episode number of the TV show episode to be embedded.
- * @param {number} [startAt] - The start position in seconds to be embedded in the player URLs. Optional.
- * @returns {PlayersProps[]} - An array of objects, each containing
- * the title of the player and the corresponding source URL.
+ * @param {string | number} id - The ID of the TV show.
+ * @param {number} season - The season number.
+ * @param {number} episode - The episode number.
+ * @param {number} [startAt] - Optional start position in seconds.
+ * @returns {PlayersProps[]} - Array of player sources.
  */
 export const getTvShowPlayers = (
   id: string | number,
@@ -137,7 +130,7 @@ export const getTvShowPlayers = (
     },
     {
       title: "VidLink 2",
-      source: `https://vidlink.pro/tv/${id}/${season}/${episode}?primaryColor=f5a524&autoplay=false&startAt=${startAt}`,
+      source: `https://vidlink.pro/tv/${id}/${season}/${episode}?primaryColor=f5a524&autoplay=false&startAt=${startAt || ""}`,
       recommended: true,
       fast: true,
       ads: true,
@@ -145,17 +138,50 @@ export const getTvShowPlayers = (
     },
     {
       title: "VidKing",
-      // NOTE: VidKing has a known issue with the `progress` query parameter where it stuck at that timestamp.
-      // Currently, this player can save playback progress but cannot resume from a specific timestamp.
-      // The `progress` parameter is commented out in the source URL until this is resolved.
-      source: `https://www.vidking.net/embed/tv/${id}/${season}/${episode}?color=f5a524&autoplay=false`, //&progress=${startAt || ""}`,
+      source: `https://www.vidking.net/embed/tv/${id}/${season}/${episode}?color=f5a524&autoplay=false`,
       recommended: true,
       fast: true,
       resumable: true,
     },
     {
-      title: "<Embed>",
+      title: "<Embed> (Embed.su)",
       source: `https://embed.su/embed/tv/${id}/${season}/${episode}`,
+      recommended: true,
+      fast: true,
+      ads: true,
+    },
+    {
+      title: "AutoEmbed 1",
+      source: `https://autoembed.co/tv/tmdb/${id}-${season}-${episode}`,
+      fast: true,
+      ads: true,
+    },
+    {
+      title: "AutoEmbed 2",
+      source: `https://player.autoembed.cc/embed/tv/${id}/${season}/${episode}`,
+      fast: true,
+      ads: true,
+    },
+    {
+      title: "VidSrc v3",
+      source: `https://vidsrc.cc/v3/embed/tv/${id}/${season}/${episode}?autoPlay=false`,
+      recommended: true,
+      fast: true,
+      ads: true,
+    },
+    {
+      title: "VidSrc ICU",
+      source: `https://vidsrc.icu/embed/tv/${id}/${season}/${episode}`,
+      ads: true,
+    },
+    {
+      title: "VidSrc TO",
+      source: `https://vidsrc.to/embed/tv/${id}/${season}/${episode}`,
+      ads: true,
+    },
+    {
+      title: "VidSrc XYZ",
+      source: `https://vidsrc.xyz/embed/tv/${id}/${season}/${episode}`,
       ads: true,
     },
     {
@@ -171,50 +197,12 @@ export const getTvShowPlayers = (
     },
     {
       title: "NontonGo",
-      source: `https://www.NontonGo.win/embed/tv/${id}/${season}/${episode}`,
-      ads: true,
-    },
-    {
-      title: "AutoEmbed 1",
-      source: `https://autoembed.co/tv/tmdb/${id}-${season}-${episode}`,
-      fast: true,
-      ads: true,
-    },
-    {
-      title: "AutoEmbed 2",
-      source: `https://player.autoembed.cc/embed/tv/${id}/${season}/${episode}`,
+      source: `https://www.nontongo.win/embed/tv/${id}/${season}/${episode}`,
       ads: true,
     },
     {
       title: "2Embed",
       source: `https://www.2embed.cc/embedtv/${id}&s=${season}&e=${episode}`,
-      ads: true,
-    },
-    {
-      title: "VidSrc 1",
-      source: `https://vidsrc.xyz/embed/tv/${id}/${season}/${episode}`,
-      ads: true,
-    },
-    {
-      title: "VidSrc 2",
-      source: `https://vidsrc.to/embed/tv/${id}/${season}/${episode}`,
-      ads: true,
-    },
-    {
-      title: "VidSrc 3",
-      source: `https://vidsrc.icu/embed/tv/${id}/${season}/${episode}`,
-      ads: true,
-    },
-    {
-      title: "VidSrc 4",
-      source: `https://vidsrc.cc/v2/embed/tv/${id}/${season}/${episode}?autoPlay=false`,
-      ads: true,
-    },
-    {
-      title: "VidSrc 5",
-      source: `https://vidsrc.cc/v3/embed/tv/${id}/${season}/${episode}?autoPlay=false`,
-      recommended: true,
-      fast: true,
       ads: true,
     },
     {
@@ -227,7 +215,7 @@ export const getTvShowPlayers = (
 
 /**
  * Generates a list of anime players with their respective titles and source URLs.
- * Each player is constructed using the provided AniList ID and episode number.
+ * Priority order matches ARISE top-performing servers: VidLink -> VidKing -> Embed.su -> AutoEmbed -> VidSrc.
  *
  * @param {string | number} id - The AniList ID of the anime.
  * @param {number} episode - The episode number.
@@ -257,22 +245,17 @@ export const getAnimePlayers = (
       resumable: true,
     },
     {
-      title: "VidSrc Anime 1",
-      source: `https://vidsrc.icu/embed/anime/${id}/${episode}`,
+      title: "VidKing Anime",
+      source: `https://www.vidking.net/embed/anime/${id}/${episode}?color=8b5cf6&autoplay=false`,
       recommended: true,
       fast: true,
-      ads: true,
-    },
-    {
-      title: "VidSrc Anime 2",
-      source: `https://vidsrc.cc/v3/embed/anime/${id}/${episode}?autoPlay=false`,
-      fast: true,
-      ads: true,
+      resumable: true,
     },
     {
       title: "<Embed> Anime",
       source: `https://embed.su/embed/anime/${id}/${episode}`,
       recommended: true,
+      fast: true,
       ads: true,
     },
     {
@@ -288,11 +271,17 @@ export const getAnimePlayers = (
       ads: true,
     },
     {
-      title: "VidKing Anime",
-      source: `https://www.vidking.net/embed/anime/${id}/${episode}?color=8b5cf6&autoplay=false`,
+      title: "VidSrc Anime v3",
+      source: `https://vidsrc.cc/v3/embed/anime/${id}/${episode}?autoPlay=false`,
+      fast: true,
+      ads: true,
+    },
+    {
+      title: "VidSrc Anime ICU",
+      source: `https://vidsrc.icu/embed/anime/${id}/${episode}`,
       recommended: true,
       fast: true,
-      resumable: true,
+      ads: true,
     },
     {
       title: "SuperEmbed Anime",
@@ -307,4 +296,3 @@ export const getAnimePlayers = (
     },
   ];
 };
-

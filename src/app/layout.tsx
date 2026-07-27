@@ -10,11 +10,9 @@ import Sidebar from "@/components/ui/layout/Sidebar";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 import { cn } from "@/utils/helpers";
-import { IS_PRODUCTION, SpacingClasses } from "@/utils/constants";
-import dynamic from "next/dynamic";
+import { SpacingClasses } from "@/utils/constants";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { Suspense } from "react";
-const Disclaimer = dynamic(() => import("@/components/ui/overlay/Disclaimer"));
 
 export const metadata: Metadata = {
   title: siteConfig.name,
@@ -60,7 +58,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <Suspense>
           <NuqsAdapter>
             <Providers>
-              {IS_PRODUCTION && <Disclaimer />}
               <TopNavbar />
               <Sidebar>
                 <main className={cn("container mx-auto max-w-full", SpacingClasses.main)}>

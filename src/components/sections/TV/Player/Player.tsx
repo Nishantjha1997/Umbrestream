@@ -80,14 +80,12 @@ const TvShowPlayer: React.FC<TvShowPlayerProps> = ({
 
         <Card shadow="md" radius="none" className="relative h-screen">
           <Skeleton className="absolute h-full w-full" />
-          {seen && (
-            <iframe
-              allowFullScreen
-              key={PLAYER.title}
-              src={PLAYER.source}
-              className="z-10 h-full w-full border-none"
-            />
-          )}
+          <iframe
+            allowFullScreen
+            key={PLAYER.title}
+            src={PLAYER.source}
+            className="z-10 h-full w-full border-none"
+          />
         </Card>
       </div>
 
