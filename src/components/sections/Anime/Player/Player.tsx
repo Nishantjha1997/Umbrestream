@@ -19,6 +19,7 @@ import { useEffect } from "react";
 const AdsWarning = dynamic(() => import("@/components/ui/overlay/AdsWarning"));
 const AnimePlayerHeader = dynamic(() => import("./Header"));
 const AnimePlayerSourceSelection = dynamic(() => import("./SourceSelection"));
+const StuckStreamToast = dynamic(() => import("@/components/ui/overlay/StuckStreamToast"));
 
 interface AnimePlayerProps {
   anime: AniListMediaDetail;
@@ -67,6 +68,8 @@ const AnimePlayer: React.FC<AnimePlayerProps> = ({ anime, episode, startAt }) =>
       <div className={cn("relative", SpacingClasses.reset)}>
         {/* Top hover-sensor zone to capture mouse activity and show the header overlay */}
         <div className="absolute top-0 left-0 right-0 h-20 z-20" />
+
+        <StuckStreamToast onOpenSource={handlers.open} />
 
         <AnimePlayerHeader
           id={anime.id}

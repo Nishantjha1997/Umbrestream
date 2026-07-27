@@ -14,6 +14,7 @@ import { usePlayerEvents } from "@/hooks/usePlayerEvents";
 const AdsWarning = dynamic(() => import("@/components/ui/overlay/AdsWarning"));
 const MoviePlayerHeader = dynamic(() => import("./Header"));
 const MoviePlayerSourceSelection = dynamic(() => import("./SourceSelection"));
+const StuckStreamToast = dynamic(() => import("@/components/ui/overlay/StuckStreamToast"));
 
 import { useServerHealth } from "@/hooks/useServerHealth";
 import { useEffect } from "react";
@@ -64,6 +65,8 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, startAt }) => {
       <div className={cn("relative", SpacingClasses.reset)}>
         {/* Top hover-sensor zone to capture mouse activity and show the header overlay */}
         <div className="absolute top-0 left-0 right-0 h-20 z-20" />
+
+        <StuckStreamToast onOpenSource={handlers.open} />
 
         <MoviePlayerHeader
           id={movie.id}

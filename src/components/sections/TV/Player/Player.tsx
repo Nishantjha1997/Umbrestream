@@ -17,6 +17,7 @@ const AdsWarning = dynamic(() => import("@/components/ui/overlay/AdsWarning"));
 const TvShowPlayerHeader = dynamic(() => import("./Header"));
 const TvShowPlayerSourceSelection = dynamic(() => import("./SourceSelection"));
 const TvShowPlayerEpisodeSelection = dynamic(() => import("./EpisodeSelection"));
+const StuckStreamToast = dynamic(() => import("@/components/ui/overlay/StuckStreamToast"));
 
 export interface TvShowPlayerProps {
   tv: TvShowDetails;
@@ -83,6 +84,8 @@ const TvShowPlayer: React.FC<TvShowPlayerProps> = ({
       <div className={cn("relative", SpacingClasses.reset)}>
         {/* Top hover-sensor zone to capture mouse activity and show the header overlay */}
         <div className="absolute top-0 left-0 right-0 h-20 z-20" />
+
+        <StuckStreamToast onOpenSource={sourceHandlers.open} />
 
         <TvShowPlayerHeader
           id={id}
