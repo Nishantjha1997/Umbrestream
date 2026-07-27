@@ -2,63 +2,85 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { env } from "../env";
 
-const PROTECTED_PATHS = env.PROTECTED_PATHS?.split(",") ?? [];
+const PROTECTED_PATHS = env.PROTECTED_PATHS?.split(",").filter(Boolean) ?? [];
+
+/** `createServerClient` throws outright on empty credentials. */
+const isSupabaseConfigured = Boolean(
+  env.NEXT_PUBLIC_SUPABASE_URL && env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+);
 
 export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({ request });
+  const supabaseResponse = NextResponse.next({ request });
 
-  const supabase = createServerClient(
-    env.NEXT_PUBLIC_SUPABASE_URL,
-    env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          supabaseResponse = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options),
-          );
+  // This middleware matches nearly every route, so anything thrown here 500s
+  // the whole site — including pages that don't need auth at all. Missing or
+  // broken Supabase config must degrade to "nobody is signed in", never to an
+  // unrenderable app. (A missing env var previously took down every page with
+  // a bare "Internal Server Error".)
+  if (!isSupabaseConfigured) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn(
+        "[auth] Supabase is not configured (NEXT_PUBLIC_SUPABASE_URL / " +
+          "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY). Auth is disabled and " +
+          "protected routes are open. Set them in your environment.",
+      );
+    }
+    return supabaseResponse;
+  }
+
+  let response = supabaseResponse;
+
+  try {
+    const supabase = createServerClient(
+      env.NEXT_PUBLIC_SUPABASE_URL,
+      env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll();
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+            response = NextResponse.next({ request });
+            cookiesToSet.forEach(({ name, value, options }) =>
+              response.cookies.set(name, value, options),
+            );
+          },
         },
       },
-    },
-  );
+    );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-  const pathname = request.nextUrl.pathname;
+    const pathname = request.nextUrl.pathname;
 
-  // if user is not logged in and the current pathname is protected, redirect to login page
-  if (!user && PROTECTED_PATHS.some((url) => pathname.startsWith(url))) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/auth";
+    const redirectTo = (to: string) => {
+      const url = request.nextUrl.clone();
+      url.pathname = to;
+      const redirectRes = NextResponse.redirect(url);
+      response.cookies.getAll().forEach((cookie) => {
+        redirectRes.cookies.set(cookie.name, cookie.value, cookie);
+      });
+      return redirectRes;
+    };
 
-    const redirectRes = NextResponse.redirect(url);
+    // Not signed in and heading somewhere protected -> sign in first.
+    if (!user && PROTECTED_PATHS.some((url) => pathname.startsWith(url))) {
+      return redirectTo("/auth");
+    }
 
-    supabaseResponse.cookies.getAll().forEach((cookie) => {
-      redirectRes.cookies.set(cookie.name, cookie.value, cookie);
-    });
+    // Already signed in -> no reason to sit on the auth screen.
+    if (user && pathname === "/auth") {
+      return redirectTo("/");
+    }
 
-    return redirectRes;
+    return response;
+  } catch (error) {
+    // Network blip, Supabase outage, malformed credentials: serve the page
+    // signed-out rather than failing the request.
+    console.error("[auth] Session refresh failed; continuing unauthenticated:", error);
+    return response;
   }
-
-  // if user is logged in and the current pathname is auth, redirect to home page
-  if (user && pathname === "/auth") {
-    const url = request.nextUrl.clone();
-    url.pathname = "/";
-
-    const redirectRes = NextResponse.redirect(url);
-
-    supabaseResponse.cookies.getAll().forEach((cookie) => {
-      redirectRes.cookies.set(cookie.name, cookie.value, cookie);
-    });
-
-    return redirectRes;
-  }
-
-  return supabaseResponse;
 }

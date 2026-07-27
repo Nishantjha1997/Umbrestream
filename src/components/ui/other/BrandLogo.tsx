@@ -28,16 +28,17 @@ const BrandLogo: React.FC<BrandLogoProps> = ({ animate = false, className }) => 
           className,
         )}
       >
-        CINE{" "}
+        UMB
         <span>
           <Next
             className={cn("size-full px-[2px] transition-colors", {
               "text-primary": content === "movie",
               "text-warning": content === "tv",
+              "text-secondary": content === "anime",
             })}
           />
-        </span>{" "}
-        TMA
+        </span>
+        RA
       </span>
     </Link>
   );
