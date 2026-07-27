@@ -1,6 +1,8 @@
 "use client";
 
 import { useRef, useState, useEffect, useCallback } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { Title } from "@/types/title";
 import { PosterCard } from "./PosterCard";
 
@@ -41,49 +43,56 @@ export function ContentRow({ heading, titles, priority = false }: Props) {
 
   return (
     <section className="group/row relative">
-      <h2 className="mb-3 px-4 text-lg font-semibold tracking-tight text-[var(--color-fg)] md:px-8">
+      <motion.h2
+        initial={{ opacity: 0, x: -12 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true, margin: "-60px" }}
+        transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+        className="mb-3 flex items-center gap-2 px-4 text-lg font-semibold tracking-tight text-[var(--color-fg)] md:px-8"
+      >
+        <span className="h-5 w-1 rounded-full bg-[var(--color-accent)]" />
         {heading}
-      </h2>
+      </motion.h2>
 
       <div
         ref={trackRef}
         onScroll={sync}
-        className="tray flex gap-3 overflow-x-auto px-4 pb-2 md:px-8"
+        className="tray flex gap-3 overflow-x-auto px-4 pb-3 pt-1 md:px-8"
       >
         {titles.map((t, i) => (
-          <PosterCard key={t.key} title={t} priority={priority && i < 6} />
+          <PosterCard key={t.key} title={t} index={i} priority={priority && i < 6} />
         ))}
       </div>
 
-      {/* Pointer-only affordances; the tray is already swipeable on touch
-          and keyboard-reachable through the links themselves. */}
-      <ArrowButton side="left" hidden={atStart} onClick={() => nudge(-1)} />
-      <ArrowButton side="right" hidden={atEnd} onClick={() => nudge(1)} />
+      {/* Pointer-only affordances. The tray is swipeable on touch and the
+          cards are reachable by keyboard through their own links. */}
+      <AnimatePresence>
+        {!atStart && <Arrow side="left" onClick={() => nudge(-1)} />}
+        {!atEnd && <Arrow side="right" onClick={() => nudge(1)} />}
+      </AnimatePresence>
     </section>
   );
 }
 
-function ArrowButton({
-  side,
-  hidden,
-  onClick,
-}: {
-  side: "left" | "right";
-  hidden: boolean;
-  onClick: () => void;
-}) {
-  if (hidden) return null;
+function Arrow({ side, onClick }: { side: "left" | "right"; onClick: () => void }) {
+  const Icon = side === "left" ? ChevronLeft : ChevronRight;
   return (
-    <button
+    <motion.button
       type="button"
       aria-hidden
       tabIndex={-1}
       onClick={onClick}
-      className={`absolute top-[calc(50%-0.5rem)] hidden h-20 w-10 -translate-y-1/2 items-center justify-center rounded-md border border-[var(--color-border)] bg-black/80 text-[var(--color-fg-muted)] opacity-0 backdrop-blur-sm transition hover:border-[var(--color-border-strong)] hover:text-[var(--color-fg)] group-hover/row:opacity-100 md:flex ${
-        side === "left" ? "left-2" : "right-2"
+      initial={{ opacity: 0, scale: 0.85 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.85 }}
+      whileHover={{ scale: 1.1 }}
+      whileTap={{ scale: 0.92 }}
+      transition={{ duration: 0.18 }}
+      className={`absolute top-[42%] hidden size-10 -translate-y-1/2 items-center justify-center rounded-full border border-[var(--color-border-strong)] bg-black/85 text-[var(--color-fg-muted)] opacity-0 backdrop-blur-md transition-opacity duration-200 hover:text-[var(--color-fg)] group-hover/row:opacity-100 md:flex ${
+        side === "left" ? "left-3" : "right-3"
       }`}
     >
-      {side === "left" ? "‹" : "›"}
-    </button>
+      <Icon className="size-5" />
+    </motion.button>
   );
 }

@@ -1,5 +1,5 @@
 import type { Genre, Season, Title } from "@/types/title";
-import { backdropUrl, posterUrl, tmdb } from "./client";
+import { backdropUrl, posterUrl, tmdb, TmdbHttpError } from "./client";
 import { normalizeList, type TmdbListItem, type TmdbPage } from "./normalize";
 
 /** Only movie and tv are TMDB-backed. Anime routes through AniList (Phase 7). */
@@ -89,10 +89,13 @@ export async function fetchTitleDetail(
     data = await tmdb<TmdbDetailResponse>(`${mediaType}/${id}`, {
       append_to_response: "credits,videos,similar,external_ids",
     });
-  } catch {
-    // A 404 from TMDB and a transient failure are indistinguishable here;
-    // both should render not-found rather than a stack trace.
-    return null;
+  } catch (err) {
+    // Only a real 404 means "no such title" — return null so the caller
+    // renders not-found. Anything else (network blip, 429, 5xx) must
+    // propagate: swallowing it renders a permanent-looking "doesn't exist"
+    // for what is actually a retryable failure.
+    if (err instanceof TmdbHttpError && err.status === 404) return null;
+    throw err;
   }
 
   const year = (data.release_date || data.first_air_date)?.slice(0, 4);

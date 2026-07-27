@@ -14,6 +14,22 @@ export function isTmdbConfigured(): boolean {
 }
 
 /**
+ * Carries the upstream status so callers can tell "this title does not exist"
+ * (a real 404, worth rendering not-found) apart from "the request failed"
+ * (network blip, 429, 5xx — all retryable and must not look like a 404).
+ */
+export class TmdbHttpError extends Error {
+  constructor(
+    readonly status: number,
+    readonly endpoint: string,
+    message?: string,
+  ) {
+    super(message ?? `TMDB ${endpoint} failed: ${status}`);
+    this.name = "TmdbHttpError";
+  }
+}
+
+/**
  * Server-only TMDB fetch. The `server-only` import above makes the build fail
  * if this module is ever pulled into a Client Component, which is the real
  * guard against the token leaking — not discipline.
@@ -40,7 +56,7 @@ export async function tmdb<T = unknown>(
   });
 
   if (!res.ok) {
-    throw new Error(`TMDB ${endpoint} failed: ${res.status} ${res.statusText}`);
+    throw new TmdbHttpError(res.status, endpoint);
   }
   return res.json() as Promise<T>;
 }

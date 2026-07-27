@@ -1,35 +1,45 @@
 import { ContentRow } from "@/components/media/ContentRow";
+import { HeroBanner } from "@/components/media/HeroBanner";
 import { isTmdbConfigured, tmdb } from "@/lib/tmdb/client";
 import { normalizeList, type TmdbPage } from "@/lib/tmdb/normalize";
-import type { Title } from "@/types/title";
+import type { MediaType, Title } from "@/types/title";
 
 interface Row {
   heading: string;
   titles: Title[];
 }
 
-async function loadRows(): Promise<Row[]> {
-  const specs = [
-    { heading: "Trending This Week", endpoint: "trending/all/week", params: {}, fallback: "movie" },
-    { heading: "Popular Movies", endpoint: "movie/popular", params: {}, fallback: "movie" },
-    { heading: "Popular Shows", endpoint: "tv/popular", params: {}, fallback: "tv" },
-    { heading: "Top Rated", endpoint: "movie/top_rated", params: {}, fallback: "movie" },
-    {
-      heading: "Animation",
-      endpoint: "discover/movie",
-      params: { with_genres: "16", sort_by: "popularity.desc" },
-      fallback: "movie",
-    },
-  ] as const;
+const SPECS: {
+  heading: string;
+  endpoint: string;
+  params: Record<string, string>;
+  fallback: MediaType;
+}[] = [
+  { heading: "Trending This Week", endpoint: "trending/all/week", params: {}, fallback: "movie" },
+  { heading: "Popular Movies", endpoint: "movie/popular", params: {}, fallback: "movie" },
+  { heading: "Popular Shows", endpoint: "tv/popular", params: {}, fallback: "tv" },
+  { heading: "Top Rated", endpoint: "movie/top_rated", params: {}, fallback: "movie" },
+  {
+    heading: "Animation",
+    endpoint: "discover/movie",
+    params: { with_genres: "16", sort_by: "popularity.desc" },
+    fallback: "movie",
+  },
+];
 
+async function loadRows(): Promise<Row[]> {
   const settled = await Promise.allSettled(
-    specs.map((s) => tmdb<TmdbPage>(s.endpoint, s.params)),
+    SPECS.map((s) => tmdb<TmdbPage>(s.endpoint, s.params)),
   );
 
   return settled.flatMap((result, i) => {
-    if (result.status !== "fulfilled") return [];
-    const titles = normalizeList(result.value, specs[i].fallback);
-    return titles.length ? [{ heading: specs[i].heading, titles }] : [];
+    if (result.status === "rejected") {
+      // Without this the row just vanishes and there is nothing to debug.
+      console.warn(`[home] row "${SPECS[i].heading}" failed:`, result.reason);
+      return [];
+    }
+    const titles = normalizeList(result.value, SPECS[i].fallback);
+    return titles.length ? [{ heading: SPECS[i].heading, titles }] : [];
   });
 }
 
@@ -49,13 +59,26 @@ export default async function HomePage() {
     );
   }
 
-  return (
-    <div className="space-y-10 py-8">
-      {rows.map((row, i) => (
-        <ContentRow key={row.heading} heading={row.heading} titles={row.titles} priority={i === 0} />
-      ))}
+  // Feature the first trending title that actually has artwork to fill a
+  // full-bleed hero; a missing backdrop leaves a black slab.
+  const hero = rows[0].titles.find((t) => t.backdropUrl);
 
-      <footer className="px-4 pt-8 text-xs leading-relaxed text-[var(--color-fg-subtle)] md:px-8">
+  return (
+    <div className="pb-16">
+      {hero && <HeroBanner title={hero} />}
+
+      <div className={`space-y-10 ${hero ? "-mt-8 relative z-10" : "pt-8"}`}>
+        {rows.map((row, i) => (
+          <ContentRow
+            key={row.heading}
+            heading={row.heading}
+            titles={row.titles}
+            priority={i === 0}
+          />
+        ))}
+      </div>
+
+      <footer className="px-4 pt-10 text-xs leading-relaxed text-[var(--color-fg-subtle)] md:px-8">
         This product uses the TMDB API but is not endorsed or certified by TMDB.
       </footer>
     </div>
