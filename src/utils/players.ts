@@ -133,6 +133,13 @@ export const getTvShowPlayers = (
 
   return [
     {
+      title: "VidKing",
+      source: `https://www.vidking.net/embed/tv/${id}/${season}/${episode}?color=f5a524&autoplay=false`,
+      recommended: true,
+      fast: true,
+      resumable: true,
+    },
+    {
       title: "VidLink",
       source: `https://vidlink.pro/tv/${id}/${season}/${episode}?player=jw&primaryColor=f5a524&secondaryColor=a2a2a2&iconColor=eefdec&autoplay=false${startParam}`,
       recommended: true,
@@ -146,13 +153,6 @@ export const getTvShowPlayers = (
       recommended: true,
       fast: true,
       ads: true,
-      resumable: true,
-    },
-    {
-      title: "VidKing",
-      source: `https://www.vidking.net/embed/tv/${id}/${season}/${episode}?color=f5a524&autoplay=false`,
-      recommended: true,
-      fast: true,
       resumable: true,
     },
     {

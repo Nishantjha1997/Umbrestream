@@ -1,5 +1,5 @@
 import { cn } from "@/utils/helpers";
-import { ArrowLeft, Next, Prev, Server } from "@/utils/icons";
+import { ArrowLeft, List, Next, Prev, Server } from "@/utils/icons";
 import PlayerActionButton from "@/components/ui/button/PlayerActionButton";
 
 interface AnimePlayerHeaderProps {
@@ -10,6 +10,7 @@ interface AnimePlayerHeaderProps {
   hidden?: boolean;
   selectedSource: number;
   onOpenSource: () => void;
+  onOpenEpisode: () => void;
 }
 
 const AnimePlayerHeader: React.FC<AnimePlayerHeaderProps> = ({
@@ -20,6 +21,7 @@ const AnimePlayerHeader: React.FC<AnimePlayerHeaderProps> = ({
   hidden,
   selectedSource,
   onOpenSource,
+  onOpenEpisode,
 }) => {
   const hasPrev = episode > 1;
   const hasNext = totalEpisodes ? episode < totalEpisodes : true;
@@ -61,6 +63,9 @@ const AnimePlayerHeader: React.FC<AnimePlayerHeaderProps> = ({
           color="secondary"
         >
           <Next size={42} />
+        </PlayerActionButton>
+        <PlayerActionButton label="Episodes" tooltip="Episodes" onClick={onOpenEpisode} color="secondary">
+          <List size={34} />
         </PlayerActionButton>
         <PlayerActionButton label="Sources" tooltip="Sources" onClick={onOpenSource} color="secondary">
           <Server size={34} />

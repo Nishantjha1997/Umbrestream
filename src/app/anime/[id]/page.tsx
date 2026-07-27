@@ -13,6 +13,7 @@ const BackdropSection = dynamic(() => import("@/components/sections/Anime/Detail
 const OverviewSection = dynamic(() => import("@/components/sections/Anime/Detail/Overview"));
 const StudiosSection = dynamic(() => import("@/components/sections/Anime/Detail/Studios"));
 const RelatedSection = dynamic(() => import("@/components/sections/Anime/Detail/Related"));
+const AnimeEpisodesSelection = dynamic(() => import("@/components/sections/Anime/Detail/Episodes"));
 
 const AnimeDetailPage: NextPage<Params<{ id: number }>> = ({ params }) => {
   const { id } = use(params);
@@ -65,6 +66,7 @@ const AnimeDetailPage: NextPage<Params<{ id: number }>> = ({ params }) => {
         <div className="flex flex-col gap-10">
           <BackdropSection anime={anime} />
           <OverviewSection anime={anime} />
+          <AnimeEpisodesSelection anime={anime} />
           <StudiosSection studios={anime.studios} />
           <RelatedSection recommendations={anime.recommendations} />
         </div>

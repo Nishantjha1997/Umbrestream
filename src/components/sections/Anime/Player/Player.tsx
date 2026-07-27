@@ -19,6 +19,7 @@ import { useEffect } from "react";
 const AdsWarning = dynamic(() => import("@/components/ui/overlay/AdsWarning"));
 const AnimePlayerHeader = dynamic(() => import("./Header"));
 const AnimePlayerSourceSelection = dynamic(() => import("./SourceSelection"));
+const AnimePlayerEpisodeSelection = dynamic(() => import("./EpisodeSelection"));
 const StuckStreamToast = dynamic(() => import("@/components/ui/overlay/StuckStreamToast"));
 
 interface AnimePlayerProps {
@@ -38,6 +39,7 @@ const AnimePlayer: React.FC<AnimePlayerProps> = ({ anime, episode, startAt }) =>
   const idle = useIdle(3000);
   const { mobile } = useBreakpoints();
   const [opened, handlers] = useDisclosure(false);
+  const [episodeOpened, episodeHandlers] = useDisclosure(false);
   const [selectedSource, setSelectedSource] = useQueryState<number>(
     "src",
     parseAsInteger.withDefault(0),
@@ -78,6 +80,7 @@ const AnimePlayer: React.FC<AnimePlayerProps> = ({ anime, episode, startAt }) =>
           totalEpisodes={anime.episodes}
           selectedSource={selectedSource}
           onOpenSource={handlers.open}
+          onOpenEpisode={episodeHandlers.open}
           hidden={idle && !mobile}
         />
         <Card shadow="md" radius="none" className="relative h-screen">
@@ -97,6 +100,13 @@ const AnimePlayer: React.FC<AnimePlayerProps> = ({ anime, episode, startAt }) =>
         players={players}
         selectedSource={selectedSource}
         setSelectedSource={setSelectedSource}
+      />
+
+      <AnimePlayerEpisodeSelection
+        opened={episodeOpened}
+        onClose={episodeHandlers.close}
+        anime={anime}
+        currentEpisode={episode}
       />
     </>
   );
