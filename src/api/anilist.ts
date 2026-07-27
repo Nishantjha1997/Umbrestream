@@ -135,6 +135,15 @@ export const anilistApi = {
 
   discover: (vars: PageQueryVars) => fetchPage(vars),
 
+  /**
+   * Returns `null` only when the anime genuinely doesn't exist.
+   *
+   * Request failures throw. They used to be swallowed into `null`, which
+   * callers then rendered as a hard 404 — so a transient AniList hiccup (their
+   * rate limit sits around 30 req/min and this app fans out across several
+   * rows) turned a valid title into "page not found". Swallowing also defeated
+   * react-query's retry entirely, since a resolved `null` looks like success.
+   */
   details: async (id: number): Promise<AniListMediaDetail | null> => {
     const query = `
       query ($id: Int) {
@@ -143,12 +152,8 @@ export const anilistApi = {
         }
       }
     `;
-    try {
-      const data = await anilist<{ Media: RawDetail | null }>(query, { id });
-      return data.Media ? normalizeDetail(data.Media) : null;
-    } catch {
-      return null;
-    }
+    const data = await anilist<{ Media: RawDetail | null }>(query, { id });
+    return data.Media ? normalizeDetail(data.Media) : null;
   },
 };
 

@@ -2,7 +2,7 @@
 
 import { anilistApi } from "@/api/anilist";
 import { Params } from "@/types";
-import { Spinner } from "@heroui/react";
+import { Button, Spinner } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
 import { notFound } from "next/navigation";
 import { Suspense, use } from "react";
@@ -21,6 +21,8 @@ const AnimeDetailPage: NextPage<Params<{ id: number }>> = ({ params }) => {
     data: anime,
     isPending,
     error,
+    refetch,
+    isFetching,
   } = useQuery({
     queryFn: () => anilistApi.details(id),
     queryKey: ["anime-detail", id],
@@ -34,11 +36,24 @@ const AnimeDetailPage: NextPage<Params<{ id: number }>> = ({ params }) => {
     );
   }
 
-  // anilistApi.details() swallows errors and resolves to null rather than
-  // throwing, so `!anime` is what actually catches the not-found case here —
-  // the `error` check just mirrors the same guard used by the sibling
-  // movie/tv detail pages and the anime player page.
-  if (error || !anime) notFound();
+  // A failed request is not a missing page. `details()` now throws on transient
+  // failures (AniList rate-limits fairly aggressively) and resolves to null
+  // only when the title genuinely doesn't exist, so the two are handled apart.
+  if (error) {
+    return (
+      <div className="absolute-center flex max-w-sm flex-col items-center gap-4 text-center">
+        <h4 className="text-lg font-semibold">Couldn&apos;t reach AniList</h4>
+        <p className="text-default-500 text-sm">
+          This title didn&apos;t load. It&apos;s usually temporary.
+        </p>
+        <Button color="secondary" isLoading={isFetching} onPress={() => refetch()}>
+          Try again
+        </Button>
+      </div>
+    );
+  }
+
+  if (!anime) notFound();
 
   return (
     <div className="mx-auto max-w-5xl">
