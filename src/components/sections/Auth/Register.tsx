@@ -9,8 +9,8 @@ import { useForm } from "react-hook-form";
 import { Turnstile } from "@marsidev/react-turnstile";
 import { useCallback, useState } from "react";
 import { isEmpty } from "@/utils/helpers";
-import { env } from "@/utils/env";
 import GoogleLoginButton from "@/components/ui/button/GoogleLoginButton";
+import { CAPTCHA_SITE_KEY, isCaptchaEnabled } from "@/utils/captcha";
 
 const AuthRegisterForm: React.FC<AuthFormProps> = ({ setForm }) => {
   const [isVerifying, setIsVerifying] = useState(false);
@@ -33,7 +33,7 @@ const AuthRegisterForm: React.FC<AuthFormProps> = ({ setForm }) => {
   });
 
   const onSubmit = handleSubmit(async (data) => {
-    if (isEmpty(data.captchaToken)) {
+    if (isCaptchaEnabled && isEmpty(data.captchaToken)) {
       setIsVerifying(true);
       return;
     }
@@ -119,10 +119,10 @@ const AuthRegisterForm: React.FC<AuthFormProps> = ({ setForm }) => {
           startContent={<LockPassword className="text-xl" />}
           isDisabled={isSubmitting || isVerifying}
         />
-        {isVerifying && (
+        {isCaptchaEnabled && isVerifying && (
           <Turnstile
             className="flex h-fit w-full items-center justify-center"
-            siteKey={env.NEXT_PUBLIC_CAPTCHA_SITE_KEY ?? ""}
+            siteKey={CAPTCHA_SITE_KEY}
             onSuccess={onCaptchaSuccess}
           />
         )}

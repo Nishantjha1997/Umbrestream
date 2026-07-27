@@ -14,6 +14,7 @@ import {
 } from "@/schemas/auth";
 import { z } from "zod";
 import { ActionResponse } from "@/types";
+import { isCaptchaEnabled } from "@/utils/captcha";
 
 /**
  * A generic type for our authentication actions.
@@ -44,7 +45,10 @@ const createAuthAction = <T extends { captchaToken?: string }>(
       return { success: false, message };
     }
 
-    if (!result.data.captchaToken) {
+    // Only require a token when Turnstile is actually configured. Requiring it
+    // unconditionally made sign-in impossible without a site key, because the
+    // client can never produce a token it has no widget to generate.
+    if (isCaptchaEnabled && !result.data.captchaToken) {
       return { success: false, message: "Captcha is required." };
     }
 

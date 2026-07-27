@@ -18,6 +18,24 @@ export default function Providers({ children }: PropsWithChildren) {
         defaultOptions: {
           queries: {
             staleTime: 5 * 60 * 1000,
+            // Retrying a misconfiguration just makes the UI hang. A missing
+            // TMDB_ACCESS_TOKEN makes /api/tmdb return 503 "Server not
+            // configured"; three retries with backoff kept every shelf stuck
+            // on a skeleton for ~10s before finally showing nothing, which
+            // reads as "very slow" rather than "broken". Fail fast on anything
+            // that won't fix itself.
+            retry: (failureCount, error) => {
+              const status = (error as { status?: number })?.status;
+              const message = error instanceof Error ? error.message : "";
+              const permanent =
+                status === 401 ||
+                status === 403 ||
+                status === 404 ||
+                status === 503 ||
+                /\b(401|403|404|503)\b/.test(message);
+              if (permanent) return false;
+              return failureCount < 2;
+            },
           },
         },
       }),

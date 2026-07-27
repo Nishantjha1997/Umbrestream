@@ -9,9 +9,9 @@ import { Turnstile } from "@marsidev/react-turnstile";
 import { useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
 import { AuthFormProps } from "./Forms";
-import { env } from "@/utils/env";
 import { useRouter } from "@bprogress/next/app";
 import GoogleLoginButton from "@/components/ui/button/GoogleLoginButton";
+import { CAPTCHA_SITE_KEY, isCaptchaEnabled } from "@/utils/captcha";
 
 const AuthLoginForm: React.FC<AuthFormProps> = ({ setForm }) => {
   const router = useRouter();
@@ -32,7 +32,9 @@ const AuthLoginForm: React.FC<AuthFormProps> = ({ setForm }) => {
   });
 
   const onSubmit = handleSubmit(async (data) => {
-    if (isEmpty(data.captchaToken)) {
+    // Only gate on a captcha token when Turnstile is actually configured.
+    // Otherwise the token never arrives and the form deadlocks on "Verifying...".
+    if (isCaptchaEnabled && isEmpty(data.captchaToken)) {
       setIsVerifying(true);
       return;
     }
@@ -107,10 +109,10 @@ const AuthLoginForm: React.FC<AuthFormProps> = ({ setForm }) => {
             Forgot password?
           </Link>
         </div>
-        {isVerifying && (
+        {isCaptchaEnabled && isVerifying && (
           <Turnstile
             className="flex h-fit w-full items-center justify-center"
-            siteKey={env.NEXT_PUBLIC_CAPTCHA_SITE_KEY ?? ""}
+            siteKey={CAPTCHA_SITE_KEY}
             onSuccess={onCaptchaSuccess}
           />
         )}

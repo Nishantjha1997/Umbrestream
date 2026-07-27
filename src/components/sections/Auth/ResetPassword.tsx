@@ -1,7 +1,7 @@
 import { resetPassword } from "@/actions/auth";
 import PasswordInput from "@/components/ui/input/PasswordInput";
 import { ResetPasswordFormSchema } from "@/schemas/auth";
-import { env } from "@/utils/env";
+import { CAPTCHA_SITE_KEY, isCaptchaEnabled } from "@/utils/captcha";
 import { isEmpty } from "@/utils/helpers";
 import { LockPassword } from "@/utils/icons";
 import { useRouter } from "@bprogress/next/app";
@@ -31,7 +31,7 @@ const AuthResetPasswordForm: React.FC = () => {
   });
 
   const onSubmit = handleSubmit(async (data) => {
-    if (isEmpty(data.captchaToken)) {
+    if (isCaptchaEnabled && isEmpty(data.captchaToken)) {
       setIsVerifying(true);
       return;
     }
@@ -93,10 +93,10 @@ const AuthResetPasswordForm: React.FC = () => {
         placeholder="Confirm your new password"
         startContent={<LockPassword className="text-xl" />}
       />
-      {isVerifying && (
+      {isCaptchaEnabled && isVerifying && (
         <Turnstile
           className="flex h-fit w-full items-center justify-center"
-          siteKey={env.NEXT_PUBLIC_CAPTCHA_SITE_KEY ?? ""}
+          siteKey={CAPTCHA_SITE_KEY}
           onSuccess={onCaptchaSuccess}
         />
       )}

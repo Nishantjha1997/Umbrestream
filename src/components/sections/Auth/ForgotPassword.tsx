@@ -8,7 +8,7 @@ import { isEmpty } from "@/utils/helpers";
 import { useCallback, useState } from "react";
 import { sendResetPasswordEmail } from "@/actions/auth";
 import { Turnstile } from "@marsidev/react-turnstile";
-import { env } from "@/utils/env";
+import { CAPTCHA_SITE_KEY, isCaptchaEnabled } from "@/utils/captcha";
 
 const AuthForgotPasswordForm: React.FC<AuthFormProps> = ({ setForm }) => {
   const [isVerifying, setIsVerifying] = useState(false);
@@ -27,7 +27,7 @@ const AuthForgotPasswordForm: React.FC<AuthFormProps> = ({ setForm }) => {
   });
 
   const onSubmit = handleSubmit(async (data) => {
-    if (isEmpty(data.captchaToken)) {
+    if (isCaptchaEnabled && isEmpty(data.captchaToken)) {
       setIsVerifying(true);
       return;
     }
@@ -79,10 +79,10 @@ const AuthForgotPasswordForm: React.FC<AuthFormProps> = ({ setForm }) => {
         startContent={<Mail className="text-xl" />}
         isDisabled={isSubmitting || isVerifying}
       />
-      {isVerifying && (
+      {isCaptchaEnabled && isVerifying && (
         <Turnstile
           className="flex h-fit w-full items-center justify-center"
-          siteKey={env.NEXT_PUBLIC_CAPTCHA_SITE_KEY ?? ""}
+          siteKey={CAPTCHA_SITE_KEY}
           onSuccess={onCaptchaSuccess}
         />
       )}
