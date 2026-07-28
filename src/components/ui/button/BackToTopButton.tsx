@@ -17,12 +17,14 @@ const BackToTopButton: React.FC = () => {
 
   return (
     <div className={cn("fixed bottom-20 right-4 z-9999 transition-opacity md:bottom-4")}>
+      {/* Floats over page content, so it uses the glass-control tier rather
+          than `variant="shadow"` — a coloured glow on a utility control pulls
+          more attention than the control deserves (§9). */}
       <IconButton
         onPress={scrollToTop}
         icon={<MdKeyboardArrowUp size={24} />}
-        variant="shadow"
-        color="primary"
-        className="motion-preset-focus"
+        variant="flat"
+        className="glass-control motion-preset-focus border shadow-(--elevation-lift)"
         tooltip="Back to top"
         tooltipProps={{ placement: "left" }}
         radius="full"

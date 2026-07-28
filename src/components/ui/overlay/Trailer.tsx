@@ -29,11 +29,16 @@ const Trailer: React.FC<TrailerProps> = ({ videos, color = "primary" }) => {
   if (!isEmpty(trailers)) {
     return (
       <>
+        {/* Secondary action beside the Play pill, so it gets a bordered
+            treatment rather than `variant="shadow"` — that variant emits a
+            coloured glow, and a glowing red button next to a flat white one
+            fights it for attention (§9). */}
         <Button
-          color="danger"
-          variant="shadow"
-          startContent={<Youtube size={22} />}
+          variant="bordered"
+          radius="full"
+          startContent={<Youtube size={20} />}
           onPress={() => handlers.open()}
+          className="border-foreground/25 text-foreground data-[hover=true]:border-foreground/50"
         >
           Trailer
         </Button>

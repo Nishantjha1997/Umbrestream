@@ -74,7 +74,9 @@ const AdsWarning: React.FC = () => {
           </ScrollShadow>
         </ModalBody>
         <ModalFooter className="justify-center">
-          <Button color="primary" variant="shadow" onPress={handleSeen}>
+          {/* The only action in this modal, so it is already unambiguous —
+              `solid` carries it without the coloured glow `shadow` adds (§9). */}
+          <Button color="primary" variant="solid" radius="full" onPress={handleSeen}>
             Okay, I understand
           </Button>
         </ModalFooter>

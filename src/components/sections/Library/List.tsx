@@ -185,11 +185,15 @@ const LibraryList = () => {
               <SelectItem key={key}>{label}</SelectItem>
             ))}
           </Select>
+          {/* Destructive, so it stays red — but `flat` rather than `shadow`.
+              A glowing red button is the loudest thing on the page, and this
+              is a rarely-used bulk action, not the primary path (§9). */}
           {hasItems && (
             <Button
               startContent={<Trash />}
               color="danger"
-              variant="shadow"
+              variant="flat"
+              radius="full"
               onPress={() => {
                 if (user) open();
               }}
