@@ -1,8 +1,9 @@
 "use client";
 
 import { Image } from "@heroui/image";
-import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform } from "motion/react";
 import { isEmpty } from "@/utils/helpers";
+import { useReducedMotionSafe } from "@/utils/motion";
 
 /**
  * Responsive height of the key-art band. Declared once because the section, the
@@ -55,7 +56,15 @@ const MediaBackdrop: React.FC<MediaBackdropProps> = ({
   alt,
 }) => {
   const { scrollY } = useScroll();
-  const prefersReducedMotion = useReducedMotion();
+  const prefersReducedMotion = useReducedMotionSafe();
+  /**
+   * Deliberately linear — no easing from `@/utils/motion` is applied here.
+   * The `--ease-*` tokens describe how a *time*-driven animation should
+   * accelerate; this value is driven by the scroll position, and a
+   * scroll-linked property that doesn't track the finger 1:1 reads as lag
+   * rather than polish. It also keeps the ramp identical to the
+   * `Math.min((y / 1000) * 2, 1)` version this replaced.
+   */
   const veilOpacity = useTransform(scrollY, [0, FADE_DISTANCE], [0, 1]);
 
   const hasBackdrop = !isEmpty(backdropUrl);
@@ -67,7 +76,7 @@ const MediaBackdrop: React.FC<MediaBackdropProps> = ({
           gradient scrims below already carry legibility on their own. */}
       <motion.div
         aria-hidden
-        className="absolute inset-0 z-10 bg-background"
+        className="bg-background absolute inset-0 z-10"
         style={{
           opacity: prefersReducedMotion ? 0 : veilOpacity,
           willChange: "opacity",
@@ -76,11 +85,11 @@ const MediaBackdrop: React.FC<MediaBackdropProps> = ({
       {/* Dual scrims fading the art into --background from both edges. */}
       <div
         aria-hidden
-        className="absolute inset-0 z-2 bg-linear-to-b from-background from-1% via-transparent via-30%"
+        className="from-background absolute inset-0 z-2 bg-linear-to-b from-1% via-transparent via-30%"
       />
       <div
         aria-hidden
-        className="absolute inset-0 z-2 translate-y-px bg-linear-to-t from-background from-1% via-transparent via-55%"
+        className="from-background absolute inset-0 z-2 translate-y-px bg-linear-to-t from-1% via-transparent via-55%"
       />
       {hasLogo && (
         <Image
@@ -102,7 +111,7 @@ const MediaBackdrop: React.FC<MediaBackdropProps> = ({
       ) : (
         <div
           aria-hidden
-          className={`z-0 w-screen bg-secondary-100 ${BAND_HEIGHT}`}
+          className={`bg-secondary-100 z-0 w-screen ${BAND_HEIGHT}`}
           style={fallbackColor ? { backgroundColor: fallbackColor } : undefined}
         />
       )}

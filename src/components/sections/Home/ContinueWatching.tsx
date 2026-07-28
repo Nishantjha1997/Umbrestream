@@ -31,6 +31,10 @@ const ContinueWatching: React.FC = () => {
     // serving the previous identity's history from cache.
     queryKey: ["continue-watching", user?.id],
     queryFn: () => getUserHistories(),
+    // Without this the rail fires once against `undefined` and again the moment
+    // the id resolves — two round trips per cold load, the second of which
+    // replaces the first. Same gate as <Recommended>.
+    enabled: !isUserLoading,
   });
 
   const histories = data?.success ? (data.data ?? []) : [];

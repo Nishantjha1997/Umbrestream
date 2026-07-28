@@ -3,7 +3,8 @@
 "use client";
 
 import { cn } from "@/utils/helpers";
-import { motion, useReducedMotion } from "framer-motion";
+import { transition, useReducedMotionSafe } from "@/utils/motion";
+import { motion } from "motion/react";
 
 export interface ThreeDMarqueeProps extends React.HTMLAttributes<HTMLDivElement> {
   images: string[];
@@ -16,7 +17,7 @@ const ThreeDMarquee: React.FC<ThreeDMarqueeProps> = ({ images, className, aspect
    * largest untamed animation in the app (§5.8). Reduced motion freezes the
    * wall in place — the composition still reads, it just stops moving.
    */
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useReducedMotionSafe();
   const chunkSize = Math.ceil(images.length / 4);
   const chunks = Array.from({ length: 4 }, (_, colIndex) => {
     const start = colIndex * chunkSize;
@@ -32,7 +33,7 @@ const ThreeDMarquee: React.FC<ThreeDMarqueeProps> = ({ images, className, aspect
       <div className="flex size-full items-center justify-center">
         <div className="size-[1400px] shrink-0 -translate-x-32 scale-75 md:scale-100">
           <div
-            className="relative right-[50%] top-96 grid size-full origin-top-left grid-cols-4 gap-8"
+            className="relative top-96 right-[50%] grid size-full origin-top-left grid-cols-4 gap-8"
             style={{
               transform: "rotateX(55deg) rotateY(0deg) rotateZ(-45deg)",
               transformStyle: "preserve-3d",
@@ -67,14 +68,7 @@ const ThreeDMarquee: React.FC<ThreeDMarqueeProps> = ({ images, className, aspect
                       width={aspect === "video" ? 970 : 600}
                       height={aspect === "video" ? 700 : 400}
                       whileHover={reduceMotion ? undefined : { y: -40 }}
-                      transition={
-                        reduceMotion
-                          ? undefined
-                          : {
-                              duration: 0.3,
-                              ease: [0.22, 1, 0.36, 1],
-                            }
-                      }
+                      transition={reduceMotion ? undefined : transition.base}
                       className={cn(
                         "rounded-lg object-cover ring-3 ring-gray-950/5 hover:shadow-2xl",
                         {

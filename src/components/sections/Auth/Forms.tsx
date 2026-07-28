@@ -7,10 +7,11 @@ import Brand from "@/components/ui/other/BrandLogo";
 import { SpacingClasses } from "@/utils/constants";
 import { cn, isEmpty, shuffleArray } from "@/utils/helpers";
 import { ArrowLeft } from "@/utils/icons";
+import { transition, useReducedMotionSafe } from "@/utils/motion";
 import { getImageUrl } from "@/utils/movies";
 import { Card, CardBody, CardHeader, ScrollShadow } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from "motion/react";
 import { usePathname } from "next/navigation";
 import { parseAsBoolean, parseAsStringLiteral, useQueryState } from "nuqs";
 import { useMemo } from "react";
@@ -26,15 +27,6 @@ export interface AuthFormProps {
   setForm: (form: (typeof ValidForms)[number]) => void;
 }
 
-/**
- * Mirrors `--duration-base` / `--ease-out-quint` from globals.css. Framer takes
- * seconds and a numeric bezier, so the tokens can't be referenced directly —
- * these are the same values, not new ones.
- */
-const DURATION_BASE = 0.28;
-const DURATION_CINEMATIC = 0.8;
-const EASE_OUT_QUINT = [0.22, 1, 0.36, 1] as const;
-
 const HEADINGS: Record<(typeof ValidForms)[number] | "reset", string> = {
   login: "Welcome back",
   register: "Create your account",
@@ -45,6 +37,7 @@ const HEADINGS: Record<(typeof ValidForms)[number] | "reset", string> = {
 const AuthForms: React.FC = () => {
   const pathname = usePathname();
   const reset = pathname === "/auth/reset-password";
+  const reduceMotion = useReducedMotionSafe();
 
   const [error, setError] = useQueryState("error", parseAsBoolean.withDefault(false));
   const [form, setForm] = useQueryState(
@@ -127,10 +120,13 @@ const AuthForms: React.FC = () => {
               <AnimatePresence mode="wait" initial={false}>
                 <motion.div
                   key={activeKey}
-                  initial={{ opacity: 0, y: 8 }}
+                  // Reduced motion keeps the cross-fade — opacity is not
+                  // motion — but drops the travel, which is the part that
+                  // actually moves on screen.
+                  initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: DURATION_BASE, ease: EASE_OUT_QUINT }}
+                  exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -8 }}
+                  transition={reduceMotion ? transition.fast : transition.base}
                 >
                   {reset ? (
                     <AuthResetPasswordForm />
@@ -162,7 +158,9 @@ const AuthForms: React.FC = () => {
           className="absolute inset-0"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: DURATION_CINEMATIC, ease: EASE_OUT_QUINT }}
+          // Opacity only, so this stays on under reduced motion; the wall's
+          // own drift is what ThreeDMarquee freezes.
+          transition={transition.cinematic}
         >
           <ThreeDMarquee className="absolute" images={IMAGES} aspect="poster" />
         </motion.div>

@@ -8,7 +8,8 @@ import { getEnglishLogoUrl } from "@/utils/movies";
 import { fromMovie, fromTvShow } from "@/utils/normalize-media";
 import { Skeleton } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { transition, useReducedMotionSafe } from "@/utils/motion";
+import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import type { Movie, TV } from "tmdb-ts/dist/types";
@@ -147,8 +148,9 @@ function useLogoArt(media?: MediaSummary) {
 }
 
 const Hero: React.FC = () => {
-  // The single reduced-motion gate for this component (§4).
-  const reduce = Boolean(useReducedMotion());
+  // The single reduced-motion gate for this component (§4). The Safe wrapper
+  // collapses Motion's `boolean | null` — the null is its pre-hydration state.
+  const reduce = useReducedMotionSafe();
 
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
