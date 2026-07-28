@@ -13,6 +13,7 @@ import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import type { Movie, TV } from "tmdb-ts/dist/types";
+import type { Video } from "tmdb-ts/dist/types/credits";
 
 /**
  * The home billboard.
@@ -41,6 +42,8 @@ import type { Movie, TV } from "tmdb-ts/dist/types";
 
 /** Dwell time per featured title before crossfading to the next. */
 const ROTATE_MS = 8000;
+/** How long the still holds before the trailer dissolves in over it. */
+const TRAILER_DELAY_MS = 2200;
 /** How many of today's trending items with artwork enter the rotation. */
 const MAX_FEATURED = 5;
 
@@ -122,6 +125,74 @@ function playLabelFor(media: MediaSummary): string {
 }
 
 /**
+ * YouTube key for the title's trailer, or null.
+ *
+ * TMDB's `videos` append carries promotional trailers and teasers that the
+ * studios publish to YouTube, which is exactly what a billboard wants: the
+ * backdrop for an unreleased film is frequently just re-cropped poster art, so
+ * it fills a 16:9 frame badly no matter how it is positioned. Motion fixes
+ * that where a still cannot.
+ *
+ * Preference order matters — an official trailer beats a fan-uploaded one, and
+ * a trailer beats a teaser.
+ */
+function useTrailerKey(media?: MediaSummary) {
+  return useQuery<string | null>({
+    queryKey: ["hero-trailer", media?.kind, media?.id],
+    enabled: media !== undefined && media.kind !== "anime",
+    staleTime: Infinity,
+    retry: false,
+    queryFn: async () => {
+      if (!media) return null;
+
+      const detail =
+        media.kind === "tv"
+          ? await tmdbBrowser.tvShows.details(media.id, ["videos"])
+          : await tmdbBrowser.movies.details(media.id, ["videos"]);
+
+      // TMDB returns `official` on every video, but tmdb-ts's `Video` type
+      // omits it. Widened here rather than dropped, because a studio-published
+      // trailer is materially better than a fan re-upload of the same footage.
+      const videos = (detail.videos?.results ?? []).filter(
+        (v) => v.site === "YouTube",
+      ) as (Video & { official?: boolean })[];
+
+      return (
+        videos.find((v) => v.type === "Trailer" && v.official)?.key ??
+        videos.find((v) => v.type === "Trailer")?.key ??
+        videos.find((v) => v.type === "Teaser")?.key ??
+        null
+      );
+    },
+  });
+}
+
+/**
+ * Build the embed URL.
+ *
+ * `mute=1` is not optional — browsers block autoplay with sound, so an unmuted
+ * embed simply never starts. `playlist` repeats the same id, which is how the
+ * IFrame API expresses a single-video loop. `nocookie` keeps this off YouTube's
+ * tracking domain until the user actually interacts with something.
+ */
+function trailerEmbedUrl(key: string): string {
+  const params = new URLSearchParams({
+    autoplay: "1",
+    mute: "1",
+    controls: "0",
+    loop: "1",
+    playlist: key,
+    modestbranding: "1",
+    playsinline: "1",
+    rel: "0",
+    iv_load_policy: "3",
+    disablekb: "1",
+    fs: "0",
+  });
+  return `https://www.youtube-nocookie.com/embed/${key}?${params}`;
+}
+
+/**
  * TMDB wordmark art for one title, or null when it has none.
  *
  * Called twice by the hero — once for the active item and once for the one
@@ -173,6 +244,32 @@ const Hero: React.FC = () => {
   const { data: logoUrl } = useLogoArt(active);
   // Warms the cache for the next crossfade. The result is deliberately unused.
   useLogoArt(upcoming);
+
+  const { data: trailerKey } = useTrailerKey(active);
+  useTrailerKey(upcoming);
+
+  /**
+   * The trailer is held back deliberately.
+   *
+   * Cutting straight to video means the billboard never resolves into a
+   * readable frame — the eye gets motion before it gets a title. Letting the
+   * still land first, then dissolving into the trailer, is the Apple TV+ / Netflix
+   * pattern. It also avoids paying for a YouTube iframe on titles the user
+   * scrolls past within a second.
+   */
+  const [trailerReady, setTrailerReady] = useState(false);
+
+  useEffect(() => {
+    setTrailerReady(false);
+    if (!trailerKey || reduce || !tabVisible) return;
+    const timer = window.setTimeout(() => setTrailerReady(true), TRAILER_DELAY_MS);
+    return () => window.clearTimeout(timer);
+    // Re-armed per title, so a rotation restarts the dwell rather than cutting
+    // the next trailer in instantly.
+  }, [trailerKey, reduce, tabVisible]);
+
+  // Never left running behind a hidden tab or under reduced motion.
+  const showTrailer = trailerReady && !!trailerKey && !reduce && tabVisible;
 
   useEffect(() => {
     const sync = () => setTabVisible(document.visibilityState === "visible");
@@ -234,6 +331,39 @@ const Hero: React.FC = () => {
           exit={{ opacity: 0, transition: { duration: reduce ? 0 : CINEMATIC, ease: "linear" } }}
           transition={{ duration: reduce ? 0 : CINEMATIC, ease: EASE_OUT_QUINT }}
         />
+      </AnimatePresence>
+
+      {/*
+        Trailer layer, above the still and below the scrims.
+
+        Sized larger than the frame and centred: YouTube letterboxes a 16:9 video
+        inside whatever box it is given, and on the 4:3 mobile frame that would
+        paint black bars straight across the billboard. Overscanning crops
+        instead, which is what `object-cover` does for the still.
+
+        `pointer-events-none` keeps the iframe from swallowing clicks meant for
+        the Play button — an iframe over content is a click sink otherwise.
+      */}
+      <AnimatePresence>
+        {showTrailer && trailerKey && (
+          <motion.div
+            key={`trailer-${trailerKey}`}
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 z-[5] overflow-hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: reduce ? 0 : 1.1, ease: "linear" }}
+          >
+            <iframe
+              src={trailerEmbedUrl(trailerKey)}
+              title={`${active.title} trailer`}
+              allow="autoplay; encrypted-media"
+              tabIndex={-1}
+              className="absolute top-1/2 left-1/2 h-[135%] w-[135%] -translate-x-1/2 -translate-y-1/2 border-0 sm:h-[115%] sm:w-[115%]"
+            />
+          </motion.div>
+        )}
       </AnimatePresence>
 
       {/* Scrims, painted bottom-up. Left-to-right first so the bottom fade wins
