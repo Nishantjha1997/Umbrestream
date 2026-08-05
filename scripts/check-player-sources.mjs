@@ -82,6 +82,10 @@ const selectionSources = [
 assert.equal(selectDefaultSource(selectionSources, {}).id, "vidking");
 assert.equal(selectDefaultSource(selectionSources, { preferredSubtitle: "en" }).id, "vidlink");
 assert.equal(
+  selectDefaultSource(selectionSources, { defaultId: "vidking", preferredSubtitle: "en" }).id,
+  "vidking",
+);
+assert.equal(
   selectDefaultSource(selectionSources, { requestedId: "vidking", preferredSubtitle: "en" }).id,
   "vidking",
 );

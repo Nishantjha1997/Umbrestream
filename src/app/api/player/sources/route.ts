@@ -192,7 +192,8 @@ export async function GET(request: Request): Promise<Response> {
     ...probes[index],
   }));
   const selectedDefault = selectDefaultSource(sources, {
-    preferredSubtitle: sourceRequest.preferredSubtitle,
+    preferredSubtitle:
+      sourceRequest.mediaType === "anime" ? sourceRequest.preferredSubtitle : undefined,
   });
   const response: SourceResolutionResponse = {
     sources,
