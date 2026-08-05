@@ -14,8 +14,8 @@ const BottomNavbar = () => {
   return (
     show && (
       <>
-        <div className="pt-20 md:hidden" />
-        <div className="glass-chrome fixed bottom-0 left-0 z-50 block h-fit w-full translate-y-px border-t py-2 transition-all duration-(--duration-base) motion-reduce:transition-none md:hidden">
+        <div className="h-[calc(5rem+env(safe-area-inset-bottom))] md:hidden" />
+        <div className="glass-chrome safe-bottom-nav fixed bottom-0 left-0 z-50 block h-fit w-full translate-y-px border-t pt-2 transition-all duration-(--duration-base) motion-reduce:transition-none md:hidden">
           <div
             className="mx-auto grid h-full max-w-lg"
             style={{ gridTemplateColumns: `repeat(${siteConfig.navItems.length}, minmax(0, 1fr))` }}
@@ -26,7 +26,7 @@ const BottomNavbar = () => {
                 <Link
                   href={item.href}
                   key={item.href}
-                  className="flex items-center justify-center text-foreground transition-transform duration-300 hover:scale-105 active:scale-95 motion-reduce:transition-none motion-reduce:hover:scale-100"
+                  className="text-foreground flex items-center justify-center transition-transform duration-300 hover:scale-105 active:scale-95 motion-reduce:transition-none motion-reduce:hover:scale-100"
                 >
                   <div className="flex max-h-[50px] flex-col items-center justify-center">
                     <Chip
@@ -42,7 +42,7 @@ const BottomNavbar = () => {
                     </Chip>
                     <p
                       className={clsx("text-[10px] transition-colors duration-300", {
-                        "font-bold text-primary": isActive,
+                        "text-primary font-bold": isActive,
                       })}
                     >
                       {item.label}

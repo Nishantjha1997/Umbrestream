@@ -41,6 +41,7 @@ async function anilist<T>(
 
 const MEDIA_SUMMARY_FIELDS = `
   id
+  idMal
   title { romaji english native }
   coverImage { extraLarge large medium color }
   format
@@ -161,6 +162,19 @@ export const anilistApi = {
 export function currentAniListSeason(): { seasonYear: number; season: string } {
   const now = new Date();
   const month = now.getMonth(); // 0-indexed
-  const seasons = ["WINTER", "WINTER", "SPRING", "SPRING", "SPRING", "SUMMER", "SUMMER", "SUMMER", "FALL", "FALL", "FALL", "WINTER"];
+  const seasons = [
+    "WINTER",
+    "WINTER",
+    "SPRING",
+    "SPRING",
+    "SPRING",
+    "SUMMER",
+    "SUMMER",
+    "SUMMER",
+    "FALL",
+    "FALL",
+    "FALL",
+    "WINTER",
+  ];
   return { seasonYear: now.getFullYear(), season: seasons[month] };
 }

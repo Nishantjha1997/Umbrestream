@@ -1,20 +1,8 @@
 // Trimmed to the fields this app actually queries — not the full AniList schema.
 
-export type AniListFormat =
-  | "TV"
-  | "TV_SHORT"
-  | "MOVIE"
-  | "SPECIAL"
-  | "OVA"
-  | "ONA"
-  | "MUSIC";
+export type AniListFormat = "TV" | "TV_SHORT" | "MOVIE" | "SPECIAL" | "OVA" | "ONA" | "MUSIC";
 
-export type AniListStatus =
-  | "FINISHED"
-  | "RELEASING"
-  | "NOT_YET_RELEASED"
-  | "CANCELLED"
-  | "HIATUS";
+export type AniListStatus = "FINISHED" | "RELEASING" | "NOT_YET_RELEASED" | "CANCELLED" | "HIATUS";
 
 export type AniListSeason = "WINTER" | "SPRING" | "SUMMER" | "FALL";
 
@@ -57,6 +45,7 @@ export interface AniListTrailer {
 /** Minimal shape used in list rows and recommendation cards. */
 export interface AniListMediaSummary {
   id: number;
+  idMal: number | null;
   title: AniListTitle;
   coverImage: AniListCoverImage;
   format: AniListFormat | null;
@@ -95,8 +84,4 @@ export interface AniListPage<T> {
   media: T[];
 }
 
-export type AniListSort =
-  | "TRENDING_DESC"
-  | "POPULARITY_DESC"
-  | "SCORE_DESC"
-  | "START_DATE_DESC";
+export type AniListSort = "TRENDING_DESC" | "POPULARITY_DESC" | "SCORE_DESC" | "START_DATE_DESC";

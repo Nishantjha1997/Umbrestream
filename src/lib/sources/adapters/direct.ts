@@ -35,6 +35,12 @@ export function createDirectAdapter(entries: DirectEntry[]): SourceAdapter {
   return {
     id: "direct",
     label: "Local library",
+    supportedMediaTypes: ["movie", "tv", "anime"],
+    identifierRequirements: {
+      movie: ["tmdbId"],
+      tv: ["tmdbId", "season", "episode"],
+      anime: ["anilistId", "episode"],
+    },
     priority: 0,
 
     supports(req) {
@@ -46,9 +52,18 @@ export function createDirectAdapter(entries: DirectEntry[]): SourceAdapter {
         .filter((e) => matches(e, req))
         .map((e, i) => ({
           id: `direct-${i}`,
+          providerId: "direct",
           label: e.label ?? (e.quality ? `${e.quality}p` : "Direct"),
           kind: kindOf(e.url),
           url: e.url,
+          providerOrigin: new URL(e.url).origin,
+          mediaType: req.mediaType,
+          priority: 0,
+          capabilities: {
+            resumable: true,
+            resumeParam: "startAt",
+            subtitles: "unverified",
+          },
           quality: e.quality,
         }));
     },

@@ -1,95 +1,44 @@
-# Source adapters
+# Player source adapters
 
-Everything that can produce a playable stream implements one interface. The
-player, the server dropdown, and the fallback chain talk to that interface and
-nothing else — so adding a backend is one new file plus one `register()` call,
-with no changes anywhere else in the app.
+Movie, TV, and Anime playback use one adapter registry. Each adapter declares a stable provider ID, supported media types, identifier requirements, media-specific priority, URL resolution, playback capabilities, audio variant, and iframe policy.
 
-## The contract
+The browser never supplies an arbitrary upstream URL. `/api/player/sources` builds eligible URLs from validated title identifiers, resolves adapters in parallel, and preflights each exact embed with a timeout. Exact-source successes are cached for 60 seconds; failed or inconclusive probes are cached for 15 seconds.
+
+## Current registry
+
+- Movie/TV: VidKing, two VidLink player modes, CineSrc, VidSrc RU, and VidSrc MOV.
+- Anime: documented sub/dub endpoints for VidSrc Anime, MegaPlay, and DropFile, plus AutoEmbed Anime's documented title route.
+
+Movie and TV providers were kept only after an exact player rendered the requested title. Anime hosts are more volatile, so their exact episode page must pass preflight before automatic selection; explicit 404/410/5xx pages, parked/suspended pages, homepage redirects, DNS failures, and timeouts are marked Failed. A failed provider stays in the server drawer for diagnosis and is retried after the short negative-cache window.
+
+Reference sites are used only to learn UX behavior such as grouped audio variants and server fallback. Their private resolver calls and undocumented protected endpoints are not copied.
+
+## Contract
 
 ```ts
 interface SourceAdapter {
   id: string;
-  label: string;                                  // shown in the dropdown
-  priority: number;                               // lower sorts first
-  supports(req: SourceRequest): boolean;          // cheap, synchronous
-  resolve(req: SourceRequest, signal?: AbortSignal): Promise<StreamCandidate[]>;
+  label: string;
+  supportedMediaTypes: MediaType[];
+  identifierRequirements: Partial<Record<MediaType, SourceIdentifier[]>>;
+  priority: number | ((request: SourceRequest) => number);
+  supports(request: SourceRequest): boolean;
+  resolve(request: SourceRequest, signal?: AbortSignal): Promise<StreamCandidate[]>;
 }
 ```
 
-`SourceRequest` carries whatever identifiers are known — `tmdbId`, `imdbId`,
-`anilistId`, plus `season`/`episode` for episodic content, and the user's
-preferred audio and subtitle languages.
+`SourceRequest` may carry a title, TMDB, IMDb, AniList, and MAL IDs plus season, episode, audio, subtitle, and resume preferences. `supports()` must return false whenever the adapter's required identifiers are unavailable.
 
-`StreamCandidate` is what you return: a `url`, a `kind` of `hls` | `mp4` |
-`iframe`, a display `label`, an optional numeric `quality` used for sorting,
-and optional `audioTracks` / `subtitleTracks`.
+`StreamCandidate` includes the stable provider ID, provider origin, media type, priority, audio variant, capability metadata, and an approved URL built by the adapter. Iframe candidates also declare their `allow`, referrer, and optional sandbox policy.
 
-## Writing one
+Subtitle capability is recorded as `native`, `unverified`, or `none`. When a request includes `preferredSubtitle`, automatic selection chooses the first usable native-caption provider, while an explicit `src=<provider-id>` remains pinned. This describes player capability, not a guarantee that every title has a matching subtitle file.
 
-See [`adapters/direct.ts`](./adapters/direct.ts) for a complete worked example.
-The shape is:
+## Adding a provider
 
-```ts
-import type { SourceAdapter } from "../types";
+1. Add an adapter under `adapters/` using only an authorized, documented embed or API contract.
+2. Validate all required identifiers in `supports()` and return no candidate if the request is incomplete.
+3. Honor the abort signal and throw on adapter failure so the resolver can report it without failing other providers.
+4. Register the adapter once in `bootstrap.ts`.
+5. Add Movie, TV, Anime, resume, ordering, and missing-identifier fixtures to `scripts/check-player-sources.mjs`.
 
-export const myAdapter: SourceAdapter = {
-  id: "my-source",
-  label: "My Source",
-  priority: 10,
-
-  supports(req) {
-    return req.mediaType === "movie" && req.tmdbId !== undefined;
-  },
-
-  async resolve(req, signal) {
-    const res = await fetch(`https://example.test/api/${req.tmdbId}`, { signal });
-    if (!res.ok) throw new Error(`Upstream ${res.status}`);
-    const data = await res.json();
-
-    return data.streams.map((s: { file: string; height: number }, i: number) => ({
-      id: `my-source-${i}`,
-      label: `${s.height}p`,
-      kind: s.file.endsWith(".m3u8") ? "hls" : "mp4",
-      url: s.file,
-      quality: s.height,
-    }));
-  },
-};
-```
-
-Then register it once at startup:
-
-```ts
-import { register } from "@/lib/sources/registry";
-import { myAdapter } from "@/lib/sources/adapters/my-source";
-
-register(myAdapter);
-```
-
-## Rules the registry relies on
-
-- **Throw on failure, don't return `[]` silently.** `resolveAll()` catches per
-  adapter and surfaces the message on that dropdown entry. Returning an empty
-  array instead makes a broken backend look like a title with no sources.
-- **Honour `signal`.** The player aborts in-flight resolution when the user
-  switches title. Un-abortable adapters leak requests.
-- **Keep `supports()` synchronous and cheap.** It runs for every adapter on
-  every resolve; it exists to avoid firing requests that cannot succeed.
-- **Never put a secret in an adapter that runs client-side.** If a backend
-  needs a key, resolve it in a route handler under `src/app/api/` and have the
-  adapter call your own endpoint — the same pattern as the TMDB proxy.
-- **Return `kind: "iframe"` only when there is genuinely no extractable file
-  URL.** Iframe sources can't participate in track selection or progress
-  reporting, so the player degrades to a bare embed with none of the app's
-  features working.
-
-## What ships here
-
-`direct` — maps a title to a file you already have (local HLS manifest, MP4 on
-a NAS, anything reachable by URL). It's the reference implementation.
-
-Any further adapters are yours to add. I've built the extension point and
-documented it, but I'm not writing integrations against services that serve
-unlicensed content — that's the one part of this project I'll leave to you
-rather than author myself.
+Do not accept source URLs from query parameters, expose provider secrets to the client, copy private endpoints, or bypass provider protections.

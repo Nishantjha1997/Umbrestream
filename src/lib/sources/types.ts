@@ -1,5 +1,34 @@
 import type { MediaType } from "@/types/title";
 
+export type AudioVariant = "sub" | "dub";
+export type SubtitleSupport = "native" | "unverified" | "none";
+export type SourceAvailability =
+  | "resolving"
+  | "loading"
+  | "ready"
+  | "available"
+  | "slow"
+  | "unverified"
+  | "failed"
+  | "switching";
+
+export interface SourceCapabilities {
+  recommended?: boolean;
+  fast?: boolean;
+  ads?: boolean;
+  resumable?: boolean;
+  events?: boolean;
+  /** Whether the provider player can render subtitles. Exact title availability may still vary. */
+  subtitles?: SubtitleSupport;
+  /** Query parameter used when resuming after a provider switch. */
+  resumeParam?: string;
+  iframe?: {
+    allow?: string;
+    referrerPolicy?: ReferrerPolicy;
+    sandbox?: string;
+  };
+}
+
 export interface MediaTrack {
   id: string;
   /** ISO 639-1 where known, otherwise "und". */
@@ -16,10 +45,16 @@ export type StreamKind = "hls" | "mp4" | "iframe";
 export interface StreamCandidate {
   /** Unique within its adapter. */
   id: string;
+  providerId: string;
   /** Shown in the server dropdown, e.g. "1080p Direct". */
   label: string;
   kind: StreamKind;
   url: string;
+  providerOrigin: string;
+  mediaType: MediaType;
+  priority: number;
+  audioVariant?: AudioVariant;
+  capabilities: SourceCapabilities;
   /** Higher wins when sorting candidates. */
   quality?: number;
   audioTracks?: MediaTrack[];
@@ -28,13 +63,34 @@ export interface StreamCandidate {
 
 export interface SourceRequest {
   mediaType: MediaType;
+  /** Human-readable title, used only by providers whose documented contract is title-based. */
+  title?: string;
   tmdbId?: number;
   imdbId?: string;
   anilistId?: number;
+  malId?: number;
   season?: number;
   episode?: number;
+  startAt?: number;
   preferredAudio?: string;
   preferredSubtitle?: string;
+}
+
+export interface PlayerSource extends StreamCandidate {
+  availability: SourceAvailability;
+  latencyMs?: number;
+  failureReason?: string;
+}
+
+export interface SourceResolutionError {
+  providerId: string;
+  message: string;
+}
+
+export interface SourceResolutionResponse {
+  sources: PlayerSource[];
+  defaultId: string | null;
+  errors: SourceResolutionError[];
 }
 
 /**
@@ -47,8 +103,15 @@ export interface SourceRequest {
 export interface SourceAdapter {
   id: string;
   label: string;
-  /** Lower sorts first in the dropdown. */
-  priority: number;
+  supportedMediaTypes: MediaType[];
+  identifierRequirements: Partial<
+    Record<
+      MediaType,
+      ("title" | "tmdbId" | "imdbId" | "anilistId" | "malId" | "season" | "episode")[]
+    >
+  >;
+  /** Lower sorts first. A function allows media-specific ordering. */
+  priority: number | ((req: SourceRequest) => number);
   /** Cheap synchronous check so we don't fire requests that can't succeed. */
   supports(req: SourceRequest): boolean;
   resolve(req: SourceRequest, signal?: AbortSignal): Promise<StreamCandidate[]>;

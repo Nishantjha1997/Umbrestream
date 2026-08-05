@@ -1,4 +1,5 @@
 import { createDirectAdapter, type DirectEntry } from "./adapters/direct";
+import { createEmbedAdapters } from "./adapters/embed";
 import { isRegistered, register } from "./registry";
 
 /**
@@ -19,4 +20,8 @@ const LIBRARY: DirectEntry[] = [
 // re-evaluates on HMR and a local flag would reset while the map may not.
 if (!isRegistered("direct")) {
   register(createDirectAdapter(LIBRARY));
+}
+
+for (const adapter of createEmbedAdapters()) {
+  if (!isRegistered(adapter.id)) register(adapter);
 }

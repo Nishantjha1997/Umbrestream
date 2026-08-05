@@ -35,17 +35,20 @@ const PlayerActionButton: React.FC<PlayerActionButtonProps> = ({
         aria-label={label}
         onClick={onClick}
         disabled={disabled}
-        className={cn("group drop-shadow-md [&>svg]:transition-all", {
-          [`hover:[&>svg]:scale-125 ${hoverColors[color]}`]: !disabled,
-          "cursor-not-allowed opacity-50": disabled,
-        })}
+        className={cn(
+          "group flex size-10 touch-manipulation items-center justify-center rounded-full drop-shadow-md sm:size-12 [&>svg]:transition-all",
+          {
+            [`hover:[&>svg]:scale-125 ${hoverColors[color]}`]: !disabled,
+            "cursor-not-allowed opacity-50": disabled,
+          },
+        )}
       >
         {children}
       </button>
     </Tooltip>
   );
 
-  return href ? (
+  return href && !disabled ? (
     <Link href={href} className="flex items-center">
       {Button}
     </Link>

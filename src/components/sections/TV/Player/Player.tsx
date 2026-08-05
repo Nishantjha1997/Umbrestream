@@ -1,23 +1,13 @@
-import { siteConfig } from "@/config/site";
-import { cn } from "@/utils/helpers";
-import { getTvShowPlayers } from "@/utils/players";
-import { Card, Skeleton } from "@heroui/react";
-import { useDisclosure, useDocumentTitle, useIdle, useLocalStorage } from "@mantine/hooks";
-import dynamic from "next/dynamic";
-import { parseAsInteger, useQueryState } from "nuqs";
-import { memo, useMemo } from "react";
-import { Episode, TvShowDetails } from "tmdb-ts";
-import useBreakpoints from "@/hooks/useBreakpoints";
-import { ADS_WARNING_STORAGE_KEY, SpacingClasses } from "@/utils/constants";
-import { usePlayerEvents } from "@/hooks/usePlayerEvents";
-import { useServerHealth } from "@/hooks/useServerHealth";
-import { useEffect } from "react";
+"use client";
 
-const AdsWarning = dynamic(() => import("@/components/ui/overlay/AdsWarning"));
-const TvShowPlayerHeader = dynamic(() => import("./Header"));
-const TvShowPlayerSourceSelection = dynamic(() => import("./SourceSelection"));
-const TvShowPlayerEpisodeSelection = dynamic(() => import("./EpisodeSelection"));
-const StuckStreamToast = dynamic(() => import("@/components/ui/overlay/StuckStreamToast"));
+import ReliablePlayer from "@/components/player/ReliablePlayer";
+import { siteConfig } from "@/config/site";
+import { getTvShowPlayers } from "@/utils/players";
+import { useDisclosure, useDocumentTitle } from "@mantine/hooks";
+import { memo } from "react";
+import type { Episode, TvShowDetails } from "tmdb-ts";
+import TvShowPlayerEpisodeSelection from "./EpisodeSelection";
+import TvShowPlayerHeader from "./Header";
 
 export interface TvShowPlayerProps {
   tv: TvShowDetails;
@@ -37,91 +27,50 @@ const TvShowPlayer: React.FC<TvShowPlayerProps> = ({
   episode,
   episodes,
   startAt,
-  ...props
+  ...headerProps
 }) => {
-  const [seen] = useLocalStorage<boolean>({
-    key: ADS_WARNING_STORAGE_KEY,
-    getInitialValueInEffect: false,
-  });
-
-  const { mobile } = useBreakpoints();
-  const players = getTvShowPlayers(id, episode.season_number, episode.episode_number, startAt);
-  const idle = useIdle(3000);
-  const [sourceOpened, sourceHandlers] = useDisclosure(false);
   const [episodeOpened, episodeHandlers] = useDisclosure(false);
-  const [selectedSource, setSelectedSource] = useQueryState<number>(
-    "src",
-    parseAsInteger.withDefault(0),
-  );
+  const season = episode.season_number;
+  const episodeNumber = episode.episode_number;
 
-  const healthMap = useServerHealth(players, true);
-
-  // Auto-switch to the first online server if the selected server is detected as offline
-  useEffect(() => {
-    if (healthMap[selectedSource] === "offline") {
-      const firstOnlineIndex = players.findIndex((_, idx) => healthMap[idx] === "online");
-      if (firstOnlineIndex !== -1 && firstOnlineIndex !== selectedSource) {
-        console.info(`Auto-switching TV player from offline server #${selectedSource} to online server #${firstOnlineIndex}`);
-        setSelectedSource(firstOnlineIndex);
-      }
-    }
-  }, [healthMap, selectedSource, players, setSelectedSource]);
-
-  usePlayerEvents({
-    saveHistory: true,
-    metadata: { season: episode.season_number, episode: episode.episode_number },
-  });
   useDocumentTitle(
-    `Play ${props.seriesName} - ${props.seasonName} - ${episode.name} | ${siteConfig.name}`,
+    `Play ${headerProps.seriesName} - ${headerProps.seasonName} - ${episode.name} | ${siteConfig.name}`,
   );
-
-  const PLAYER = useMemo(() => players[selectedSource] || players[0], [players, selectedSource]);
 
   return (
-    <>
-      <AdsWarning />
-
-      <div className={cn("relative", SpacingClasses.reset)}>
-        {/* Top hover-sensor zone to capture mouse activity and show the header overlay */}
-        <div className="absolute top-0 left-0 right-0 h-20 z-20" />
-
-        <StuckStreamToast onOpenSource={sourceHandlers.open} />
-
+    <ReliablePlayer
+      request={{
+        mediaType: "tv",
+        tmdbId: tv.id,
+        season,
+        episode: episodeNumber,
+        startAt,
+        preferredSubtitle: "en",
+      }}
+      legacyPlayers={getTvShowPlayers(id, season, episodeNumber, startAt)}
+      color="warning"
+      historyMetadata={{ season, episode: episodeNumber }}
+      renderHeader={({ hidden, selectedSourceId, onOpenSource }) => (
         <TvShowPlayerHeader
           id={id}
           episode={episode}
-          hidden={idle && !mobile}
-          selectedSource={selectedSource}
-          onOpenSource={sourceHandlers.open}
+          hidden={hidden}
+          selectedSource={selectedSourceId}
+          onOpenSource={onOpenSource}
           onOpenEpisode={episodeHandlers.open}
-          {...props}
+          {...headerProps}
         />
-
-        <Card shadow="md" radius="none" className="relative h-screen">
-          <Skeleton className="absolute h-full w-full" />
-          <iframe
-            allowFullScreen
-            key={PLAYER.title}
-            src={PLAYER.source}
-            className="z-10 h-full w-full border-none"
-          />
-        </Card>
-      </div>
-
-      <TvShowPlayerSourceSelection
-        opened={sourceOpened}
-        onClose={sourceHandlers.close}
-        players={players}
-        selectedSource={selectedSource}
-        setSelectedSource={setSelectedSource}
-      />
-      <TvShowPlayerEpisodeSelection
-        id={id}
-        opened={episodeOpened}
-        onClose={episodeHandlers.close}
-        episodes={episodes}
-      />
-    </>
+      )}
+      renderExtras={({ selectedSourceId }) => (
+        <TvShowPlayerEpisodeSelection
+          id={id}
+          opened={episodeOpened}
+          onClose={episodeHandlers.close}
+          episodes={episodes}
+          selectedSourceId={selectedSourceId}
+        />
+      )}
+    />
   );
 };
 

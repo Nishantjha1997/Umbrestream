@@ -2,6 +2,11 @@ import type { SourceAdapter, SourceRequest, StreamCandidate } from "./types";
 
 const adapters = new Map<string, SourceAdapter>();
 
+const priorityFor = (adapter: SourceAdapter, req?: SourceRequest): number => {
+  if (typeof adapter.priority === "number") return adapter.priority;
+  return req ? adapter.priority(req) : Number.MAX_SAFE_INTEGER;
+};
+
 export function register(adapter: SourceAdapter): void {
   if (adapters.has(adapter.id)) {
     throw new Error(`Source adapter "${adapter.id}" is already registered.`);
@@ -13,8 +18,8 @@ export function isRegistered(id: string): boolean {
   return adapters.has(id);
 }
 
-export function listAdapters(): SourceAdapter[] {
-  return [...adapters.values()].sort((a, b) => a.priority - b.priority);
+export function listAdapters(req?: SourceRequest): SourceAdapter[] {
+  return [...adapters.values()].sort((a, b) => priorityFor(a, req) - priorityFor(b, req));
 }
 
 export interface ResolvedGroup {
@@ -34,13 +39,19 @@ export interface ResolvedGroup {
 export async function resolveAll(
   req: SourceRequest,
   signal?: AbortSignal,
+  timeoutMs = 2500,
 ): Promise<ResolvedGroup[]> {
-  const eligible = listAdapters().filter((a) => a.supports(req));
+  const eligible = listAdapters(req).filter((a) => a.supports(req));
 
   const groups = await Promise.all(
     eligible.map(async (adapter): Promise<ResolvedGroup> => {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), timeoutMs);
+      const abort = () => controller.abort();
+      signal?.addEventListener("abort", abort, { once: true });
+
       try {
-        const candidates = await adapter.resolve(req, signal);
+        const candidates = await adapter.resolve(req, controller.signal);
         return {
           adapterId: adapter.id,
           adapterLabel: adapter.label,
@@ -53,6 +64,9 @@ export async function resolveAll(
           candidates: [],
           error: err instanceof Error ? err.message : "Unknown error",
         };
+      } finally {
+        clearTimeout(timeout);
+        signal?.removeEventListener("abort", abort);
       }
     }),
   );
@@ -62,5 +76,5 @@ export async function resolveAll(
 
 /** Flattened, ordered list the player walks top-down on playback error. */
 export function fallbackChain(groups: ResolvedGroup[]): StreamCandidate[] {
-  return groups.flatMap((g) => g.candidates);
+  return groups.flatMap((g) => g.candidates).sort((a, b) => a.priority - b.priority);
 }

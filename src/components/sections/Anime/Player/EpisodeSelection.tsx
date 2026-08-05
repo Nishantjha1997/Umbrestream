@@ -6,11 +6,13 @@ import { HandlerType } from "@/types/component";
 import { Button, Card, Chip, ScrollShadow } from "@heroui/react";
 import { PlayOutline } from "@/utils/icons";
 import Link from "next/link";
+import Image from "next/image";
 import type { AniListMediaDetail } from "@/types/anilist";
 
 interface AnimePlayerEpisodeSelectionProps extends HandlerType {
   anime: AniListMediaDetail;
   currentEpisode: number;
+  selectedSourceId?: string;
 }
 
 const AnimePlayerEpisodeSelection: React.FC<AnimePlayerEpisodeSelectionProps> = ({
@@ -18,6 +20,7 @@ const AnimePlayerEpisodeSelection: React.FC<AnimePlayerEpisodeSelectionProps> = 
   onClose,
   anime,
   currentEpisode,
+  selectedSourceId,
 }) => {
   const totalEpisodes = anime.episodes || 12;
   const CHUNK_SIZE = 50;
@@ -37,6 +40,7 @@ const AnimePlayerEpisodeSelection: React.FC<AnimePlayerEpisodeSelectionProps> = 
 
   const title = anime.title.english ?? anime.title.romaji ?? anime.title.native ?? "Anime";
   const coverUrl = anime.coverImage.large || anime.coverImage.medium || "";
+  const sourceQuery = selectedSourceId ? `?src=${encodeURIComponent(selectedSourceId)}` : "";
 
   return (
     <VaulDrawer
@@ -50,7 +54,7 @@ const AnimePlayerEpisodeSelection: React.FC<AnimePlayerEpisodeSelectionProps> = 
     >
       <div className="flex flex-col gap-3 p-4">
         {totalChunks > 1 && (
-          <div className="flex items-center gap-1 overflow-x-auto pb-2 border-b border-foreground-100">
+          <div className="border-foreground-100 flex items-center gap-1 overflow-x-auto border-b pb-2">
             {Array.from({ length: totalChunks }, (_, idx) => {
               const startEp = idx * CHUNK_SIZE + 1;
               const endEp = Math.min((idx + 1) * CHUNK_SIZE, totalEpisodes);
@@ -60,7 +64,7 @@ const AnimePlayerEpisodeSelection: React.FC<AnimePlayerEpisodeSelectionProps> = 
                   size="sm"
                   variant={selectedChunk === idx ? "solid" : "flat"}
                   color={selectedChunk === idx ? "secondary" : "default"}
-                  className="text-xs min-w-0 px-2.5 h-7"
+                  className="h-7 min-w-0 px-2.5 text-xs"
                   onPress={() => setSelectedChunk(idx)}
                 >
                   {startEp}-{endEp}
@@ -80,7 +84,7 @@ const AnimePlayerEpisodeSelection: React.FC<AnimePlayerEpisodeSelectionProps> = 
                   key={epNum}
                   isPressable
                   as={Link}
-                  href={`/anime/${anime.id}/player/${epNum}`}
+                  href={`/anime/${anime.id}/player/${epNum}${sourceQuery}`}
                   onClick={onClose}
                   className={`group relative flex flex-row items-center gap-3 overflow-hidden border p-2 transition-all ${
                     isCurrent
@@ -89,31 +93,38 @@ const AnimePlayerEpisodeSelection: React.FC<AnimePlayerEpisodeSelectionProps> = 
                   }`}
                 >
                   <div className="relative h-14 w-20 flex-shrink-0 overflow-hidden rounded-lg">
-                    <img
-                      src={coverUrl || ""}
-                      alt={`Episode ${epNum}`}
-                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
+                    {coverUrl ? (
+                      <Image
+                        src={coverUrl}
+                        alt={`Episode ${epNum}`}
+                        fill
+                        sizes="80px"
+                        unoptimized
+                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="bg-default-100 h-full w-full" />
+                    )}
                     <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
                       <PlayOutline className="text-secondary text-xl" />
                     </div>
                   </div>
 
-                  <div className="flex flex-col flex-1 gap-0.5 min-w-0">
+                  <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                     <div className="flex items-center gap-2">
                       <Chip
                         size="sm"
                         color={isCurrent ? "secondary" : "default"}
                         variant={isCurrent ? "solid" : "flat"}
-                        className="font-bold text-xs"
+                        className="text-xs font-bold"
                       >
                         EP {epNum}
                       </Chip>
-                      <h4 className="truncate text-xs font-semibold text-foreground">
+                      <h4 className="text-foreground truncate text-xs font-semibold">
                         Episode {epNum}
                       </h4>
                     </div>
-                    <p className="truncate text-[11px] text-default-400">{title}</p>
+                    <p className="text-default-400 truncate text-[11px]">{title}</p>
                   </div>
                 </Card>
               );

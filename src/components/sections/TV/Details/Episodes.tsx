@@ -31,6 +31,7 @@ interface EpisodeCardProps {
   episode: Episode;
   order?: number;
   withAnimation?: boolean;
+  sourceId?: string;
 }
 
 const TvShowEpisodesSelection: React.FC<TvShowEpisodesSelectionProps> = ({
@@ -91,13 +92,15 @@ export const EpisodeListCard: React.FC<EpisodeCardProps> = ({
   order = 1,
   id,
   withAnimation = true,
+  sourceId,
 }) => {
   const imageUrl = getImageUrl(episode.still_path);
   const { mobile } = useBreakpoints();
   const isNotReleased = !episode.air_date || new Date(episode.air_date) > new Date();
   const isOdd = order % 2 !== 0;
+  const sourceQuery = sourceId ? `?src=${encodeURIComponent(sourceId)}` : "";
   const href = !isNotReleased
-    ? `/tv/${id}/${episode.season_number}/${episode.episode_number}/player`
+    ? `/tv/${id}/${episode.season_number}/${episode.episode_number}/player${sourceQuery}`
     : undefined;
 
   return (

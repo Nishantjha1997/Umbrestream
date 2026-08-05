@@ -17,6 +17,7 @@ import { cn } from "@/utils/helpers";
 import { SpacingClasses } from "@/utils/constants";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { Suspense } from "react";
+import InstallAppPrompt from "@/components/pwa/InstallAppPrompt";
 
 export const metadata: Metadata = {
   title: siteConfig.name,
@@ -25,6 +26,15 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   icons: {
     icon: siteConfig.favicon,
+    apple: [{ url: "/icons/ios/180.png", sizes: "180x180", type: "image/png" }],
+  },
+  appleWebApp: {
+    capable: true,
+    title: siteConfig.name,
+    statusBarStyle: "black-translucent",
+  },
+  other: {
+    "apple-mobile-web-app-capable": "yes",
   },
   twitter: {
     card: "summary",
@@ -49,6 +59,9 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#FFFFFF" },
     { media: "(prefers-color-scheme: dark)", color: "#0D0C0F" },
@@ -58,7 +71,11 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html suppressHydrationWarning lang="en">
-      <body className={cn("bg-background min-h-dvh font-sans antialiased select-none")}>
+      <body
+        className={cn(
+          "bg-background min-h-dvh overflow-x-hidden font-sans antialiased select-none",
+        )}
+      >
         <Suspense>
           <NuqsAdapter>
             <Providers>
@@ -68,6 +85,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                   {children}
                 </main>
               </Sidebar>
+              <InstallAppPrompt />
               <BottomNavbar />
             </Providers>
           </NuqsAdapter>

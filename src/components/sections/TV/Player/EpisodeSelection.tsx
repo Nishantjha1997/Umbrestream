@@ -6,6 +6,7 @@ import { EpisodeListCard } from "../Details/Episodes";
 interface TvShowPlayerEpisodeSelectionProps extends HandlerType {
   id: number;
   episodes: Episode[];
+  selectedSourceId?: string;
 }
 
 const TvShowPlayerEpisodeSelection: React.FC<TvShowPlayerEpisodeSelectionProps> = ({
@@ -13,6 +14,7 @@ const TvShowPlayerEpisodeSelection: React.FC<TvShowPlayerEpisodeSelectionProps> 
   onClose,
   id,
   episodes,
+  selectedSourceId,
 }) => {
   return (
     <VaulDrawer
@@ -32,6 +34,7 @@ const TvShowPlayerEpisodeSelection: React.FC<TvShowPlayerEpisodeSelectionProps> 
             episode={episode}
             order={index + 1}
             withAnimation={false}
+            sourceId={selectedSourceId}
           />
         ))}
       </div>
