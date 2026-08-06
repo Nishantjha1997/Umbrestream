@@ -121,8 +121,8 @@ Still required after the latest change:
 4. Test the current build/browser route for Movie, TV, and Anime after rebuilding so the rendered iframe has no `sandbox` attribute.
 5. Verify `/admin` redirects unauthenticated users to `/auth?form=login&next=%2Fadmin`; do not place credentials in this file.
 6. Review the final diff and status carefully.
-7. Commit the complete scoped change and push `main` to the configured GitHub remote.
-8. Confirm Vercel deployment and remind the owner to apply the Supabase migrations and set required server environment variables.
+7. Completed: committed the complete scoped change as `99ccaa4` and pushed `main` to the configured GitHub remote.
+8. Vercel should now build from `main`. Confirm the deployment and remind the owner to apply the Supabase migrations and set required server environment variables.
 9. Stop the temporary local verification server and finalize browser tabs after testing.
 
 ## Temporary local verification environment
