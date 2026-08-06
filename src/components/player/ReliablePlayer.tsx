@@ -62,10 +62,6 @@ export default function ReliablePlayer({
   const handledEventVersionRef = useRef(0);
   const { failCurrent, markPlaybackReady } = engine;
   const { setAllowedOrigin } = events;
-  const handleStuckFallback = useCallback(
-    () => failCurrent("TV provider remained unverified after timeout"),
-    [failCurrent],
-  );
 
   // Narrow the postMessage allowlist to the provider actually on screen. `engine`
   // has to be constructed after `events` (it consumes events.currentTime), so the
@@ -165,7 +161,9 @@ export default function ReliablePlayer({
   }, [cinemaMode]);
 
   const context: PlayerHeaderContext = {
-    hidden: chrome.hidden,
+    // Keep server and episode controls visible during normal playback. Fullscreen
+    // still uses the idle chrome behavior so provider controls stay clear.
+    hidden: chrome.hidden && (fullscreen || cinemaMode),
     selectedSourceId: engine.selectedSourceId,
     onOpenSource: sourceHandlers.open,
     fullscreen: fullscreen || cinemaMode,
@@ -204,8 +202,6 @@ export default function ReliablePlayer({
           status={engine.selectedStatus}
           delayMs={12_000}
           onOpenSource={sourceHandlers.open}
-          autoFallback={request.mediaType === "tv"}
-          onAutoFallback={handleStuckFallback}
         />
 
         {/* The callback accesses fullscreen refs only after a user gesture. */}

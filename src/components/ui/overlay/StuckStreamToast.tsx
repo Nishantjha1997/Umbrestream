@@ -7,8 +7,6 @@ import type { SourceAvailability } from "@/lib/sources/types";
 
 interface StuckStreamToastProps {
   onOpenSource: () => void;
-  onAutoFallback?: () => void;
-  autoFallback?: boolean;
   sourceId?: string;
   status?: SourceAvailability;
   delayMs?: number;
@@ -16,8 +14,6 @@ interface StuckStreamToastProps {
 
 export const StuckStreamToast: React.FC<StuckStreamToastProps> = ({
   onOpenSource,
-  onAutoFallback,
-  autoFallback = false,
   sourceId,
   status = "unverified",
   delayMs = 12_000,
@@ -36,11 +32,10 @@ export const StuckStreamToast: React.FC<StuckStreamToastProps> = ({
 
     const timer = setTimeout(() => {
       setVisibleSourceId(sourceId);
-      if (autoFallback) onAutoFallback?.();
     }, delayMs);
 
     return () => clearTimeout(timer);
-  }, [autoFallback, canOfferSwitch, delayMs, onAutoFallback, sourceId]);
+  }, [canOfferSwitch, delayMs, sourceId]);
 
   if (!canOfferSwitch || visibleSourceId !== sourceId || dismissedSourceId === sourceId)
     return null;

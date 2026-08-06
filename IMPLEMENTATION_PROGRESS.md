@@ -118,12 +118,12 @@ Latest post-removal checks:
 Still required after the latest change:
 
 1. Run a production build if time permits. The previous production build passed before this latest capability-only removal; the post-removal typecheck and source checks now pass.
-4. Test the current build/browser route for Movie, TV, and Anime after rebuilding so the rendered iframe has no `sandbox` attribute.
-5. Verify `/admin` redirects unauthenticated users to `/auth?form=login&next=%2Fadmin`; do not place credentials in this file.
-6. Review the final diff and status carefully.
-7. Completed: committed the complete scoped change as `99ccaa4` and pushed `main` to the configured GitHub remote.
-8. Vercel should now build from `main`. Confirm the deployment and remind the owner to apply the Supabase migrations and set required server environment variables.
-9. Completed: stopped the verified temporary local server and finalized the browser verification tabs after resetting the temporary viewport.
+2. Test the current build/browser route for Movie, TV, and Anime after rebuilding so the rendered iframe has no `sandbox` attribute.
+3. Verify `/admin` redirects unauthenticated users to `/auth?form=login&next=%2Fadmin`; do not place credentials in this file.
+4. Review the final diff and status carefully.
+5. Completed: committed the complete scoped change as `99ccaa4` and pushed `main` to the configured GitHub remote.
+6. Vercel should now build from `main`. Confirm the deployment and remind the owner to apply the Supabase migrations and set required server environment variables.
+7. Completed: stopped the verified temporary local server and finalized the browser verification tabs after resetting the temporary viewport.
 
 Published handoff commits: `99ccaa4` (implementation) and `ee22166` (handoff status). The working tree was clean after the second push.
 
@@ -147,6 +147,6 @@ Published handoff commits: `99ccaa4` (implementation) and `ee22166` (handoff sta
 - Live smoke test of `/tv/97546/1/1/player` reproduced the problem: the route selected `?src=filmu`, Filmu returned the outer player page, but its iframe exposed no playable media and Umbra remained on the “Stream still loading?” prompt.
 - TV source priority is now explicitly `Filmu → VidKing → Cinezo → VidLink → VidLink Classic → experimental providers`.
 - The rollback generators also now place Filmu first and VidKing second for Movies and TV.
-- TV opaque iframes automatically invoke the existing hard-failure fallback after the 12-second unverified timeout. Movies and Anime still show the manual switch prompt without interrupting slow opaque playback.
+- TV opaque iframes no longer race through every provider after the 12-second unverified prompt. TV keeps the manual server prompt and only switches on an iframe network error or documented provider playback error, preventing a slow but valid provider from ending on a blank exhausted state.
 - The fallback uses the existing provider failure scoring, session demotion, manual pinning, stable `src` state, and one-pass loop prevention.
 - Post-change source checks, typecheck, lint, and diff validation pass.
