@@ -75,20 +75,20 @@ export default function ReliablePlayer({
       <AdsWarning />
 
       <div
-        className={cn("relative overflow-hidden bg-black", SpacingClasses.reset)}
+        className={cn("player-shell relative overflow-hidden bg-black", SpacingClasses.reset)}
         onPointerMove={chrome.reveal}
         onPointerDown={chrome.reveal}
         onKeyDown={chrome.reveal}
       >
         <div
           className={cn(
-            "pointer-events-none absolute inset-x-0 top-0 z-20 h-28 bg-linear-to-b from-black/85 via-black/30 to-transparent transition-opacity duration-300",
+            "pointer-events-none absolute inset-x-0 top-0 z-20 h-28 bg-linear-to-b from-black/85 via-black/30 to-transparent transition-opacity duration-300 motion-reduce:transition-none",
             chrome.hidden && "opacity-0",
           )}
         />
         <div
           className={cn(
-            "pointer-events-none absolute inset-x-0 bottom-0 z-20 h-24 bg-linear-to-t from-black/70 to-transparent transition-opacity duration-300",
+            "pointer-events-none absolute inset-x-0 bottom-0 z-20 h-24 bg-linear-to-t from-black/70 to-transparent transition-opacity duration-300 motion-reduce:transition-none",
             chrome.hidden && "opacity-0",
           )}
         />

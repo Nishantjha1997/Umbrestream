@@ -19,8 +19,8 @@ const MoviePlayerHeader: React.FC<MoviePlayerHeaderProps> = ({
     <div
       aria-hidden={hidden ? true : undefined}
       className={cn(
-        "player-safe-header absolute top-0 z-40 flex h-24 w-full items-start justify-between gap-2 sm:h-28",
-        "bg-linear-to-b from-black/80 to-transparent text-white transition-opacity",
+        "player-safe-header pointer-events-none absolute top-0 z-40 flex h-24 w-full items-start justify-between gap-2 sm:h-28",
+        "bg-linear-to-b from-black/80 to-transparent text-white transition-opacity motion-reduce:transition-none",
         { "pointer-events-none opacity-0": hidden },
       )}
     >
@@ -30,7 +30,7 @@ const MoviePlayerHeader: React.FC<MoviePlayerHeaderProps> = ({
       <div className="absolute left-1/2 hidden -translate-x-1/2 flex-col justify-center text-center sm:flex">
         <p className="text-sm text-white text-shadow-lg sm:text-lg lg:text-xl">{movieName}</p>
       </div>
-      <div className="flex items-center gap-1.5 sm:gap-4">
+      <div className="player-auxiliary-controls flex items-center gap-1.5 sm:gap-4">
         <PlayerActionButton
           label="Sources"
           tooltip="Sources"

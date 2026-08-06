@@ -28,8 +28,8 @@ const TvShowPlayerHeader: React.FC<TvShowPlayerHeaderProps> = ({
     <div
       aria-hidden={hidden ? true : undefined}
       className={cn(
-        "player-safe-header absolute top-0 z-40 flex h-24 w-full items-start justify-between gap-2 sm:h-28",
-        "bg-linear-to-b from-black/80 to-transparent text-white transition-opacity",
+        "player-safe-header pointer-events-none absolute top-0 z-40 flex h-24 w-full items-start justify-between gap-2 sm:h-28",
+        "bg-linear-to-b from-black/80 to-transparent text-white transition-opacity motion-reduce:transition-none",
         { "pointer-events-none opacity-0": hidden },
       )}
     >
@@ -42,7 +42,7 @@ const TvShowPlayerHeader: React.FC<TvShowPlayerHeaderProps> = ({
           {seasonName} - {episode.name}
         </p>
       </div>
-      <div className="flex items-center gap-1 sm:gap-4">
+      <div className="player-auxiliary-controls flex items-center gap-1 sm:gap-4">
         <PlayerActionButton
           disabled={!prevEpisodeNumber}
           label="Previous Episode"

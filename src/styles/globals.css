@@ -155,6 +155,35 @@
   right: max(0.5rem, env(safe-area-inset-right));
 }
 
+/*
+ * Embedded players own the top-right corner in phone landscape (cast, settings,
+ * captions, and provider menus). Keep Umbra's server/episode controls and its
+ * unverified-stream prompt out of that interaction zone while viewing
+ * immersively. Rotate back to portrait or leave fullscreen to change servers.
+ */
+@media (max-height: 540px) and (orientation: landscape) {
+  .player-shell .player-auxiliary-controls,
+  .player-shell .player-safe-toast {
+    display: none !important;
+  }
+}
+
+.player-shell:fullscreen .player-auxiliary-controls,
+.player-shell:fullscreen .player-safe-toast,
+:fullscreen .player-shell .player-auxiliary-controls,
+:fullscreen .player-shell .player-safe-toast {
+  display: none !important;
+}
+
+@supports selector(:-webkit-full-screen) {
+  .player-shell:-webkit-full-screen .player-auxiliary-controls,
+  .player-shell:-webkit-full-screen .player-safe-toast,
+  :-webkit-full-screen .player-shell .player-auxiliary-controls,
+  :-webkit-full-screen .player-shell .player-safe-toast {
+    display: none !important;
+  }
+}
+
 .safe-bottom-nav {
   padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
 }
