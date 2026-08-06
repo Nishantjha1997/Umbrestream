@@ -260,7 +260,7 @@ const definitions: EmbedDefinition[] = [
     label: "Filmu",
     origin: "https://embed.filmu.in",
     tier: "experimental",
-    priorities: { movie: 70, tv: 70 },
+    priorities: { movie: 5, tv: 5 },
     requirements: movieAndTvRequirements,
     build: (request) =>
       movieOrTv(

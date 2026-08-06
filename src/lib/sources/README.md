@@ -4,7 +4,7 @@ Movie, TV, and Anime playback use one adapter registry. Public iframe sources ar
 
 ## Current registry
 
-- Movie/TV: Cinezo, VidLink, VidKing, Vidrift, Vidbolt, Videasy, and Filmu.
+- Movie/TV: Filmu is the trial default, followed by Cinezo, VidLink, VidKing, Vidrift, Vidbolt, and Videasy.
 - Anime: VidLink sub/dub via MAL ID and Cinezo sub/dub via AniList ID.
 - Experimental Anime routes for Vidrift, Vidbolt, Videasy, and Filmu require an explicit `animeTmdbId`; they are excluded when that mapping is unavailable.
 - Authorized direct HLS, DASH, and MP4 entries can be supplied with `PLAYER_DIRECT_SOURCES_JSON` and play in Umbra's native player.

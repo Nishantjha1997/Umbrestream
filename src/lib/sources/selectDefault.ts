@@ -28,6 +28,9 @@ export function selectDefaultSource(
   );
   const automaticPool = verified.length ? verified : usable;
 
+  const configuredDefault = automaticPool.find((source) => source.id === defaultId);
+  if (configuredDefault) return configuredDefault;
+
   const captionPool = preferredSubtitle
     ? automaticPool.filter((source) => source.capabilities.subtitles === "native")
     : automaticPool;
@@ -39,9 +42,6 @@ export function selectDefaultSource(
     : captionPool.length
       ? captionPool
       : automaticPool;
-
-  const configuredDefault = preferredPool.find((source) => source.id === defaultId);
-  if (configuredDefault) return configuredDefault;
 
   return preferredPool[0] ?? null;
 }

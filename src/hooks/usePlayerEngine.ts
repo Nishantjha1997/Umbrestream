@@ -160,10 +160,14 @@ export function usePlayerEngine({ request, legacyPlayers, currentTime }: UsePlay
   const initialDefault = useMemo(
     () =>
       selectDefaultSource(immediate, {
+        defaultId:
+          request.mediaType === "movie" || request.mediaType === "tv"
+            ? immediate[0]?.id
+            : undefined,
         preferredSubtitle: request.preferredSubtitle,
         preferredAudio: request.preferredAudio,
       })?.id ?? null,
-    [immediate, request.preferredAudio, request.preferredSubtitle],
+    [immediate, request.mediaType, request.preferredAudio, request.preferredSubtitle],
   );
   const [sourceParam, setSourceParam] = useQueryState("src", parseAsString);
   const [response, setResponse] = useState<SourceResolutionResponse>(() => ({

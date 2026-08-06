@@ -96,6 +96,7 @@ const orderedIds = (request) =>
     .map((adapter) => adapter.id);
 
 assert.deepEqual(orderedIds(fixtures.movie), [
+  "filmu",
   "cinezo",
   "vidlink",
   "vidlink-native",
@@ -103,7 +104,6 @@ assert.deepEqual(orderedIds(fixtures.movie), [
   "vidrift",
   "vidbolt",
   "videasy",
-  "filmu",
 ]);
 assert.deepEqual(orderedIds(fixtures.tv), orderedIds(fixtures.movie));
 assert.deepEqual(orderedIds(fixtures.anime), [
@@ -119,10 +119,11 @@ assert(
   performance.now() - instantStartedAt < 100,
   "Public manifest should be synchronous and fast",
 );
-assert.equal(instantMovie[0].id, "cinezo");
+assert.equal(instantMovie[0].id, "filmu");
 assert(instantMovie.every((source) => source.availability === "unverified"));
 
 const cinezoMovie = { ...(await resolveOne("cinezo", fixtures.movie)), availability: "unverified" };
+const filmuMovie = { ...(await resolveOne("filmu", fixtures.movie)), availability: "unverified" };
 const vidkingMovie = {
   ...(await resolveOne("vidking", fixtures.movie)),
   availability: "unverified",
@@ -130,6 +131,13 @@ const vidkingMovie = {
 assert.equal(
   selectDefaultSource([vidkingMovie, cinezoMovie], { preferredSubtitle: "en" }).id,
   "cinezo",
+);
+assert.equal(
+  selectDefaultSource([filmuMovie, cinezoMovie], {
+    defaultId: "filmu",
+    preferredSubtitle: "en",
+  }).id,
+  "filmu",
 );
 assert.equal(
   selectDefaultSource([vidkingMovie, cinezoMovie], {

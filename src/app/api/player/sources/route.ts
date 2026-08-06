@@ -197,6 +197,10 @@ export async function GET(request: Request): Promise<Response> {
       : { ...candidate, availability: "unverified", healthEvidence: "manifest" },
   );
   const selectedDefault = selectDefaultSource(sources, {
+    defaultId:
+      sourceRequest.mediaType === "movie" || sourceRequest.mediaType === "tv"
+        ? sources[0]?.id
+        : undefined,
     preferredSubtitle: sourceRequest.preferredSubtitle,
     preferredAudio: sourceRequest.mediaType === "anime" ? sourceRequest.preferredAudio : undefined,
   });
