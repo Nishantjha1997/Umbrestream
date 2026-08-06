@@ -123,7 +123,9 @@ Still required after the latest change:
 6. Review the final diff and status carefully.
 7. Completed: committed the complete scoped change as `99ccaa4` and pushed `main` to the configured GitHub remote.
 8. Vercel should now build from `main`. Confirm the deployment and remind the owner to apply the Supabase migrations and set required server environment variables.
-9. Stop the temporary local verification server and finalize browser tabs after testing.
+9. Completed: stopped the verified temporary local server and finalized the browser verification tabs after resetting the temporary viewport.
+
+Published handoff commits: `99ccaa4` (implementation) and `ee22166` (handoff status). The working tree was clean after the second push.
 
 ## Temporary local verification environment
 
