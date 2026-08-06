@@ -150,3 +150,11 @@ Published handoff commits: `99ccaa4` (implementation) and `ee22166` (handoff sta
 - TV opaque iframes no longer race through every provider after the 12-second unverified prompt. TV keeps the manual server prompt and only switches on an iframe network error or documented provider playback error, preventing a slow but valid provider from ending on a blank exhausted state.
 - The fallback uses the existing provider failure scoring, session demotion, manual pinning, stable `src` state, and one-pass loop prevention.
 - Post-change source checks, typecheck, lint, and diff validation pass.
+
+## Live verification after TV rollback
+
+- Deployed commit `4f6f86e` was tested on `/tv/97546/1/1/player?src=filmu`.
+- After more than 20 seconds, the live route stayed on Filmu instead of racing through providers, and the Source and Episodes controls remained visible.
+- Manual VidKing selection changed the URL to `?src=vidking`; the live iframe exposed one video element with `readyState: 4`, `duration: 1855.989` seconds, `currentTime: 0`, `paused: true`, and no media error. Its player text showed `30:55`, confirming the episode media loaded.
+- The live Episodes drawer opened and listed the Ted Lasso season episodes.
+- `/admin` correctly redirects unauthenticated visitors to `/auth`. The supplied email/password did not authenticate: the live form returned “That email and password don’t match an account.” No account was created automatically.
