@@ -7,6 +7,7 @@ import {
 import { legacySourceId } from "../src/lib/sources/legacy.ts";
 import { fallbackChain, register, resolveAll } from "../src/lib/sources/registry.ts";
 import { selectDefaultSource } from "../src/lib/sources/selectDefault.ts";
+import { getMoviePlayers, getTvShowPlayers } from "../src/utils/players.ts";
 
 const fixtures = {
   movie: { mediaType: "movie", tmdbId: 1212763, startAt: 137, preferredSubtitle: "en" },
@@ -113,7 +114,16 @@ assert.deepEqual(orderedIds(fixtures.movie), [
   "vidbolt",
   "videasy",
 ]);
-assert.deepEqual(orderedIds(fixtures.tv), orderedIds(fixtures.movie));
+assert.deepEqual(orderedIds(fixtures.tv), [
+  "filmu",
+  "vidking",
+  "cinezo",
+  "vidlink",
+  "vidlink-native",
+  "vidrift",
+  "vidbolt",
+  "videasy",
+]);
 assert.deepEqual(orderedIds(fixtures.anime), [
   "anilink-sub",
   "anilink-dub",
@@ -167,6 +177,10 @@ assert.equal(legacySourceId("anime", "0"), "anilink-sub");
 assert.equal(legacySourceId("movie", "vidlink-alt"), "vidlink-native");
 assert.equal(legacySourceId("anime", "vidlink"), "anilink-sub");
 assert.equal(legacySourceId("anime", "cinezo-anime-dub"), "anilink-dub");
+assert.equal(getMoviePlayers(1212763)[0].title, "Filmu");
+assert.equal(getMoviePlayers(1212763)[1].title, "VidKing");
+assert.equal(getTvShowPlayers(97546, 1, 1)[0].title, "Filmu");
+assert.equal(getTvShowPlayers(97546, 1, 1)[1].title, "VidKing");
 
 const direct = createDirectAdapter([
   {

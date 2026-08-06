@@ -141,3 +141,12 @@ Published handoff commits: `99ccaa4` (implementation) and `ee22166` (handoff sta
 - Do not commit `.env.local`, Supabase service-role credentials, TMDB keys, provider tokens, cookies, or browser session data.
 - Do not claim provider playback is universally reliable. Report exact fixture results and distinguish `available`, `unverified`, `slow`, and `failed`.
 - Do not use provider redirect/error-page detection for fallback; the user explicitly excluded it.
+
+## TV fallback fix added 2026-08-07
+
+- Live smoke test of `/tv/97546/1/1/player` reproduced the problem: the route selected `?src=filmu`, Filmu returned the outer player page, but its iframe exposed no playable media and Umbra remained on the “Stream still loading?” prompt.
+- TV source priority is now explicitly `Filmu → VidKing → Cinezo → VidLink → VidLink Classic → experimental providers`.
+- The rollback generators also now place Filmu first and VidKing second for Movies and TV.
+- TV opaque iframes automatically invoke the existing hard-failure fallback after the 12-second unverified timeout. Movies and Anime still show the manual switch prompt without interrupting slow opaque playback.
+- The fallback uses the existing provider failure scoring, session demotion, manual pinning, stable `src` state, and one-pass loop prevention.
+- Post-change source checks, typecheck, lint, and diff validation pass.

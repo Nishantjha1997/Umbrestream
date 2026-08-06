@@ -26,6 +26,12 @@ const slugifyAnime = (title: string): string =>
 /** Rollback generator retained for one deployment while Player Engine V2 stabilizes. */
 export const getMoviePlayers = (id: string | number, startAt?: number): PlayersProps[] => [
   {
+    title: "Filmu",
+    source: `https://embed.filmu.in/movie/${id}`,
+    recommended: true,
+    resumable: true,
+  },
+  {
     title: "VidKing",
     source: createUrl(`https://www.vidking.net/embed/movie/${id}`, {
       color: "006fee",
@@ -96,6 +102,12 @@ export const getTvShowPlayers = (
   episode: number,
   startAt?: number,
 ): PlayersProps[] => [
+  {
+    title: "Filmu",
+    source: `https://embed.filmu.in/tv/${id}/${season}/${episode}`,
+    recommended: true,
+    resumable: true,
+  },
   {
     title: "VidKing",
     source: createUrl(`https://www.vidking.net/embed/tv/${id}/${season}/${episode}`, {

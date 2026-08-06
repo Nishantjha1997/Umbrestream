@@ -194,7 +194,7 @@ const definitions: EmbedDefinition[] = [
     label: "VidKing",
     origin: "https://www.vidking.net",
     tier: "stable",
-    priorities: { movie: 30, tv: 30 },
+    priorities: { movie: 30, tv: 6 },
     requirements: movieAndTvRequirements,
     build: (request) => {
       const base = movieOrTv(
