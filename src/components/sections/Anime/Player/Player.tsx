@@ -29,6 +29,7 @@ const AnimePlayer: React.FC<AnimePlayerProps> = ({ anime, episode, startAt }) =>
         malId: anime.idMal ?? undefined,
         episode,
         startAt,
+        preferredAudio: "sub",
         preferredSubtitle: "en",
       }}
       legacyPlayers={getAnimePlayers(anime.id, episode, startAt, anime.idMal, animeTitle)}

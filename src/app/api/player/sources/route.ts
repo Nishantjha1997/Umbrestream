@@ -43,6 +43,7 @@ function requestFrom(params: URLSearchParams): SourceRequest | null {
     imdbId: params.get("imdbId") ?? undefined,
     anilistId: numberParam(params, "anilistId"),
     malId: numberParam(params, "malId"),
+    animeTmdbId: numberParam(params, "animeTmdbId"),
     season: numberParam(params, "season"),
     episode: numberParam(params, "episode"),
     startAt: numberParam(params, "startAt"),
@@ -177,33 +178,42 @@ async function probe(url: string, requestSignal?: AbortSignal): Promise<ProbeRes
 }
 
 export async function GET(request: Request): Promise<Response> {
-  const sourceRequest = requestFrom(new URL(request.url).searchParams);
+  const startedAt = performance.now();
+  const searchParams = new URL(request.url).searchParams;
+  const sourceRequest = requestFrom(searchParams);
   if (!sourceRequest) {
     return Response.json({ message: "Invalid player source request." }, { status: 400 });
   }
 
-  const groups = await resolveAll(sourceRequest, request.signal, 4500);
+  const legacyPreflight = searchParams.get("version") === "2";
+  const groups = await resolveAll(sourceRequest, request.signal, legacyPreflight ? 4500 : 500);
   const candidates = fallbackChain(groups);
-  const probes = await Promise.all(
-    candidates.map((candidate) => probe(candidate.url, request.signal)),
+  const probes = legacyPreflight
+    ? await Promise.all(candidates.map((candidate) => probe(candidate.url, request.signal)))
+    : null;
+  const sources: PlayerSource[] = candidates.map((candidate, index) =>
+    probes
+      ? { ...candidate, ...probes[index] }
+      : { ...candidate, availability: "unverified", healthEvidence: "manifest" },
   );
-  const sources: PlayerSource[] = candidates.map((candidate, index) => ({
-    ...candidate,
-    ...probes[index],
-  }));
   const selectedDefault = selectDefaultSource(sources, {
-    preferredSubtitle:
-      sourceRequest.mediaType === "anime" ? sourceRequest.preferredSubtitle : undefined,
+    preferredSubtitle: sourceRequest.preferredSubtitle,
+    preferredAudio: sourceRequest.mediaType === "anime" ? sourceRequest.preferredAudio : undefined,
   });
+  const resolvedInMs = Math.round(performance.now() - startedAt);
   const response: SourceResolutionResponse = {
     sources,
     defaultId: selectedDefault?.id ?? null,
     errors: groups
       .filter((group) => group.error)
       .map((group) => ({ providerId: group.adapterId, message: group.error! })),
+    resolvedInMs,
   };
 
   return Response.json(response, {
-    headers: { "Cache-Control": "private, max-age=0, must-revalidate" },
+    headers: {
+      "Cache-Control": "private, max-age=0, must-revalidate",
+      "Server-Timing": `sources;dur=${resolvedInMs}`,
+    },
   });
 }

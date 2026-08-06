@@ -36,8 +36,8 @@ const LEGACY_SOURCE_ORDER: Record<MediaType, string[]> = {
     "moviesapi",
   ],
   anime: [
-    "vidlink",
-    "vidlink-alt",
+    "vidlink-anime-sub",
+    "vidlink-anime-dub",
     "vidking",
     "embed-su",
     "autoembed-player",
@@ -50,6 +50,12 @@ const LEGACY_SOURCE_ORDER: Record<MediaType, string[]> = {
 };
 
 export function legacySourceId(mediaType: MediaType, value: string | null): string | null {
-  if (!value || !/^\d+$/.test(value)) return value;
+  if (!value) return value;
+  if (!/^\d+$/.test(value)) {
+    if (value === "vidlink-alt") return "vidlink-native";
+    if (value === "cinesrc") return "cinezo";
+    if (mediaType === "anime" && value === "vidlink") return "vidlink-anime-sub";
+    return value;
+  }
   return LEGACY_SOURCE_ORDER[mediaType][Number(value)] ?? null;
 }

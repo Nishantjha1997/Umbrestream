@@ -1,6 +1,7 @@
 "use client";
 
 import PlayerSourceSelection from "@/components/player/PlayerSourceSelection";
+import NativePlayer from "@/components/player/NativePlayer";
 import AdsWarning from "@/components/ui/overlay/AdsWarning";
 import StuckStreamToast from "@/components/ui/overlay/StuckStreamToast";
 import useBreakpoints from "@/hooks/useBreakpoints";
@@ -78,7 +79,7 @@ export default function ReliablePlayer({
         <div className="absolute top-0 right-0 left-0 z-20 h-20" />
 
         <StuckStreamToast
-          key={engine.frameUrl ?? engine.selectedSourceId}
+          key={engine.playbackUrl ?? engine.selectedSourceId}
           sourceId={engine.selectedSourceId}
           status={engine.selectedStatus}
           delayMs={12_000}
@@ -87,21 +88,43 @@ export default function ReliablePlayer({
 
         {renderHeader(context)}
 
-        <Card shadow="md" radius="none" className="relative h-dvh min-h-[320px] bg-black">
+        <Card shadow="md" radius="none" className="relative h-svh min-h-[320px] bg-black">
           <Skeleton className="absolute h-full w-full" />
-          {engine.frameUrl && engine.selectedSource ? (
-            <iframe
-              allowFullScreen
-              allow={engine.selectedSource.capabilities.iframe?.allow}
-              referrerPolicy={engine.selectedSource.capabilities.iframe?.referrerPolicy}
-              sandbox={engine.selectedSource.capabilities.iframe?.sandbox}
-              key={`${engine.selectedSource.id}:${engine.frameUrl}`}
-              src={engine.frameUrl}
-              title={`${engine.selectedSource.label} player`}
-              onLoad={engine.markFrameLoaded}
-              onError={() => engine.failCurrent("Iframe network error")}
-              className="z-10 h-full w-full border-none"
-            />
+          {engine.playbackUrl && engine.selectedSource ? (
+            engine.selectedSource.kind === "iframe" ? (
+              <iframe
+                allowFullScreen
+                allow={engine.selectedSource.capabilities.iframe?.allow}
+                referrerPolicy={engine.selectedSource.capabilities.iframe?.referrerPolicy}
+                sandbox={engine.selectedSource.capabilities.iframe?.sandbox}
+                key={`${engine.selectedSource.id}:${engine.playbackUrl}`}
+                src={engine.playbackUrl}
+                title={`${engine.selectedSource.label} player`}
+                onLoad={engine.markFrameLoaded}
+                onError={() => engine.failCurrent("Iframe network error")}
+                className="z-10 h-full w-full border-none"
+              />
+            ) : (
+              <NativePlayer
+                key={`${engine.selectedSource.id}:${engine.playbackUrl}`}
+                source={engine.selectedSource}
+                src={engine.playbackUrl}
+                startAt={events.currentTime || request.startAt}
+                onReady={engine.markPlaybackReady}
+                onError={engine.failCurrent}
+                onEvent={(event, currentTime, duration) =>
+                  events.reportNativeEvent({
+                    event,
+                    currentTime,
+                    duration,
+                    mediaId: request.tmdbId ?? request.anilistId ?? "",
+                    mediaType: request.mediaType,
+                    season: request.season,
+                    episode: request.episode,
+                  })
+                }
+              />
+            )
           ) : (
             <div className="relative z-10 flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
               <h3 className="text-lg font-semibold">No playable source found</h3>

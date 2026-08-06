@@ -1,44 +1,54 @@
 # Player source adapters
 
-Movie, TV, and Anime playback use one adapter registry. Each adapter declares a stable provider ID, supported media types, identifier requirements, media-specific priority, URL resolution, playback capabilities, audio variant, and iframe policy.
-
-The browser never supplies an arbitrary upstream URL. `/api/player/sources` builds eligible URLs from validated title identifiers, resolves adapters in parallel, and preflights each exact embed with a timeout. Exact-source successes are cached for 60 seconds; failed or inconclusive probes are cached for 15 seconds.
+Movie, TV, and Anime playback use one adapter registry. Public iframe sources are built synchronously in the browser so playback never waits for upstream health requests. `/api/player/sources` returns the same manifest plus any server-configured direct sources; `version=2` retains the previous exact-page preflight for one rollback deployment.
 
 ## Current registry
 
-- Movie/TV: VidKing, two VidLink player modes, CineSrc, VidSrc RU, and VidSrc MOV.
-- Anime: documented sub/dub endpoints for VidSrc Anime, MegaPlay, and DropFile, plus AutoEmbed Anime's documented title route.
+- Movie/TV: Cinezo, VidLink, VidKing, Vidrift, Vidbolt, Videasy, and Filmu.
+- Anime: VidLink sub/dub via MAL ID and Cinezo sub/dub via AniList ID.
+- Experimental Anime routes for Vidrift, Vidbolt, Videasy, and Filmu require an explicit `animeTmdbId`; they are excluded when that mapping is unavailable.
+- Authorized direct HLS, DASH, and MP4 entries can be supplied with `PLAYER_DIRECT_SOURCES_JSON` and play in Umbra's native player.
 
-Movie and TV providers were kept only after an exact player rendered the requested title. Anime hosts are more volatile, so their exact episode page must pass preflight before automatic selection; explicit 404/410/5xx pages, parked/suspended pages, homepage redirects, DNS failures, and timeouts are marked Failed. A failed provider stays in the server drawer for diagnosis and is retried after the short negative-cache window.
+Cinezo, VidLink, and VidKing are stable adapters. Public providers without a developer contract are labelled experimental. VidLink player variants share one provider identity so a failed origin does not masquerade as two independent fallbacks.
 
-Reference sites are used only to learn UX behavior such as grouped audio variants and server fallback. Their private resolver calls and undocumented protected endpoints are not copied.
+Reference sites are used only to learn UX behavior such as grouped audio variants and server fallback. Their private resolver calls, tokens, and protected endpoints are not copied.
 
 ## Contract
 
-```ts
-interface SourceAdapter {
-  id: string;
-  label: string;
-  supportedMediaTypes: MediaType[];
-  identifierRequirements: Partial<Record<MediaType, SourceIdentifier[]>>;
-  priority: number | ((request: SourceRequest) => number);
-  supports(request: SourceRequest): boolean;
-  resolve(request: SourceRequest, signal?: AbortSignal): Promise<StreamCandidate[]>;
-}
+`SourceRequest` carries validated TMDB, IMDb, AniList, MAL, optional Anime TMDB, season, episode, audio, subtitle, and resume values. `StreamCandidate` declares a stable source and provider ID, provider tier, player variant, stream format, capabilities, and optional audio/subtitle tracks.
+
+Subtitle capability is `native`, `unverified`, or `none`. Caption requests prefer a native-caption source unless the user explicitly pins another server. Direct subtitle tracks are fetched only through `/api/player/subtitles`, which requires an HTTPS hostname listed in `PLAYER_SUBTITLE_HOSTS` and accepts only SRT/VTT files.
+
+## Direct-source configuration
+
+`PLAYER_DIRECT_SOURCES_JSON` is a JSON array matching `DirectEntry`. Example:
+
+```json
+[
+  {
+    "tmdbId": 27205,
+    "url": "https://media.example.com/inception.m3u8",
+    "quality": 1080,
+    "subtitleTracks": [
+      {
+        "id": "en",
+        "language": "en",
+        "label": "English",
+        "url": "https://subs.example.com/inception.srt",
+        "isDefault": true
+      }
+    ]
+  }
+]
 ```
 
-`SourceRequest` may carry a title, TMDB, IMDb, AniList, and MAL IDs plus season, episode, audio, subtitle, and resume preferences. `supports()` must return false whenever the adapter's required identifiers are unavailable.
-
-`StreamCandidate` includes the stable provider ID, provider origin, media type, priority, audio variant, capability metadata, and an approved URL built by the adapter. Iframe candidates also declare their `allow`, referrer, and optional sandbox policy.
-
-Subtitle capability is recorded as `native`, `unverified`, or `none`. When a request includes `preferredSubtitle`, automatic selection chooses the first usable native-caption provider, while an explicit `src=<provider-id>` remains pinned. This describes player capability, not a guarantee that every title has a matching subtitle file.
+The stream must be authorized for the site and expose browser-compatible CORS headers. Set `PLAYER_SUBTITLE_HOSTS=subs.example.com` for the example caption host.
 
 ## Adding a provider
 
-1. Add an adapter under `adapters/` using only an authorized, documented embed or API contract.
-2. Validate all required identifiers in `supports()` and return no candidate if the request is incomplete.
-3. Honor the abort signal and throw on adapter failure so the resolver can report it without failing other providers.
-4. Register the adapter once in `bootstrap.ts`.
-5. Add Movie, TV, Anime, resume, ordering, and missing-identifier fixtures to `scripts/check-player-sources.mjs`.
+1. Add an adapter under `adapters/` and assign a stable provider identity and tier.
+2. Validate identifiers in `supports()` and return no candidate when requirements are missing.
+3. Keep public embed resolution synchronous; asynchronous authenticated resolvers belong on the server.
+4. Add URL, ordering, missing-ID, audio, subtitle, and fallback fixtures to `scripts/check-player-sources.mjs`.
 
-Do not accept source URLs from query parameters, expose provider secrets to the client, copy private endpoints, or bypass provider protections.
+Do not accept arbitrary stream URLs from requests, expose provider secrets, copy private endpoints, or bypass provider protections.

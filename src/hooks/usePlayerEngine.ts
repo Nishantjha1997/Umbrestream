@@ -1,5 +1,6 @@
 "use client";
 
+import { createPublicEmbedSources } from "@/lib/sources/adapters/embed";
 import { legacySourceId } from "@/lib/sources/legacy";
 import { selectDefaultSource } from "@/lib/sources/selectDefault";
 import type {
@@ -8,13 +9,15 @@ import type {
   SourceRequest,
   SourceResolutionResponse,
 } from "@/lib/sources/types";
+import type { MediaType } from "@/types/title";
 import type { PlayersProps } from "@/types";
 import { track } from "@vercel/analytics";
 import { parseAsString, useQueryState } from "nuqs";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-const SESSION_FAILURE_KEY = "umbra:player-provider-failures:v1";
+const SESSION_HEALTH_KEY = "umbra:player-provider-health:v2";
 const ENGINE_V2_ENABLED = process.env.NEXT_PUBLIC_PLAYER_ENGINE_V2 !== "false";
+const ENGINE_V3_ENABLED = process.env.NEXT_PUBLIC_PLAYER_ENGINE_V3 !== "false";
 
 type StatusMap = Record<string, SourceAvailability>;
 
@@ -24,59 +27,79 @@ interface UsePlayerEngineOptions {
   currentTime: number;
 }
 
-interface SessionFailures {
-  [providerId: string]: number;
+interface ProviderHealth {
+  failures: number;
+  successes: number;
+  lastFailureAt?: number;
+  lastSuccessAt?: number;
+  lastStartupMs?: number;
+}
+
+interface SessionHealth {
+  providers: Record<string, ProviderHealth>;
+  lastSuccessful: Partial<Record<MediaType, string>>;
+}
+
+const EMPTY_HEALTH: SessionHealth = { providers: {}, lastSuccessful: {} };
+
+const emit = (name: string, properties: Record<string, string | number | boolean>): void => {
+  try {
+    track(name, properties);
+  } catch {
+    // Analytics must never interrupt playback.
+  }
+};
+
+function loadSessionHealth(): SessionHealth {
+  if (typeof window === "undefined") return EMPTY_HEALTH;
+  try {
+    const parsed: unknown = JSON.parse(sessionStorage.getItem(SESSION_HEALTH_KEY) ?? "{}");
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return EMPTY_HEALTH;
+    const value = parsed as Partial<SessionHealth>;
+    return {
+      providers: value.providers && typeof value.providers === "object" ? value.providers : {},
+      lastSuccessful:
+        value.lastSuccessful && typeof value.lastSuccessful === "object"
+          ? value.lastSuccessful
+          : {},
+    };
+  } catch {
+    return EMPTY_HEALTH;
+  }
+}
+
+function saveSessionHealth(health: SessionHealth): void {
+  try {
+    sessionStorage.setItem(SESSION_HEALTH_KEY, JSON.stringify(health));
+  } catch {
+    // Private browsing and storage policies may disable sessionStorage.
+  }
 }
 
 const providerIdFromTitle = (title: string, index: number): string => {
   const normalized = title.toLowerCase();
+  if (normalized.includes("cinezo") || normalized.includes("cinesrc")) return "cinezo";
   if (normalized.includes("vidking")) return "vidking";
-  if (
-    normalized.includes("vidlink") &&
-    (normalized.includes("2") || normalized.includes("native"))
-  ) {
-    return "vidlink-alt";
-  }
   if (normalized.includes("vidlink")) return "vidlink";
-  if (normalized.includes("embed.su") || normalized.includes("<embed>")) return "embed-su";
-  if (normalized.includes("autoembed") && normalized.includes("anime")) {
-    return "anime-autoembed";
-  }
-  if (normalized.includes("autoembed") && normalized.includes("2")) return "autoembed-player";
-  if (normalized.includes("autoembed")) return "autoembed";
-  if (normalized.includes("vidsrc anime") && normalized.includes("dub")) {
-    return "vidsrc-anime-dub";
-  }
-  if (normalized.includes("vidsrc anime")) return "vidsrc-anime-sub";
-  if (normalized.includes("vidsrc") && normalized.includes("icu")) return "vidsrc-icu";
-  if (normalized.includes("vidsrc") && normalized.includes("v3")) return "vidsrc-v3";
-  if (normalized.includes("vidsrc") && normalized.includes("to")) return "vidsrc-to";
-  if (normalized.includes("vidsrc") && normalized.includes("xyz")) return "vidsrc-xyz";
-  if (normalized.includes("cinesrc")) return "cinesrc";
-  if (normalized.includes("vidsrc") && normalized.includes("ru")) return "vidsrc-ru";
-  if (normalized.includes("vidsrc") && normalized.includes("mov")) return "vidsrc-mov";
-  if (normalized.includes("megaplay") && normalized.includes("dub")) return "megaplay-dub";
-  if (normalized.includes("megaplay")) return "megaplay-sub";
-  if (normalized.includes("dropfile") && normalized.includes("dub")) return "dropfile-dub";
-  if (normalized.includes("dropfile")) return "dropfile-sub";
-  if (normalized.includes("superembed")) return "superembed";
-  if (normalized.includes("filmku")) return "filmku";
-  if (normalized.includes("nontongo")) return "nontongo";
-  if (normalized.includes("2embed")) return "two-embed";
-  if (normalized.includes("moviesapi")) return "moviesapi";
+  if (normalized.includes("vidrift")) return "vidrift";
+  if (normalized.includes("vidbolt")) return "vidbolt";
+  if (normalized.includes("videasy")) return "videasy";
+  if (normalized.includes("filmu")) return "filmu";
   return `legacy-${index}`;
 };
 
 function legacySources(players: PlayersProps[], request: SourceRequest): PlayerSource[] {
   return players.map((player, index) => {
     const url = new URL(player.source);
+    const providerId = providerIdFromTitle(player.title, index);
     return {
-      id: providerIdFromTitle(player.title, index),
-      providerId: providerIdFromTitle(player.title, index),
+      id: providerId,
+      providerId,
       label: player.title,
       kind: "iframe",
       url: player.source,
       providerOrigin: url.origin,
+      providerTier: "experimental",
       mediaType: request.mediaType,
       priority: index,
       audioVariant:
@@ -90,52 +113,22 @@ function legacySources(players: PlayersProps[], request: SourceRequest): PlayerS
         fast: player.fast,
         ads: player.ads,
         resumable: player.resumable,
-        events:
-          url.hostname.includes("vidlink") ||
-          url.hostname.includes("vidking") ||
-          url.hostname.includes("cinesrc") ||
-          url.hostname.includes("megaplay"),
+        events: url.hostname.includes("vidlink") || url.hostname.includes("vidking"),
         resumeParam: url.hostname.includes("vidlink") ? "startAt" : undefined,
-        subtitles:
-          url.hostname.includes("vidlink") ||
-          url.hostname.includes("cinesrc") ||
-          url.hostname.includes("vidsrc") ||
-          url.hostname.includes("dropfile")
-            ? "native"
-            : url.hostname.includes("vidking")
-              ? "none"
-              : "unverified",
+        subtitles: url.hostname.includes("vidking") ? "none" : "unverified",
+        iframe: {
+          allow: "autoplay; encrypted-media; picture-in-picture; fullscreen; screen-wake-lock",
+          referrerPolicy: "origin-when-cross-origin",
+        },
       },
       availability: "unverified",
+      healthEvidence: "manifest",
     };
   });
 }
 
-function loadSessionFailures(): SessionFailures {
-  if (typeof window === "undefined") return {};
-  try {
-    const parsed: unknown = JSON.parse(sessionStorage.getItem(SESSION_FAILURE_KEY) ?? "{}");
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
-    return Object.fromEntries(
-      Object.entries(parsed).filter((entry): entry is [string, number] =>
-        Number.isFinite(entry[1]),
-      ),
-    );
-  } catch {
-    return {};
-  }
-}
-
-function saveSessionFailures(failures: SessionFailures): void {
-  try {
-    sessionStorage.setItem(SESSION_FAILURE_KEY, JSON.stringify(failures));
-  } catch {
-    // Private browsing and storage policies may disable sessionStorage.
-  }
-}
-
-function sourceRequestUrl(request: SourceRequest): string {
-  const params = new URLSearchParams({ mediaType: request.mediaType });
+function sourceRequestUrl(request: SourceRequest, version: 2 | 3): string {
+  const params = new URLSearchParams({ mediaType: request.mediaType, version: String(version) });
   Object.entries(request).forEach(([key, value]) => {
     if (key !== "mediaType" && value !== undefined && value !== "") params.set(key, String(value));
   });
@@ -143,6 +136,7 @@ function sourceRequestUrl(request: SourceRequest): string {
 }
 
 function withResume(source: PlayerSource, seconds: number): string {
+  if (source.kind !== "iframe") return source.url;
   const resumeParam = source.capabilities.resumeParam;
   if (!resumeParam || seconds <= 5) return source.url;
   const url = new URL(source.url);
@@ -150,66 +144,74 @@ function withResume(source: PlayerSource, seconds: number): string {
   return url.toString();
 }
 
-const emit = (name: string, properties: Record<string, string | number | boolean>): void => {
-  try {
-    track(name, properties);
-  } catch {
-    // Analytics must never interrupt playback.
-  }
-};
-
 export function usePlayerEngine({ request, legacyPlayers, currentTime }: UsePlayerEngineOptions) {
   const requestKey = JSON.stringify(request);
-  const fallback = useMemo(
+  const legacy = useMemo(
     () => legacySources(legacyPlayers, request),
     // The request key is the stable representation; player arrays are rebuilt by callers.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [requestKey],
   );
+  const immediate = useMemo(
+    () => (ENGINE_V3_ENABLED ? createPublicEmbedSources(request) : legacy),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [requestKey, legacy],
+  );
+  const initialDefault = useMemo(
+    () =>
+      selectDefaultSource(immediate, {
+        preferredSubtitle: request.preferredSubtitle,
+        preferredAudio: request.preferredAudio,
+      })?.id ?? null,
+    [immediate, request.preferredAudio, request.preferredSubtitle],
+  );
   const [sourceParam, setSourceParam] = useQueryState("src", parseAsString);
-  const [response, setResponse] = useState<SourceResolutionResponse>({
-    sources: [],
-    defaultId: null,
+  const [response, setResponse] = useState<SourceResolutionResponse>(() => ({
+    sources: immediate,
+    defaultId: initialDefault,
     errors: [],
-  });
+  }));
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [runtimeStatuses, setRuntimeStatuses] = useState<StatusMap>({});
-  const [frameUrl, setFrameUrl] = useState<string | null>(null);
-  const [resolving, setResolving] = useState(true);
+  const [playbackUrl, setPlaybackUrl] = useState<string | null>(null);
+  const [resolving, setResolving] = useState(ENGINE_V2_ENABLED);
   const [resolutionError, setResolutionError] = useState<string | null>(null);
   const [exhausted, setExhausted] = useState(false);
-  const attemptedRef = useRef(new Set<string>());
-  const hardFailedRef = useRef(new Set<string>());
+  const attemptedProvidersRef = useRef(new Set<string>());
+  const hardFailedProvidersRef = useRef(new Set<string>());
+  const readySourcesRef = useRef(new Set<string>());
   const currentTimeRef = useRef(currentTime);
-  const reportedFailuresRef = useRef(new Set<string>());
+  const manualPinnedRef = useRef(false);
+  const playbackReadyRef = useRef(false);
+  const selectionStartedAtRef = useRef(performance.now());
 
   useEffect(() => {
     currentTimeRef.current = currentTime;
   }, [currentTime]);
 
   useEffect(() => {
-    attemptedRef.current.clear();
-    hardFailedRef.current.clear();
-    reportedFailuresRef.current.clear();
+    attemptedProvidersRef.current.clear();
+    hardFailedProvidersRef.current.clear();
+    readySourcesRef.current.clear();
+    manualPinnedRef.current = false;
+    playbackReadyRef.current = false;
     setSelectedId(null);
     setRuntimeStatuses({});
     setExhausted(false);
     setResolutionError(null);
 
     if (!ENGINE_V2_ENABLED) {
-      const selectedDefault = selectDefaultSource(fallback, {
-        preferredSubtitle: request.preferredSubtitle,
-      });
-      setResponse({ sources: fallback, defaultId: selectedDefault?.id ?? null, errors: [] });
+      setResponse({ sources: legacy, defaultId: initialDefault, errors: [] });
       setResolving(false);
       return;
     }
 
+    setResponse({ sources: immediate, defaultId: initialDefault, errors: [] });
     const controller = new AbortController();
     setResolving(true);
-
+    const requestStartedAt = performance.now();
     let active = true;
-    fetch(sourceRequestUrl(request), { signal: controller.signal })
+    fetch(sourceRequestUrl(request, ENGINE_V3_ENABLED ? 3 : 2), { signal: controller.signal })
       .then(async (result) => {
         if (!result.ok) throw new Error(`Source resolver returned ${result.status}`);
         return (await result.json()) as SourceResolutionResponse;
@@ -217,29 +219,36 @@ export function usePlayerEngine({ request, legacyPlayers, currentTime }: UsePlay
       .then((data) => {
         if (!active) return;
         setResponse(data);
+        emit("player_manifest_resolved", {
+          mediaType: request.mediaType,
+          elapsedMs: Math.round(performance.now() - requestStartedAt),
+          serverMs: data.resolvedInMs ?? -1,
+          sourceCount: data.sources.length,
+        });
+        if (
+          ENGINE_V3_ENABLED &&
+          data.defaultId?.startsWith("direct-") &&
+          !sourceParam &&
+          !manualPinnedRef.current &&
+          !playbackReadyRef.current
+        ) {
+          setSelectedId(data.defaultId);
+        }
         data.sources
           .filter((source) => source.availability === "failed")
-          .forEach((source) => {
-            if (reportedFailuresRef.current.has(source.id)) return;
-            reportedFailuresRef.current.add(source.id);
+          .forEach((source) =>
             emit("player_preflight_failed", {
               provider: source.providerId,
               mediaType: request.mediaType,
-            });
-          });
+            }),
+          );
       })
       .catch((error) => {
         if (error instanceof Error && error.name === "AbortError") return;
         if (!active) return;
         setResolutionError(error instanceof Error ? error.message : "Source resolution failed");
-        setResponse({
-          sources: fallback,
-          defaultId:
-            selectDefaultSource(fallback, {
-              preferredSubtitle: request.preferredSubtitle,
-            })?.id ?? null,
-          errors: [],
-        });
+        if (!immediate.length)
+          setResponse({ sources: legacy, defaultId: initialDefault, errors: [] });
       })
       .finally(() => {
         if (active) setResolving(false);
@@ -253,13 +262,18 @@ export function usePlayerEngine({ request, legacyPlayers, currentTime }: UsePlay
   }, [requestKey]);
 
   const orderedSources = useMemo(() => {
-    const failures = loadSessionFailures();
+    const health = loadSessionHealth();
+    const lastSuccessful = health.lastSuccessful[request.mediaType];
     return [...response.sources].sort((a, b) => {
-      const aFailed = failures[a.providerId] ? 1 : 0;
-      const bFailed = failures[b.providerId] ? 1 : 0;
-      return aFailed - bFailed || a.priority - b.priority;
+      const aHealth = health.providers[a.providerId];
+      const bHealth = health.providers[b.providerId];
+      const aFailed = aHealth?.failures ? 1 : 0;
+      const bFailed = bHealth?.failures ? 1 : 0;
+      const aPreferred = a.providerId === lastSuccessful ? 0 : 1;
+      const bPreferred = b.providerId === lastSuccessful ? 0 : 1;
+      return aFailed - bFailed || aPreferred - bPreferred || a.priority - b.priority;
     });
-  }, [response.sources]);
+  }, [request.mediaType, response.sources]);
 
   useEffect(() => {
     if (!orderedSources.length) return;
@@ -268,14 +282,15 @@ export function usePlayerEngine({ request, legacyPlayers, currentTime }: UsePlay
       requestedId,
       defaultId: response.defaultId,
       preferredSubtitle: request.preferredSubtitle,
+      preferredAudio: request.preferredAudio,
     });
     if (!next) return;
-
     setSelectedId((current) => current ?? next.id);
     if (sourceParam !== next.id) void setSourceParam(next.id);
   }, [
     orderedSources,
     request.mediaType,
+    request.preferredAudio,
     request.preferredSubtitle,
     response.defaultId,
     setSourceParam,
@@ -289,25 +304,26 @@ export function usePlayerEngine({ request, legacyPlayers, currentTime }: UsePlay
 
   useEffect(() => {
     if (!selectedSource) {
-      setFrameUrl(null);
+      setPlaybackUrl(null);
       return;
     }
-    if (!attemptedRef.current.has(selectedSource.id)) {
-      emit("player_provider_selected", {
-        provider: selectedSource.providerId,
-        mediaType: request.mediaType,
-        automatic: false,
-        subtitles: selectedSource.capabilities.subtitles ?? "unverified",
-      });
-    }
-    attemptedRef.current.add(selectedSource.id);
+    attemptedProvidersRef.current.add(selectedSource.providerId);
+    playbackReadyRef.current = false;
+    selectionStartedAtRef.current = performance.now();
     setRuntimeStatuses((current) => ({ ...current, [selectedSource.id]: "loading" }));
-    setFrameUrl(withResume(selectedSource, currentTimeRef.current));
+    setPlaybackUrl(withResume(selectedSource, currentTimeRef.current));
+    emit("player_provider_selected", {
+      provider: selectedSource.providerId,
+      variant: selectedSource.playerVariant ?? "default",
+      mediaType: request.mediaType,
+      kind: selectedSource.kind,
+      subtitles: selectedSource.capabilities.subtitles ?? "unverified",
+    });
   }, [request.mediaType, selectedSource]);
 
   const switchTo = useCallback(
     (source: PlayerSource, automatic: boolean) => {
-      attemptedRef.current.add(source.id);
+      attemptedProvidersRef.current.add(source.providerId);
       setExhausted(false);
       setRuntimeStatuses((current) => ({
         ...current,
@@ -315,12 +331,6 @@ export function usePlayerEngine({ request, legacyPlayers, currentTime }: UsePlay
       }));
       setSelectedId(source.id);
       void setSourceParam(source.id);
-      emit("player_provider_selected", {
-        provider: source.providerId,
-        mediaType: request.mediaType,
-        automatic,
-        subtitles: source.capabilities.subtitles ?? "unverified",
-      });
       emit(automatic ? "player_auto_fallback" : "player_manual_switch", {
         provider: source.providerId,
         mediaType: request.mediaType,
@@ -331,21 +341,37 @@ export function usePlayerEngine({ request, legacyPlayers, currentTime }: UsePlay
 
   const failCurrent = useCallback(
     (reason: string) => {
-      if (!selectedSource) return;
-      if (hardFailedRef.current.has(selectedSource.id)) return;
-      hardFailedRef.current.add(selectedSource.id);
-      const failures = loadSessionFailures();
-      failures[selectedSource.providerId] = Date.now();
-      saveSessionFailures(failures);
-      setRuntimeStatuses((current) => ({ ...current, [selectedSource.id]: "failed" }));
-      emit("player_iframe_failed", {
-        provider: selectedSource.providerId,
+      if (!selectedSource || hardFailedProvidersRef.current.has(selectedSource.providerId)) return;
+      const providerId = selectedSource.providerId;
+      hardFailedProvidersRef.current.add(providerId);
+      attemptedProvidersRef.current.add(providerId);
+      const health = loadSessionHealth();
+      const previous = health.providers[providerId] ?? { failures: 0, successes: 0 };
+      health.providers[providerId] = {
+        ...previous,
+        failures: previous.failures + 1,
+        lastFailureAt: Date.now(),
+      };
+      saveSessionHealth(health);
+      setRuntimeStatuses((current) => ({
+        ...current,
+        ...Object.fromEntries(
+          orderedSources
+            .filter((source) => source.providerId === providerId)
+            .map((source) => [source.id, "failed" as const]),
+        ),
+      }));
+      emit("player_source_failed", {
+        provider: providerId,
         mediaType: request.mediaType,
         reason: reason.slice(0, 80),
       });
 
       const next = orderedSources.find(
-        (source) => source.availability !== "failed" && !attemptedRef.current.has(source.id),
+        (source) =>
+          source.availability !== "failed" &&
+          source.providerId !== providerId &&
+          !attemptedProvidersRef.current.has(source.providerId),
       );
       if (next) switchTo(next, true);
       else setExhausted(true);
@@ -355,7 +381,7 @@ export function usePlayerEngine({ request, legacyPlayers, currentTime }: UsePlay
 
   useEffect(() => {
     if (selectedSource?.availability === "failed") {
-      failCurrent(selectedSource.failureReason ?? "Exact source preflight failed");
+      failCurrent(selectedSource.failureReason ?? "Source manifest failed");
     }
   }, [failCurrent, selectedSource]);
 
@@ -363,8 +389,9 @@ export function usePlayerEngine({ request, legacyPlayers, currentTime }: UsePlay
     (id: string) => {
       const source = orderedSources.find((candidate) => candidate.id === id);
       if (!source || source.availability === "failed") return;
-      attemptedRef.current.clear();
-      hardFailedRef.current.delete(id);
+      attemptedProvidersRef.current.clear();
+      hardFailedProvidersRef.current.delete(source.providerId);
+      manualPinnedRef.current = true;
       switchTo(source, false);
     },
     [orderedSources, switchTo],
@@ -380,32 +407,48 @@ export function usePlayerEngine({ request, legacyPlayers, currentTime }: UsePlay
   }, [selectedSource]);
 
   const markPlaybackReady = useCallback(() => {
-    if (!selectedSource) return;
+    if (!selectedSource || readySourcesRef.current.has(selectedSource.id)) return;
+    readySourcesRef.current.add(selectedSource.id);
+    playbackReadyRef.current = true;
+    const startupMs = Math.round(performance.now() - selectionStartedAtRef.current);
     setRuntimeStatuses((current) => ({ ...current, [selectedSource.id]: "ready" }));
-    const failures = loadSessionFailures();
-    delete failures[selectedSource.providerId];
-    saveSessionFailures(failures);
+    const health = loadSessionHealth();
+    const previous = health.providers[selectedSource.providerId] ?? { failures: 0, successes: 0 };
+    health.providers[selectedSource.providerId] = {
+      ...previous,
+      failures: 0,
+      successes: previous.successes + 1,
+      lastSuccessAt: Date.now(),
+      lastStartupMs: startupMs,
+    };
+    health.lastSuccessful[request.mediaType] = selectedSource.providerId;
+    saveSessionHealth(health);
     emit("player_playback_started", {
       provider: selectedSource.providerId,
       mediaType: request.mediaType,
+      startupMs,
+      subtitles: selectedSource.capabilities.subtitles ?? "unverified",
     });
   }, [request.mediaType, selectedSource]);
 
-  const statuses = useMemo<StatusMap>(() => {
-    return Object.fromEntries(
-      orderedSources.map((source) => [
-        source.id,
-        runtimeStatuses[source.id] ?? source.availability,
-      ]),
-    );
-  }, [orderedSources, runtimeStatuses]);
+  const statuses = useMemo<StatusMap>(
+    () =>
+      Object.fromEntries(
+        orderedSources.map((source) => [
+          source.id,
+          runtimeStatuses[source.id] ?? source.availability,
+        ]),
+      ),
+    [orderedSources, runtimeStatuses],
+  );
 
   return {
     sources: orderedSources,
     selectedSource,
     selectedSourceId: selectedSource?.id ?? "",
     selectedStatus: selectedSource ? statuses[selectedSource.id] : "resolving",
-    frameUrl,
+    playbackUrl,
+    frameUrl: selectedSource?.kind === "iframe" ? playbackUrl : null,
     statuses,
     resolving,
     resolutionError,

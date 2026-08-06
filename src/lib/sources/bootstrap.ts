@@ -12,9 +12,34 @@ import { isRegistered, register } from "./registry";
 
 // Point the reference adapter at files you already have. Empty by default,
 // so a fresh checkout renders the "no sources" state rather than pretending.
-const LIBRARY: DirectEntry[] = [
-  // { tmdbId: 27205, url: "http://localhost:8080/inception.mp4", quality: 1080 },
-];
+function directLibrary(): DirectEntry[] {
+  const raw = process.env.PLAYER_DIRECT_SOURCES_JSON;
+  if (!raw) return [];
+
+  try {
+    const entries: unknown = JSON.parse(raw);
+    if (!Array.isArray(entries)) throw new Error("Expected a JSON array");
+    return entries.filter((entry): entry is DirectEntry => {
+      if (!entry || typeof entry !== "object") return false;
+      const candidate = entry as Partial<DirectEntry>;
+      if (typeof candidate.url !== "string") return false;
+      try {
+        const url = new URL(candidate.url);
+        return url.protocol === "https:" || url.hostname === "localhost";
+      } catch {
+        return false;
+      }
+    });
+  } catch (error) {
+    console.warn(
+      "Ignoring invalid PLAYER_DIRECT_SOURCES_JSON:",
+      error instanceof Error ? error.message : error,
+    );
+    return [];
+  }
+}
+
+const LIBRARY = directLibrary();
 
 // Guard on the registry itself, not a module-local flag — in dev this module
 // re-evaluates on HMR and a local flag would reset while the map may not.

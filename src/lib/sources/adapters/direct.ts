@@ -1,4 +1,10 @@
-import type { SourceAdapter, SourceRequest, StreamCandidate } from "../types";
+import type {
+  MediaTrack,
+  SourceAdapter,
+  SourceRequest,
+  StreamCandidate,
+  StreamKind,
+} from "../types";
 
 /**
  * Reference implementation of the SourceAdapter contract.
@@ -17,6 +23,9 @@ export interface DirectEntry {
   url: string;
   label?: string;
   quality?: number;
+  kind?: Exclude<StreamKind, "iframe">;
+  audioTracks?: MediaTrack[];
+  subtitleTracks?: MediaTrack[];
 }
 
 function matches(entry: DirectEntry, req: SourceRequest): boolean {
@@ -27,9 +36,19 @@ function matches(entry: DirectEntry, req: SourceRequest): boolean {
   return entry.tmdbId !== undefined || entry.anilistId !== undefined;
 }
 
-function kindOf(url: string): "hls" | "mp4" {
-  return url.split("?")[0].endsWith(".m3u8") ? "hls" : "mp4";
+function kindOf(url: string): Exclude<StreamKind, "iframe"> {
+  const path = url.split("?")[0].toLowerCase();
+  if (path.endsWith(".m3u8")) return "hls";
+  if (path.endsWith(".mpd")) return "dash";
+  return "mp4";
 }
+
+const proxiedSubtitles = (tracks?: MediaTrack[]): MediaTrack[] | undefined =>
+  tracks?.map((track) => ({
+    ...track,
+    url: track.url ? `/api/player/subtitles?url=${encodeURIComponent(track.url)}` : undefined,
+    format: "vtt",
+  }));
 
 export function createDirectAdapter(entries: DirectEntry[]): SourceAdapter {
   return {
@@ -54,17 +73,22 @@ export function createDirectAdapter(entries: DirectEntry[]): SourceAdapter {
           id: `direct-${i}`,
           providerId: "direct",
           label: e.label ?? (e.quality ? `${e.quality}p` : "Direct"),
-          kind: kindOf(e.url),
+          kind: e.kind ?? kindOf(e.url),
           url: e.url,
           providerOrigin: new URL(e.url).origin,
+          providerTier: "direct",
+          playerVariant: e.kind ?? kindOf(e.url),
           mediaType: req.mediaType,
           priority: 0,
           capabilities: {
             resumable: true,
-            resumeParam: "startAt",
-            subtitles: "unverified",
+            events: true,
+            eventProtocol: "native",
+            subtitles: e.subtitleTracks?.length ? "native" : "none",
           },
           quality: e.quality,
+          audioTracks: e.audioTracks,
+          subtitleTracks: proxiedSubtitles(e.subtitleTracks),
         }));
     },
   };

@@ -20,9 +20,9 @@ interface PlayerSourceSelectionProps extends HandlerType {
 }
 
 const statusBadge: Record<SourceAvailability, { label: string; className: string }> = {
-  resolving: { label: "Testing…", className: "bg-default/20 text-default-400 border-default/30" },
+  resolving: { label: "Resolving", className: "bg-default/20 text-default-400 border-default/30" },
   loading: { label: "Loading", className: "bg-primary/20 text-primary border-primary/30" },
-  ready: { label: "Available", className: "bg-success/20 text-success border-success/30" },
+  ready: { label: "Ready", className: "bg-success/20 text-success border-success/30" },
   switching: { label: "Switching", className: "bg-primary/20 text-primary border-primary/30" },
   available: { label: "Available", className: "bg-success/20 text-success border-success/30" },
   slow: { label: "Slow", className: "bg-warning/20 text-warning border-warning/30" },
@@ -86,6 +86,16 @@ function SourceList({
               >
                 {captions.label}
               </span>
+              {source.providerTier === "experimental" && (
+                <span className="border-warning/30 bg-warning/15 text-warning rounded-full border px-2 py-0.5 text-[10px] font-medium">
+                  Experimental
+                </span>
+              )}
+              {source.providerTier === "direct" && (
+                <span className="border-secondary/30 bg-secondary/15 text-secondary rounded-full border px-2 py-0.5 text-[10px] font-medium">
+                  Umbra Player
+                </span>
+              )}
               {source.capabilities.recommended && <Star className="text-warning" size={16} />}
               {source.capabilities.fast && <Rocket className="text-danger" size={16} />}
               {source.capabilities.resumable && <Clock className="text-success" size={16} />}
@@ -128,7 +138,7 @@ export default function PlayerSourceSelection({
       withCloseButton
       classNames={{ content: "space-y-0" }}
     >
-      <div className="flex flex-col gap-4 p-5">
+      <div className="flex flex-col gap-4 p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
         {preferredSubtitle && (
           <p className="bg-success/10 text-success-700 border-success/20 dark:text-success-300 rounded-lg border p-3 text-xs">
             Caption-capable servers are preferred automatically. Subtitle availability can still
@@ -156,12 +166,14 @@ export default function PlayerSourceSelection({
         </div>
 
         {resolving && (
-          <p className="text-default-400 px-1 text-xs">Checking exact title availability…</p>
+          <p className="text-default-400 px-1 text-xs">
+            The player is ready. Loading any additional configured servers…
+          </p>
         )}
 
         {!resolving && !sources.length && (
           <p className="text-default-400 border-default-200 rounded-lg border p-3 text-xs">
-            No provider passed the exact-title check. Failed hosts will be tested again shortly.
+            No server is configured for this title.
           </p>
         )}
 
@@ -176,7 +188,7 @@ export default function PlayerSourceSelection({
           />
         ) : (
           <p className="text-default-400 border-default-200 rounded-lg border p-3 text-xs">
-            No validated subtitled source is available for this episode.
+            No subtitled source is available for this episode.
           </p>
         )}
 
@@ -193,7 +205,7 @@ export default function PlayerSourceSelection({
               />
             ) : (
               <p className="text-default-400 border-default-200 rounded-lg border p-3 text-xs">
-                No validated dubbed source is available for this episode.
+                No dubbed source is available for this episode.
               </p>
             )}
           </>

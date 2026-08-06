@@ -4,6 +4,7 @@ interface DefaultSourceOptions {
   requestedId?: string | null;
   defaultId?: string | null;
   preferredSubtitle?: string;
+  preferredAudio?: string;
 }
 
 /**
@@ -13,7 +14,7 @@ interface DefaultSourceOptions {
  */
 export function selectDefaultSource(
   sources: PlayerSource[],
-  { requestedId, defaultId, preferredSubtitle }: DefaultSourceOptions,
+  { requestedId, defaultId, preferredSubtitle, preferredAudio }: DefaultSourceOptions,
 ): PlayerSource | null {
   const usable = sources.filter((source) => source.availability !== "failed");
 
@@ -27,15 +28,20 @@ export function selectDefaultSource(
   );
   const automaticPool = verified.length ? verified : usable;
 
-  const configuredDefault = automaticPool.find((source) => source.id === defaultId);
+  const captionPool = preferredSubtitle
+    ? automaticPool.filter((source) => source.capabilities.subtitles === "native")
+    : automaticPool;
+  const audioPool = preferredAudio
+    ? captionPool.filter((source) => source.audioVariant === preferredAudio)
+    : captionPool;
+  const preferredPool = audioPool.length
+    ? audioPool
+    : captionPool.length
+      ? captionPool
+      : automaticPool;
+
+  const configuredDefault = preferredPool.find((source) => source.id === defaultId);
   if (configuredDefault) return configuredDefault;
 
-  if (preferredSubtitle) {
-    const captionCapable = automaticPool.find(
-      (source) => source.capabilities.subtitles === "native",
-    );
-    if (captionCapable) return captionCapable;
-  }
-
-  return automaticPool[0] ?? null;
+  return preferredPool[0] ?? null;
 }

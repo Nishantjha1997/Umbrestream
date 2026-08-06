@@ -6,6 +6,8 @@ export const env = createEnv({
     PROTECTED_PATHS: z.string().default("/auth/reset-password,/profile"),
     SUPABASE_SERVICE_ROLE_KEY: z.string().optional().default(""),
     TMDB_ACCESS_TOKEN: z.string().optional().default(""),
+    PLAYER_DIRECT_SOURCES_JSON: z.string().optional().default(""),
+    PLAYER_SUBTITLE_HOSTS: z.string().optional().default(""),
   },
   client: {
     NEXT_PUBLIC_SUPABASE_URL: z.string().optional().default(""),
@@ -13,6 +15,7 @@ export const env = createEnv({
     NEXT_PUBLIC_CAPTCHA_SITE_KEY: z.string().optional(),
     NEXT_PUBLIC_AVATAR_PROVIDER_URL: z.string().optional(),
     NEXT_PUBLIC_PLAYER_ENGINE_V2: z.enum(["true", "false"]).optional().default("true"),
+    NEXT_PUBLIC_PLAYER_ENGINE_V3: z.enum(["true", "false"]).optional().default("true"),
   },
   experimental__runtimeEnv: {
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -20,6 +23,7 @@ export const env = createEnv({
     NEXT_PUBLIC_CAPTCHA_SITE_KEY: process.env.NEXT_PUBLIC_CAPTCHA_SITE_KEY,
     NEXT_PUBLIC_AVATAR_PROVIDER_URL: process.env.NEXT_PUBLIC_AVATAR_PROVIDER_URL,
     NEXT_PUBLIC_PLAYER_ENGINE_V2: process.env.NEXT_PUBLIC_PLAYER_ENGINE_V2,
+    NEXT_PUBLIC_PLAYER_ENGINE_V3: process.env.NEXT_PUBLIC_PLAYER_ENGINE_V3,
   },
   emptyStringAsUndefined: true,
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,

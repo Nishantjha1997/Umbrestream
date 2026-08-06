@@ -2,6 +2,8 @@ import type { MediaType } from "@/types/title";
 
 export type AudioVariant = "sub" | "dub";
 export type SubtitleSupport = "native" | "unverified" | "none";
+export type ProviderTier = "direct" | "stable" | "experimental";
+export type PlayerEventProtocol = "native" | "vidlink" | "vidking" | "cinezo" | "filmu" | "videasy";
 export type SourceAvailability =
   | "resolving"
   | "loading"
@@ -18,6 +20,7 @@ export interface SourceCapabilities {
   ads?: boolean;
   resumable?: boolean;
   events?: boolean;
+  eventProtocol?: PlayerEventProtocol;
   /** Whether the provider player can render subtitles. Exact title availability may still vary. */
   subtitles?: SubtitleSupport;
   /** Query parameter used when resuming after a provider switch. */
@@ -38,9 +41,10 @@ export interface MediaTrack {
   isForced?: boolean;
   /** Sidecar URL for external subtitle tracks. */
   url?: string;
+  format?: "vtt" | "srt";
 }
 
-export type StreamKind = "hls" | "mp4" | "iframe";
+export type StreamKind = "hls" | "dash" | "mp4" | "iframe";
 
 export interface StreamCandidate {
   /** Unique within its adapter. */
@@ -51,6 +55,9 @@ export interface StreamCandidate {
   kind: StreamKind;
   url: string;
   providerOrigin: string;
+  providerTier: ProviderTier;
+  /** A rendering choice within one provider, not an independent fallback. */
+  playerVariant?: string;
   mediaType: MediaType;
   priority: number;
   audioVariant?: AudioVariant;
@@ -69,6 +76,8 @@ export interface SourceRequest {
   imdbId?: string;
   anilistId?: number;
   malId?: number;
+  /** Optional TMDB mapping used only by experimental anime embeds that require it. */
+  animeTmdbId?: number;
   season?: number;
   episode?: number;
   startAt?: number;
@@ -80,6 +89,7 @@ export interface PlayerSource extends StreamCandidate {
   availability: SourceAvailability;
   latencyMs?: number;
   failureReason?: string;
+  healthEvidence?: "manifest" | "iframe-load" | "playback-event" | "native-playback";
 }
 
 export interface SourceResolutionError {
@@ -91,6 +101,8 @@ export interface SourceResolutionResponse {
   sources: PlayerSource[];
   defaultId: string | null;
   errors: SourceResolutionError[];
+  unsupported?: SourceResolutionError[];
+  resolvedInMs?: number;
 }
 
 /**
@@ -107,7 +119,16 @@ export interface SourceAdapter {
   identifierRequirements: Partial<
     Record<
       MediaType,
-      ("title" | "tmdbId" | "imdbId" | "anilistId" | "malId" | "season" | "episode")[]
+      (
+        | "title"
+        | "tmdbId"
+        | "imdbId"
+        | "anilistId"
+        | "malId"
+        | "animeTmdbId"
+        | "season"
+        | "episode"
+      )[]
     >
   >;
   /** Lower sorts first. A function allows media-specific ordering. */

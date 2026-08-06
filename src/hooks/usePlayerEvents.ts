@@ -2,7 +2,7 @@ import { syncHistory } from "@/actions/histories";
 import { ContentType } from "@/types";
 import { diff } from "@/utils/helpers";
 import { useDocumentVisibility } from "@mantine/hooks";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import useSupabaseUser from "./useSupabaseUser";
 
 export type PlayerEventType = "play" | "pause" | "seeked" | "ended" | "timeupdate" | "error";
@@ -101,47 +101,56 @@ function parseProviderPayload(
   };
 }
 
-function parseCineSrcPayload(raw: unknown): UnifiedPlayerEventData | null {
-  if (!isRecord(raw) || typeof raw.type !== "string" || !raw.type.startsWith("cinesrc:")) {
+function parseFilmuPayload(raw: unknown): UnifiedPlayerEventData | null {
+  if (!isRecord(raw) || !isRecord(raw.data)) return null;
+  if (raw.type === "SYNC_HISTORY") {
+    const data = raw.data;
+    return {
+      event: "timeupdate",
+      currentTime: Number(data.watched) || 0,
+      duration: Number(data.duration) || 0,
+      mediaId:
+        typeof data.media_id === "string" || typeof data.media_id === "number" ? data.media_id : "",
+      mediaType: CONTENT_TYPES.has(data.media_type as ContentType)
+        ? (data.media_type as ContentType)
+        : "movie",
+      season: Number(data.season) || undefined,
+      episode: Number(data.episode) || undefined,
+    };
+  }
+  if (raw.type !== "FILMU_PLAYER_EVENT") return null;
+  const data = raw.data;
+  if (typeof data.event !== "string" || !PLAYER_EVENT_TYPES.has(data.event as PlayerEventType)) {
     return null;
   }
-  const event = raw.type.slice("cinesrc:".length);
-  if (!PLAYER_EVENT_TYPES.has(event as PlayerEventType)) return null;
-
   return {
-    event: event as PlayerEventType,
-    currentTime: typeof raw.currentTime === "number" ? raw.currentTime : 0,
-    duration: typeof raw.duration === "number" ? raw.duration : 0,
-    mediaId: "",
-    mediaType: "movie",
+    event: data.event as PlayerEventType,
+    currentTime: Number(data.currentTime) || 0,
+    duration: Number(data.duration) || 0,
+    mediaId: typeof data.tmdbId === "string" || typeof data.tmdbId === "number" ? data.tmdbId : "",
+    mediaType: CONTENT_TYPES.has(data.mediaType as ContentType)
+      ? (data.mediaType as ContentType)
+      : "movie",
+    season: Number(data.season) || undefined,
+    episode: Number(data.episode) || undefined,
   };
 }
 
-function parseMegaPlayPayload(raw: unknown): UnifiedPlayerEventData | null {
+function parseVideasyPayload(raw: unknown): UnifiedPlayerEventData | null {
   if (!isRecord(raw)) return null;
-  const event =
-    raw.type === "watching-log"
-      ? "timeupdate"
-      : raw.event === "time"
-        ? "timeupdate"
-        : raw.event === "complete"
-          ? "ended"
-          : raw.event === "error"
-            ? "error"
-            : null;
-  if (!event) return null;
-
+  const mediaType = CONTENT_TYPES.has(raw.type as ContentType)
+    ? (raw.type as ContentType)
+    : "movie";
+  const duration = Number(raw.duration) || 0;
+  if (!duration) return null;
   return {
-    event,
-    currentTime:
-      typeof raw.currentTime === "number"
-        ? raw.currentTime
-        : typeof raw.time === "number"
-          ? raw.time
-          : 0,
-    duration: typeof raw.duration === "number" ? raw.duration : 0,
-    mediaId: "",
-    mediaType: "anime",
+    event: "timeupdate",
+    currentTime: Number(raw.timestamp) || 0,
+    duration,
+    mediaId: typeof raw.id === "string" || typeof raw.id === "number" ? raw.id : "",
+    mediaType,
+    season: Number(raw.season) || undefined,
+    episode: Number(raw.episode) || undefined,
   };
 }
 
@@ -156,14 +165,19 @@ export const playerAdapters = {
     parse: (raw) => parseProviderPayload(raw, "id"),
   },
 
-  cinesrc: {
-    origin: "https://cinesrc.st",
-    parse: parseCineSrcPayload,
+  cinezo: {
+    origin: "https://player.cinezo.live",
+    parse: (raw) => parseProviderPayload(raw, "mtmdbId"),
   },
 
-  megaplay: {
-    origin: "https://megaplay.buzz",
-    parse: parseMegaPlayPayload,
+  filmu: {
+    origin: "https://embed.filmu.in",
+    parse: parseFilmuPayload,
+  },
+
+  videasy: {
+    origin: "https://player.videasy.to",
+    parse: parseVideasyPayload,
   },
 } as const satisfies AdapterMap;
 
@@ -235,7 +249,7 @@ export function usePlayerEvents(options: UsePlayerEventsOptions = {}) {
     onError,
   ]);
 
-  const syncToServer = async (data: UnifiedPlayerEventData, completed?: boolean) => {
+  const syncToServer = useCallback(async (data: UnifiedPlayerEventData, completed?: boolean) => {
     const state = stateRef.current;
     if (!state.saveHistory || !state.user) return;
     if (data.mediaId === "") return;
@@ -250,14 +264,55 @@ export function usePlayerEvents(options: UsePlayerEventsOptions = {}) {
     const { success, message } = await syncHistory(payload, completed);
     if (success) setLastCurrentTime(data.currentTime);
     else console.error("Save history failed:", message);
-  };
+  }, []);
+
+  const processParsedEvent = useCallback(
+    (parsed: UnifiedPlayerEventData) => {
+      eventDataRef.current = parsed;
+      setLastEvent(parsed.event);
+      setLastEventOrigin(parsed.event === "error" ? null : "native");
+      setEventVersion((version) => version + 1);
+
+      const state = stateRef.current;
+      switch (parsed.event) {
+        case "play":
+          setIsPlaying(true);
+          state.onPlay?.(parsed);
+          break;
+        case "pause":
+          setIsPlaying(false);
+          state.onPause?.(parsed);
+          break;
+        case "ended":
+          setIsPlaying(false);
+          void syncToServer(parsed, true);
+          state.onEnded?.(parsed);
+          break;
+        case "seeked":
+          setCurrentTime(parsed.currentTime);
+          setDuration(parsed.duration);
+          state.onSeeked?.(parsed);
+          break;
+        case "timeupdate":
+          setCurrentTime(parsed.currentTime);
+          setDuration(parsed.duration);
+          state.onTimeUpdate?.(parsed);
+          break;
+        case "error":
+          setIsPlaying(false);
+          state.onError?.(parsed);
+          break;
+      }
+    },
+    [syncToServer],
+  );
 
   useEffect(() => {
     if (!saveHistory || !user) return;
     if (documentState === "visible") return;
     if (!eventDataRef.current) return;
     syncToServer(eventDataRef.current);
-  }, [documentState, saveHistory, user]);
+  }, [documentState, saveHistory, syncToServer, user]);
 
   useEffect(() => {
     const handleBeforeUnload = () => {
@@ -287,42 +342,8 @@ export function usePlayerEvents(options: UsePlayerEventsOptions = {}) {
       const parsed = adapter.parse(rawData);
       if (!parsed) return;
 
-      eventDataRef.current = parsed;
-      setLastEvent(parsed.event);
+      processParsedEvent(parsed);
       setLastEventOrigin(event.origin);
-      setEventVersion((version) => version + 1);
-
-      const state = stateRef.current;
-
-      switch (parsed.event) {
-        case "play":
-          setIsPlaying(true);
-          state.onPlay?.(parsed);
-          break;
-        case "pause":
-          setIsPlaying(false);
-          state.onPause?.(parsed);
-          break;
-        case "ended":
-          setIsPlaying(false);
-          syncToServer(parsed, true);
-          state.onEnded?.(parsed);
-          break;
-        case "seeked":
-          setCurrentTime(parsed.currentTime);
-          setDuration(parsed.duration);
-          state.onSeeked?.(parsed);
-          break;
-        case "timeupdate":
-          setCurrentTime(parsed.currentTime);
-          setDuration(parsed.duration);
-          state.onTimeUpdate?.(parsed);
-          break;
-        case "error":
-          setIsPlaying(false);
-          state.onError?.(parsed);
-          break;
-      }
     };
 
     window.addEventListener("message", handleMessage);
@@ -333,7 +354,15 @@ export function usePlayerEvents(options: UsePlayerEventsOptions = {}) {
       window.removeEventListener("message", handleMessage);
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, []);
+  }, [processParsedEvent, saveHistory, user]);
 
-  return { isPlaying, currentTime, duration, lastEvent, lastEventOrigin, eventVersion };
+  return {
+    isPlaying,
+    currentTime,
+    duration,
+    lastEvent,
+    lastEventOrigin,
+    eventVersion,
+    reportNativeEvent: processParsedEvent,
+  };
 }
