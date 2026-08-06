@@ -53,6 +53,8 @@ const movieAndTvRequirements: EmbedDefinition["requirements"] = {
   tv: ["tmdbId", "season", "episode"],
 };
 
+const ANIME_SOURCES_V2_ENABLED = process.env.NEXT_PUBLIC_ANIME_SOURCES_V2 !== "false";
+
 const movieOrTv = (
   request: SourceRequest,
   movieBase: (id: number) => string,
@@ -276,6 +278,9 @@ const definitions: EmbedDefinition[] = [
       ads: true,
     },
   },
+];
+
+const legacyAnimeDefinitions: EmbedDefinition[] = [
   {
     id: "vidlink-anime-sub",
     providerId: "vidlink",
@@ -380,7 +385,110 @@ const definitions: EmbedDefinition[] = [
   },
 ];
 
-const experimentalAnimeDefinitions: EmbedDefinition[] = [
+const recoveredAnimeDefinitions: EmbedDefinition[] = [
+  {
+    id: "anilink-sub",
+    label: "AniLink Sub",
+    origin: "https://anilink.cc",
+    tier: "stable",
+    variant: "anime-sub",
+    priorities: { anime: 10 },
+    requirements: { anime: ["anilistId", "episode"] },
+    build: (request) =>
+      request.anilistId && request.episode
+        ? createUrl(`https://anilink.cc/watch/${request.anilistId}/${request.episode}`, {
+            variant: "sub",
+            autoplay: false,
+            autoNext: true,
+            startAt: seconds(request),
+            primaryColor: "a855f7",
+            secondaryColor: "0f1014",
+            iconColor: "ffffff",
+          })
+        : null,
+    capabilities: {
+      recommended: true,
+      fast: true,
+      resumable: true,
+      resumeParam: "startAt",
+      subtitles: "unverified",
+    },
+    audioVariant: "sub",
+  },
+  {
+    id: "anilink-dub",
+    label: "AniLink Dub",
+    origin: "https://anilink.cc",
+    tier: "stable",
+    variant: "anime-dub",
+    priorities: { anime: 11 },
+    requirements: { anime: ["anilistId", "episode"] },
+    build: (request) =>
+      request.anilistId && request.episode
+        ? createUrl(`https://anilink.cc/watch/${request.anilistId}/${request.episode}`, {
+            variant: "dub",
+            autoplay: false,
+            autoNext: true,
+            startAt: seconds(request),
+            primaryColor: "a855f7",
+            secondaryColor: "0f1014",
+            iconColor: "ffffff",
+          })
+        : null,
+    capabilities: {
+      fast: true,
+      resumable: true,
+      resumeParam: "startAt",
+      subtitles: "unverified",
+    },
+    audioVariant: "dub",
+  },
+  {
+    id: "vidnest-animepahe-sub",
+    label: "VidNest AnimePahe Sub",
+    origin: "https://vidnest.fun",
+    tier: "stable",
+    variant: "animepahe-sub",
+    priorities: { anime: 20 },
+    requirements: { anime: ["anilistId", "episode"] },
+    build: (request) =>
+      request.anilistId && request.episode
+        ? createUrl(`https://vidnest.fun/animepahe/${request.anilistId}/${request.episode}/sub`, {
+            startAt: seconds(request),
+          })
+        : null,
+    capabilities: {
+      recommended: true,
+      resumable: true,
+      resumeParam: "startAt",
+      subtitles: "unverified",
+    },
+    audioVariant: "sub",
+  },
+  {
+    id: "vidnest-animepahe-dub",
+    label: "VidNest AnimePahe Dub",
+    origin: "https://vidnest.fun",
+    tier: "stable",
+    variant: "animepahe-dub",
+    priorities: { anime: 21 },
+    requirements: { anime: ["anilistId", "episode"] },
+    build: (request) =>
+      request.anilistId && request.episode
+        ? createUrl(`https://vidnest.fun/animepahe/${request.anilistId}/${request.episode}/dub`, {
+            startAt: seconds(request),
+          })
+        : null,
+    capabilities: {
+      resumable: true,
+      resumeParam: "startAt",
+      subtitles: "unverified",
+    },
+    audioVariant: "dub",
+  },
+];
+
+const quarantinedAnimeDefinitions: EmbedDefinition[] = [
   {
     id: "vidrift-anime",
     providerId: "vidrift",
@@ -453,7 +561,12 @@ const experimentalAnimeDefinitions: EmbedDefinition[] = [
   },
 ];
 
-const allDefinitions = [...definitions, ...experimentalAnimeDefinitions];
+const allDefinitions = [
+  ...definitions,
+  ...(ANIME_SOURCES_V2_ENABLED
+    ? recoveredAnimeDefinitions
+    : [...legacyAnimeDefinitions, ...quarantinedAnimeDefinitions]),
+];
 
 const supportsDefinition = (definition: EmbedDefinition, request: SourceRequest): boolean => {
   if (definition.priorities[request.mediaType] === undefined) return false;
@@ -505,18 +618,16 @@ export function createPublicEmbedSources(request: SourceRequest): PlayerSource[]
 }
 
 export function createEmbedAdapters(): SourceAdapter[] {
-  return allDefinitions.map(
-    (definition): SourceAdapter => ({
-      id: definition.id,
-      label: definition.label,
-      supportedMediaTypes: Object.keys(definition.priorities) as MediaType[],
-      identifierRequirements: definition.requirements,
-      priority: (request) => definition.priorities[request.mediaType] ?? Number.MAX_SAFE_INTEGER,
-      supports: (request) => supportsDefinition(definition, request),
-      async resolve(request): Promise<StreamCandidate[]> {
-        const candidate = candidateFrom(definition, request);
-        return candidate ? [candidate] : [];
-      },
-    }),
-  );
+  return allDefinitions.map((definition): SourceAdapter => ({
+    id: definition.id,
+    label: definition.label,
+    supportedMediaTypes: Object.keys(definition.priorities) as MediaType[],
+    identifierRequirements: definition.requirements,
+    priority: (request) => definition.priorities[request.mediaType] ?? Number.MAX_SAFE_INTEGER,
+    supports: (request) => supportsDefinition(definition, request),
+    async resolve(request): Promise<StreamCandidate[]> {
+      const candidate = candidateFrom(definition, request);
+      return candidate ? [candidate] : [];
+    },
+  }));
 }

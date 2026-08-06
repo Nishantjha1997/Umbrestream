@@ -7,6 +7,7 @@ import type { HandlerType } from "@/types/component";
 import { cn } from "@/utils/helpers";
 import { Ads, Clock, Rocket, Star } from "@/utils/icons";
 import type { ButtonProps } from "@heroui/react";
+import useBreakpoints from "@/hooks/useBreakpoints";
 
 interface PlayerSourceSelectionProps extends HandlerType {
   mediaType: "movie" | "tv" | "anime";
@@ -120,6 +121,7 @@ export default function PlayerSourceSelection({
   resolving,
   preferredSubtitle,
 }: PlayerSourceSelectionProps) {
+  const { mobile } = useBreakpoints();
   const subbed = sources.filter((source) => source.audioVariant !== "dub");
   const dubbed = sources.filter((source) => source.audioVariant === "dub");
   const select = (id: string) => {
@@ -133,8 +135,8 @@ export default function PlayerSourceSelection({
       onClose={onClose}
       backdrop="blur"
       title={mediaType === "anime" ? "Select Anime Server" : "Select Video Server"}
-      direction="right"
-      hiddenHandler
+      direction={mobile ? "bottom" : "right"}
+      hiddenHandler={!mobile}
       withCloseButton
       classNames={{ content: "space-y-0" }}
     >

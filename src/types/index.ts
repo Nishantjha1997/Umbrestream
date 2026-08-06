@@ -13,19 +13,10 @@ export type ActionResponse<T = null> = Promise<{
 }>;
 
 export type MovieParam =
-  | "todayTrending"
-  | "thisWeekTrending"
-  | "popular"
-  | "nowPlaying"
-  | "upcoming"
-  | "topRated";
+  "todayTrending" | "thisWeekTrending" | "popular" | "nowPlaying" | "upcoming" | "topRated";
 
 export type TvShowParam =
-  | "todayTrending"
-  | "thisWeekTrending"
-  | "popular"
-  | "onTheAir"
-  | "topRated";
+  "todayTrending" | "thisWeekTrending" | "popular" | "onTheAir" | "topRated";
 
 export type QueryList<T extends Movie | TV> = {
   name: string;
@@ -47,6 +38,9 @@ export type SiteConfigType = {
     href: string;
     icon: React.ReactNode;
     activeIcon: React.ReactNode;
+    desktopOnly?: boolean;
+    preview?: boolean;
+    dockOrder?: number;
   }[];
   queryLists: {
     movies: QueryList<Movie>[];

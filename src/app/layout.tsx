@@ -3,7 +3,7 @@ import { siteConfig } from "@/config/site";
 // Inter Variable's @font-face rules (§1.4). Imported before `globals.css` so
 // the faces are declared ahead of the stylesheet that binds them to
 // `--font-sans`; the family itself is applied via Tailwind's default sans, so
-// no wrapper class is needed. Saira is loaded per-component by `BrandLogo`.
+// no wrapper class is needed. The wordmark also uses this local family.
 import "@fontsource-variable/inter";
 import "../styles/globals.css";
 import "../styles/lightbox.css";
@@ -18,6 +18,9 @@ import { SpacingClasses } from "@/utils/constants";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { Suspense } from "react";
 import InstallAppPrompt from "@/components/pwa/InstallAppPrompt";
+import ImmersiveAppShell from "@/components/ui/layout/ImmersiveAppShell";
+
+const UMBRA_UI_V2_ENABLED = process.env.NEXT_PUBLIC_UMBRA_UI_V2 !== "false";
 
 export const metadata: Metadata = {
   title: siteConfig.name,
@@ -62,31 +65,30 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#FFFFFF" },
-    { media: "(prefers-color-scheme: dark)", color: "#0D0C0F" },
-  ],
+  themeColor: "#0f1014",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html suppressHydrationWarning lang="en">
-      <body
-        className={cn(
-          "bg-background min-h-dvh overflow-x-hidden font-sans antialiased select-none",
-        )}
-      >
+      <body className="min-h-dvh overflow-x-hidden bg-[#0f1014] font-sans text-white antialiased select-none">
         <Suspense>
           <NuqsAdapter>
             <Providers>
-              <TopNavbar />
-              <Sidebar>
-                <main className={cn("container mx-auto max-w-full", SpacingClasses.main)}>
-                  {children}
-                </main>
-              </Sidebar>
+              {UMBRA_UI_V2_ENABLED ? (
+                <ImmersiveAppShell>{children}</ImmersiveAppShell>
+              ) : (
+                <>
+                  <TopNavbar />
+                  <Sidebar>
+                    <main className={cn("container mx-auto max-w-full", SpacingClasses.main)}>
+                      {children}
+                    </main>
+                  </Sidebar>
+                </>
+              )}
               <InstallAppPrompt />
-              <BottomNavbar />
+              {!UMBRA_UI_V2_ENABLED && <BottomNavbar />}
             </Providers>
           </NuqsAdapter>
         </Suspense>

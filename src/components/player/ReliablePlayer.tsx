@@ -4,15 +4,15 @@ import PlayerSourceSelection from "@/components/player/PlayerSourceSelection";
 import NativePlayer from "@/components/player/NativePlayer";
 import AdsWarning from "@/components/ui/overlay/AdsWarning";
 import StuckStreamToast from "@/components/ui/overlay/StuckStreamToast";
-import useBreakpoints from "@/hooks/useBreakpoints";
 import { usePlayerEngine } from "@/hooks/usePlayerEngine";
 import { usePlayerEvents } from "@/hooks/usePlayerEvents";
+import { usePlayerChromeVisibility } from "@/hooks/usePlayerChromeVisibility";
 import type { SourceRequest } from "@/lib/sources/types";
 import type { PlayersProps } from "@/types";
 import { cn } from "@/utils/helpers";
 import { SpacingClasses } from "@/utils/constants";
 import { Button, Card, Skeleton, type ButtonProps } from "@heroui/react";
-import { useDisclosure, useIdle } from "@mantine/hooks";
+import { useDisclosure } from "@mantine/hooks";
 import { useEffect, useRef, type ReactNode } from "react";
 
 export interface PlayerHeaderContext {
@@ -38,9 +38,8 @@ export default function ReliablePlayer({
   renderHeader,
   renderExtras,
 }: ReliablePlayerProps) {
-  const idle = useIdle(3000);
-  const { mobile } = useBreakpoints();
   const [sourceOpened, sourceHandlers] = useDisclosure(false);
+  const chrome = usePlayerChromeVisibility(sourceOpened, 3_000);
   const events = usePlayerEvents({ saveHistory: true, metadata: historyMetadata });
   const engine = usePlayerEngine({ request, legacyPlayers, currentTime: events.currentTime });
   const handledEventVersionRef = useRef(0);
@@ -66,7 +65,7 @@ export default function ReliablePlayer({
   ]);
 
   const context: PlayerHeaderContext = {
-    hidden: idle && !mobile,
+    hidden: chrome.hidden,
     selectedSourceId: engine.selectedSourceId,
     onOpenSource: sourceHandlers.open,
   };
@@ -75,8 +74,24 @@ export default function ReliablePlayer({
     <>
       <AdsWarning />
 
-      <div className={cn("relative overflow-hidden bg-black", SpacingClasses.reset)}>
-        <div className="absolute top-0 right-0 left-0 z-20 h-20" />
+      <div
+        className={cn("relative overflow-hidden bg-black", SpacingClasses.reset)}
+        onPointerMove={chrome.reveal}
+        onPointerDown={chrome.reveal}
+        onKeyDown={chrome.reveal}
+      >
+        <div
+          className={cn(
+            "pointer-events-none absolute inset-x-0 top-0 z-20 h-28 bg-linear-to-b from-black/85 via-black/30 to-transparent transition-opacity duration-300",
+            chrome.hidden && "opacity-0",
+          )}
+        />
+        <div
+          className={cn(
+            "pointer-events-none absolute inset-x-0 bottom-0 z-20 h-24 bg-linear-to-t from-black/70 to-transparent transition-opacity duration-300",
+            chrome.hidden && "opacity-0",
+          )}
+        />
 
         <StuckStreamToast
           key={engine.playbackUrl ?? engine.selectedSourceId}

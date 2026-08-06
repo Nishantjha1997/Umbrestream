@@ -22,6 +22,10 @@ export function listAdapters(req?: SourceRequest): SourceAdapter[] {
   return [...adapters.values()].sort((a, b) => priorityFor(a, req) - priorityFor(b, req));
 }
 
+export function getAdapter(id: string): SourceAdapter | undefined {
+  return adapters.get(id);
+}
+
 export interface ResolvedGroup {
   adapterId: string;
   adapterLabel: string;

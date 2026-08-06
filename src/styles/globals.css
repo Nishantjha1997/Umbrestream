@@ -21,8 +21,8 @@
      `--font-sans` also moves Tailwind's `--default-font-family`, so
      every unstyled element inherits Inter without a wrapper class.
 
-     Saira survives for the wordmark only (`BrandLogo`); it is loaded
-     through `next/font/google` and applied by class, not by token.
+     The wordmark uses the same local face with display-specific tracking,
+     avoiding an external font request during builds.
      ───────────────────────────────────────────────────────────── */
   --font-sans:
     "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
@@ -115,8 +115,27 @@
   }
 
   body {
+    min-height: 100%;
+    background: #0f1014;
+    color: white;
     overscroll-behavior-y: none;
     -webkit-tap-highlight-color: transparent;
+  }
+}
+
+.safe-floating-dock {
+  bottom: max(0.75rem, env(safe-area-inset-bottom));
+}
+
+@media (display-mode: standalone) {
+  .safe-floating-dock {
+    bottom: max(0.85rem, env(safe-area-inset-bottom));
+  }
+}
+
+@media (max-width: 767px) {
+  .pwa-install-safe {
+    bottom: calc(5.75rem + env(safe-area-inset-bottom));
   }
 }
 
@@ -152,8 +171,7 @@
 
 /* ───────────────────────────────────────────────────────────────
    Material tiers. Every translucent surface uses one of these three
-   — do not hand-roll a bespoke bg-*/
-NN + backdrop-blur-* pair.
+   — do not hand-roll bespoke background and backdrop-blur pairs.
 
    Two things make these read as material rather than grey fog:
    the saturate() boost, and keeping the background genuinely

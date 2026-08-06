@@ -6,7 +6,6 @@ import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { AppProgressProvider as ProgressProvider } from "@bprogress/next";
-import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { usePathname, useRouter } from "next/navigation";
 import { useQueryState, parseAsStringLiteral } from "nuqs";
 import { useState } from "react";
@@ -65,7 +64,12 @@ export default function Providers({ children }: PropsWithChildren) {
             },
           }}
         />
-        <NextThemesProvider attribute="class" defaultTheme="dark" enableSystem>
+        <NextThemesProvider
+          attribute="class"
+          defaultTheme="dark"
+          forcedTheme="dark"
+          enableSystem={false}
+        >
           {/* https://github.com/vercel/next.js/discussions/61654#discussioncomment-8480088 */}
           <Suspense>
             <ProgressProvider

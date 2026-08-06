@@ -1,5 +1,3 @@
-import { Saira as FontSaira } from "next/font/google";
-
 /**
  * UI type is **Inter Variable**, not a `next/font` object (§1.4).
  *
@@ -15,12 +13,8 @@ import { Saira as FontSaira } from "next/font/google";
  */
 
 /**
- * Wordmark face. **`BrandLogo` only.** Saira is a display cut with tight
- * apertures — it is legible at 24px in all-caps and poor at 14px in a
- * paragraph. Do not use it for UI copy.
+ * Wordmark face. **`BrandLogo` only.** It intentionally reuses the local
+ * Inter family; weight and tracking provide the display treatment without a
+ * build-time request to Google Fonts.
  */
-export const Saira = FontSaira({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-saira",
-});
+export const Saira = { className: "font-sans" } as const;

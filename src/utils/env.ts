@@ -16,6 +16,8 @@ export const env = createEnv({
     NEXT_PUBLIC_AVATAR_PROVIDER_URL: z.string().optional(),
     NEXT_PUBLIC_PLAYER_ENGINE_V2: z.enum(["true", "false"]).optional().default("true"),
     NEXT_PUBLIC_PLAYER_ENGINE_V3: z.enum(["true", "false"]).optional().default("true"),
+    NEXT_PUBLIC_ANIME_SOURCES_V2: z.enum(["true", "false"]).optional().default("true"),
+    NEXT_PUBLIC_UMBRA_UI_V2: z.enum(["true", "false"]).optional().default("true"),
   },
   experimental__runtimeEnv: {
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -24,6 +26,8 @@ export const env = createEnv({
     NEXT_PUBLIC_AVATAR_PROVIDER_URL: process.env.NEXT_PUBLIC_AVATAR_PROVIDER_URL,
     NEXT_PUBLIC_PLAYER_ENGINE_V2: process.env.NEXT_PUBLIC_PLAYER_ENGINE_V2,
     NEXT_PUBLIC_PLAYER_ENGINE_V3: process.env.NEXT_PUBLIC_PLAYER_ENGINE_V3,
+    NEXT_PUBLIC_ANIME_SOURCES_V2: process.env.NEXT_PUBLIC_ANIME_SOURCES_V2,
+    NEXT_PUBLIC_UMBRA_UI_V2: process.env.NEXT_PUBLIC_UMBRA_UI_V2,
   },
   emptyStringAsUndefined: true,
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,

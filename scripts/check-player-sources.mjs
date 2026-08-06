@@ -78,12 +78,20 @@ assert.equal(
   "https://player.cinezo.live/embed/tv/97546/1/1?autoplay=false&poster=true&servericon=true&setting=true&pip=true&primarycolor=f5a524&secondarycolor=0a0a12&iconcolor=ffffff",
 );
 assert.equal(
-  (await resolveOne("vidlink-anime-sub", fixtures.anime)).url,
-  "https://vidlink.pro/anime/21/1/sub?fallback=true&autoplay=false",
+  (await resolveOne("anilink-sub", fixtures.anime)).url,
+  "https://anilink.cc/watch/21/1?variant=sub&autoplay=false&autoNext=true&startAt=137&primaryColor=a855f7&secondaryColor=0f1014&iconColor=ffffff",
 );
 assert.equal(
-  (await resolveOne("cinezo-anime-dub", fixtures.anime)).url,
-  "https://player.cinezo.live/embed/anime/21/1?dub=true&autoplay=false&servericon=true&setting=true&pip=true",
+  (await resolveOne("anilink-dub", fixtures.anime)).url,
+  "https://anilink.cc/watch/21/1?variant=dub&autoplay=false&autoNext=true&startAt=137&primaryColor=a855f7&secondaryColor=0f1014&iconColor=ffffff",
+);
+assert.equal(
+  (await resolveOne("vidnest-animepahe-sub", fixtures.anime)).url,
+  "https://vidnest.fun/animepahe/21/1/sub?startAt=137",
+);
+assert.equal(
+  (await resolveOne("vidnest-animepahe-dub", fixtures.anime)).url,
+  "https://vidnest.fun/animepahe/21/1/dub?startAt=137",
 );
 assert.equal((await resolveOne("vidking", fixtures.movie)).capabilities.subtitles, "none");
 assert.equal((await resolveOne("cinezo", fixtures.movie)).capabilities.subtitles, "native");
@@ -107,10 +115,10 @@ assert.deepEqual(orderedIds(fixtures.movie), [
 ]);
 assert.deepEqual(orderedIds(fixtures.tv), orderedIds(fixtures.movie));
 assert.deepEqual(orderedIds(fixtures.anime), [
-  "vidlink-anime-sub",
-  "vidlink-anime-dub",
-  "cinezo-anime-sub",
-  "cinezo-anime-dub",
+  "anilink-sub",
+  "anilink-dub",
+  "vidnest-animepahe-sub",
+  "vidnest-animepahe-dub",
 ]);
 
 const instantStartedAt = performance.now();
@@ -147,18 +155,18 @@ assert.equal(
   "vidking",
 );
 
-const mappedAnime = { ...fixtures.anime, animeTmdbId: 37854 };
-assert.equal(byId.get("vidrift-anime").supports(mappedAnime), true);
-assert.equal(
-  (await resolveOne("vidrift-anime", mappedAnime)).url,
-  "https://vidrift.in/embed/anime/37854/1",
-);
+for (const anilistId of [21, 20, 101922]) {
+  const fixture = { ...fixtures.anime, anilistId, malId: undefined };
+  assert.equal(byId.get("anilink-sub").supports(fixture), true);
+  assert.equal(byId.get("vidnest-animepahe-sub").supports(fixture), true);
+}
 
 assert.equal(legacySourceId("movie", "0"), "vidlink");
 assert.equal(legacySourceId("movie", "2"), "vidking");
-assert.equal(legacySourceId("anime", "0"), "vidlink-anime-sub");
+assert.equal(legacySourceId("anime", "0"), "anilink-sub");
 assert.equal(legacySourceId("movie", "vidlink-alt"), "vidlink-native");
-assert.equal(legacySourceId("anime", "vidlink"), "vidlink-anime-sub");
+assert.equal(legacySourceId("anime", "vidlink"), "anilink-sub");
+assert.equal(legacySourceId("anime", "cinezo-anime-dub"), "anilink-dub");
 
 const direct = createDirectAdapter([
   {

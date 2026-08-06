@@ -26,13 +26,15 @@ const AnimeDiscoverList = () => {
   const { ref, inViewport } = useInViewport();
   const searchParams = useSearchParams();
   const category = searchParams.get("category") || "trending";
+  const genre = searchParams.get("genre") || undefined;
 
   const { data, isPending, status, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
-      queryKey: ["discover-anime", category],
+      queryKey: ["discover-anime", category, genre],
       queryFn: ({ pageParam }) => {
         const { seasonYear, season } = currentAniListSeason();
-        const vars: any = { page: pageParam, perPage: 24 };
+        const vars: Parameters<typeof anilistApi.discover>[0] = { page: pageParam, perPage: 24 };
+        if (genre) vars.genre = genre;
 
         if (category === "trending") {
           vars.sort = ["TRENDING_DESC" as AniListSort];
@@ -63,7 +65,7 @@ const AnimeDiscoverList = () => {
 
   if (status === "error") return notFound();
 
-  const title = CATEGORY_NAMES[category] || "Discover Anime";
+  const title = genre ? `${genre} Anime` : CATEGORY_NAMES[category] || "Discover Anime";
 
   if (isPending) {
     return (
@@ -89,7 +91,9 @@ const AnimeDiscoverList = () => {
         })}
       </div>
       <div ref={ref} className="flex h-24 items-center justify-center">
-        {isFetchingNextPage && <Spinner size="lg" variant="wave" color="secondary" label={getLoadingLabel()} />}
+        {isFetchingNextPage && (
+          <Spinner size="lg" variant="wave" color="secondary" label={getLoadingLabel()} />
+        )}
         {!hasNextPage && !isPending && (
           <p className="text-muted-foreground text-center text-base">
             You have reached the end of the list.

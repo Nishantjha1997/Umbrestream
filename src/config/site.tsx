@@ -1,18 +1,25 @@
 import { tmdbBrowser } from "@/api/tmdb-browser";
 import { SiteConfigType } from "@/types";
 import { Movie, TV } from "tmdb-ts/dist/types";
-import { BiSearchAlt2, BiSolidSearchAlt2 } from "react-icons/bi";
-import { GoHomeFill, GoHome } from "react-icons/go";
-import { HiComputerDesktop } from "react-icons/hi2";
-import { IoIosSunny } from "react-icons/io";
 import {
-  IoCompass,
-  IoCompassOutline,
-  IoInformationCircle,
-  IoInformationCircleOutline,
-  IoMoon,
-} from "react-icons/io5";
-import { TbFolder, TbFolderFilled } from "react-icons/tb";
+  BiCameraMovie,
+  BiCategory,
+  BiSearchAlt2,
+  BiSolidCameraMovie,
+  BiSolidCategory,
+  BiSolidSearchAlt2,
+} from "react-icons/bi";
+import { GoHomeFill, GoHome } from "react-icons/go";
+import { HiComputerDesktop, HiOutlineSparkles, HiSparkles } from "react-icons/hi2";
+import { IoIosSunny } from "react-icons/io";
+import { IoMoon } from "react-icons/io5";
+import {
+  TbBallFootball,
+  TbDeviceTv,
+  TbDeviceTvFilled,
+  TbUserCircle,
+  TbUserFilled,
+} from "react-icons/tb";
 import { PiFlowerLotusLight, PiFlowerLotusFill } from "react-icons/pi";
 
 /**
@@ -39,36 +46,65 @@ export const siteConfig: SiteConfigType = {
       href: "/",
       icon: <GoHome className="size-full" />,
       activeIcon: <GoHomeFill className="size-full" />,
-    },
-    {
-      label: "Discover",
-      href: "/discover",
-      icon: <IoCompassOutline className="size-full" />,
-      activeIcon: <IoCompass className="size-full" />,
-    },
-    {
-      label: "Anime",
-      href: "/anime",
-      icon: <PiFlowerLotusLight className="size-full" />,
-      activeIcon: <PiFlowerLotusFill className="size-full" />,
+      dockOrder: 0,
     },
     {
       label: "Search",
       href: "/search",
       icon: <BiSearchAlt2 className="size-full" />,
       activeIcon: <BiSolidSearchAlt2 className="size-full" />,
+      dockOrder: 1,
     },
     {
-      label: "Library",
-      href: "/library",
-      icon: <TbFolder className="size-full" />,
-      activeIcon: <TbFolderFilled className="size-full" />,
+      label: "TV",
+      href: "/tv",
+      icon: <TbDeviceTv className="size-full" />,
+      activeIcon: <TbDeviceTvFilled className="size-full" />,
+      dockOrder: 2,
     },
     {
-      label: "About",
-      href: "/about",
-      icon: <IoInformationCircleOutline className="size-full" />,
-      activeIcon: <IoInformationCircle className="size-full" />,
+      label: "Anime",
+      href: "/anime",
+      icon: <PiFlowerLotusLight className="size-full" />,
+      activeIcon: <PiFlowerLotusFill className="size-full" />,
+      dockOrder: 3,
+    },
+    {
+      label: "Movies",
+      href: "/movies",
+      icon: <BiCameraMovie className="size-full" />,
+      activeIcon: <BiSolidCameraMovie className="size-full" />,
+      dockOrder: 4,
+    },
+    {
+      label: "Sports",
+      href: "/sports",
+      icon: <TbBallFootball className="size-full" />,
+      activeIcon: <TbBallFootball className="size-full" />,
+      desktopOnly: true,
+      preview: true,
+    },
+    {
+      label: "Sparks",
+      href: "/spark",
+      icon: <HiOutlineSparkles className="size-full" />,
+      activeIcon: <HiSparkles className="size-full" />,
+      desktopOnly: true,
+      preview: true,
+    },
+    {
+      label: "Categories",
+      href: "/categories",
+      icon: <BiCategory className="size-full" />,
+      activeIcon: <BiSolidCategory className="size-full" />,
+      dockOrder: 5,
+    },
+    {
+      label: "My Space",
+      href: "/space",
+      icon: <TbUserCircle className="size-full" />,
+      activeIcon: <TbUserFilled className="size-full" />,
+      dockOrder: 6,
     },
   ],
   themes: [

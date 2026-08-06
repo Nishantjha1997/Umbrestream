@@ -40,6 +40,13 @@ interface SessionHealth {
   lastSuccessful: Partial<Record<MediaType, string>>;
 }
 
+interface SourceObservation {
+  providerId: string;
+  status: "available" | "unverified" | "failed";
+  latencyMs: number;
+  failureReason?: string;
+}
+
 const EMPTY_HEALTH: SessionHealth = { providers: {}, lastSuccessful: {} };
 
 const emit = (name: string, properties: Record<string, string | number | boolean>): void => {
@@ -184,10 +191,11 @@ export function usePlayerEngine({ request, legacyPlayers, currentTime }: UsePlay
   const attemptedProvidersRef = useRef(new Set<string>());
   const hardFailedProvidersRef = useRef(new Set<string>());
   const readySourcesRef = useRef(new Set<string>());
+  const observedSourcesRef = useRef(new Set<string>());
   const currentTimeRef = useRef(currentTime);
   const manualPinnedRef = useRef(false);
   const playbackReadyRef = useRef(false);
-  const selectionStartedAtRef = useRef(performance.now());
+  const selectionStartedAtRef = useRef(0);
 
   useEffect(() => {
     currentTimeRef.current = currentTime;
@@ -197,6 +205,7 @@ export function usePlayerEngine({ request, legacyPlayers, currentTime }: UsePlay
     attemptedProvidersRef.current.clear();
     hardFailedProvidersRef.current.clear();
     readySourcesRef.current.clear();
+    observedSourcesRef.current.clear();
     manualPinnedRef.current = false;
     playbackReadyRef.current = false;
     setSelectedId(null);
@@ -388,6 +397,59 @@ export function usePlayerEngine({ request, legacyPlayers, currentTime }: UsePlay
       failCurrent(selectedSource.failureReason ?? "Source manifest failed");
     }
   }, [failCurrent, selectedSource]);
+
+  useEffect(() => {
+    if (
+      request.mediaType !== "anime" ||
+      !selectedSource ||
+      selectedSource.kind !== "iframe" ||
+      observedSourcesRef.current.has(selectedSource.id)
+    ) {
+      return;
+    }
+    observedSourcesRef.current.add(selectedSource.id);
+    const controller = new AbortController();
+    let active = true;
+
+    fetch("/api/player/observe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ providerId: selectedSource.id, request }),
+      signal: controller.signal,
+    })
+      .then(async (result) => {
+        if (!result.ok) throw new Error(`Observation returned ${result.status}`);
+        return (await result.json()) as SourceObservation;
+      })
+      .then((observation) => {
+        if (!active) return;
+        emit("player_source_observed", {
+          provider: observation.providerId,
+          mediaType: "anime",
+          status: observation.status,
+          latencyMs: observation.latencyMs,
+        });
+        if (observation.status === "failed") {
+          failCurrent(observation.failureReason ?? "Provider observation confirmed failure");
+        } else {
+          setRuntimeStatuses((current) =>
+            current[selectedSource.id] === "loading"
+              ? { ...current, [selectedSource.id]: observation.status }
+              : current,
+          );
+        }
+      })
+      .catch((error) => {
+        if (error instanceof Error && error.name === "AbortError") return;
+        // Observation enriches the state but never blocks or removes a source.
+      });
+
+    return () => {
+      active = false;
+      controller.abort();
+    };
+    // requestKey ensures a new episode gets its own observation pass.
+  }, [failCurrent, request, requestKey, selectedSource]);
 
   const selectSource = useCallback(
     (id: string) => {

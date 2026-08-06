@@ -95,10 +95,10 @@ function normalizeDetail(raw: RawDetail): AniListMediaDetail {
 }
 
 const PAGE_QUERY = `
-  query ($page: Int, $perPage: Int, $sort: [MediaSort], $season: MediaSeason, $seasonYear: Int, $search: String) {
+  query ($page: Int, $perPage: Int, $sort: [MediaSort], $season: MediaSeason, $seasonYear: Int, $search: String, $genre: String) {
     Page(page: $page, perPage: $perPage) {
       pageInfo { total currentPage lastPage hasNextPage }
-      media(type: ANIME, sort: $sort, season: $season, seasonYear: $seasonYear, search: $search, isAdult: false) {
+      media(type: ANIME, sort: $sort, season: $season, seasonYear: $seasonYear, search: $search, genre: $genre, isAdult: false) {
         ${MEDIA_SUMMARY_FIELDS}
       }
     }
@@ -112,6 +112,7 @@ interface PageQueryVars {
   season?: string;
   seasonYear?: number;
   search?: string;
+  genre?: string;
 }
 
 async function fetchPage(vars: PageQueryVars): Promise<AniListPage<AniListMediaSummary>> {

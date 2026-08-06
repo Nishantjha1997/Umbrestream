@@ -5,14 +5,7 @@ export type SubtitleSupport = "native" | "unverified" | "none";
 export type ProviderTier = "direct" | "stable" | "experimental";
 export type PlayerEventProtocol = "native" | "vidlink" | "vidking" | "cinezo" | "filmu" | "videasy";
 export type SourceAvailability =
-  | "resolving"
-  | "loading"
-  | "ready"
-  | "available"
-  | "slow"
-  | "unverified"
-  | "failed"
-  | "switching";
+  "resolving" | "loading" | "ready" | "available" | "slow" | "unverified" | "failed" | "switching";
 
 export interface SourceCapabilities {
   recommended?: boolean;
@@ -89,7 +82,8 @@ export interface PlayerSource extends StreamCandidate {
   availability: SourceAvailability;
   latencyMs?: number;
   failureReason?: string;
-  healthEvidence?: "manifest" | "iframe-load" | "playback-event" | "native-playback";
+  healthEvidence?:
+    "manifest" | "registry-observation" | "iframe-load" | "playback-event" | "native-playback";
 }
 
 export interface SourceResolutionError {
@@ -120,14 +114,7 @@ export interface SourceAdapter {
     Record<
       MediaType,
       (
-        | "title"
-        | "tmdbId"
-        | "imdbId"
-        | "anilistId"
-        | "malId"
-        | "animeTmdbId"
-        | "season"
-        | "episode"
+        "title" | "tmdbId" | "imdbId" | "anilistId" | "malId" | "animeTmdbId" | "season" | "episode"
       )[]
     >
   >;
