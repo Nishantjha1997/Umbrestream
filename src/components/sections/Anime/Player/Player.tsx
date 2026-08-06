@@ -34,7 +34,13 @@ const AnimePlayer: React.FC<AnimePlayerProps> = ({ anime, episode, startAt }) =>
       }}
       legacyPlayers={getAnimePlayers(anime.id, episode, startAt, anime.idMal, animeTitle)}
       color="secondary"
-      renderHeader={({ hidden, selectedSourceId, onOpenSource }) => (
+      renderHeader={({
+        hidden,
+        selectedSourceId,
+        onOpenSource,
+        fullscreen,
+        onToggleFullscreen,
+      }) => (
         <AnimePlayerHeader
           id={anime.id}
           animeTitle={animeTitle}
@@ -44,6 +50,8 @@ const AnimePlayer: React.FC<AnimePlayerProps> = ({ anime, episode, startAt }) =>
           onOpenSource={onOpenSource}
           onOpenEpisode={episodeHandlers.open}
           hidden={hidden}
+          fullscreen={fullscreen}
+          onToggleFullscreen={onToggleFullscreen}
         />
       )}
       renderExtras={({ selectedSourceId }) => (

@@ -14,6 +14,7 @@ import { CAPTCHA_SITE_KEY, isCaptchaEnabled } from "@/utils/captcha";
 import CheckEmail from "./CheckEmail";
 import FormAlert from "./FormAlert";
 import TextButton from "./TextButton";
+import { trackUmbraEvent } from "@/lib/analytics/client";
 
 /** Register-form fields a server error can be attributed to. */
 const REGISTER_FIELDS = ["username", "email", "password", "confirm"] as const;
@@ -56,6 +57,7 @@ const AuthRegisterForm: React.FC<AuthFormProps> = ({ setForm }) => {
   );
 
   const onSubmit = handleSubmit(async (data) => {
+    trackUmbraEvent("signup_started", { method: "email" });
     if (isCaptchaEnabled && isEmpty(data.captchaToken)) {
       setIsVerifying(true);
       return;
@@ -66,6 +68,7 @@ const AuthRegisterForm: React.FC<AuthFormProps> = ({ setForm }) => {
     const { success, message, fieldErrors } = await signUp(data);
 
     if (!success) {
+      trackUmbraEvent("signup_failed", { method: "email" });
       applyFieldErrors(fieldErrors);
       setFormError(message ?? "Something went wrong. Please try again.");
       setValue("captchaToken", undefined);
@@ -76,6 +79,7 @@ const AuthRegisterForm: React.FC<AuthFormProps> = ({ setForm }) => {
     // Sign-up used to end here with a `timeout: Infinity` toast over a form
     // that was still filled in and still submittable — no redirect, no state
     // change, nothing to do next (§5.4).
+    trackUmbraEvent("signup_completed", { method: "email" });
     setRegisteredEmail(data.email);
   });
 

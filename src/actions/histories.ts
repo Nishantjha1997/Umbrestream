@@ -12,8 +12,11 @@ export const syncHistory = async (
   data: UnifiedPlayerEventData,
   completed?: boolean,
 ): ActionResponse => {
-  console.info("Saving history:", data);
-
+  // Was `console.info("Saving history:", data)` on entry — i.e. before the auth
+  // check, so any unauthenticated caller could write arbitrary attacker-chosen
+  // content into the platform logs for free (log injection / log flooding), and
+  // every genuine save spilled viewing activity into a system with a different
+  // retention policy and a wider audience than the database.
   if (!data) return { success: false, message: "No data to save" };
 
   if (data.mediaType === "tv" && (!data.season || !data.episode)) {
@@ -52,6 +55,9 @@ export const syncHistory = async (
       };
     }
 
+    // TMDB movie/TV and AniList details intentionally have different shapes;
+    // the media-type branches below narrow them before each field is used.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let media: any;
     if (data.mediaType === "movie") {
       media = await tmdb.movies.details(Number(data.mediaId));
@@ -71,19 +77,25 @@ export const syncHistory = async (
     // Map properties based on media type
     const isAnime = data.mediaType === "anime";
     const releaseDate = isAnime
-      ? (media.startDate?.year
-          ? `${media.startDate.year}-${String(media.startDate.month || 1).padStart(2, "0")}-${String(media.startDate.day || 1).padStart(2, "0")}`
-          : new Date().toISOString().split("T")[0])
-      : ("release_date" in media ? media.release_date : media.first_air_date);
+      ? media.startDate?.year
+        ? `${media.startDate.year}-${String(media.startDate.month || 1).padStart(2, "0")}-${String(media.startDate.day || 1).padStart(2, "0")}`
+        : new Date().toISOString().split("T")[0]
+      : "release_date" in media
+        ? media.release_date
+        : media.first_air_date;
 
     const titleStr = isAnime
-      ? (media.title.english || media.title.romaji || "Untitled")
-      : ("title" in media ? mutateMovieTitle(media) : mutateTvShowTitle(media));
+      ? media.title.english || media.title.romaji || "Untitled"
+      : "title" in media
+        ? mutateMovieTitle(media)
+        : mutateTvShowTitle(media);
 
     const voteAverage = isAnime ? (media.averageScore || 0) / 10 : media.vote_average;
-    const isAdult = isAnime ? (media.isAdult || false) : ("adult" in media ? media.adult : false);
-    const posterPath = isAnime ? (media.coverImage.extraLarge || media.coverImage.large || "") : media.poster_path;
-    const backdropPath = isAnime ? (media.bannerImage || "") : media.backdrop_path;
+    const isAdult = isAnime ? media.isAdult || false : "adult" in media ? media.adult : false;
+    const posterPath = isAnime
+      ? media.coverImage.extraLarge || media.coverImage.large || ""
+      : media.poster_path;
+    const backdropPath = isAnime ? media.bannerImage || "" : media.backdrop_path;
 
     // Insert or update history
     const { data: history, error } = await supabase
@@ -112,21 +124,21 @@ export const syncHistory = async (
       .select();
 
     if (error) {
-      console.info("History save error:", error);
+      console.error("[history] save failed:", error.code ?? error.message);
       return {
         success: false,
         message: "Failed to save history",
       };
     }
 
-    console.info("History saved:", history);
+    void history;
 
     return {
       success: true,
       message: "History saved",
     };
   } catch (error) {
-    console.info("Unexpected error:", error);
+    console.error("[history] unexpected error:", error);
     return {
       success: false,
       message: "An unexpected error occurred",
@@ -134,7 +146,24 @@ export const syncHistory = async (
   }
 };
 
+/** Hard ceiling on any caller-supplied page size. */
+const MAX_PAGE_SIZE = 100;
+
+const boundedLimit = (limit: unknown, fallback = 20): number => {
+  const value = Math.trunc(Number(limit));
+  if (!Number.isFinite(value) || value < 1) return fallback;
+  return Math.min(value, MAX_PAGE_SIZE);
+};
+
+/**
+ * `limit` is a caller-supplied argument, not a constraint. Every exported function
+ * in a "use server" module is a public HTTP endpoint, so the `= 20` default binds
+ * only the app's own call sites — anyone with a session can invoke this directly
+ * with `limit = 1_000_000` and force a full scan plus a huge serialized payload,
+ * on repeat. Clamp it server-side.
+ */
 export const getUserHistories = async (limit: number = 20): ActionResponse<HistoryDetail[]> => {
+  const take = boundedLimit(limit);
   try {
     const supabase = await createClient();
 
@@ -156,7 +185,7 @@ export const getUserHistories = async (limit: number = 20): ActionResponse<Histo
       .select("*")
       .eq("user_id", user.id)
       .order("updated_at", { ascending: false })
-      .limit(limit);
+      .limit(take);
 
     if (error) {
       console.info("History fetch error:", error);

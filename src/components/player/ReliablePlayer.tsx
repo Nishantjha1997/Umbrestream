@@ -2,7 +2,6 @@
 
 import PlayerSourceSelection from "@/components/player/PlayerSourceSelection";
 import NativePlayer from "@/components/player/NativePlayer";
-import AdsWarning from "@/components/ui/overlay/AdsWarning";
 import StuckStreamToast from "@/components/ui/overlay/StuckStreamToast";
 import { usePlayerEngine } from "@/hooks/usePlayerEngine";
 import { usePlayerEvents } from "@/hooks/usePlayerEvents";
@@ -13,12 +12,14 @@ import { cn } from "@/utils/helpers";
 import { SpacingClasses } from "@/utils/constants";
 import { Button, Card, Skeleton, type ButtonProps } from "@heroui/react";
 import { useDisclosure } from "@mantine/hooks";
-import { useEffect, useRef, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
 export interface PlayerHeaderContext {
   hidden: boolean;
   selectedSourceId: string;
   onOpenSource: () => void;
+  fullscreen: boolean;
+  onToggleFullscreen: () => void;
 }
 
 interface ReliablePlayerProps {
@@ -39,11 +40,35 @@ export default function ReliablePlayer({
   renderExtras,
 }: ReliablePlayerProps) {
   const [sourceOpened, sourceHandlers] = useDisclosure(false);
+  const [fullscreen, setFullscreen] = useState(false);
+  const [cinemaMode, setCinemaMode] = useState(false);
+  const shellRef = useRef<HTMLDivElement>(null);
+  // A fullscreen player should become visually quiet after the normal idle
+  // delay. Only an open drawer pins the chrome; fullscreen itself must not keep
+  // Umbra's controls over the provider's captions/settings buttons.
   const chrome = usePlayerChromeVisibility(sourceOpened, 3_000);
-  const events = usePlayerEvents({ saveHistory: true, metadata: historyMetadata });
+  const events = usePlayerEvents({
+    saveHistory: true,
+    metadata: historyMetadata,
+    // The frame is never trusted to say what it is playing — see PlayerEventIdentity.
+    identity: {
+      mediaId: request.tmdbId ?? request.anilistId ?? "",
+      mediaType: request.mediaType,
+      season: request.season,
+      episode: request.episode,
+    },
+  });
   const engine = usePlayerEngine({ request, legacyPlayers, currentTime: events.currentTime });
   const handledEventVersionRef = useRef(0);
   const { failCurrent, markPlaybackReady } = engine;
+  const { setAllowedOrigin } = events;
+
+  // Narrow the postMessage allowlist to the provider actually on screen. `engine`
+  // has to be constructed after `events` (it consumes events.currentTime), so the
+  // origin is pushed in rather than passed as an option.
+  useEffect(() => {
+    setAllowedOrigin(engine.selectedSource?.providerOrigin ?? null);
+  }, [engine.selectedSource?.providerOrigin, setAllowedOrigin]);
 
   useEffect(() => {
     if (handledEventVersionRef.current >= events.eventVersion) return;
@@ -64,18 +89,94 @@ export default function ReliablePlayer({
     markPlaybackReady,
   ]);
 
+  const toggleFullscreen = useCallback(async () => {
+    const shell = shellRef.current;
+    if (!shell) return;
+
+    if (cinemaMode) {
+      setCinemaMode(false);
+      return;
+    }
+
+    const webkitDocument = document as Document & {
+      webkitFullscreenElement?: Element | null;
+      webkitExitFullscreen?: () => Promise<void> | void;
+    };
+    const activeElement = document.fullscreenElement ?? webkitDocument.webkitFullscreenElement;
+
+    if (activeElement === shell) {
+      if (document.exitFullscreen) await document.exitFullscreen().catch(() => undefined);
+      else if (webkitDocument.webkitExitFullscreen) await webkitDocument.webkitExitFullscreen();
+      else setCinemaMode(false);
+      return;
+    }
+
+    // iPhone Safari exposes fullscreen on the video element rather than on an
+    // arbitrary container. Prefer that native path for authorized direct media.
+    const video = shell.querySelector("video") as
+      | (HTMLVideoElement & {
+          webkitEnterFullscreen?: () => void;
+        })
+      | null;
+    if (video?.webkitEnterFullscreen && /iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+      video.webkitEnterFullscreen();
+      return;
+    }
+
+    if (shell.requestFullscreen) {
+      try {
+        await shell.requestFullscreen({ navigationUI: "hide" });
+        return;
+      } catch {
+        // Safari iframe/container fullscreen can reject; use the in-page
+        // cinema mode so the user still gets a usable full-screen layout.
+      }
+    }
+
+    setCinemaMode((current) => !current);
+  }, [cinemaMode]);
+
+  useEffect(() => {
+    const sync = () => {
+      const webkitDocument = document as Document & { webkitFullscreenElement?: Element | null };
+      const active = document.fullscreenElement ?? webkitDocument.webkitFullscreenElement;
+      setFullscreen(active === shellRef.current);
+      if (active !== shellRef.current) setCinemaMode(false);
+    };
+    document.addEventListener("fullscreenchange", sync);
+    document.addEventListener("webkitfullscreenchange", sync as EventListener);
+    return () => {
+      document.removeEventListener("fullscreenchange", sync);
+      document.removeEventListener("webkitfullscreenchange", sync as EventListener);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!cinemaMode) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [cinemaMode]);
+
   const context: PlayerHeaderContext = {
     hidden: chrome.hidden,
     selectedSourceId: engine.selectedSourceId,
     onOpenSource: sourceHandlers.open,
+    fullscreen: fullscreen || cinemaMode,
+    onToggleFullscreen: () => void toggleFullscreen(),
   };
 
   return (
     <>
-      <AdsWarning />
-
       <div
-        className={cn("player-shell relative overflow-hidden bg-black", SpacingClasses.reset)}
+        ref={shellRef}
+        className={cn(
+          "player-shell relative overflow-hidden bg-black",
+          SpacingClasses.reset,
+          cinemaMode && "player-cinema-mode",
+        )}
         onPointerMove={chrome.reveal}
         onPointerDown={chrome.reveal}
         onKeyDown={chrome.reveal}
@@ -101,6 +202,8 @@ export default function ReliablePlayer({
           onOpenSource={sourceHandlers.open}
         />
 
+        {/* The callback accesses fullscreen refs only after a user gesture. */}
+        {/* eslint-disable-next-line react-hooks/refs */}
         {renderHeader(context)}
 
         <Card shadow="md" radius="none" className="relative h-svh min-h-[320px] bg-black">
@@ -111,7 +214,6 @@ export default function ReliablePlayer({
                 allowFullScreen
                 allow={engine.selectedSource.capabilities.iframe?.allow}
                 referrerPolicy={engine.selectedSource.capabilities.iframe?.referrerPolicy}
-                sandbox={engine.selectedSource.capabilities.iframe?.sandbox}
                 key={`${engine.selectedSource.id}:${engine.playbackUrl}`}
                 src={engine.playbackUrl}
                 title={`${engine.selectedSource.label} player`}
@@ -185,6 +287,7 @@ export default function ReliablePlayer({
         preferredSubtitle={request.preferredSubtitle}
       />
 
+      {/* eslint-disable-next-line react-hooks/refs */}
       {renderExtras?.(context)}
     </>
   );

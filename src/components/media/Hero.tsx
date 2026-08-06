@@ -8,7 +8,7 @@ import { getEnglishLogoUrl } from "@/utils/movies";
 import { fromMovie, fromTvShow } from "@/utils/normalize-media";
 import { Skeleton } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
-import { transition, useReducedMotionSafe } from "@/utils/motion";
+import { useReducedMotionSafe } from "@/utils/motion";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -62,7 +62,7 @@ const BLEED = "-mx-3 -mt-8 sm:-mx-5";
 /** 4:3 on phones, 16:9 from `sm` up, capped so a 2560px display doesn't get a
  *  1440px-tall billboard. `object-cover` absorbs the difference. */
 const FRAME =
-  "relative w-full overflow-hidden aspect-[4/3] max-h-[68vh] sm:aspect-video sm:max-h-[78vh]";
+  "relative w-[calc(100%+1.5rem)] overflow-hidden aspect-[4/3] max-h-[68vh] sm:w-[calc(100%+2.5rem)] sm:aspect-video sm:max-h-[78vh]";
 
 const KIND_LABEL: Record<MediaSummary["kind"], string> = {
   movie: "Movie",
@@ -257,19 +257,18 @@ const Hero: React.FC = () => {
    * pattern. It also avoids paying for a YouTube iframe on titles the user
    * scrolls past within a second.
    */
-  const [trailerReady, setTrailerReady] = useState(false);
+  const [trailerReadyKey, setTrailerReadyKey] = useState<string | null>(null);
 
   useEffect(() => {
-    setTrailerReady(false);
     if (!trailerKey || reduce || !tabVisible) return;
-    const timer = window.setTimeout(() => setTrailerReady(true), TRAILER_DELAY_MS);
+    const timer = window.setTimeout(() => setTrailerReadyKey(trailerKey), TRAILER_DELAY_MS);
     return () => window.clearTimeout(timer);
     // Re-armed per title, so a rotation restarts the dwell rather than cutting
     // the next trailer in instantly.
   }, [trailerKey, reduce, tabVisible]);
 
   // Never left running behind a hidden tab or under reduced motion.
-  const showTrailer = trailerReady && !!trailerKey && !reduce && tabVisible;
+  const showTrailer = trailerReadyKey === trailerKey && !!trailerKey && !reduce && tabVisible;
 
   useEffect(() => {
     const sync = () => setTabVisible(document.visibilityState === "visible");
@@ -312,7 +311,6 @@ const Hero: React.FC = () => {
       <AnimatePresence>
         {/* Decorative: the title is rendered as real text (or as wordmark art
             with an alt) in the content block below. */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         <motion.img
           key={`${active.kind}-${active.id}`}
           src={heroArt(active.backdropUrl as string)}
@@ -397,7 +395,6 @@ const Hero: React.FC = () => {
                 text supplies the accessible name. */}
             <h1 className="text-3xl leading-tight font-semibold tracking-tight text-balance drop-shadow-lg sm:text-4xl lg:text-5xl">
               {logoUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={logoUrl}
                   alt={active.title}

@@ -9,8 +9,20 @@ import type {
   SourceResolutionResponse,
 } from "@/lib/sources/types";
 import type { MediaType } from "@/types/title";
+import { callerKey, rateLimit, tooManyRequests } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
+
+/**
+ * One inbound request fans out to every adapter that matches the title, and in
+ * preflight mode each candidate gets a real GET held open for up to 4.5s. That
+ * makes the endpoint an amplifier — a few hundred concurrent callers exhaust the
+ * instance's sockets and point our egress at the provider hosts — so the fan-out
+ * is both rate limited per caller and capped per request.
+ */
+const SOURCES_LIMIT = 40;
+const SOURCES_WINDOW_MS = 60_000;
+const MAX_PROBES = 6;
 
 interface ProbeResult {
   availability: SourceAvailability;
@@ -58,47 +70,6 @@ function requestFrom(params: URLSearchParams): SourceRequest | null {
   return request;
 }
 
-const ERROR_TITLE_PATTERN =
-  /<title>[^<]*(?:404|410|account suspended|connection timed out|gateway time-out|error\s*-\s*megaplay)/i;
-const VISIBLE_ERROR_PAGE_PATTERNS = [
-  /error code:\s*(?:404|410|5\d{2})/i,
-  /this account has been suspended/i,
-  /we can(?:'|&apos;)t find the file you are looking for/i,
-  /this page could not be found/i,
-  /err_(?:name_not_resolved|connection_refused|timed_out)/i,
-];
-
-function visiblePageText(html: string): string {
-  return html
-    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
-    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
-    .replace(/<noscript\b[^>]*>[\s\S]*?<\/noscript>/gi, " ")
-    .replace(/<[^>]+>/g, " ");
-}
-
-async function responsePreview(response: Response, maxBytes = 65_536): Promise<string> {
-  if (!response.body) return "";
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let bytes = 0;
-  let preview = "";
-
-  try {
-    while (bytes < maxBytes) {
-      const { done, value } = await reader.read();
-      if (done || !value) break;
-      const remaining = Math.min(value.byteLength, maxBytes - bytes);
-      preview += decoder.decode(value.subarray(0, remaining), { stream: true });
-      bytes += remaining;
-    }
-    preview += decoder.decode();
-  } finally {
-    await reader.cancel().catch(() => undefined);
-  }
-
-  return preview;
-}
-
 async function probe(url: string, requestSignal?: AbortSignal): Promise<ProbeResult> {
   const cached = probeCache.get(url);
   if (cached && cached.expiresAt > Date.now()) return cached;
@@ -120,52 +91,14 @@ async function probe(url: string, requestSignal?: AbortSignal): Promise<ProbeRes
       signal: controller.signal,
     });
     const latencyMs = Math.round(performance.now() - startedAt);
-    const preview = await responsePreview(response);
-    const requestedUrl = new URL(url);
-    const finalUrl = new URL(response.url);
-    const redirectedToHomepage =
-      requestedUrl.pathname !== "/" &&
-      finalUrl.origin === requestedUrl.origin &&
-      finalUrl.pathname === "/";
-    const visibleText = visiblePageText(preview);
-    const errorPage =
-      ERROR_TITLE_PATTERN.test(preview) ||
-      VISIBLE_ERROR_PAGE_PATTERNS.some((pattern) => pattern.test(visibleText));
-
-    if (
-      response.status === 404 ||
-      response.status === 410 ||
-      response.status >= 500 ||
-      redirectedToHomepage ||
-      errorPage
-    ) {
-      result = {
-        availability: "failed",
-        latencyMs,
-        failureReason: redirectedToHomepage
-          ? "Provider redirected away from this title"
-          : errorPage
-            ? "Provider returned an error page"
-            : `Upstream returned ${response.status}`,
-      };
-    } else if ([401, 403, 405, 429].includes(response.status)) {
-      result = { availability: "unverified", latencyMs };
-    } else if (response.status >= 400) {
-      result = {
-        availability: "failed",
-        latencyMs,
-        failureReason: `Upstream returned ${response.status}`,
-      };
-    } else {
-      result = { availability: latencyMs > 1200 ? "slow" : "available", latencyMs };
-    }
-  } catch (error) {
+    await response.body?.cancel().catch(() => undefined);
+    // HTTP bodies and redirect destinations are not playback evidence. Providers
+    // often show a bot/error page to server-side probes while their browser iframe
+    // still works, so this probe records latency without triggering fallback.
+    result = { availability: latencyMs > 1200 ? "slow" : "available", latencyMs };
+  } catch {
     cacheable = !requestSignal?.aborted;
-    result = {
-      availability: "failed",
-      failureReason:
-        error instanceof Error && error.name !== "AbortError" ? error.message : "Timed out",
-    };
+    result = { availability: "unverified" };
   } finally {
     clearTimeout(timeout);
     requestSignal?.removeEventListener("abort", abort);
@@ -179,6 +112,10 @@ async function probe(url: string, requestSignal?: AbortSignal): Promise<ProbeRes
 
 export async function GET(request: Request): Promise<Response> {
   const startedAt = performance.now();
+
+  const limit = rateLimit("player-sources", callerKey(request), SOURCES_LIMIT, SOURCES_WINDOW_MS);
+  if (!limit.allowed) return tooManyRequests(limit.retryAfter);
+
   const searchParams = new URL(request.url).searchParams;
   const sourceRequest = requestFrom(searchParams);
   if (!sourceRequest) {
@@ -188,11 +125,16 @@ export async function GET(request: Request): Promise<Response> {
   const legacyPreflight = searchParams.get("version") === "2";
   const groups = await resolveAll(sourceRequest, request.signal, legacyPreflight ? 4500 : 500);
   const candidates = fallbackChain(groups);
+  // Probe only the head of the fallback chain. The tail is what the user reaches
+  // by switching servers manually, at which point it gets probed on demand —
+  // paying for all of it up front is what makes the amplification interesting.
   const probes = legacyPreflight
-    ? await Promise.all(candidates.map((candidate) => probe(candidate.url, request.signal)))
+    ? await Promise.all(
+        candidates.slice(0, MAX_PROBES).map((candidate) => probe(candidate.url, request.signal)),
+      )
     : null;
   const sources: PlayerSource[] = candidates.map((candidate, index) =>
-    probes
+    probes && index < probes.length
       ? { ...candidate, ...probes[index] }
       : { ...candidate, availability: "unverified", healthEvidence: "manifest" },
   );

@@ -184,6 +184,20 @@
   }
 }
 
+.player-cinema-mode .player-auxiliary-controls,
+.player-cinema-mode .player-safe-toast {
+  display: none !important;
+}
+
+.player-cinema-mode {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  width: 100vw;
+  height: 100dvh;
+  margin: 0;
+}
+
 .safe-bottom-nav {
   padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
 }

@@ -1,5 +1,7 @@
 "use server";
 
+/* eslint-disable @typescript-eslint/no-explicit-any -- TMDB and AniList return heterogeneous provider-owned media payloads that are preserved for their existing card renderers. */
+
 import { anilistApi } from "@/api/anilist";
 import { tmdb } from "@/api/tmdb";
 import { createClient } from "@/utils/supabase/server";
@@ -94,9 +96,7 @@ import { getUserHistories } from "./histories";
 /* -------------------------------------------------------------------------- */
 
 export type RecommendedItem =
-  | { type: "movie"; media: any }
-  | { type: "tv"; media: any }
-  | { type: "anime"; media: any };
+  { type: "movie"; media: any } | { type: "tv"; media: any } | { type: "anime"; media: any };
 
 /** A TMDB list entry, in the shape every list endpoint agrees on. */
 interface TmdbListItem {
@@ -309,6 +309,7 @@ function memoGenres(key: string, genreIds: number[]): void {
 /** Minimal structural view of the client — `titles_cache` is not in the generated Database type. */
 interface UntypedSupabase {
   from(table: string): any;
+  rpc(fn: string, args?: Record<string, unknown>): any;
 }
 
 interface TitlesCacheRow {
@@ -442,17 +443,45 @@ async function fetchTitleMetadata(title: WeightedTitle): Promise<TitlesCacheRow 
 /**
  * Write freshly-fetched metadata back to the cache.
  *
- * Failures are swallowed: a cache that will not accept writes is a performance
- * problem for the next visitor, never a reason to fail this user's row.
+ * Goes through the `upsert_title_cache` RPC rather than a direct table upsert.
+ * `titles_cache` is shared by every user and has no `user_id` column, so the
+ * original blanket INSERT/UPDATE policies (`with check (true)`) let any signed-in
+ * account rewrite genre data for every title — and, with no bound on the arrays,
+ * store arbitrary bulk in them. The RPC validates media_type, source_id and genre
+ * cardinality, so the write surface is one fixed shape instead of the whole row.
+ * See supabase/migrations/20260806120000_security_hardening.sql.
+ *
+ * Falls back to the direct upsert when the function is absent, so a deployment
+ * that has not applied that migration keeps warming its cache as before.
+ *
+ * Failures are swallowed either way: a cache that will not accept writes is a
+ * performance problem for the next visitor, never a reason to fail this user's row.
  */
 async function persistTitlesCache(db: UntypedSupabase, rows: TitlesCacheRow[]): Promise<void> {
+  const viaRpc = await Promise.all(
+    rows.map(async (row) => {
+      try {
+        const { error } = await db.rpc("upsert_title_cache", {
+          p_media_type: row.media_type,
+          p_source_id: row.source_id,
+          p_tmdb_id: row.tmdb_id,
+          p_genre_ids: row.genre_ids ?? [],
+          p_genre_names: row.genre_names ?? [],
+        });
+        return !error;
+      } catch {
+        return false;
+      }
+    }),
+  );
+
+  if (viaRpc.every(Boolean)) return;
+
   try {
-    const { error } = await db
-      .from("titles_cache")
-      .upsert(
-        rows.map((row) => ({ ...row, refreshed_at: new Date().toISOString() })),
-        { onConflict: "title_key" },
-      );
+    const { error } = await db.from("titles_cache").upsert(
+      rows.map((row) => ({ ...row, refreshed_at: new Date().toISOString() })),
+      { onConflict: "title_key" },
+    );
     if (error) throw error;
   } catch (error) {
     console.warn("Failed to write titles_cache:", error);
@@ -560,7 +589,10 @@ async function collectTmdb(
             type === "movie"
               ? await tmdb.movies.recommendations(seed.id)
               : await tmdb.tvShows.recommendations(seed.id);
-          return { items: (res?.results ?? []) as unknown as TmdbListItem[], seedWeight: seed.weight };
+          return {
+            items: (res?.results ?? []) as unknown as TmdbListItem[],
+            seedWeight: seed.weight,
+          };
         } catch (error) {
           console.warn(`TMDB recommendations failed for ${type}:${seed.id}:`, error);
           return { items: [], seedWeight: 0 };
@@ -710,8 +742,14 @@ async function fetchTrendingBlend(): Promise<RecommendedItem[]> {
     const hasArt = (m: any) => Boolean(m?.poster_path);
 
     return interleave<RecommendedItem>(
-      ((movies?.results ?? []) as any[]).filter(hasArt).slice(0, 6).map((media) => ({ type: "movie", media })),
-      ((tvShows?.results ?? []) as any[]).filter(hasArt).slice(0, 6).map((media) => ({ type: "tv", media })),
+      ((movies?.results ?? []) as any[])
+        .filter(hasArt)
+        .slice(0, 6)
+        .map((media) => ({ type: "movie", media })),
+      ((tvShows?.results ?? []) as any[])
+        .filter(hasArt)
+        .slice(0, 6)
+        .map((media) => ({ type: "tv", media })),
       ((anime?.media ?? []) as any[]).slice(0, 6).map((media) => ({ type: "anime", media })),
     ).slice(0, ROW_SIZE);
   } catch (error) {

@@ -1,5 +1,9 @@
 "use client";
 
+// These effects reset the state machine when the title/episode changes and
+// deliberately synchronize the selected provider into the URL.
+/* eslint-disable react-hooks/set-state-in-effect */
+
 import { createPublicEmbedSources } from "@/lib/sources/adapters/embed";
 import { legacySourceId } from "@/lib/sources/legacy";
 import { selectDefaultSource } from "@/lib/sources/selectDefault";
@@ -12,6 +16,8 @@ import type {
 import type { MediaType } from "@/types/title";
 import type { PlayersProps } from "@/types";
 import { track } from "@vercel/analytics";
+import { trackUmbraEvent } from "@/lib/analytics/client";
+import type { AnalyticsEventName } from "@/lib/analytics/events";
 import { parseAsString, useQueryState } from "nuqs";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -49,9 +55,13 @@ interface SourceObservation {
 
 const EMPTY_HEALTH: SessionHealth = { providers: {}, lastSuccessful: {} };
 
-const emit = (name: string, properties: Record<string, string | number | boolean>): void => {
+const emit = (
+  name: AnalyticsEventName,
+  properties: Record<string, string | number | boolean>,
+): void => {
   try {
     track(name, properties);
+    trackUmbraEvent(name, properties);
   } catch {
     // Analytics must never interrupt playback.
   }

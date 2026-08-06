@@ -1,6 +1,7 @@
 import { cn } from "@/utils/helpers";
 import { ArrowLeft, List, Next, Prev, Server } from "@/utils/icons";
 import PlayerActionButton from "@/components/ui/button/PlayerActionButton";
+import { MdFullscreen, MdFullscreenExit } from "react-icons/md";
 
 interface AnimePlayerHeaderProps {
   id: number;
@@ -11,6 +12,8 @@ interface AnimePlayerHeaderProps {
   selectedSource: string;
   onOpenSource: () => void;
   onOpenEpisode: () => void;
+  fullscreen: boolean;
+  onToggleFullscreen: () => void;
 }
 
 const AnimePlayerHeader: React.FC<AnimePlayerHeaderProps> = ({
@@ -22,6 +25,8 @@ const AnimePlayerHeader: React.FC<AnimePlayerHeaderProps> = ({
   selectedSource,
   onOpenSource,
   onOpenEpisode,
+  fullscreen,
+  onToggleFullscreen,
 }) => {
   const hasPrev = episode > 1;
   const hasNext = totalEpisodes ? episode < totalEpisodes : true;
@@ -46,41 +51,57 @@ const AnimePlayerHeader: React.FC<AnimePlayerHeaderProps> = ({
           {totalEpisodes ? ` of ${totalEpisodes}` : ""}
         </p>
       </div>
-      <div className="player-auxiliary-controls flex items-center gap-1 sm:gap-4">
-        <PlayerActionButton
-          disabled={!hasPrev}
-          label="Previous Episode"
-          tooltip="Previous Episode"
-          href={`/anime/${id}/player/${episode - 1}${sourceQuery}`}
-          color="secondary"
-        >
-          <Prev className="size-8 sm:size-10" />
-        </PlayerActionButton>
-        <PlayerActionButton
-          disabled={!hasNext}
-          label="Next Episode"
-          tooltip="Next Episode"
-          href={`/anime/${id}/player/${episode + 1}${sourceQuery}`}
-          color="secondary"
-        >
-          <Next className="size-8 sm:size-10" />
-        </PlayerActionButton>
-        <PlayerActionButton
-          label="Episodes"
-          tooltip="Episodes"
-          onClick={onOpenEpisode}
-          color="secondary"
-        >
-          <List className="size-7 sm:size-8" />
-        </PlayerActionButton>
-        <PlayerActionButton
-          label="Sources"
-          tooltip="Sources"
-          onClick={onOpenSource}
-          color="secondary"
-        >
-          <Server className="size-7 sm:size-8" />
-        </PlayerActionButton>
+      <div className="flex items-center gap-1 sm:gap-4">
+        <div className="player-fullscreen-control">
+          <PlayerActionButton
+            label={fullscreen ? "Exit fullscreen" : "Fullscreen"}
+            tooltip={fullscreen ? "Exit fullscreen" : "Fullscreen"}
+            onClick={onToggleFullscreen}
+            color="secondary"
+          >
+            {fullscreen ? (
+              <MdFullscreenExit className="size-7 sm:size-8" />
+            ) : (
+              <MdFullscreen className="size-7 sm:size-8" />
+            )}
+          </PlayerActionButton>
+        </div>
+        <div className="player-auxiliary-controls flex items-center gap-1 sm:gap-4">
+          <PlayerActionButton
+            disabled={!hasPrev}
+            label="Previous Episode"
+            tooltip="Previous Episode"
+            href={`/anime/${id}/player/${episode - 1}${sourceQuery}`}
+            color="secondary"
+          >
+            <Prev className="size-8 sm:size-10" />
+          </PlayerActionButton>
+          <PlayerActionButton
+            disabled={!hasNext}
+            label="Next Episode"
+            tooltip="Next Episode"
+            href={`/anime/${id}/player/${episode + 1}${sourceQuery}`}
+            color="secondary"
+          >
+            <Next className="size-8 sm:size-10" />
+          </PlayerActionButton>
+          <PlayerActionButton
+            label="Episodes"
+            tooltip="Episodes"
+            onClick={onOpenEpisode}
+            color="secondary"
+          >
+            <List className="size-7 sm:size-8" />
+          </PlayerActionButton>
+          <PlayerActionButton
+            label="Sources"
+            tooltip="Sources"
+            onClick={onOpenSource}
+            color="secondary"
+          >
+            <Server className="size-7 sm:size-8" />
+          </PlayerActionButton>
+        </div>
       </div>
     </div>
   );

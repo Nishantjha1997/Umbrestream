@@ -50,7 +50,13 @@ const TvShowPlayer: React.FC<TvShowPlayerProps> = ({
       legacyPlayers={getTvShowPlayers(id, season, episodeNumber, startAt)}
       color="warning"
       historyMetadata={{ season, episode: episodeNumber }}
-      renderHeader={({ hidden, selectedSourceId, onOpenSource }) => (
+      renderHeader={({
+        hidden,
+        selectedSourceId,
+        onOpenSource,
+        fullscreen,
+        onToggleFullscreen,
+      }) => (
         <TvShowPlayerHeader
           id={id}
           episode={episode}
@@ -59,6 +65,8 @@ const TvShowPlayer: React.FC<TvShowPlayerProps> = ({
           onOpenSource={onOpenSource}
           onOpenEpisode={episodeHandlers.open}
           {...headerProps}
+          fullscreen={fullscreen}
+          onToggleFullscreen={onToggleFullscreen}
         />
       )}
       renderExtras={({ selectedSourceId }) => (

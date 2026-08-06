@@ -1,14 +1,23 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
-import { IS_DEVELOPMENT } from "@/utils/constants";
 
 export const GET = async (request: Request) => {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
 
-  let next = searchParams.get("next") ?? "/";
-  if (!next.startsWith("/")) {
-    next = "/";
+  // Same resolve-and-compare rule as /api/auth/confirm. `${origin}${next}` keeps
+  // the result on-origin today, but that is an accident of string concatenation,
+  // not a check — one refactor to `NextResponse.redirect(next)` would turn this
+  // into an open redirect.
+  const requestedNext = searchParams.get("next");
+  let next = "/";
+  if (requestedNext) {
+    try {
+      const url = new URL(requestedNext, origin);
+      if (url.origin === origin) next = `${url.pathname}${url.search}${url.hash}`;
+    } catch {
+      next = "/";
+    }
   }
 
   if (code) {
@@ -22,8 +31,9 @@ export const GET = async (request: Request) => {
     if (!error) {
       // Insert username
       if (user) {
-        console.info({ user });
-
+        // Was `console.info({ user })` — the whole Supabase user object, i.e. the
+        // email address, provider identity payload and raw Google metadata of
+        // every person who signs in, written to the platform log on each login.
         const { data: profile } = await supabase
           .from("profiles")
           .select("username")
@@ -74,9 +84,7 @@ export const GET = async (request: Request) => {
           });
 
           if (profileError) {
-            console.error("Profile creation error:", profileError);
-          } else {
-            console.log("Profile created with username:", uniqueUsername);
+            console.error("Profile creation error:", profileError.code ?? profileError.message);
           }
         }
       }

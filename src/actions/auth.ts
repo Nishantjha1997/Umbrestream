@@ -22,6 +22,7 @@ import type {
 import { z } from "zod";
 import type { ActionResponse } from "@/types";
 import { isCaptchaEnabled } from "@/utils/captcha";
+import { env } from "@/utils/env";
 
 /**
  * A generic type for our authentication actions.
@@ -123,7 +124,8 @@ const toAuthFailure = (context: string, error: SupabaseErrorLike): AuthActionRes
 
   if (!known) {
     // Rate limiting has a status code even when the body has no `code`.
-    if (error?.status === 429) return { success: false, message: AUTH_ERROR_COPY.over_request_rate_limit.message };
+    if (error?.status === 429)
+      return { success: false, message: AUTH_ERROR_COPY.over_request_rate_limit.message };
     return { success: false, message: GENERIC_ERROR };
   }
 
@@ -220,8 +222,29 @@ const signInWithEmailAction: AuthAction<LoginFormInput> = async (data, supabase)
   return { success: true, message: `Welcome back, ${profile.username}` };
 };
 
+/**
+ * Sign-up used to run end-to-end on the **service-role** key
+ * (`createAuthAction(..., true)`), which meant an unauthenticated, internet-facing
+ * endpoint executed every statement with RLS switched off and full database
+ * authority. Nothing in the old code exploited that, but it removed the safety net
+ * entirely: the blast radius of any future edit, or of a bug in argument handling,
+ * went from "one RLS denial" to "arbitrary read/write across every table". It also
+ * routed `auth.signUp` itself through an admin credential, which is not where you
+ * want captcha and per-IP signup throttling to be decided.
+ *
+ * Now: everything runs on the anon key under the caller's own session, and the
+ * service role is borrowed for exactly one statement — the `profiles` insert —
+ * because a user who has not yet confirmed their email has no session, so the
+ * `auth.uid() = id` insert policy cannot pass.
+ *
+ * The real fix is to delete that borrow too, by creating the profile row in a
+ * `security definer` trigger on `auth.users`. See
+ * supabase/migrations/*_profiles_autocreate.sql — once that trigger is applied,
+ * this whole block and the `admin` parameter on `createClient` can go.
+ */
 const signUpAction: AuthAction<RegisterFormInput> = async (data, supabase) => {
-  // Check username availability
+  // Check username availability. `profiles` has a public SELECT policy, so the
+  // anon key is sufficient here.
   const { data: usernameExists, error: usernameError } = await supabase
     .from("profiles")
     .select("id")
@@ -253,8 +276,10 @@ const signUpAction: AuthAction<RegisterFormInput> = async (data, supabase) => {
     return { success: false, message: GENERIC_ERROR };
   }
 
-  // Insert profile
-  const { error: profileError } = await supabase
+  // Insert profile. Scoped service-role use: one statement, fixed columns, `id`
+  // pinned to the id GoTrue just returned — never to anything the caller supplied.
+  const writer = env.SUPABASE_SERVICE_ROLE_KEY ? await createClient(true) : supabase;
+  const { error: profileError } = await writer
     .from("profiles")
     .insert({ id: authData.user.id, username: data.username });
 
@@ -265,7 +290,8 @@ const signUpAction: AuthAction<RegisterFormInput> = async (data, supabase) => {
     console.error("[auth] Profile creation failed after auth user was created:", profileError);
     return {
       success: false,
-      message: "We created your login but couldn't finish setting up your profile. Contact support.",
+      message:
+        "We created your login but couldn't finish setting up your profile. Contact support.",
     };
   }
 
@@ -299,7 +325,7 @@ const resetPasswordAction: AuthAction<ResetPasswordFormInput> = async (data, sup
 };
 
 export const signIn = createAuthAction(LoginFormSchema, signInWithEmailAction);
-export const signUp = createAuthAction(RegisterFormSchema, signUpAction, true);
+export const signUp = createAuthAction(RegisterFormSchema, signUpAction);
 export const sendResetPasswordEmail = createAuthAction(
   ForgotPasswordFormSchema,
   sendResetPasswordEmailAction,
@@ -320,7 +346,11 @@ export const resendConfirmationEmail = async (
 ): Promise<AuthActionResult> => {
   const result = ResendEmailFormSchema.safeParse(formData);
   if (!result.success) {
-    return { success: false, message: "Enter a valid email address.", fieldErrors: { email: "Enter a valid email address." } };
+    return {
+      success: false,
+      message: "Enter a valid email address.",
+      fieldErrors: { email: "Enter a valid email address." },
+    };
   }
 
   try {

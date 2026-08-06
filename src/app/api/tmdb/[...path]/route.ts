@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { callerKey, rateLimit } from "@/lib/rate-limit";
 
 const TMDB_BASE = "https://api.themoviedb.org/3";
 
@@ -39,32 +40,9 @@ const SAFE_PARAMS = new Set([
 ]);
 
 // Per-instance only. Resets on cold start; back it with Redis before this is
-// reachable by anyone but you.
-const hits = new Map<string, { count: number; resetAt: number }>();
+// reachable by anyone but you. See src/lib/rate-limit.ts.
 const LIMIT = 60;
 const WINDOW_MS = 60_000;
-
-function underLimit(key: string): boolean {
-  const now = Date.now();
-
-  // Prune expired entries periodically to prevent memory leaks
-  if (hits.size > 100 && Math.random() < 0.05) {
-    for (const [k, v] of hits.entries()) {
-      if (now > v.resetAt) {
-        hits.delete(k);
-      }
-    }
-  }
-
-  const entry = hits.get(key);
-  if (!entry || now > entry.resetAt) {
-    hits.set(key, { count: 1, resetAt: now + WINDOW_MS });
-    return true;
-  }
-  if (entry.count >= LIMIT) return false;
-  entry.count += 1;
-  return true;
-}
 
 export async function GET(req: NextRequest, ctx: { params: Promise<{ path: string[] }> }) {
   // Next 16: params is a Promise. Synchronous access was removed.
@@ -80,11 +58,16 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ path: strin
     return NextResponse.json({ error: "Server not configured" }, { status: 503 });
   }
 
-  const caller = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local";
-  if (!underLimit(caller)) {
+  // `x-forwarded-for`'s *first* entry is whatever the client typed, so keying on
+  // it meant an attacker rotated the header for unlimited quota while every
+  // legitimate request that arrived without the header shared one "local" bucket
+  // and locked itself out. callerKey() prefers edge-set headers and otherwise
+  // takes the nearest (last) hop.
+  const limit = rateLimit("tmdb-proxy", callerKey(req), LIMIT, WINDOW_MS);
+  if (!limit.allowed) {
     return NextResponse.json(
       { error: "Rate limit exceeded" },
-      { status: 429, headers: { "Retry-After": "60" } },
+      { status: 429, headers: { "Retry-After": String(limit.retryAfter) } },
     );
   }
 

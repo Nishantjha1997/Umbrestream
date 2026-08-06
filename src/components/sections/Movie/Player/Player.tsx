@@ -22,12 +22,14 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, startAt }) => {
       request={{ mediaType: "movie", tmdbId: movie.id, startAt, preferredSubtitle: "en" }}
       legacyPlayers={getMoviePlayers(movie.id, startAt)}
       color="primary"
-      renderHeader={({ hidden, onOpenSource }) => (
+      renderHeader={({ hidden, onOpenSource, fullscreen, onToggleFullscreen }) => (
         <MoviePlayerHeader
           id={movie.id}
           movieName={title}
           onOpenSource={onOpenSource}
           hidden={hidden}
+          fullscreen={fullscreen}
+          onToggleFullscreen={onToggleFullscreen}
         />
       )}
     />

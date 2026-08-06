@@ -97,6 +97,16 @@ function SourceList({
                   Umbra Player
                 </span>
               )}
+              {source.audioTracks && source.audioTracks.length > 0 && (
+                <span className="rounded-full border border-violet-300/30 bg-violet-300/10 px-2 py-0.5 text-[10px] font-medium text-violet-200">
+                  {source.audioTracks.length} audio
+                </span>
+              )}
+              {source.subtitleTracks && source.subtitleTracks.length > 0 && (
+                <span className="rounded-full border border-cyan-300/30 bg-cyan-300/10 px-2 py-0.5 text-[10px] font-medium text-cyan-200">
+                  {source.subtitleTracks.length} captions
+                </span>
+              )}
               {source.capabilities.recommended && <Star className="text-warning" size={16} />}
               {source.capabilities.fast && <Rocket className="text-danger" size={16} />}
               {source.capabilities.resumable && <Clock className="text-success" size={16} />}
@@ -163,7 +173,7 @@ export default function PlayerSourceSelection({
           </div>
           <div className="flex items-center gap-1.5">
             <Ads className="text-primary-500" size={14} />
-            <span>Popup Ads</span>
+            <span>May contain ads</span>
           </div>
         </div>
 

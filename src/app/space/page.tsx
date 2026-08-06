@@ -2,6 +2,8 @@ import { siteConfig } from "@/config/site";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { FiClock, FiDownload, FiHelpCircle, FiInfo, FiSettings, FiUser } from "react-icons/fi";
+import { FiBarChart2 } from "react-icons/fi";
+import { getAdminAccess } from "@/lib/admin";
 
 export const metadata: Metadata = { title: `My Space | ${siteConfig.name}` };
 
@@ -24,7 +26,20 @@ const items = [
   { title: "About", copy: "Umbra, privacy, and project details", href: "/about", Icon: FiInfo },
 ];
 
-export default function MySpacePage() {
+export default async function MySpacePage() {
+  const isAdmin = (await getAdminAccess()) === "allowed";
+  const visibleItems = isAdmin
+    ? [
+        ...items,
+        {
+          title: "Admin analytics",
+          copy: "Private traffic and playback monitoring",
+          href: "/admin",
+          Icon: FiBarChart2,
+        },
+      ]
+    : items;
+
   return (
     <div className="mx-auto max-w-5xl pt-6 pb-28 md:pt-12 md:pb-12">
       <p className="text-xs font-semibold tracking-[0.24em] text-violet-300 uppercase">
@@ -36,7 +51,7 @@ export default function MySpacePage() {
       </p>
 
       <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {items.map(({ title, copy, href, Icon }) => (
+        {visibleItems.map(({ title, copy, href, Icon }) => (
           <Link
             key={title}
             href={href}

@@ -21,7 +21,6 @@ export interface SourceCapabilities {
   iframe?: {
     allow?: string;
     referrerPolicy?: ReferrerPolicy;
-    sandbox?: string;
   };
 }
 

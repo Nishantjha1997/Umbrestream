@@ -23,13 +23,25 @@ const LOGIN_FIELDS = ["email", "loginPassword"] as const;
  * `?next=` is honored here so a user bounced off a protected route lands where
  * they were going rather than on the home page (§5.9).
  *
- * Only same-origin, non-protocol-relative paths are accepted: `//evil.com` is a
- * valid `Location` value that browsers read as an absolute URL, so a bare
- * "starts with /" check would be an open redirect.
+ * Prefix matching is not sufficient. `//evil.com` is caught by an explicit check,
+ * but `/\\evil.com` is not: the URL parser normalises the backslash into the
+ * authority, so `new URL("/\\evil.com", "https://umbra.app")` resolves to
+ * `https://evil.com/` — a post-login open redirect, which is prime phishing real
+ * estate because the victim has just successfully authenticated.
+ *
+ * Resolve against our own origin and compare origins instead. Anything that
+ * leaves the origin, or fails to parse at all, falls back to "/".
  */
 const safeNextPath = (next: string | null): string => {
-  if (!next || !next.startsWith("/") || next.startsWith("//")) return "/";
-  return next;
+  if (!next) return "/";
+  try {
+    const origin = typeof window === "undefined" ? "http://localhost" : window.location.origin;
+    const url = new URL(next, origin);
+    if (url.origin !== origin) return "/";
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch {
+    return "/";
+  }
 };
 
 const AuthLoginForm: React.FC<AuthFormProps> = ({ setForm }) => {
@@ -168,7 +180,7 @@ const AuthLoginForm: React.FC<AuthFormProps> = ({ setForm }) => {
         button alongside a working OAuth provider, not before.
       */}
       <p className="text-small text-center">
-        Don't have an account?{" "}
+        Don&apos;t have an account?{" "}
         <TextButton onClick={() => setForm("register")} disabled={isBusy}>
           Sign Up
         </TextButton>

@@ -23,7 +23,7 @@ interface WatchlistEntry extends WatchlistItem {
   created_at: string;
 }
 
-interface ActionResponse<T = any> {
+interface ActionResponse<T = unknown> {
   success: boolean;
   error?: string;
   message?: string;
@@ -314,11 +314,19 @@ export async function checkInWatchlist(
 /**
  * Get user's watchlist with pagination - optimized for infinite scroll
  */
+/** Hard ceiling on any caller-supplied page size — see getUserHistories. */
+const MAX_PAGE_SIZE = 100;
+
 export async function getWatchlist(
   filterType: FilterType = "all",
   page: number = 1,
   limit: number = 20,
 ): Promise<WatchlistResponse> {
+  // Defaults are not limits: this is a public server action, so `limit` and `page`
+  // arrive from the caller. Unclamped, `limit = 1_000_000` forces a full scan and a
+  // huge payload, and a negative `page` produces a negative `range()` offset.
+  const safeLimit = Math.min(Math.max(1, Math.trunc(Number(limit)) || 20), MAX_PAGE_SIZE);
+  const safePage = Math.max(1, Math.trunc(Number(page)) || 1);
   try {
     const supabase = await createClient();
 
@@ -337,7 +345,7 @@ export async function getWatchlist(
     }
 
     // Calculate offset
-    const offset = (page - 1) * limit;
+    const offset = (safePage - 1) * safeLimit;
 
     // Build query
     let query = supabase
@@ -345,7 +353,7 @@ export async function getWatchlist(
       .select("*", { count: "exact" })
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
-      .range(offset, offset + limit - 1);
+      .range(offset, offset + safeLimit - 1);
 
     // Apply type filter if not 'all'
     if (filterType !== "all" && ["movie", "tv", "anime"].includes(filterType)) {
@@ -363,15 +371,15 @@ export async function getWatchlist(
       };
     }
 
-    const totalPages = Math.ceil((count || 0) / limit);
+    const totalPages = Math.ceil((count || 0) / safeLimit);
 
     return {
       success: true,
       data: (data as WatchlistEntry[]) || [],
       totalCount: count || 0,
       totalPages,
-      currentPage: page,
-      hasNextPage: page < totalPages,
+      currentPage: safePage,
+      hasNextPage: safePage < totalPages,
     };
   } catch (error) {
     console.error("Unexpected error:", error);

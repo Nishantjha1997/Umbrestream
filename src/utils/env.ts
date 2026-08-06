@@ -3,7 +3,7 @@ import { z } from "zod";
 
 export const env = createEnv({
   server: {
-    PROTECTED_PATHS: z.string().default("/auth/reset-password,/profile"),
+    PROTECTED_PATHS: z.string().default("/auth/reset-password,/profile,/admin"),
     SUPABASE_SERVICE_ROLE_KEY: z.string().optional().default(""),
     TMDB_ACCESS_TOKEN: z.string().optional().default(""),
     PLAYER_DIRECT_SOURCES_JSON: z.string().optional().default(""),

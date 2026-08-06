@@ -28,6 +28,20 @@ interface EmbedDefinition {
   audioVariant?: AudioVariant;
 }
 
+/**
+ * Every origin framed below is untrusted — third-party embed hosts, several of
+ * them explicitly `tier: "experimental"`. Provider capabilities are kept
+ * explicit because each player may require its own controls and navigation.
+ *
+ * The iframe permissions cover common player controls such as autoplay,
+ * encrypted media, picture-in-picture, fullscreen, and screen wake lock.
+ *
+ * Providers retain the permissions needed for their own player controls,
+ * including server pickers, captions, and fullscreen presentation.
+ *
+ * Provider-specific requirements should be added to that provider definition
+ * only after an exact playback fixture confirms the need.
+ */
 const IFRAME_CAPABILITIES: NonNullable<SourceCapabilities["iframe"]> = {
   allow: "autoplay; encrypted-media; picture-in-picture; fullscreen; screen-wake-lock",
   referrerPolicy: "origin-when-cross-origin",

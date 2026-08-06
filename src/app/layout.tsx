@@ -19,6 +19,7 @@ import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { Suspense } from "react";
 import InstallAppPrompt from "@/components/pwa/InstallAppPrompt";
 import ImmersiveAppShell from "@/components/ui/layout/ImmersiveAppShell";
+import SiteActivityTracker from "@/components/analytics/SiteActivityTracker";
 
 const UMBRA_UI_V2_ENABLED = process.env.NEXT_PUBLIC_UMBRA_UI_V2 !== "false";
 
@@ -88,6 +89,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                 </>
               )}
               <InstallAppPrompt />
+              <SiteActivityTracker />
               {!UMBRA_UI_V2_ENABLED && <BottomNavbar />}
             </Providers>
           </NuqsAdapter>

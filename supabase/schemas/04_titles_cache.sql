@@ -44,7 +44,15 @@ create table public.titles_cache (
   -- Genres effectively never change, so refreshes are lazy. This exists to
   -- make a future TTL sweep possible without guessing.
   refreshed_at timestamp with time zone not null default now(),
-  created_at timestamp with time zone not null default now()
+  created_at timestamp with time zone not null default now(),
+
+  -- Bounds so the arrays cannot be used as general-purpose blob storage by any
+  -- account that can reach the writer.
+  constraint titles_cache_genre_bounds check (
+    coalesce(array_length(genre_ids, 1), 0) <= 32
+    and coalesce(array_length(genre_names, 1), 0) <= 32
+    and source_id > 0
+  )
 );
 
 -- The engine reads one media type at a time, so type is the useful secondary
@@ -62,27 +70,22 @@ for select
 to anon, authenticated
 using (true);
 
--- The cache warms itself: on a miss the engine fetches genres live and upserts
--- them back using the caller's own session. SUPABASE_SERVICE_ROLE_KEY is
--- optional in this project's env schema, so a service-role-only writer would
--- leave any deployment without that key reading an eternally empty cache.
+-- The cache warms itself: on a miss the engine fetches genres live and writes them
+-- back using the caller's own session. SUPABASE_SERVICE_ROLE_KEY is optional in
+-- this project's env schema, so a service-role-only writer would leave any
+-- deployment without that key reading an eternally empty cache.
 --
--- Trade-off: an authenticated user can write junk genre ids. Blast radius is
--- one badly-ordered recommendation row — no personal data, and nothing else
--- reads this table. Replace with a service-role writer once that key is
--- guaranteed present.
-create policy "Authenticated users can seed titles_cache"
-on public.titles_cache
-for insert
-to authenticated
-with check (true);
-
-create policy "Authenticated users can refresh titles_cache"
-on public.titles_cache
-for update
-to authenticated
-using (true)
-with check (true);
+-- There are deliberately NO blanket insert/update policies for `authenticated`.
+-- This table has no user_id column, so `with check (true)` would not mean "users
+-- may write their own rows" — it would mean any account may overwrite any row for
+-- everyone, straight through PostgREST with the publishable key, without touching
+-- the app. Writes go through `public.upsert_title_cache` instead (security
+-- definer, validates media_type / source_id / genre cardinality), granted to
+-- `authenticated` only. See migrations/20260806120000_security_hardening.sql.
+--
+-- Residual trade-off, unchanged: a signed-in user can still seed *wrong* genres
+-- for a title through the RPC. Blast radius is one badly-ordered recommendation
+-- row — no personal data, and nothing else reads this table.
 
 -- No delete policy. Nothing in the app removes cache rows; eviction belongs to
 -- a scheduled job running as service role.

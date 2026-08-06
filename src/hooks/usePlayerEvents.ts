@@ -138,6 +138,10 @@ function parseFilmuPayload(raw: unknown): UnifiedPlayerEventData | null {
 
 function parseVideasyPayload(raw: unknown): UnifiedPlayerEventData | null {
   if (!isRecord(raw)) return null;
+  // This protocol has no envelope, so `type` doubles as the media type and an
+  // unrecognised value falls back rather than dropping the event (some builds
+  // omit it). Safe only because the identity used for persistence comes from
+  // PlayerEventIdentity, not from here.
   const mediaType = CONTENT_TYPES.has(raw.type as ContentType)
     ? (raw.type as ContentType)
     : "movie";
@@ -181,9 +185,32 @@ export const playerAdapters = {
   },
 } as const satisfies AdapterMap;
 
+/**
+ * The media identity the *page* knows to be correct.
+ *
+ * Player events arrive by `postMessage` from an untrusted third-party frame, and
+ * every provider payload carries its own idea of which title is playing. Trusting
+ * that let a hostile (or merely buggy) embed write watch-history rows for
+ * arbitrary titles onto the signed-in user's account: the frame simply posts
+ * `{ mediaId: <anything>, mediaType: "movie", ... }` and the server, which only
+ * checks that *a* user is logged in, upserts it.
+ *
+ * When this is supplied, the identity fields on an inbound event are overwritten
+ * with these values before anything is persisted. The frame is allowed to tell us
+ * the playback position; it is not allowed to tell us what it is playing.
+ */
+export interface PlayerEventIdentity {
+  mediaId: string | number;
+  mediaType: ContentType;
+  season?: number;
+  episode?: number;
+}
+
 export interface UsePlayerEventsOptions {
   metadata?: { season?: number; episode?: number };
   saveHistory?: boolean;
+  /** Trusted media identity; overrides whatever the frame claims. */
+  identity?: PlayerEventIdentity;
   onPlay?: (data: UnifiedPlayerEventData) => void;
   onPause?: (data: UnifiedPlayerEventData) => void;
   onSeeked?: (data: UnifiedPlayerEventData) => void;
@@ -196,8 +223,17 @@ export function usePlayerEvents(options: UsePlayerEventsOptions = {}) {
   const { data: user } = useSupabaseUser();
   const documentState = useDocumentVisibility();
 
-  const { metadata, saveHistory, onPlay, onPause, onSeeked, onEnded, onTimeUpdate, onError } =
-    options;
+  const {
+    metadata,
+    saveHistory,
+    identity,
+    onPlay,
+    onPause,
+    onSeeked,
+    onEnded,
+    onTimeUpdate,
+    onError,
+  } = options;
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -210,10 +246,22 @@ export function usePlayerEvents(options: UsePlayerEventsOptions = {}) {
   const eventDataRef = useRef<UnifiedPlayerEventData | null>(null);
 
   // Track latest state to avoid stale closures in event listeners
+  /**
+   * Origin of the provider frame currently mounted, pushed in by the player via
+   * `setAllowedOrigin`. Held in a ref so narrowing it does not resubscribe the
+   * window listener. `null` means "not yet known" and falls back to the adapter
+   * allowlist alone.
+   */
+  const allowedOriginRef = useRef<string | null>(null);
+  const setAllowedOrigin = useCallback((origin: string | null) => {
+    allowedOriginRef.current = origin;
+  }, []);
+
   const stateRef = useRef({
     user,
     metadata,
     saveHistory,
+    identity,
     lastCurrentTime,
     onPlay,
     onPause,
@@ -228,6 +276,7 @@ export function usePlayerEvents(options: UsePlayerEventsOptions = {}) {
       user,
       metadata,
       saveHistory,
+      identity,
       lastCurrentTime,
       onPlay,
       onPause,
@@ -240,6 +289,7 @@ export function usePlayerEvents(options: UsePlayerEventsOptions = {}) {
     user,
     metadata,
     saveHistory,
+    identity,
     lastCurrentTime,
     onPlay,
     onPause,
@@ -252,13 +302,26 @@ export function usePlayerEvents(options: UsePlayerEventsOptions = {}) {
   const syncToServer = useCallback(async (data: UnifiedPlayerEventData, completed?: boolean) => {
     const state = stateRef.current;
     if (!state.saveHistory || !state.user) return;
-    if (data.mediaId === "") return;
+
+    // What is being watched comes from the page, never from the frame. Only the
+    // position is taken from the event. See PlayerEventIdentity.
+    const trusted = state.identity;
+    const mediaId = trusted ? trusted.mediaId : data.mediaId;
+    const mediaType = trusted ? trusted.mediaType : data.mediaType;
+
+    if (mediaId === "" || mediaId === undefined || mediaId === null) return;
     if (diff(data.currentTime, state.lastCurrentTime) <= 5) return; // prevent spam
 
     const payload: UnifiedPlayerEventData = {
       ...data,
-      season: data.season || state.metadata?.season || 0,
-      episode: data.episode || state.metadata?.episode || 0,
+      mediaId,
+      mediaType,
+      season: trusted
+        ? trusted.season || state.metadata?.season || 0
+        : data.season || state.metadata?.season || 0,
+      episode: trusted
+        ? trusted.episode || state.metadata?.episode || 0
+        : data.episode || state.metadata?.episode || 0,
     };
 
     const { success, message } = await syncHistory(payload, completed);
@@ -320,14 +383,29 @@ export function usePlayerEvents(options: UsePlayerEventsOptions = {}) {
       if (!state.saveHistory || !state.user) return;
       if (!eventDataRef.current) return;
 
+      const trusted = state.identity;
       const payload = {
         ...eventDataRef.current,
+        ...(trusted
+          ? {
+              mediaId: trusted.mediaId,
+              mediaType: trusted.mediaType,
+              season: trusted.season || state.metadata?.season || 0,
+              episode: trusted.episode || state.metadata?.episode || 0,
+            }
+          : {}),
         completed: eventDataRef.current.event === "ended",
       };
       navigator.sendBeacon("/api/player/save-history", JSON.stringify(payload));
     };
 
     const handleMessage = (event: MessageEvent) => {
+      // Exact-match allowlist of known adapters, *and* narrowed to the provider
+      // actually on screen. Accepting any allowlisted origin regardless of which
+      // frame is mounted means a single provider can speak for all of them.
+      const expectedOrigin = allowedOriginRef.current;
+      if (expectedOrigin && event.origin !== expectedOrigin) return;
+
       const adapter = Object.values(playerAdapters).find((a) => a.origin === event.origin);
       if (!adapter) return;
 
@@ -364,5 +442,6 @@ export function usePlayerEvents(options: UsePlayerEventsOptions = {}) {
     lastEventOrigin,
     eventVersion,
     reportNativeEvent: processParsedEvent,
+    setAllowedOrigin,
   };
 }

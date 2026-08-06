@@ -2,6 +2,7 @@ import "@/lib/sources/bootstrap";
 
 import { getAdapter } from "@/lib/sources/registry";
 import type { SourceRequest } from "@/lib/sources/types";
+import { callerKey, rateLimit } from "@/lib/rate-limit";
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
@@ -54,24 +55,26 @@ function parseRequest(value: unknown): SourceRequest | null {
   };
 }
 
-const hardFailureFrom = (status: number, html: string): string | null => {
-  if (status === 404 || status === 410) return `Provider returned HTTP ${status}`;
-  if (status >= 500) return `Provider returned HTTP ${status}`;
-  const sample = html.slice(0, 80_000);
-  const failures: Array<[RegExp, string]> = [
-    [/account\s+(?:has\s+been\s+)?suspended/i, "Provider account is suspended"],
-    [/episode\s+(?:was\s+)?not\s+found/i, "Episode was not found"],
-    [/we\s+couldn['’]?t\s+find\s+this\s+episode/i, "Episode was not found"],
-    [/error\s*410/i, "Provider stream is no longer available"],
-  ];
-  return failures.find(([pattern]) => pattern.test(sample))?.[1] ?? null;
-};
-
 function cacheKey(providerId: string, request: SourceRequest): string {
   return [providerId, request.anilistId, request.episode, request.preferredAudio ?? ""].join(":");
 }
 
+/** Each accepted request costs one outbound fetch, so the ceiling is per-caller. */
+const OBSERVE_LIMIT = 30;
+const OBSERVE_WINDOW_MS = 60_000;
+
 export async function POST(input: Request) {
+  // Unauthenticated endpoint that makes the server perform an outbound HTTP
+  // request on demand. Without a brake it is a free traffic amplifier: cheap for
+  // the caller, expensive for us, and the packets leave with our IP on them.
+  const limit = rateLimit("player-observe", callerKey(input), OBSERVE_LIMIT, OBSERVE_WINDOW_MS);
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: "Rate limit exceeded" },
+      { status: 429, headers: { "Retry-After": String(limit.retryAfter) } },
+    );
+  }
+
   let body: unknown;
   try {
     body = await input.json();
@@ -128,15 +131,16 @@ export async function POST(input: Request) {
         "User-Agent": "Umbra source observer/1.0",
       },
     });
-    const html = await response.text();
-    const failure = hardFailureFrom(response.status, html);
+    // Do not inspect provider HTML or redirect destinations. Error/advertiser
+    // pages are not reliable playback evidence, and classifying them as hard
+    // failures could switch away from a stream that still works in a browser.
+    // This observation is latency evidence only.
+    await response.body?.cancel().catch(() => undefined);
     value = {
       providerId,
-      status: failure ? "failed" : response.ok ? "unverified" : "failed",
+      status: "unverified",
       latencyMs: Math.round(performance.now() - startedAt),
       evidence: "registry-observation",
-      failureReason:
-        failure ?? (response.ok ? undefined : `Provider returned HTTP ${response.status}`),
     };
   } catch {
     // A timeout or bot challenge cannot prove that an iframe will fail in the

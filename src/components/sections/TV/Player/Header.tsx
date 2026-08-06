@@ -2,12 +2,15 @@ import { cn } from "@/utils/helpers";
 import { ArrowLeft, List, Next, Prev, Server } from "@/utils/icons";
 import PlayerActionButton from "@/components/ui/button/PlayerActionButton";
 import { TvShowPlayerProps } from "./Player";
+import { MdFullscreen, MdFullscreenExit } from "react-icons/md";
 
 interface TvShowPlayerHeaderProps extends Omit<TvShowPlayerProps, "episodes" | "tv" | "startAt"> {
   hidden?: boolean;
   selectedSource: string;
   onOpenSource: () => void;
   onOpenEpisode: () => void;
+  fullscreen: boolean;
+  onToggleFullscreen: () => void;
 }
 
 const TvShowPlayerHeader: React.FC<TvShowPlayerHeaderProps> = ({
@@ -21,6 +24,8 @@ const TvShowPlayerHeader: React.FC<TvShowPlayerHeaderProps> = ({
   prevEpisodeNumber,
   onOpenSource,
   onOpenEpisode,
+  fullscreen,
+  onToggleFullscreen,
 }) => {
   const sourceQuery = selectedSource ? `?src=${encodeURIComponent(selectedSource)}` : "";
 
@@ -42,41 +47,57 @@ const TvShowPlayerHeader: React.FC<TvShowPlayerHeaderProps> = ({
           {seasonName} - {episode.name}
         </p>
       </div>
-      <div className="player-auxiliary-controls flex items-center gap-1 sm:gap-4">
-        <PlayerActionButton
-          disabled={!prevEpisodeNumber}
-          label="Previous Episode"
-          tooltip="Previous Episode"
-          href={`/tv/${id}/${episode.season_number}/${prevEpisodeNumber}/player${sourceQuery}`}
-          color="warning"
-        >
-          <Prev className="size-8 sm:size-10" />
-        </PlayerActionButton>
-        <PlayerActionButton
-          disabled={!nextEpisodeNumber}
-          label="Next Episode"
-          tooltip="Next Episode"
-          href={`/tv/${id}/${episode.season_number}/${nextEpisodeNumber}/player${sourceQuery}`}
-          color="warning"
-        >
-          <Next className="size-8 sm:size-10" />
-        </PlayerActionButton>
-        <PlayerActionButton
-          label="Sources"
-          tooltip="Sources"
-          onClick={onOpenSource}
-          color="warning"
-        >
-          <Server className="size-7 sm:size-8" />
-        </PlayerActionButton>
-        <PlayerActionButton
-          label="Episodes"
-          tooltip="Episodes"
-          onClick={onOpenEpisode}
-          color="warning"
-        >
-          <List className="size-7 sm:size-8" />
-        </PlayerActionButton>
+      <div className="flex items-center gap-1 sm:gap-4">
+        <div className="player-fullscreen-control">
+          <PlayerActionButton
+            label={fullscreen ? "Exit fullscreen" : "Fullscreen"}
+            tooltip={fullscreen ? "Exit fullscreen" : "Fullscreen"}
+            onClick={onToggleFullscreen}
+            color="warning"
+          >
+            {fullscreen ? (
+              <MdFullscreenExit className="size-7 sm:size-8" />
+            ) : (
+              <MdFullscreen className="size-7 sm:size-8" />
+            )}
+          </PlayerActionButton>
+        </div>
+        <div className="player-auxiliary-controls flex items-center gap-1 sm:gap-4">
+          <PlayerActionButton
+            disabled={!prevEpisodeNumber}
+            label="Previous Episode"
+            tooltip="Previous Episode"
+            href={`/tv/${id}/${episode.season_number}/${prevEpisodeNumber}/player${sourceQuery}`}
+            color="warning"
+          >
+            <Prev className="size-8 sm:size-10" />
+          </PlayerActionButton>
+          <PlayerActionButton
+            disabled={!nextEpisodeNumber}
+            label="Next Episode"
+            tooltip="Next Episode"
+            href={`/tv/${id}/${episode.season_number}/${nextEpisodeNumber}/player${sourceQuery}`}
+            color="warning"
+          >
+            <Next className="size-8 sm:size-10" />
+          </PlayerActionButton>
+          <PlayerActionButton
+            label="Sources"
+            tooltip="Sources"
+            onClick={onOpenSource}
+            color="warning"
+          >
+            <Server className="size-7 sm:size-8" />
+          </PlayerActionButton>
+          <PlayerActionButton
+            label="Episodes"
+            tooltip="Episodes"
+            onClick={onOpenEpisode}
+            color="warning"
+          >
+            <List className="size-7 sm:size-8" />
+          </PlayerActionButton>
+        </div>
       </div>
     </div>
   );

@@ -1,12 +1,15 @@
 import { cn } from "@/utils/helpers";
 import { ArrowLeft, Server } from "@/utils/icons";
 import PlayerActionButton from "@/components/ui/button/PlayerActionButton";
+import { MdFullscreen, MdFullscreenExit } from "react-icons/md";
 
 interface MoviePlayerHeaderProps {
   id: number;
   movieName: string;
   hidden?: boolean;
   onOpenSource: () => void;
+  fullscreen: boolean;
+  onToggleFullscreen: () => void;
 }
 
 const MoviePlayerHeader: React.FC<MoviePlayerHeaderProps> = ({
@@ -14,6 +17,8 @@ const MoviePlayerHeader: React.FC<MoviePlayerHeaderProps> = ({
   movieName,
   hidden,
   onOpenSource,
+  fullscreen,
+  onToggleFullscreen,
 }) => {
   return (
     <div
@@ -30,15 +35,31 @@ const MoviePlayerHeader: React.FC<MoviePlayerHeaderProps> = ({
       <div className="absolute left-1/2 hidden -translate-x-1/2 flex-col justify-center text-center sm:flex">
         <p className="text-sm text-white text-shadow-lg sm:text-lg lg:text-xl">{movieName}</p>
       </div>
-      <div className="player-auxiliary-controls flex items-center gap-1.5 sm:gap-4">
-        <PlayerActionButton
-          label="Sources"
-          tooltip="Sources"
-          onClick={onOpenSource}
-          color="primary"
-        >
-          <Server className="size-7 sm:size-8" />
-        </PlayerActionButton>
+      <div className="flex items-center gap-1.5 sm:gap-4">
+        <div className="player-fullscreen-control">
+          <PlayerActionButton
+            label={fullscreen ? "Exit fullscreen" : "Fullscreen"}
+            tooltip={fullscreen ? "Exit fullscreen" : "Fullscreen"}
+            onClick={onToggleFullscreen}
+            color="primary"
+          >
+            {fullscreen ? (
+              <MdFullscreenExit className="size-7 sm:size-8" />
+            ) : (
+              <MdFullscreen className="size-7 sm:size-8" />
+            )}
+          </PlayerActionButton>
+        </div>
+        <div className="player-auxiliary-controls flex items-center gap-1.5 sm:gap-4">
+          <PlayerActionButton
+            label="Sources"
+            tooltip="Sources"
+            onClick={onOpenSource}
+            color="primary"
+          >
+            <Server className="size-7 sm:size-8" />
+          </PlayerActionButton>
+        </div>
       </div>
     </div>
   );
