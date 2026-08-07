@@ -27,6 +27,11 @@ import { useLongPress } from "use-long-press";
  *   `-warning` / `-secondary` used hue as media-type taxonomy and was the most
  *   dated element in the UI. Depth now comes from scale + elevation + a
  *   low-opacity light ring.
+ * - Metadata sits on the artwork behind a readability scrim. An earlier pass
+ *   moved it below the poster to keep the art clean, but that lost the overlay
+ *   treatment and read as a downgrade. The scrim is the compromise: a resting
+ *   veil keeps the title legible over pale posters, and it deepens on hover as
+ *   year and rating slide in.
  * - The image zoom dropped from scale-110 to scale-[1.06] and lost its
  *   simultaneous opacity-70 — a 30% opacity drop plus a 10% zoom read as muddy.
  * - The play affordance is a static icon in a glass-control circle that fades
@@ -34,20 +39,6 @@ import { useLongPress } from "use-long-press";
  *   icon, so it hard-popped and replayed its draw on every single hover.
  * - There is now a focus-visible state at least as strong as hover. There was
  *   previously none at all, which made the browse grid unusable by keyboard.
- *
- * **Metadata moved off the artwork (Phase 4, §8, reversing an earlier
- * decision).** This component used to paint a permanent 60%-tall gradient
- * scrim over the bottom of every card, with title/year/rating sitting on top
- * of it — this file's own header comment used to say a prior attempt at
- * clean-art-with-metadata-below "read as a downgrade" and told the next
- * reader not to revert it. The design overrides that explicitly (finding 06:
- * "a rail of twelve cards becomes twelve identical dark-bottomed
- * rectangles — the art can't carry the page when 60% of it is veiled").
- * Metadata now sits below the poster, plain text, no scrim required to read
- * it. The scrim survives only where something still has to be legible *on*
- * artwork with no room below it — `Home/Cards/Resume.tsx` (continue-watching)
- * is a separate component and was never using this scrim in the first place,
- * so it's unaffected either way.
  */
 
 export interface PosterCardProps {
@@ -119,7 +110,7 @@ const PosterCard: React.FC<PosterCardProps> = ({ media, variant = "rail", priori
         )}
       >
         {/* Decorative: the accessible name is on the link, and the title is
-            rendered as real text below the art now (Phase 4, §8). */}
+            rendered as real text in the overlay below. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={media.posterUrl}
@@ -151,9 +142,28 @@ const PosterCard: React.FC<PosterCardProps> = ({ media, variant = "rail", priori
           </span>
         )}
 
-        {/* Play affordance only — no scrim behind it. It fades in over
-            whatever the art happens to be; the glass-control-style plate
-            behind the icon carries its own contrast. */}
+        {/*
+          Readability scrim.
+
+          A resting veil keeps the title legible over pale posters, and it
+          deepens on hover so the metadata that slides in underneath is
+          readable regardless of the artwork behind it. The stop is placed at
+          ~58% rather than a plain half-and-half so the fade lands below the
+          poster's focal point instead of cutting across a face.
+
+          Sitting inside the scaling wrapper means it scales with the image,
+          so no un-scrimmed edge is ever exposed at the bottom on hover.
+        */}
+        <span
+          aria-hidden="true"
+          className={cn(
+            "pointer-events-none absolute inset-x-0 bottom-0 z-10 h-3/5",
+            "bg-linear-to-t from-black/95 from-10% via-black/55 via-58% to-transparent",
+            "opacity-85 transition-opacity duration-(--duration-base) ease-(--ease-out-quint)",
+            "group-hover:opacity-100 group-focus-visible:opacity-100",
+          )}
+        />
+
         <span
           aria-hidden="true"
           className={cn(
@@ -166,37 +176,46 @@ const PosterCard: React.FC<PosterCardProps> = ({ media, variant = "rail", priori
             <PlayFilled size={15} className="ml-0.5" />
           </span>
         </span>
-      </div>
 
-      {/* Metadata below the card (Phase 4, §8) — clean art above, plain text
-          below, always visible. No hover-reveal: there's no art underneath it
-          to protect. */}
-      <div className="flex flex-col gap-0.5 pt-2">
-        <p
-          className={cn(
-            "line-clamp-2 leading-snug font-medium text-white",
-            variant === "rail" ? "text-[13px]" : "text-[13px] sm:text-sm",
-          )}
-        >
-          {media.title}
-        </p>
-        {(media.year !== undefined || rating !== undefined) && (
-          <p className="flex items-center gap-1.5 text-[11px] leading-tight text-white/50">
-            {media.year !== undefined && <span>{media.year}</span>}
-            {media.year !== undefined && rating !== undefined && (
-              <span aria-hidden="true">&#8226;</span>
+        {/* Metadata lives on the artwork, over the scrim above. The title is
+            always readable; year and rating reveal on hover. */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-col gap-0.5 p-2.5">
+          <p
+            className={cn(
+              "line-clamp-2 leading-snug font-semibold text-white",
+              "[text-shadow:0_1px_3px_rgb(0_0_0/0.85)]",
+              variant === "rail" ? "text-[13px]" : "text-[13px] sm:text-sm",
             )}
-            {rating !== undefined && (
-              <span
-                className="flex items-center gap-1"
-                aria-label={`Rated ${rating.toFixed(1)} out of 10`}
-              >
-                <Star className="text-warning-400 size-3" aria-hidden="true" />
-                {rating.toFixed(1)}
-              </span>
-            )}
+          >
+            {media.title}
           </p>
-        )}
+          {(media.year !== undefined || rating !== undefined) && (
+            <p
+              className={cn(
+                "flex items-center gap-1.5 text-[11px] leading-tight text-white/85",
+                "[text-shadow:0_1px_3px_rgb(0_0_0/0.85)]",
+                "translate-y-1 opacity-0 transition-all duration-(--duration-base) ease-(--ease-out-quint)",
+                "group-hover:translate-y-0 group-hover:opacity-100",
+                "group-focus-visible:translate-y-0 group-focus-visible:opacity-100",
+                "motion-reduce:translate-y-0 motion-reduce:transition-none",
+              )}
+            >
+              {media.year !== undefined && <span>{media.year}</span>}
+              {media.year !== undefined && rating !== undefined && (
+                <span aria-hidden="true">&#8226;</span>
+              )}
+              {rating !== undefined && (
+                <span
+                  className="flex items-center gap-1"
+                  aria-label={`Rated ${rating.toFixed(1)} out of 10`}
+                >
+                  <Star className="text-warning-400 size-3" aria-hidden="true" />
+                  {rating.toFixed(1)}
+                </span>
+              )}
+            </p>
+          )}
+        </div>
       </div>
     </Link>
   );

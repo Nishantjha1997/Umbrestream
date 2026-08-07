@@ -1,10 +1,9 @@
 "use client";
 
 import { tmdbBrowser } from "@/api/tmdb-browser";
-import useBreakpoints from "@/hooks/useBreakpoints";
 import type { MediaSummary } from "@/types/media";
 import { cn, isEmpty } from "@/utils/helpers";
-import { Info, PlayFilled, Star, Youtube } from "@/utils/icons";
+import { Info, PlayFilled, Star } from "@/utils/icons";
 import { getEnglishLogoUrl } from "@/utils/movies";
 import { fromMovie, fromTvShow } from "@/utils/normalize-media";
 import { Skeleton } from "@heroui/react";
@@ -223,11 +222,6 @@ const Hero: React.FC = () => {
   // The single reduced-motion gate for this component (§4). The Safe wrapper
   // collapses Motion's `boolean | null` — the null is its pre-hydration state.
   const reduce = useReducedMotionSafe();
-  // Phase 4, §8 (finding 01): auto-rotation and the automatic trailer
-  // dissolve are a phone-specific problem — "the title changes under your
-  // thumb while you're reading it" — not a desktop one. `mobile` gates both
-  // below; desktop keeps its original rotate-and-auto-dissolve behaviour.
-  const { mobile } = useBreakpoints();
 
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -262,33 +256,19 @@ const Hero: React.FC = () => {
    * still land first, then dissolving into the trailer, is the Apple TV+ / Netflix
    * pattern. It also avoids paying for a YouTube iframe on titles the user
    * scrolls past within a second.
-   *
-   * On mobile this dissolve never fires automatically at all (§8, finding
-   * 01) — the trailer only starts after a deliberate tap on the control
-   * rendered below. `trailerRequestedFor` stores *which title* was tapped
-   * (not a bare boolean) precisely so a title change doesn't need an effect
-   * to reset it: comparing against the current `active` title is enough for
-   * the request to naturally stop applying once the rotation moves on.
    */
   const [trailerReadyKey, setTrailerReadyKey] = useState<string | null>(null);
-  const [trailerRequestedFor, setTrailerRequestedFor] = useState<string | null>(null);
-  const activeKey = active ? `${active.kind}-${active.id}` : null;
 
   useEffect(() => {
-    if (!trailerKey || reduce || !tabVisible || mobile) return;
+    if (!trailerKey || reduce || !tabVisible) return;
     const timer = window.setTimeout(() => setTrailerReadyKey(trailerKey), TRAILER_DELAY_MS);
     return () => window.clearTimeout(timer);
     // Re-armed per title, so a rotation restarts the dwell rather than cutting
     // the next trailer in instantly.
-  }, [trailerKey, reduce, tabVisible, mobile]);
+  }, [trailerKey, reduce, tabVisible]);
 
-  // Never left running behind a hidden tab or under reduced motion. Desktop's
-  // path is the automatic dissolve above; mobile's is the deliberate tap.
-  const showTrailer =
-    !!trailerKey &&
-    !reduce &&
-    tabVisible &&
-    (mobile ? trailerRequestedFor === activeKey : trailerReadyKey === trailerKey);
+  // Never left running behind a hidden tab or under reduced motion.
+  const showTrailer = trailerReadyKey === trailerKey && !!trailerKey && !reduce && tabVisible;
 
   useEffect(() => {
     const sync = () => setTabVisible(document.visibilityState === "visible");
@@ -297,9 +277,7 @@ const Hero: React.FC = () => {
     return () => document.removeEventListener("visibilitychange", sync);
   }, []);
 
-  // Mobile never auto-rotates (§8, finding 01) — "one featured title, manual
-  // paging" — the dots below are the only way to change titles there.
-  const canRotate = count > 1 && !paused && tabVisible && !reduce && !mobile;
+  const canRotate = count > 1 && !paused && tabVisible && !reduce;
 
   useEffect(() => {
     if (!canRotate) return;
@@ -478,37 +456,13 @@ const Hero: React.FC = () => {
                 <Info size={13} aria-hidden="true" />
                 Details
               </Link>
-              {/* Mobile-only deliberate trailer tap (§8, finding 01) — there is
-                  no automatic dissolve on mobile, so without this control a
-                  title with a trailer would simply never show one there. Once
-                  requested it stays on for this title; moving to a different
-                  title makes `trailerRequestedFor` stop matching `activeKey`
-                  on its own, no reset needed. */}
-              {mobile && trailerKey && trailerRequestedFor !== activeKey && (
-                <button
-                  type="button"
-                  onClick={() => setTrailerRequestedFor(activeKey)}
-                  className={cn(
-                    "glass-control inline-flex items-center gap-2 rounded-full border px-4 py-2.5 text-sm font-medium",
-                    "transition-colors duration-(--duration-fast) ease-(--ease-out-quint) motion-reduce:transition-none",
-                    "hover:bg-black/55 focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:outline-hidden",
-                  )}
-                >
-                  <Youtube size={14} aria-hidden="true" />
-                  Trailer
-                </button>
-              )}
             </div>
           </motion.div>
         </AnimatePresence>
       </div>
 
       {count > 1 && (
-        // §8, finding 01: was `hidden ... sm:flex` — invisible on exactly the
-        // viewport where auto-rotation is now off, leaving mobile with no way
-        // to change the featured title at all. These dots are mobile's only
-        // paging control now, so they render there too.
-        <div className="absolute right-4 bottom-6 z-20 flex items-center gap-1 sm:right-8 sm:bottom-10 lg:right-12 lg:bottom-14">
+        <div className="absolute right-4 bottom-6 z-20 hidden items-center gap-1 sm:right-8 sm:bottom-10 sm:flex lg:right-12 lg:bottom-14">
           {featured.map((media, i) => (
             <button
               key={`${media.kind}-${media.id}`}

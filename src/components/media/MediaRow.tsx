@@ -16,7 +16,7 @@ import type { Movie, TV } from "tmdb-ts/dist/types";
  * This is the client-side half of the three deleted HomeList components. Row
  * configs carry a `query` *closure*, and functions cannot cross the server ->
  * client boundary as props — so the config has to be imported and mapped from
- * inside a Client Component (see Anime/List.tsx). Mapping
+ * inside a Client Component (see Home/List.tsx and Anime/List.tsx). Mapping
  * them in a Server Component fails the build with "Functions cannot be passed
  * directly to Client Components".
  *
