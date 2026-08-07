@@ -47,8 +47,10 @@ const TvShowPlayerSourceSelection: React.FC<TvShowPlayerSourceSelectionProps> = 
           </div>
         </div>
 
+        {/* One accent (Phase 1, §1.1.3 / §5.2): was "warning" — TV no longer
+            gets its own media-type hue for the selected-source highlight. */}
         <SelectButton
-          color="warning"
+          color="primary"
           groupType="list"
           value={selectedSource.toString()}
           onChange={(value) => {

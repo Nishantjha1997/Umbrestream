@@ -29,7 +29,11 @@ const TvShowPlayerHeader: React.FC<TvShowPlayerHeaderProps> = ({
 
   return (
     <div className="player-safe-header pointer-events-none absolute top-0 z-40 flex h-24 w-full items-start justify-between gap-2 bg-linear-to-b from-black/80 to-transparent text-white sm:h-28">
-      <PlayerActionButton label="Back" href={`/tv/${id}`} color="warning">
+      {/* One accent (Phase 1, §1.1.3 / §5.2): was `color="warning"` — TV no
+          longer gets its own media-type hue. Movie/TV/Anime players all
+          render `color="primary"`, which `hero.ts` points at the single
+          violet accent. */}
+      <PlayerActionButton label="Back" href={`/tv/${id}`} color="primary">
         <ArrowLeft className="size-8 sm:size-10" />
       </PlayerActionButton>
       <div className="absolute left-1/2 hidden -translate-x-1/2 flex-col justify-center text-center sm:flex">
@@ -44,7 +48,7 @@ const TvShowPlayerHeader: React.FC<TvShowPlayerHeaderProps> = ({
           label="Previous Episode"
           tooltip="Previous Episode"
           href={`/tv/${id}/${episode.season_number}/${prevEpisodeNumber}/player${sourceQuery}`}
-          color="warning"
+          color="primary"
         >
           <Prev className="size-8 sm:size-10" />
         </PlayerActionButton>
@@ -53,7 +57,7 @@ const TvShowPlayerHeader: React.FC<TvShowPlayerHeaderProps> = ({
           label="Next Episode"
           tooltip="Next Episode"
           href={`/tv/${id}/${episode.season_number}/${nextEpisodeNumber}/player${sourceQuery}`}
-          color="warning"
+          color="primary"
         >
           <Next className="size-8 sm:size-10" />
         </PlayerActionButton>
@@ -61,7 +65,7 @@ const TvShowPlayerHeader: React.FC<TvShowPlayerHeaderProps> = ({
           label="Sources"
           tooltip="Sources"
           onClick={onOpenSource}
-          color="warning"
+          color="primary"
         >
           <Server className="size-7 sm:size-8" />
         </PlayerActionButton>
@@ -69,7 +73,7 @@ const TvShowPlayerHeader: React.FC<TvShowPlayerHeaderProps> = ({
           label="Episodes"
           tooltip="Episodes"
           onClick={onOpenEpisode}
-          color="warning"
+          color="primary"
         >
           <List className="size-7 sm:size-8" />
         </PlayerActionButton>

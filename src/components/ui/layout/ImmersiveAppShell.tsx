@@ -1,5 +1,6 @@
 "use client";
 
+import { AmbientLayers } from "@/components/media/AmbientProvider";
 import BrandLogo from "@/components/ui/other/BrandLogo";
 import { siteConfig } from "@/config/site";
 import { useFloatingDock } from "@/hooks/useFloatingDock";
@@ -141,7 +142,7 @@ function MobileDock({ pathname }: { pathname: string }) {
       transition={reducedMotion ? { duration: 0 } : { duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
       onPointerMove={(event) => pointerX.set(event.clientX)}
       onPointerLeave={() => pointerX.set(Number.POSITIVE_INFINITY)}
-      className="safe-floating-dock fixed bottom-0 left-1/2 z-60 flex h-16 max-w-[calc(100vw-1rem)] -translate-x-1/2 items-center gap-1 rounded-2xl border border-white/10 bg-[#0f1014]/92 px-2 shadow-[0_18px_50px_rgba(0,0,0,.65)] backdrop-blur-2xl md:hidden"
+      className="safe-floating-dock fixed bottom-0 left-1/2 z-60 flex h-16 max-w-[calc(100vw-1rem)] -translate-x-1/2 items-center gap-1 rounded-2xl border border-white/10 bg-[#0a090d]/92 px-2 shadow-[0_18px_50px_rgba(0,0,0,.65)] backdrop-blur-2xl md:hidden"
     >
       {items.map((item) => (
         <FloatingDockItem
@@ -161,7 +162,13 @@ export default function ImmersiveAppShell({ children }: PropsWithChildren) {
   const chromeHidden = pathname.includes("/player") || pathname.startsWith("/auth");
 
   return (
-    <div className="min-h-dvh bg-[#0f1014] text-white">
+    <div className="relative min-h-dvh bg-[#0a090d] text-white">
+      {/* Ambient theming (Phase 1). Mounted here, not in `providers.tsx`,
+          because this is the `position: relative` root the `inset-0` layers
+          need — see `AmbientProvider.tsx`'s file header. No page sets an
+          ambient color yet (Phase 5), so this renders the neutral default
+          (vignette only) everywhere for now. */}
+      <AmbientLayers />
       {!chromeHidden && <DesktopRail pathname={pathname} />}
       <main
         className={cn(

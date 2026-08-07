@@ -33,7 +33,10 @@ const AnimePlayer: React.FC<AnimePlayerProps> = ({ anime, episode, startAt }) =>
         preferredSubtitle: "en",
       }}
       legacyPlayers={getAnimePlayers(anime.id, episode, startAt, anime.idMal, animeTitle)}
-      color="secondary"
+      // One accent (Phase 1, §1.1.3 / §5.2): was "secondary" — Movie, TV, and
+      // Anime players all render "primary" now, which `hero.ts` points at the
+      // single violet accent instead of a media-type-taxonomy hue per player.
+      color="primary"
       renderHeader={({
         hidden,
         selectedSourceId,

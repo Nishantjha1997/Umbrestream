@@ -63,7 +63,7 @@ const AnimePlayerEpisodeSelection: React.FC<AnimePlayerEpisodeSelectionProps> = 
                   key={idx}
                   size="sm"
                   variant={selectedChunk === idx ? "solid" : "flat"}
-                  color={selectedChunk === idx ? "secondary" : "default"}
+                  color={selectedChunk === idx ? "primary" : "default"}
                   className="h-7 min-w-0 px-2.5 text-xs"
                   onPress={() => setSelectedChunk(idx)}
                 >
@@ -88,8 +88,8 @@ const AnimePlayerEpisodeSelection: React.FC<AnimePlayerEpisodeSelectionProps> = 
                   onClick={onClose}
                   className={`group relative flex flex-row items-center gap-3 overflow-hidden border p-2 transition-all ${
                     isCurrent
-                      ? "border-secondary-500 bg-secondary-500/20 font-bold"
-                      : "border-foreground-100/30 hover:border-secondary-400/50 hover:bg-secondary-500/10"
+                      ? "border-primary-500 bg-primary-500/20 font-bold"
+                      : "border-foreground-100/30 hover:border-primary-400/50 hover:bg-primary-500/10"
                   }`}
                 >
                   <div className="relative h-14 w-20 flex-shrink-0 overflow-hidden rounded-lg">
@@ -106,7 +106,7 @@ const AnimePlayerEpisodeSelection: React.FC<AnimePlayerEpisodeSelectionProps> = 
                       <div className="bg-default-100 h-full w-full" />
                     )}
                     <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
-                      <PlayOutline className="text-secondary text-xl" />
+                      <PlayOutline className="text-primary text-xl" />
                     </div>
                   </div>
 
@@ -114,7 +114,7 @@ const AnimePlayerEpisodeSelection: React.FC<AnimePlayerEpisodeSelectionProps> = 
                     <div className="flex items-center gap-2">
                       <Chip
                         size="sm"
-                        color={isCurrent ? "secondary" : "default"}
+                        color={isCurrent ? "primary" : "default"}
                         variant={isCurrent ? "solid" : "flat"}
                         className="text-xs font-bold"
                       >

@@ -8,6 +8,44 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ─────────────────────────────────────────────────────────────────
+   Instrument Serif (Phase 1, design system §A.1). Self-hosted
+   manually — the woff2 files were downloaded directly from
+   fonts.gstatic.com and vendored under `public/fonts/` because this
+   environment has no npm/pnpm/yarn binary available to install
+   `@fontsource/instrument-serif`. OFL-1.1 licensed,
+   https://fonts.google.com/specimen/Instrument+Serif.
+
+   Only the regular (400) face is vendored. The design uses Instrument
+   Serif at weight 400 exclusively — every title, section heading,
+   sheet title, countdown numeral, and vibe-tile label — and never
+   italic, despite the mockup's font request asking for it. If a
+   future screen genuinely needs italic, fetch it the same way rather
+   than requesting Google Fonts at build/runtime.
+   ───────────────────────────────────────────────────────────────── */
+@font-face {
+  font-family: "Instrument Serif";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/instrument-serif-400-latin.woff2") format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Instrument Serif";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/instrument-serif-400-latin-ext.woff2") format("woff2");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
+}
+
 @theme {
   --animate-shine: shine 3s linear infinite;
 
@@ -27,6 +65,17 @@
   --font-sans:
     "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
     Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+
+  /* ─────────────────────────────────────────────────────────────
+     Display serif (Phase 1). Titles, section headings, and sheet
+     titles only — never UI labels or body copy. See the `@font-face`
+     block above this `@theme` for how the face is self-hosted.
+     ───────────────────────────────────────────────────────────── */
+  --font-serif: "Instrument Serif", Georgia, serif;
+
+  /* Data/numerals register: section numbers, timecodes, episode
+     numbers, countdowns. System monospace stacks only — no webfont. */
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
 
   /* ─────────────────────────────────────────────────────────────
      Motion: duration scale.
@@ -71,6 +120,22 @@
   --radius-panel: 1rem;
   --radius-hero: 1.25rem;
 
+  /* ─────────────────────────────────────────────────────────────
+     Accent (Phase 1, design system §A.3). One accent, not three.
+     `color="warning"`/`"secondary"`/`"primary"`-as-media-type-taxonomy
+     is gone — Movie, TV, and Anime players all render `color="primary"`
+     now, and `hero.ts` points HeroUI's `primary` scale at this same
+     violet so every "primary"-colored control already matches without
+     a second token. These `--color-accent-*` entries exist for the
+     rare place that needs the raw value outside HeroUI's color prop
+     (SVG `stroke`, `AmbientProvider`'s gradients) — Tailwind's `--color-*`
+     namespace turns each into a real utility (`bg-accent`, `stroke-accent`, …).
+     Exactly Tailwind's own violet-300/600/700; do not invent new numbers.
+     ───────────────────────────────────────────────────────────── */
+  --color-accent: #c4b5fd;
+  --color-accent-deep: #7c3aed;
+  --color-accent-deeper: #6d28d9;
+
   @keyframes shine {
     0% {
       background-position: 100%;
@@ -109,14 +174,17 @@
     @apply border-none;
   }
 
+  /* Base surface (Phase 1, design system §A.2). `#0a090d`, matching
+     `hero.ts`'s `dark.colors.background` — one value, not the two
+     near-black hexes this used to be split across. */
   html {
     min-height: 100%;
-    background: #0d0c0f;
+    background: #0a090d;
   }
 
   body {
     min-height: 100%;
-    background: #0f1014;
+    background: #0a090d;
     color: white;
     overscroll-behavior-y: none;
     -webkit-tap-highlight-color: transparent;

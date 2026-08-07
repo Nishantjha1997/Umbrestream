@@ -13,7 +13,7 @@ export default function MediaHub({ kind }: { kind: "movie" | "tv" }) {
   return (
     <div className="flex flex-col gap-10 pb-24 md:gap-14 md:pb-10">
       <header className="relative -mx-3 -mt-8 flex min-h-[34vh] items-end overflow-hidden border-b border-white/6 px-5 pb-10 sm:-mx-5 md:min-h-[42vh] md:px-10 md:pb-14">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_15%,rgba(139,92,246,.22),transparent_34%),radial-gradient(circle_at_18%_85%,rgba(59,130,246,.12),transparent_30%),linear-gradient(180deg,#17131f_0%,#0f1014_80%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_15%,rgba(139,92,246,.22),transparent_34%),radial-gradient(circle_at_18%_85%,rgba(59,130,246,.12),transparent_30%),linear-gradient(180deg,#17131f_0%,#0a090d_80%)]" />
         <div className="absolute inset-0 [background-image:linear-gradient(rgba(255,255,255,.035)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.035)_1px,transparent_1px)] [mask-image:linear-gradient(to_bottom,black,transparent)] [background-size:44px_44px] opacity-25" />
         <div className="relative max-w-3xl">
           <p className="mb-3 text-xs font-semibold tracking-[0.24em] text-violet-300 uppercase">

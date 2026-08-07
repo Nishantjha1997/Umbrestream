@@ -6,8 +6,8 @@ import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { AppProgressProvider as ProgressProvider } from "@bprogress/next";
-import { usePathname, useRouter } from "next/navigation";
-import { useQueryState, parseAsStringLiteral } from "nuqs";
+import { AmbientProvider } from "@/components/media/AmbientProvider";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function Providers({ children }: PropsWithChildren) {
@@ -40,12 +40,6 @@ export default function Providers({ children }: PropsWithChildren) {
       }),
   );
   const { push } = useRouter();
-  const pathName = usePathname();
-  const [content] = useQueryState(
-    "content",
-    parseAsStringLiteral(["movie", "tv", "anime"] as const).withDefault("movie"),
-  );
-  const tv = pathName.includes("/tv/") || content === "tv";
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -72,11 +66,14 @@ export default function Providers({ children }: PropsWithChildren) {
         >
           {/* https://github.com/vercel/next.js/discussions/61654#discussioncomment-8480088 */}
           <Suspense>
-            <ProgressProvider
-              options={{ showSpinner: false }}
-              color={`hsl(var(--heroui-${tv ? "warning" : "primary"}))`}
-            >
-              {children}
+            {/* One accent (Phase 1, §1.1.3 / §5.2): the loading bar no longer
+                picks warning-vs-primary by whether the route is TV. */}
+            <ProgressProvider options={{ showSpinner: false }} color="hsl(var(--heroui-primary))">
+              {/* Context only, no DOM (Phase 1) — the visual layers
+                  (`<AmbientLayers>`) mount separately inside
+                  `ImmersiveAppShell`'s `position: relative` root, where an
+                  `inset-0` layer actually has something to size against. */}
+              <AmbientProvider>{children}</AmbientProvider>
             </ProgressProvider>
           </Suspense>
         </NextThemesProvider>

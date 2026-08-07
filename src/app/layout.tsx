@@ -66,13 +66,15 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#0f1014",
+  // Matches `globals.css`'s `html`/`body` background and `hero.ts`'s
+  // `dark.colors.background` (§A.2, Phase 1) — one base surface value.
+  themeColor: "#0a090d",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html suppressHydrationWarning lang="en">
-      <body className="min-h-dvh overflow-x-hidden bg-[#0f1014] font-sans text-white antialiased select-none">
+      <body className="min-h-dvh overflow-x-hidden bg-[#0a090d] font-sans text-white antialiased select-none">
         <Suspense>
           <NuqsAdapter>
             <Providers>

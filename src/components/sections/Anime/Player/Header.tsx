@@ -41,12 +41,15 @@ const AnimePlayerHeader: React.FC<AnimePlayerHeaderProps> = ({
         { "pointer-events-none opacity-0": hidden },
       )}
     >
-      <PlayerActionButton label="Back" href={`/anime/${id}`} color="secondary">
+      {/* One accent (Phase 1, §1.1.3 / §5.2): was `color="secondary"` — Anime no
+          longer gets its own media-type hue. Movie/TV/Anime players all render
+          `color="primary"`, which `hero.ts` now points at the single violet accent. */}
+      <PlayerActionButton label="Back" href={`/anime/${id}`} color="primary">
         <ArrowLeft className="size-8 sm:size-10" />
       </PlayerActionButton>
       <div className="absolute left-1/2 hidden -translate-x-1/2 flex-col justify-center text-center sm:flex">
         <p className="text-sm text-white text-shadow-lg sm:text-lg lg:text-xl">{animeTitle}</p>
-        <p className="text-secondary text-xs text-shadow-lg sm:text-sm lg:text-base">
+        <p className="text-primary text-xs text-shadow-lg sm:text-sm lg:text-base">
           Episode {episode}
           {totalEpisodes ? ` of ${totalEpisodes}` : ""}
         </p>
@@ -57,7 +60,7 @@ const AnimePlayerHeader: React.FC<AnimePlayerHeaderProps> = ({
             label={fullscreen ? "Exit fullscreen" : "Fullscreen"}
             tooltip={fullscreen ? "Exit fullscreen" : "Fullscreen"}
             onClick={onToggleFullscreen}
-            color="secondary"
+            color="primary"
           >
             {fullscreen ? (
               <MdFullscreenExit className="size-7 sm:size-8" />
@@ -72,7 +75,7 @@ const AnimePlayerHeader: React.FC<AnimePlayerHeaderProps> = ({
             label="Previous Episode"
             tooltip="Previous Episode"
             href={`/anime/${id}/player/${episode - 1}${sourceQuery}`}
-            color="secondary"
+            color="primary"
           >
             <Prev className="size-8 sm:size-10" />
           </PlayerActionButton>
@@ -81,7 +84,7 @@ const AnimePlayerHeader: React.FC<AnimePlayerHeaderProps> = ({
             label="Next Episode"
             tooltip="Next Episode"
             href={`/anime/${id}/player/${episode + 1}${sourceQuery}`}
-            color="secondary"
+            color="primary"
           >
             <Next className="size-8 sm:size-10" />
           </PlayerActionButton>
@@ -89,7 +92,7 @@ const AnimePlayerHeader: React.FC<AnimePlayerHeaderProps> = ({
             label="Episodes"
             tooltip="Episodes"
             onClick={onOpenEpisode}
-            color="secondary"
+            color="primary"
           >
             <List className="size-7 sm:size-8" />
           </PlayerActionButton>
@@ -97,7 +100,7 @@ const AnimePlayerHeader: React.FC<AnimePlayerHeaderProps> = ({
             label="Sources"
             tooltip="Sources"
             onClick={onOpenSource}
-            color="secondary"
+            color="primary"
           >
             <Server className="size-7 sm:size-8" />
           </PlayerActionButton>
