@@ -4,13 +4,21 @@ import useDiscoverFilters from "@/hooks/useDiscoverFilters";
 import { DiscoverMoviesFetchQueryType } from "@/types/movie";
 import { Select, SelectItem, Button } from "@heroui/react";
 
-const DiscoverFilters = () => {
+interface DiscoverFiltersProps {
+  /** `/browse` (Phase 3, §7) already has its own Films/Series/Categories
+      tab driving the same `content` state — showing this component's own
+      movie/tv/anime tabs on top of it would be two conflicting switchers
+      for one piece of state. `/discover` (unchanged) still wants both. */
+  hideContentTypeTabs?: boolean;
+}
+
+const DiscoverFilters = ({ hideContentTypeTabs }: DiscoverFiltersProps = {}) => {
   const { types, content, genres, queryType, setQueryType, setGenres, resetFilters } =
     useDiscoverFilters();
 
   return (
     <div className="flex w-full flex-wrap justify-center gap-3">
-      <ContentTypeSelection className="mb-5 justify-center" />
+      {!hideContentTypeTabs && <ContentTypeSelection className="mb-5 justify-center" />}
       <div className="flex w-full flex-wrap justify-center gap-3">
         <Select
           disallowEmptySelection

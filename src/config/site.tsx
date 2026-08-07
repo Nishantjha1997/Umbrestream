@@ -1,25 +1,12 @@
 import { tmdbBrowser } from "@/api/tmdb-browser";
 import { SiteConfigType } from "@/types";
 import { Movie, TV } from "tmdb-ts/dist/types";
-import {
-  BiCameraMovie,
-  BiCategory,
-  BiSearchAlt2,
-  BiSolidCameraMovie,
-  BiSolidCategory,
-  BiSolidSearchAlt2,
-} from "react-icons/bi";
+import { BiCategory, BiSearchAlt2, BiSolidCategory, BiSolidSearchAlt2 } from "react-icons/bi";
 import { GoHomeFill, GoHome } from "react-icons/go";
-import { HiComputerDesktop, HiOutlineSparkles, HiSparkles } from "react-icons/hi2";
+import { HiComputerDesktop } from "react-icons/hi2";
 import { IoIosSunny } from "react-icons/io";
 import { IoMoon } from "react-icons/io5";
-import {
-  TbBallFootball,
-  TbDeviceTv,
-  TbDeviceTvFilled,
-  TbUserCircle,
-  TbUserFilled,
-} from "react-icons/tb";
+import { TbUserCircle, TbUserFilled } from "react-icons/tb";
 import { PiFlowerLotusLight, PiFlowerLotusFill } from "react-icons/pi";
 
 /**
@@ -40,6 +27,15 @@ export const siteConfig: SiteConfigType = {
   name: "Umbra",
   description: "Discover movies, TV shows, and anime in one place.",
   favicon: "/favicon.ico",
+  // Five items (Phase 3, §7 — "Seven dock items, two of which go nowhere").
+  // Movies, TV, and Categories folded into Browse as segments
+  // (`/app/browse/page.tsx`); Sports and Sparks (desktopOnly preview chips
+  // that went nowhere) dropped from the nav entirely — their pages still
+  // exist at their URLs, just unreachable from chrome until finding 08's
+  // "Soon" redesign lands. "My Space" renamed "You" per the design's v2
+  // mockup (v1 called it "My Space"; v2 is authoritative — see
+  // `docs/design/PHONE_SPEC.md` §E note). The route stays `/space`: renaming
+  // the URL too would need a redirect for zero benefit.
   navItems: [
     {
       label: "Home",
@@ -56,10 +52,10 @@ export const siteConfig: SiteConfigType = {
       dockOrder: 1,
     },
     {
-      label: "TV",
-      href: "/tv",
-      icon: <TbDeviceTv className="size-full" />,
-      activeIcon: <TbDeviceTvFilled className="size-full" />,
+      label: "Browse",
+      href: "/browse",
+      icon: <BiCategory className="size-full" />,
+      activeIcon: <BiSolidCategory className="size-full" />,
       dockOrder: 2,
     },
     {
@@ -70,41 +66,11 @@ export const siteConfig: SiteConfigType = {
       dockOrder: 3,
     },
     {
-      label: "Movies",
-      href: "/movies",
-      icon: <BiCameraMovie className="size-full" />,
-      activeIcon: <BiSolidCameraMovie className="size-full" />,
-      dockOrder: 4,
-    },
-    {
-      label: "Sports",
-      href: "/sports",
-      icon: <TbBallFootball className="size-full" />,
-      activeIcon: <TbBallFootball className="size-full" />,
-      desktopOnly: true,
-      preview: true,
-    },
-    {
-      label: "Sparks",
-      href: "/spark",
-      icon: <HiOutlineSparkles className="size-full" />,
-      activeIcon: <HiSparkles className="size-full" />,
-      desktopOnly: true,
-      preview: true,
-    },
-    {
-      label: "Categories",
-      href: "/categories",
-      icon: <BiCategory className="size-full" />,
-      activeIcon: <BiSolidCategory className="size-full" />,
-      dockOrder: 5,
-    },
-    {
-      label: "My Space",
+      label: "You",
       href: "/space",
       icon: <TbUserCircle className="size-full" />,
       activeIcon: <TbUserFilled className="size-full" />,
-      dockOrder: 6,
+      dockOrder: 4,
     },
   ],
   themes: [

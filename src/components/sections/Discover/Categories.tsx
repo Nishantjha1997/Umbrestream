@@ -1,8 +1,12 @@
-import { siteConfig } from "@/config/site";
-import type { Metadata } from "next";
-import Link from "next/link";
+"use client";
 
-export const metadata: Metadata = { title: `Categories | ${siteConfig.name}` };
+/**
+ * The categories genre-tile grid, extracted from `app/categories/page.tsx`
+ * (Phase 3, §7) so it can render as a segment inside `/browse` instead of
+ * its own route. `/categories` now redirects here (`next.config.ts`).
+ */
+
+import Link from "next/link";
 
 const movieGenres = [
   [28, "Action"],
@@ -37,19 +41,9 @@ const tileColors = [
   "from-amber-500/30 to-orange-950/20",
 ];
 
-export default function CategoriesPage() {
+export default function CategoriesSection() {
   return (
-    <div className="mx-auto flex max-w-7xl flex-col gap-12 pt-6 pb-28 md:pt-10 md:pb-12">
-      <header>
-        <p className="text-xs font-semibold tracking-[0.24em] text-violet-300 uppercase">
-          Find your mood
-        </p>
-        <h1 className="mt-3 text-4xl font-semibold tracking-[-0.04em] sm:text-6xl">Categories</h1>
-        <p className="mt-4 max-w-2xl text-white/55">
-          Jump straight into a genre across movies, television, or Anime.
-        </p>
-      </header>
-
+    <div className="flex flex-col gap-12">
       <section>
         <h2 className="mb-5 text-xl font-semibold">Movies & TV</h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">

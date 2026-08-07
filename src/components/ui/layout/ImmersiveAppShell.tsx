@@ -19,6 +19,7 @@
  */
 
 import { AmbientLayers } from "@/components/media/AmbientProvider";
+import DesktopHeader from "@/components/shell/desktop/Header";
 import DesktopRail from "@/components/shell/desktop/Rail";
 import TabBar from "@/components/shell/phone/TabBar";
 import { cn } from "@/utils/helpers";
@@ -57,6 +58,10 @@ export default function ImmersiveAppShell({ children, modal }: ImmersiveAppShell
           !chromeHidden && "md:pl-[calc(5rem+var(--spacing-main-x,1rem))]",
         )}
       >
+        {/* Persistent desktop search header (Phase 3, §7). Hidden on
+            player/auth routes along with the rail and tab bar — those
+            screens own the whole viewport. */}
+        {!chromeHidden && <DesktopHeader />}
         {children}
       </main>
       {!chromeHidden && <TabBar pathname={pathname} />}

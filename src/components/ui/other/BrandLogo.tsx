@@ -7,6 +7,13 @@ import { cn } from "@/utils/helpers";
 export interface BrandLogoProps {
   animate?: boolean;
   className?: string;
+  /**
+   * Extra classes for the "UMBRA" text span only. Lets callers that clip the
+   * icon+text lockup down to icon-only at rest (e.g. the collapsed desktop
+   * rail) fade/slide the wordmark in on expansion without affecting the
+   * default (always-visible) behaviour other callers rely on.
+   */
+  textClassName?: string;
 }
 
 /**
@@ -25,7 +32,7 @@ export interface BrandLogoProps {
  * Now it is a bare mark: a disc with a bite out of it — which is what an umbra
  * is, the dark core of an eclipse shadow. No plate, no split word.
  */
-const BrandLogo: React.FC<BrandLogoProps> = ({ animate = false, className }) => {
+const BrandLogo: React.FC<BrandLogoProps> = ({ animate = false, className, textClassName }) => {
   return (
     <Link
       href="/"
@@ -69,6 +76,7 @@ const BrandLogo: React.FC<BrandLogoProps> = ({ animate = false, className }) => 
           "bg-linear-to-r from-transparent from-80% via-white to-transparent bg-size-[200%_100%] bg-clip-text bg-position-[40%]",
           animate ? "animate-shine motion-reduce:animate-none" : "text-foreground",
           Saira.className,
+          textClassName,
         )}
       >
         UMBRA

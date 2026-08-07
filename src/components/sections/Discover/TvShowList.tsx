@@ -62,9 +62,10 @@ const TvShowDiscoverList = () => {
         })}
       </div>
       <div ref={ref} className="flex h-24 items-center justify-center">
-        {isFetchingNextPage && (
-          <Spinner size="lg" variant="wave" color="warning" label={getLoadingLabel()} />
-        )}
+        {/* One accent (Phase 1/3, §1.1.3 / §5.2): was color="warning" — TV no
+            longer gets its own media-type hue, matching MovieDiscoverList's
+            spinner (no explicit color, so both now inherit the same default). */}
+        {isFetchingNextPage && <Spinner size="lg" variant="wave" label={getLoadingLabel()} />}
         {!hasNextPage && !isPending && (
           <p className="text-muted-foreground text-center text-base">
             You have reached the end of the list.

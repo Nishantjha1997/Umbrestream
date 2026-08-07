@@ -1,112 +1,155 @@
 "use client";
 
 /**
- * The phone shell (Phase 2, §6). A floating bottom dock with a magnetic
- * hover/focus size effect — genuinely different from the desktop rail, not
- * a breakpoint variant of it. Selection is pure CSS (`md:hidden` here,
- * `hidden md:block` on `Rail.tsx`), not `useBreakpoints`, so there is no
- * flash of the wrong shell on cold load and no hydration mismatch:
- * `useBreakpoints` wraps `useMediaQuery`, which is client-only and returns
- * `undefined` on first paint — exactly what this phase's selection mechanism
- * has to avoid (§6, "How to select, and the trap").
+ * The phone shell (Phase 3, §7 — restyled to `docs/design/PHONE_SPEC.md` §E).
  *
- * Content still matches the pre-Phase-3 9-item nav (filtered to the 7 that
- * aren't `desktopOnly`); Phase 3 reduces this to 5 items and restyles to the
- * design's exact tab-bar geometry (`docs/design/PHONE_SPEC.md` §E). This
- * phase only establishes the file boundary the design work will land in.
+ * Phase 2 built this file as a floating dock with a macOS-style magnetic
+ * hover/focus size effect. `UI Analysis` finding 05 called that out
+ * explicitly: "macOS-dock magnification has no meaning on a touchscreen
+ * where there is no cursor to be near." That whole effect — `useMotionValue`
+ * / `useTransform` / `useSpring` distance-to-pointer sizing, the scroll-hide
+ * `useFloatingDock()` behaviour, the pill/dot active indicator — is gone.
+ * This is now the design's tab bar: a static 5-column grid, color+weight is
+ * the only active-state signal, and the five icons are the mockup's exact
+ * hand-drawn glyphs rather than react-icons library equivalents (the
+ * glyphs are this design's signature, not a generic icon set).
+ *
+ * Two deliberate departures from the spec's literal CSS, both because the
+ * spec was extracted from a fixed-size device-frame mockup and this is a
+ * real, normally-scrolling web page:
+ *
+ * 1. Spec says `position:absolute` (relative to the mockup's viewport-sized
+ *    frame, which never scrolls itself). Our shell root
+ *    (`ImmersiveAppShell.tsx`) is a normal `position:relative` block that
+ *    grows with page content under window scroll, so `absolute` here would
+ *    pin the bar to the bottom of the *document*, not the *viewport* — it
+ *    would scroll away. `fixed` is the real-DOM equivalent of what the
+ *    mockup's frame gave the spec for free.
+ * 2. Spec's `padding: 12px 12px 28px` is a magic-number home-indicator
+ *    inset with no `env(safe-area-inset-bottom)` (spec explicitly flags
+ *    this as a mockup bug to fix, not a decision to port). Bottom padding
+ *    is `max(28px, env(safe-area-inset-bottom))` so notched devices get
+ *    more than 28px instead of losing the tap targets under the home
+ *    indicator. This replaces the old `safe-floating-dock` class (built for
+ *    a rounded pill dock with margin *from* the screen edge) — this bar
+ *    sits flush against the edges and absorbs the safe area as internal
+ *    padding instead, so that global class no longer applies.
+ *
+ * Open call from the spec (PHONE_SPEC.md §E): the mockup's own markup
+ * carries a comment — "tab bar: eclipse crescent marks the active tab" —
+ * that was never implemented; the mockup ships color+weight only. Shipped
+ * here as color+weight only too, matching what the design actually shipped
+ * rather than what one stale comment proposed, and because this file is
+ * one of several landing at once (lower risk than adding a new glyph
+ * component this pass). See the exported report for the reasoning.
  */
 
-import { useFloatingDock } from "@/hooks/useFloatingDock";
 import { cn } from "@/utils/helpers";
-import { motion, useMotionValue, useSpring, useTransform, type MotionValue } from "motion/react";
 import Link from "next/link";
-import { useRef } from "react";
 import { itemIsActive, type NavigationItem } from "../itemIsActive";
 import { siteConfig } from "@/config/site";
 
-function FloatingDockItem({
-  item,
-  active,
-  pointerX,
-  reducedMotion,
-}: {
-  item: NavigationItem;
-  active: boolean;
-  pointerX: MotionValue<number>;
-  reducedMotion: boolean;
-}) {
-  const ref = useRef<HTMLAnchorElement>(null);
-  const distance = useTransform(pointerX, (value) => {
-    const bounds = ref.current?.getBoundingClientRect();
-    return bounds ? value - (bounds.left + bounds.width / 2) : 999;
-  });
-  const targetSize = useTransform(distance, [-120, 0, 120], [36, 60, 36]);
-  const targetIcon = useTransform(distance, [-120, 0, 120], [18, 30, 18]);
-  const size = useSpring(targetSize, { mass: 0.1, stiffness: 150, damping: 12 });
-  const iconSize = useSpring(targetIcon, { mass: 0.1, stiffness: 150, damping: 12 });
+/**
+ * Exact glyphs from PHONE_SPEC.md §E, keyed by nav label. All five are
+ * hand-drawn for this design (not react-icons) — 22x22 viewBox, stroke-only,
+ * rendered by the shared `<TabGlyph>` below which applies the common stroke
+ * attributes once. Keep these paths byte-for-byte; a single wrong
+ * coordinate renders a silently-broken icon.
+ */
+const TAB_ICON_PATHS: Record<string, React.ReactNode> = {
+  Home: <path d="M3.4 9.2 11 3.2l7.6 6v9.2a.9.9 0 0 1-.9.9h-4.2v-5.6H8.5v5.6H4.3a.9.9 0 0 1-.9-.9V9.2Z" />,
+  Search: (
+    <>
+      <circle cx="10" cy="10" r="6.4" />
+      <path d="M14.8 14.8 18.6 18.6" />
+    </>
+  ),
+  Browse: <path d="M3 5.6h16M3 11h16M3 16.4h10" />,
+  Anime: (
+    <>
+      <path d="M11 3.4c2.2 2.6 2.2 5.6 0 8.2-2.2-2.6-2.2-5.6 0-8.2Z" />
+      <path d="M11 11.6c2.9-1.3 5.6-.5 7.4 2-3.1.9-5.7.2-7.4-2Zm0 0c-2.9-1.3-5.6-.5-7.4 2 3.1.9 5.7.2 7.4-2Z" />
+      <path d="M11 13.6v5" />
+    </>
+  ),
+  You: (
+    <>
+      <circle cx="11" cy="8" r="3.4" />
+      <path d="M4.6 18.4c.6-3.2 3.2-5 6.4-5s5.8 1.8 6.4 5" />
+    </>
+  ),
+};
 
+function TabGlyph({ label }: { label: string }) {
+  const paths = TAB_ICON_PATHS[label];
+  if (!paths) return null;
   return (
-    <motion.div
-      className="group/dock relative flex h-[60px] w-9 shrink-0 items-center justify-center"
-      style={reducedMotion ? undefined : { width: size }}
+    <svg
+      viewBox="0 0 22 22"
+      aria-hidden="true"
+      className="h-full w-full"
+      stroke="currentColor"
+      strokeWidth={1.6}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      fill="none"
     >
-      <Link
-        ref={ref}
-        href={item.href}
-        aria-label={item.label}
-        aria-current={active ? "page" : undefined}
-        onFocus={() => {
-          const bounds = ref.current?.getBoundingClientRect();
-          if (bounds) pointerX.set(bounds.left + bounds.width / 2);
-        }}
-        className={cn(
-          "relative flex size-11 min-h-11 min-w-11 items-center justify-center rounded-xl text-white/58 transition-colors duration-200 outline-none active:scale-95",
-          "hover:bg-white/8 hover:text-white focus-visible:bg-white/10 focus-visible:text-white focus-visible:ring-2 focus-visible:ring-violet-300/70",
-          active && "bg-white/10 text-violet-200",
-        )}
-      >
-        <motion.span
-          className="flex items-center justify-center"
-          style={reducedMotion ? { width: 22, height: 22 } : { width: iconSize, height: iconSize }}
-        >
-          {active ? item.activeIcon : item.icon}
-        </motion.span>
-        <span className="pointer-events-none absolute bottom-[calc(100%+0.65rem)] left-1/2 -translate-x-1/2 rounded-lg border border-white/10 bg-black/90 px-2.5 py-1 text-[11px] font-medium whitespace-nowrap text-white opacity-0 shadow-xl transition-all duration-150 group-focus-within/dock:-translate-y-1 group-focus-within/dock:opacity-100 group-hover/dock:-translate-y-1 group-hover/dock:opacity-100">
-          {item.label}
-        </span>
-        {active && <span className="absolute bottom-1 h-1 w-1 rounded-full bg-violet-300" />}
-      </Link>
-    </motion.div>
+      {paths}
+    </svg>
+  );
+}
+
+function TabBarItem({ item, active }: { item: NavigationItem; active: boolean }) {
+  return (
+    <Link
+      href={item.href}
+      aria-label={item.label}
+      aria-current={active ? "page" : undefined}
+      className={cn(
+        // PHONE_SPEC.md §E "each button": no border/background/padding of
+        // its own, a centred column, 44px minimum touch target.
+        "flex min-h-11 flex-col items-center justify-center gap-[7px] border-0 bg-transparent p-0",
+        "rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-violet-300/70",
+        // Active state is colour + weight only (§E "Indicator behaviour
+        // (v2)") — no pill, no dot, no underline, no background change.
+        // `text-white/40` renders rgba(255,255,255,.4) exactly, matching
+        // the spec's inactive colour value.
+        active ? "text-white" : "text-white/40",
+      )}
+    >
+      <span className="flex h-5 w-6 items-center justify-center">
+        <TabGlyph label={item.label} />
+      </span>
+      <span className={cn("text-[9.5px] tracking-[.06em]", active ? "font-semibold" : "font-medium")}>
+        {item.label}
+      </span>
+    </Link>
   );
 }
 
 export default function TabBar({ pathname }: { pathname: string }) {
-  const pointerX = useMotionValue(Number.POSITIVE_INFINITY);
-  const { hidden, reducedMotion, focusProps } = useFloatingDock();
   const items = siteConfig.navItems
     .filter((item) => !item.desktopOnly)
     .sort((a, b) => (a.dockOrder ?? 99) - (b.dockOrder ?? 99));
 
   return (
-    <motion.nav
+    <nav
       aria-label="Mobile navigation"
-      {...focusProps}
-      initial={false}
-      animate={{ y: hidden ? 110 : 0, opacity: hidden ? 0 : 1 }}
-      transition={reducedMotion ? { duration: 0 } : { duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-      onPointerMove={(event) => pointerX.set(event.clientX)}
-      onPointerLeave={() => pointerX.set(Number.POSITIVE_INFINITY)}
-      className="safe-floating-dock fixed bottom-0 left-1/2 z-60 flex h-16 max-w-[calc(100vw-1rem)] -translate-x-1/2 items-center gap-1 rounded-2xl border border-white/10 bg-[#0a090d]/92 px-2 shadow-[0_18px_50px_rgba(0,0,0,.65)] backdrop-blur-2xl md:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 md:hidden"
+      style={{
+        // §E container. Three-value shorthand: 12px top, 12px left/right,
+        // and a safe-area-aware bottom (see file header note 2 above).
+        padding: "12px 12px max(28px, env(safe-area-inset-bottom))",
+        background: "linear-gradient(180deg, rgba(10,9,13,0), rgba(10,9,13,.82) 34%, rgba(10,9,13,.96))",
+        backdropFilter: "blur(24px) saturate(180%)",
+        WebkitBackdropFilter: "blur(24px) saturate(180%)",
+      }}
     >
-      {items.map((item) => (
-        <FloatingDockItem
-          key={item.href}
-          item={item}
-          active={itemIsActive(pathname, item)}
-          pointerX={pointerX}
-          reducedMotion={reducedMotion}
-        />
-      ))}
-    </motion.nav>
+      <div className="grid grid-cols-5">
+        {items.map((item) => (
+          <TabBarItem key={item.href} item={item} active={itemIsActive(pathname, item)} />
+        ))}
+      </div>
+    </nav>
   );
 }

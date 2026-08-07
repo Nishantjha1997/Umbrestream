@@ -65,6 +65,24 @@ const nextConfig: NextConfig = {
    * attribute on the player iframe (src/lib/sources/adapters/embed.ts) is what
    * actually contains a hostile provider today.
    */
+  /**
+   * Movies, TV, and Categories folded into Browse as segments (Phase 3, §7).
+   * `source` here is an exact path with no wildcard, so it matches only that
+   * literal route — `/tv` redirects, but `/tv/[id]` and
+   * `/tv/[id]/[season]/[episode]/player` (Phase 0's fixture) do not, because
+   * they are different routes entirely. `permanent: false` (307) rather than
+   * 308 on purpose: this is a fresh restructure, not a settled URL — keep
+   * the option open to adjust without a browser/CDN caching the redirect
+   * forever.
+   */
+  async redirects() {
+    return [
+      { source: "/movies", destination: "/browse?tab=films", permanent: false },
+      { source: "/tv", destination: "/browse?tab=series", permanent: false },
+      { source: "/categories", destination: "/browse?tab=categories", permanent: false },
+    ];
+  },
+
   async headers() {
     const csp = [
       "frame-ancestors 'none'",
