@@ -1,82 +1,13 @@
 "use client";
 
-import { tmdbBrowser } from "@/api/tmdb-browser";
+import { use } from "react";
 import { Params } from "@/types";
-import { Spinner } from "@heroui/react";
-import { useScrollIntoView } from "@mantine/hooks";
-import { useQuery } from "@tanstack/react-query";
-import { notFound } from "next/navigation";
-import { Suspense, use } from "react";
-import dynamic from "next/dynamic";
 import { NextPage } from "next";
-import { getEnglishLogoUrl, getImageUrl, mutateTvShowTitle } from "@/utils/movies";
-const PhotosSection = dynamic(() => import("@/components/ui/other/PhotosSection"));
-const TvShowRelatedSection = dynamic(() => import("@/components/sections/TV/Details/Related"));
-const TvShowCastsSection = dynamic(() => import("@/components/sections/TV/Details/Casts"));
-const MediaBackdrop = dynamic(() => import("@/components/media/MediaBackdrop"));
-const TvShowOverviewSection = dynamic(() => import("@/components/sections/TV/Details/Overview"));
-const TvShowsSeasonsSelection = dynamic(() => import("@/components/sections/TV/Details/Seasons"));
+import TvShowDetailContent from "@/components/sections/TV/Details/DetailContent";
 
 const TVShowDetailPage: NextPage<Params<{ id: number }>> = ({ params }) => {
   const { id } = use(params);
-  const { scrollIntoView, targetRef } = useScrollIntoView<HTMLDivElement>({
-    duration: 500,
-  });
-
-  const {
-    data: tv,
-    isPending,
-    error,
-  } = useQuery({
-    queryFn: () =>
-      tmdbBrowser.tvShows.details(id, [
-        "images",
-        "videos",
-        "credits",
-        "keywords",
-        "recommendations",
-        "similar",
-        "reviews",
-        "watch/providers",
-      ]),
-    queryKey: ["tv-show-detail", id],
-  });
-
-  if (isPending) {
-    return (
-      <div className="mx-auto max-w-5xl">
-        <Spinner size="lg" className="absolute-center" color="warning" variant="simple" />
-      </div>
-    );
-  }
-
-  if (error) notFound();
-
-  return (
-    <div className="mx-auto max-w-5xl">
-      <Suspense
-        fallback={
-          <Spinner size="lg" className="absolute-center" color="warning" variant="simple" />
-        }
-      >
-        <div className="flex flex-col gap-10">
-          <MediaBackdrop
-            alt={mutateTvShowTitle(tv)}
-            backdropUrl={getImageUrl(tv.backdrop_path, "backdrop", true)}
-            logoUrl={getEnglishLogoUrl(tv.images.logos)}
-          />
-          <TvShowOverviewSection
-            onViewEpisodesClick={() => scrollIntoView({ alignment: "center" })}
-            tv={tv}
-          />
-          <TvShowCastsSection casts={tv.credits.cast} />
-          <PhotosSection images={tv.images.backdrops} type="tv" />
-          <TvShowsSeasonsSelection ref={targetRef} id={id} seasons={tv.seasons} />
-          <TvShowRelatedSection tv={tv} />
-        </div>
-      </Suspense>
-    </div>
-  );
+  return <TvShowDetailContent id={id} />;
 };
 
 export default TVShowDetailPage;

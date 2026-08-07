@@ -71,7 +71,15 @@ export const viewport: Viewport = {
   themeColor: "#0a090d",
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({
+  children,
+  modal,
+}: Readonly<{
+  children: React.ReactNode;
+  /** The `@modal` parallel-route slot (Phase 2, §6) — see `src/app/@modal/default.tsx`
+      and `ImmersiveAppShell.tsx` for what renders here and why. */
+  modal: React.ReactNode;
+}>) {
   return (
     <html suppressHydrationWarning lang="en">
       <body className="min-h-dvh overflow-x-hidden bg-[#0a090d] font-sans text-white antialiased select-none">
@@ -79,7 +87,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <NuqsAdapter>
             <Providers>
               {UMBRA_UI_V2_ENABLED ? (
-                <ImmersiveAppShell>{children}</ImmersiveAppShell>
+                <ImmersiveAppShell modal={modal}>{children}</ImmersiveAppShell>
               ) : (
                 <>
                   <TopNavbar />
@@ -88,6 +96,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                       {children}
                     </main>
                   </Sidebar>
+                  {modal}
                 </>
               )}
               <InstallAppPrompt />

@@ -22,7 +22,9 @@ export type DrawerProps = DialogProps & {
     title?: string;
     handler?: string;
     contentWrapper?: string;
-    scollWrapper?: string;
+    /** Was `scollWrapper` — a typo. No call site used it (grepped before
+        renaming), so this is safe. */
+    scrollWrapper?: string;
     childrenWrapper?: string;
   };
 };
@@ -50,15 +52,25 @@ export default function VaulDrawer({
       )}
       <Drawer.Portal>
         <Drawer.Overlay
-          className={cn("fixed inset-0 z-9998 bg-black/70", classNames?.overlay, {
-            // Was backdrop-blur-xs — the weakest step, barely perceptible.
-            "backdrop-blur-md": backdrop === "blur",
+          className={cn("fixed inset-0 z-90 bg-black/70", classNames?.overlay, {
+            // Was backdrop-blur-xs (the weakest tier, barely perceptible),
+            // then backdrop-blur-md. Now backdrop-blur-lg — matching
+            // `glass-panel`'s blur strength (`--glass-blur-lg`, §6) without
+            // importing its border/background, which are meant for a
+            // floating card, not a full-viewport scrim.
+            "backdrop-blur-lg": backdrop === "blur",
             "bg-transparent": backdrop === "transparent",
           })}
         />
         <Drawer.Content
           className={cn(
-            "fixed z-9999 place-self-center border border-white/10 bg-[#111218]/96 text-white shadow-2xl shadow-black/60 outline-hidden backdrop-blur-2xl",
+            // z-90/z-91 (§6): was z-9998/z-9999 — arbitrary huge numbers with
+            // no relation to the rest of the app's z-index scale. z-90
+            // matches the design's own sheet/panel tier
+            // (`docs/design/PHONE_SPEC.md` §B "z-index 90"), one step above
+            // `DetailModal`'s z-80 so a sheet opened from within a detail
+            // modal still sits on top of it.
+            "fixed z-91 place-self-center border border-white/10 bg-[#111218]/96 text-white shadow-2xl shadow-black/60 outline-hidden backdrop-blur-2xl",
             classNames?.contentWrapper,
             {
               "right-0 bottom-0 left-0 mt-24 max-h-[97%] w-full rounded-t-2xl":
@@ -114,7 +126,7 @@ export default function VaulDrawer({
               {title}
             </Drawer.Title>
             <Drawer.Description aria-hidden className="hidden" />
-            <ScrollShadow isEnabled={scrollable} className={classNames?.scollWrapper}>
+            <ScrollShadow isEnabled={scrollable} className={classNames?.scrollWrapper}>
               <div
                 className={cn("mx-auto", classNames?.childrenWrapper, {
                   "max-w-lg": !fullWidth,
