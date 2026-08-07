@@ -2,6 +2,42 @@
 
 Last updated: 2026-08-07
 
+## TV player rollback — implemented and locally verified (2026-08-07)
+
+Phase 0 of `SONNET_IMPLEMENTATION_PLAN.md` is complete. `TV_PLAYER_ROLLBACK_HANDOFF.md` has the full evidence trail; this section records the actual implementation and verification result.
+
+**What changed:**
+
+- `src/components/sections/TV/Player/Player.tsx` no longer imports or renders `ReliablePlayer` / `usePlayerEngine`. It builds the source list synchronously from `createPublicEmbedSources` (the same adapter registry Movie/Anime use), resolves the default via `selectDefaultSource` + `legacySourceId`, and mounts exactly one iframe immediately — no `/api/player/sources` round trip, no provider preflight/observation, no automatic fallback switching.
+- `src/components/sections/TV/Player/Header.tsx` no longer has a fullscreen button or any fullscreen state. The provider's own `allowFullScreen` iframe permission is the only fullscreen path for TV now.
+- `src/components/sections/TV/Player/SourceSelection.tsx` and `EpisodeSelection.tsx` were **not modified** — both already had the exact stable-index / stable-id interface the direct controller needs (they predate the player engine).
+- `src/lib/sources/adapters/embed.ts`: TV-only priority order changed to VidKing → Filmu → Cinezo → VidLink → VidLink Classic → Vidrift → Vidbolt → Videasy. **Movie order is untouched** (Filmu still first for Movies). `scripts/check-player-sources.mjs`'s TV order assertion was updated to match.
+- The player container needed `SpacingClasses.reset` (from `@/utils/constants`) to cancel the app shell's `<main>` padding — without it the player rendered inset instead of full-bleed. A first attempt added `w-full` alongside the reset, which is wrong: `w-full` resolves to 100% of `<main>`'s *padded* content box, so the negative-margin trick never expanded the box to the true viewport width. The container has no explicit width class now; it relies on default block `width: auto` expanding to fill the negative margins, exactly like `ReliablePlayer`'s own shell does.
+
+**Verification performed locally** (node v24.14.0 run directly, no `npm` available in this environment — see note below):
+
+- `npm run test:player-sources` → pass, 12 adapters, TV order assertion updated and passing.
+- `npm run typecheck` → clean.
+- `npm run build` (webpack) → clean, all 24 routes generated including `ƒ /tv/[id]/[season]/[episode]/player`.
+- Focused ESLint on the 3 changed files → clean.
+- `npm run check:leak` → no secrets in client bundle.
+- Browser-verified `/tv/97546/1/1/player` against a locally built production server (`next start`, port 3211) at both a mobile (375×812) and a desktop-ish (~715×694) viewport:
+  - Defaults to `?src=vidking` with no manual selection needed.
+  - Iframe `src` is `https://www.vidking.net/embed/tv/97546/1/1?...`, no `sandbox` attribute, correct `allow`/`referrerPolicy`.
+  - Player is full-bleed (iframe width/height match the viewport, confirmed at both sizes) with no Umbra overlay over the iframe.
+  - Header shows Back / Previous / Next / Sources / Episodes, no fullscreen button; Previous is correctly disabled on episode 1; Next preserves `?src=vidking`.
+  - Sources drawer lists all 8 TV providers in the new order (VidKing, Filmu, Cinezo, VidLink, VidLink Classic, Vidrift, Vidbolt, Videasy).
+  - Episodes drawer lists the full season with `?src=vidking` preserved on every episode link.
+- **Not verified this session:** actual cross-origin video playback (`readyState >= 2`, advancing `currentTime`) inside the VidKing iframe. This browser tool's `javascript_tool` cannot reach into a cross-origin frame (`Blocked a frame with origin ... from accessing a cross-origin frame` — expected same-origin-policy behavior, not a bug). The prior agent's verification recorded in this file under "Live verification after TV rollback" already confirmed VidKing plays this exact fixture (`readyState: 4`, `duration: 1855.989`) when manually selected under the old engine; this session confirms the new direct-mount controller correctly defaults to that same provider/URL without engine involvement. **Deploying and re-testing in a real browser against production is still required** per the handoff's own gate — do this before considering Phase 0 fully closed in production, not just locally.
+- Local dev/build environment note: no Node.js or npm was on `PATH` in this environment. A Node v24.14.0 binary was found at `C:\Users\DELL_\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe` (left over from a different agent runtime) and was used directly against this repo's own `node_modules\.bin` binaries for every check above. A `.claude/launch.json` was added at the workspace root (`My Web Sites/.claude/launch.json`) pointing at a locally-started `next start` on port 3211 for browser verification.
+- A stale PWA service worker from an earlier production-server session served cached (pre-fix) HTML during verification and had to be explicitly unregistered (`navigator.serviceWorker.getRegistrations().then(r => r.unregister())`) before the width fix could be observed correctly in the browser. Not a code bug — a testing-session artifact — but worth knowing if a future session sees stale content on `localhost:3211` after a rebuild.
+
+**Still required before calling this closed** (per `TV_PLAYER_ROLLBACK_HANDOFF.md`'s own gate list):
+
+1. Push to `main`, wait for Vercel, repeat the exact production TV fixture (`/tv/97546/1/1/player`), and record the deployed commit + evidence here.
+2. Confirm real playback (not just iframe mount) on production with real browser automation or manual confirmation of advancing time.
+3. Test Filmu manually on production; do not block release on it if VidKing plays.
+
 ## Purpose
 
 This file is the handoff point for any AI or developer continuing the Umbra work. Read it before changing the player, analytics, authentication, or deployment code.
@@ -14,7 +50,7 @@ Deployment: Vercel is connected to the GitHub repository and deploys from `main`
 
 ## User decisions currently in force
 
-- Keep Filmu as the first Movie and TV source.
+- Keep Filmu as the first Movie source. For TV, the latest rollback request supersedes the earlier Filmu-first trial: the recovery plan in `TV_PLAYER_ROLLBACK_HANDOFF.md` recommends restoring VidKing as the first/default TV iframe because it is the only checked TV fixture that reached a playable media state.
 - Anime source order is AniLink Sub, AniLink Dub, VidNest AnimePahe Sub, and VidNest AnimePahe Dub.
 - Do not use private Bingr APIs, copied tokens, protected stream scraping, or undocumented direct-stream extraction.
 - Do not register paid provider APIs or use the supplied email for provider signups.
@@ -77,9 +113,9 @@ Deployment: Vercel is connected to the GitHub repository and deploys from `main`
 - Provider frames still use their required `allow` and `referrerPolicy` values. Umbra intentionally does not attempt to strip provider advertisements or redirect behavior.
 - Any future provider safety change must be tested against exact playback fixtures first and must not silently break the player.
 
-## Latest change in progress
+## Historical ad-block-removal change (completed)
 
-The latest user request was to remove the ad-blocking idea completely. The following source changes have been made but still need final verification and commit:
+The ad-blocking idea was removed completely in the previously published implementation. This section is retained as historical context:
 
 - Removed the `AdsWarning` import/render from `src/components/player/ReliablePlayer.tsx`.
 - Deleted `src/components/ui/overlay/AdsWarning.tsx`.

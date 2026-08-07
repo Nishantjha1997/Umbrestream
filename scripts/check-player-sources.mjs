@@ -114,9 +114,13 @@ assert.deepEqual(orderedIds(fixtures.movie), [
   "vidbolt",
   "videasy",
 ]);
+// TV order was rolled back to VidKing-first after a production outage: Filmu's
+// outer TV shell loaded while its iframe exposed no playable media on the
+// `/tv/97546/1/1/player` fixture. See TV_PLAYER_ROLLBACK_HANDOFF.md. Movie
+// order is unaffected (Filmu stays first for Movies, asserted above).
 assert.deepEqual(orderedIds(fixtures.tv), [
-  "filmu",
   "vidking",
+  "filmu",
   "cinezo",
   "vidlink",
   "vidlink-native",

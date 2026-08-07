@@ -92,7 +92,8 @@ const definitions: EmbedDefinition[] = [
     label: "Cinezo",
     origin: "https://player.cinezo.live",
     tier: "stable",
-    priorities: { movie: 10, tv: 10 },
+    // TV: 3rd (TV_PLAYER_ROLLBACK_HANDOFF.md). Movie order is untouched.
+    priorities: { movie: 10, tv: 3 },
     requirements: movieAndTvRequirements,
     build: (request) => {
       const base = movieOrTv(
@@ -127,7 +128,8 @@ const definitions: EmbedDefinition[] = [
     origin: "https://vidlink.pro",
     tier: "stable",
     variant: "jw",
-    priorities: { movie: 20, tv: 20 },
+    // TV: 4th (TV_PLAYER_ROLLBACK_HANDOFF.md). Movie order is untouched.
+    priorities: { movie: 20, tv: 4 },
     requirements: movieAndTvRequirements,
     build: (request) => {
       const base = movieOrTv(
@@ -163,7 +165,8 @@ const definitions: EmbedDefinition[] = [
     origin: "https://vidlink.pro",
     tier: "stable",
     variant: "native",
-    priorities: { movie: 21, tv: 21 },
+    // TV: 5th (TV_PLAYER_ROLLBACK_HANDOFF.md). Movie order is untouched.
+    priorities: { movie: 21, tv: 5 },
     requirements: movieAndTvRequirements,
     build: (request) => {
       const base = movieOrTv(
@@ -194,7 +197,10 @@ const definitions: EmbedDefinition[] = [
     label: "VidKing",
     origin: "https://www.vidking.net",
     tier: "stable",
-    priorities: { movie: 30, tv: 6 },
+    // TV: 1st — the only checked TV fixture that reached a playable media
+    // state after the Filmu-first outage (TV_PLAYER_ROLLBACK_HANDOFF.md).
+    // Movie order is untouched (Filmu stays first for Movies).
+    priorities: { movie: 30, tv: 1 },
     requirements: movieAndTvRequirements,
     build: (request) => {
       const base = movieOrTv(
@@ -276,7 +282,11 @@ const definitions: EmbedDefinition[] = [
     label: "Filmu",
     origin: "https://embed.filmu.in",
     tier: "experimental",
-    priorities: { movie: 5, tv: 5 },
+    // TV: 2nd. Filmu's outer HTML loads but its TV iframe has been observed
+    // to expose no playable media on some titles — never default TV to it
+    // again without VidKing checked first (TV_PLAYER_ROLLBACK_HANDOFF.md).
+    // Movie order is untouched (Filmu stays first for Movies).
+    priorities: { movie: 5, tv: 2 },
     requirements: movieAndTvRequirements,
     build: (request) =>
       movieOrTv(
