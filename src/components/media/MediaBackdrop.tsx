@@ -71,9 +71,18 @@ const MediaBackdrop: React.FC<MediaBackdropProps> = ({
   const hasLogo = !isEmpty(logoUrl);
 
   return (
-    <section id="backdrop" className={`fixed inset-0 ${BAND_HEIGHT}`}>
+    <section id="backdrop" className={`pointer-events-none fixed inset-0 ${BAND_HEIGHT}`}>
       {/* Scroll-linked veil. Pinned transparent under reduced motion: the
-          gradient scrims below already carry legibility on their own. */}
+          gradient scrims below already carry legibility on their own.
+          Purely decorative — nothing here has a click handler — but at
+          `scrollY=0` its opacity starts at exactly 0, i.e. fully invisible,
+          and CSS `opacity` never implies `pointer-events: none` on its own.
+          Left un-disabled, this `z-10`, viewport-width, always-on-screen
+          band silently ate taps meant for whatever real content happened to
+          render underneath it in that same screen region — on phone, often
+          the detail page's own Play button, before the user had scrolled at
+          all. `pointer-events-none` on the whole section is the fix; it and
+          everything inside it are decorative only. */}
       <motion.div
         aria-hidden
         className="bg-background absolute inset-0 z-10"
