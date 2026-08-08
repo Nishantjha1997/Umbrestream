@@ -8,7 +8,8 @@
 
 import Link from "next/link";
 
-const movieGenres = [
+/** Reused by the home "In the mood for" vibe tiles (Phase 4, §8). */
+export const movieGenres = [
   [28, "Action"],
   [12, "Adventure"],
   [16, "Animation"],

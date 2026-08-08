@@ -47,6 +47,18 @@ export const formatDuration = (seconds: number): string => {
 };
 
 /**
+ * Remaining watch time as "Xh Ym left" / "Ym left", from a history row's
+ * `last_position`/`duration` (both in seconds). Used by the resume hero and
+ * the "Still watching" rail (Phase 4, §8) in place of the elapsed-time chip
+ * `formatDuration` already renders elsewhere.
+ */
+export const formatTimeLeft = (lastPosition: number, duration: number): string => {
+  const remainingMinutes = Math.max(0, Math.round((duration - lastPosition) / 60));
+  if (remainingMinutes === 0) return "Less than a minute left";
+  return `${movieDurationString(remainingMinutes)} left`;
+};
+
+/**
  * Returns a string representing the time elapsed since the given date.
  *
  * @param date - The date to compare with the current date.

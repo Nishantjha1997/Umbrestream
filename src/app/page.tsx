@@ -1,24 +1,26 @@
 import { NextPage } from "next";
-import dynamic from "next/dynamic";
-const Hero = dynamic(() => import("@/components/media/Hero"));
-const ContinueWatching = dynamic(() => import("@/components/sections/Home/ContinueWatching"));
-const Recommended = dynamic(() => import("@/components/sections/Home/Recommended"));
-const HomePageList = dynamic(() => import("@/components/sections/Home/List"));
+import DesktopHome from "@/components/shell/desktop/home/DesktopHome";
+import PhoneHome from "@/components/shell/phone/home/PhoneHome";
 
 /**
- * Home opens on the billboard (§3), then the personal sections, then the
- * tabbed browse rows. <Hero> bleeds past this container's padding itself and
- * removes itself entirely when today's trending has no usable artwork, so
- * nothing here needs to know whether it rendered.
+ * Home (Phase 4, §8). Phone and desktop diverge more here than anywhere else
+ * in the app, so — like the nav shell (Phase 2, §6) — this is a fork, not one
+ * component branching on a breakpoint: `PhoneHome` is `md:hidden`,
+ * `DesktopHome` is `hidden md:block`, both always in the DOM so the browser's
+ * CSS engine resolves the choice before first paint. There is no shared
+ * "Home" component to speak of; each shell owns its own composition under
+ * `src/components/shell/{phone,desktop}/home/`.
  */
 const HomePage: NextPage = () => {
   return (
-    <div className="flex flex-col gap-8 md:gap-12">
-      <Hero />
-      <ContinueWatching />
-      <Recommended />
-      <HomePageList />
-    </div>
+    <>
+      <div className="md:hidden">
+        <PhoneHome />
+      </div>
+      <div className="hidden md:block">
+        <DesktopHome />
+      </div>
+    </>
   );
 };
 
