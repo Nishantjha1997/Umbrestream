@@ -1,11 +1,12 @@
 "use client";
 
-import ReliablePlayer from "@/components/player/ReliablePlayer";
+import PlayerShell from "@/components/player/PlayerShell";
 import { siteConfig } from "@/config/site";
+import type { SourceRequest } from "@/lib/sources/types";
 import type { AniListMediaDetail } from "@/types/anilist";
-import { getAnimePlayers } from "@/utils/players";
 import { useDisclosure, useDocumentTitle } from "@mantine/hooks";
-import AnimePlayerEpisodeSelection from "./EpisodeSelection";
+import { useMemo } from "react";
+import AnimePlayerEpisodeSheet from "./EpisodeSheet";
 import AnimePlayerHeader from "./Header";
 
 interface AnimePlayerProps {
@@ -14,36 +15,42 @@ interface AnimePlayerProps {
   startAt?: number;
 }
 
+/**
+ * Anime playback on the shared `PlayerShell` (Phase 6, §10 — mirrors TV's
+ * `Player.tsx`, the proven reference implementation for wiring onto the
+ * shared shell).
+ */
 const AnimePlayer: React.FC<AnimePlayerProps> = ({ anime, episode, startAt }) => {
   const [episodeOpened, episodeHandlers] = useDisclosure(false);
   const animeTitle = anime.title.english ?? anime.title.romaji ?? anime.title.native ?? "Untitled";
 
   useDocumentTitle(`Play ${animeTitle} - Ep ${episode} | ${siteConfig.name}`);
 
+  const request = useMemo<SourceRequest>(
+    () => ({
+      mediaType: "anime",
+      title: animeTitle,
+      anilistId: anime.id,
+      malId: anime.idMal ?? undefined,
+      episode,
+      startAt,
+      preferredAudio: "sub",
+      preferredSubtitle: "en",
+    }),
+    [animeTitle, anime.id, anime.idMal, episode, startAt],
+  );
+
+  const identity = useMemo(
+    () => ({ mediaId: anime.id, mediaType: "anime" as const, episode }),
+    [anime.id, episode],
+  );
+
   return (
-    <ReliablePlayer
-      request={{
-        mediaType: "anime",
-        title: animeTitle,
-        anilistId: anime.id,
-        malId: anime.idMal ?? undefined,
-        episode,
-        startAt,
-        preferredAudio: "sub",
-        preferredSubtitle: "en",
-      }}
-      legacyPlayers={getAnimePlayers(anime.id, episode, startAt, anime.idMal, animeTitle)}
-      // One accent (Phase 1, §1.1.3 / §5.2): was "secondary" — Movie, TV, and
-      // Anime players all render "primary" now, which `hero.ts` points at the
-      // single violet accent instead of a media-type-taxonomy hue per player.
-      color="primary"
-      renderHeader={({
-        hidden,
-        selectedSourceId,
-        onOpenSource,
-        fullscreen,
-        onToggleFullscreen,
-      }) => (
+    <PlayerShell
+      request={request}
+      identity={identity}
+      historyMetadata={{ episode }}
+      renderHeader={({ selectedSourceId, onOpenSource }) => (
         <AnimePlayerHeader
           id={anime.id}
           animeTitle={animeTitle}
@@ -52,13 +59,10 @@ const AnimePlayer: React.FC<AnimePlayerProps> = ({ anime, episode, startAt }) =>
           selectedSource={selectedSourceId}
           onOpenSource={onOpenSource}
           onOpenEpisode={episodeHandlers.open}
-          hidden={hidden}
-          fullscreen={fullscreen}
-          onToggleFullscreen={onToggleFullscreen}
         />
       )}
       renderExtras={({ selectedSourceId }) => (
-        <AnimePlayerEpisodeSelection
+        <AnimePlayerEpisodeSheet
           opened={episodeOpened}
           onClose={episodeHandlers.close}
           anime={anime}

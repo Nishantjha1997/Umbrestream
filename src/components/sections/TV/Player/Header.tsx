@@ -42,7 +42,7 @@ const TvShowPlayerHeader: React.FC<TvShowPlayerHeaderProps> = ({
           {seasonName} - {episode.name}
         </p>
       </div>
-      <div className="player-auxiliary-controls flex items-center gap-1 sm:gap-4">
+      <div className="flex items-center gap-1 sm:gap-4">
         <PlayerActionButton
           disabled={!prevEpisodeNumber}
           label="Previous Episode"

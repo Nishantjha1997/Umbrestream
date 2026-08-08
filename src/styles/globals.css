@@ -218,53 +218,13 @@
   bottom: max(1.5rem, env(safe-area-inset-bottom));
 }
 
-.player-safe-toast {
-  top: max(4rem, calc(env(safe-area-inset-top) + 3.5rem));
-  right: max(0.5rem, env(safe-area-inset-right));
-}
-
 /*
- * Embedded players own the top-right corner in phone landscape (cast, settings,
- * captions, and provider menus). Keep Umbra's server/episode controls and its
- * unverified-stream prompt out of that interaction zone while viewing
- * immersively. Rotate back to portrait or leave fullscreen to change servers.
- */
-@media (max-height: 540px) and (orientation: landscape) {
-  .player-shell .player-auxiliary-controls,
-  .player-shell .player-safe-toast {
-    display: none !important;
-  }
-}
-
-.player-shell:fullscreen .player-auxiliary-controls,
-.player-shell:fullscreen .player-safe-toast,
-:fullscreen .player-shell .player-auxiliary-controls,
-:fullscreen .player-shell .player-safe-toast {
-  display: none !important;
-}
-
-@supports selector(:-webkit-full-screen) {
-  .player-shell:-webkit-full-screen .player-auxiliary-controls,
-  .player-shell:-webkit-full-screen .player-safe-toast,
-  :-webkit-full-screen .player-shell .player-auxiliary-controls,
-  :-webkit-full-screen .player-shell .player-safe-toast {
-    display: none !important;
-  }
-}
-
-.player-cinema-mode .player-auxiliary-controls,
-.player-cinema-mode .player-safe-toast {
-  display: none !important;
-}
-
-.player-cinema-mode {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  width: 100vw;
-  height: 100dvh;
-  margin: 0;
-}
+ * Phase 6, §10: nothing in the player is ever hidden by media query or by a
+ * fullscreen/cinema-mode fallback path — that is what hid the server switcher
+ * exactly when a stream died (UI Analysis finding 03). `.player-shell` owns
+ * the viewport directly (`fixed inset-0`, portalled — see `PlayerShell.tsx`)
+ * from the moment it mounts, in both orientations, so rotating to landscape
+ * *is* fullscreen with no `requestFullscreen()` call and no separate CSS path.
 
 .safe-bottom-nav {
   padding-bottom: max(0.5rem, env(safe-area-inset-bottom));

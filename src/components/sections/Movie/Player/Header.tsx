@@ -1,34 +1,21 @@
-import { cn } from "@/utils/helpers";
 import { ArrowLeft, Server } from "@/utils/icons";
 import PlayerActionButton from "@/components/ui/button/PlayerActionButton";
-import { MdFullscreen, MdFullscreenExit } from "react-icons/md";
 
 interface MoviePlayerHeaderProps {
   id: number;
   movieName: string;
-  hidden?: boolean;
   onOpenSource: () => void;
-  fullscreen: boolean;
-  onToggleFullscreen: () => void;
 }
 
-const MoviePlayerHeader: React.FC<MoviePlayerHeaderProps> = ({
-  id,
-  movieName,
-  hidden,
-  onOpenSource,
-  fullscreen,
-  onToggleFullscreen,
-}) => {
+/**
+ * No fullscreen control here on purpose (see `TV/Player/Header.tsx`): the
+ * embedded provider owns fullscreen entirely via its own `allowFullScreen`
+ * iframe permission, and there is no auto-hide-chrome behavior — player
+ * controls are always visible (`DESKTOP_SPEC.md` §I).
+ */
+const MoviePlayerHeader: React.FC<MoviePlayerHeaderProps> = ({ id, movieName, onOpenSource }) => {
   return (
-    <div
-      aria-hidden={hidden ? true : undefined}
-      className={cn(
-        "player-safe-header pointer-events-none absolute top-0 z-40 flex h-24 w-full items-start justify-between gap-2 sm:h-28",
-        "bg-linear-to-b from-black/80 to-transparent text-white transition-opacity motion-reduce:transition-none",
-        { "pointer-events-none opacity-0": hidden },
-      )}
-    >
+    <div className="player-safe-header pointer-events-none absolute top-0 z-40 flex h-24 w-full items-start justify-between gap-2 bg-linear-to-b from-black/80 to-transparent text-white sm:h-28">
       <PlayerActionButton label="Back" href={`/movie/${id}`} color="primary">
         <ArrowLeft className="size-8 sm:size-10" />
       </PlayerActionButton>
@@ -36,30 +23,9 @@ const MoviePlayerHeader: React.FC<MoviePlayerHeaderProps> = ({
         <p className="text-sm text-white text-shadow-lg sm:text-lg lg:text-xl">{movieName}</p>
       </div>
       <div className="flex items-center gap-1.5 sm:gap-4">
-        <div className="player-fullscreen-control">
-          <PlayerActionButton
-            label={fullscreen ? "Exit fullscreen" : "Fullscreen"}
-            tooltip={fullscreen ? "Exit fullscreen" : "Fullscreen"}
-            onClick={onToggleFullscreen}
-            color="primary"
-          >
-            {fullscreen ? (
-              <MdFullscreenExit className="size-7 sm:size-8" />
-            ) : (
-              <MdFullscreen className="size-7 sm:size-8" />
-            )}
-          </PlayerActionButton>
-        </div>
-        <div className="player-auxiliary-controls flex items-center gap-1.5 sm:gap-4">
-          <PlayerActionButton
-            label="Sources"
-            tooltip="Sources"
-            onClick={onOpenSource}
-            color="primary"
-          >
-            <Server className="size-7 sm:size-8" />
-          </PlayerActionButton>
-        </div>
+        <PlayerActionButton label="Sources" tooltip="Sources" onClick={onOpenSource} color="primary">
+          <Server className="size-7 sm:size-8" />
+        </PlayerActionButton>
       </div>
     </div>
   );

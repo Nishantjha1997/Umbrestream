@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"><style>body{margin:0;background:#08080b}a{color:#c4b5fd;text-decoration:none}a:hover{color:#ddd6fe}</style></helmet>
+<div style="min-height:100vh;background:radial-gradient(ellipse at 20% 0%,rgba(124,58,237,.13),transparent 52%),#08080b;color:#fff;font-family:Inter,system-ui,sans-serif;padding:52px 48px 80px;display:flex;flex-direction:column;gap:34px;align-items:center">
+
+  <header style="display:flex;flex-direction:column;gap:12px;max-width:74ch;align-self:flex-start">
+    <p style="margin:0;font-size:11px;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:#c4b5fd">Umbra · desktop / laptop</p>
+    <h1 style="margin:0;font-size:40px;font-weight:600;letter-spacing:-.045em;line-height:1.06">The same system, at a mouse's width</h1>
+    <p style="margin:0;font-size:14.5px;line-height:1.65;color:rgba(255,255,255,.55);text-wrap:pretty">Click through: Home, Search, Browse, Anime and You in the rail (hover it to see labels), open a title for the centred detail overlay, hit Play for the in-page player. Same eclipse rings, same Instrument Serif titles, same ambient colour field as the phone and TV builds — laid out for a pointer instead of a thumb or a D-pad.</p>
+  </header>
+
+  <div style="width:100%;max-width:1480px;display:flex;justify-content:center">
+    <x-import component-from-global-scope="ChromeWindow" from="./browser-window.jsx" url="umbra.app/home" width="{{ winWidth }}" height="860" hint-size="1480px,860px">
+      <dc-import name="Umbra Desktop App" style="height:100%" hint-size="100%,100%"></dc-import>
+    </x-import>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;gap:14px;max-width:1480px;justify-content:center">
+    <sc-for list="{{ notes }}" as="n" hint-placeholder-count="4">
+      <div style="display:flex;flex-direction:column;gap:5px;padding:14px 16px;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);width:266px">
+        <p style="margin:0;font-size:12.5px;font-weight:600">{{ n.title }}</p>
+        <p style="margin:0;font-size:11.5px;line-height:1.55;color:rgba(255,255,255,.5)">{{ n.body }}</p>
+      </div>
+    </sc-for>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const w = typeof window === "undefined" ? 1480 : Math.max(960, Math.min(1480, window.innerWidth - 96));
+    return {
+      winWidth: w,
+      notes: [
+        { title: "Rail expands on hover", body: "Collapsed to icons at 84px so art gets the width; hovering reveals labels, same reveal logic as the TV nav rail." },
+        { title: "Detail is a centred overlay", body: "Not a full route change \u2014 the home page stays mounted and dimmed behind it, so closing it costs nothing." },
+        { title: "Player fills the page, not the OS", body: "It takes over the content column while the browser chrome stays visible \u2014 honest to what a web player actually is." },
+        { title: "Hover replaces focus", body: "Where the TV build scales the focused card, the desktop build scales on mouse-over with the same easing and timing." },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

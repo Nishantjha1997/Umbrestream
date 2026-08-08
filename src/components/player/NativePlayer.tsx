@@ -33,6 +33,15 @@ export default function NativePlayer({
   const [quality, setQuality] = useState(-1);
   const [audioTrack, setAudioTrack] = useState(-1);
 
+  // `onError` is a fresh closure every `PlayerShell` render (which happens on
+  // every `timeupdate` tick) — kept in a ref and out of the load effect's
+  // deps below so playback isn't torn down and reinitialized dozens of times
+  // a minute.
+  const onErrorRef = useRef(onError);
+  useEffect(() => {
+    onErrorRef.current = onError;
+  }, [onError]);
+
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -54,7 +63,7 @@ export default function NativePlayer({
         const { default: Hls } = await import("hls.js");
         if (cancelled) return;
         if (!Hls.isSupported()) {
-          onError("HLS is not supported by this browser");
+          onErrorRef.current("HLS is not supported by this browser");
           return;
         }
         const hls = new Hls({ enableWorker: true, lowLatencyMode: false });
@@ -77,7 +86,7 @@ export default function NativePlayer({
           );
         });
         hls.on(Hls.Events.ERROR, (_event, data) => {
-          if (data.fatal) onError(`HLS playback failed: ${data.details}`);
+          if (data.fatal) onErrorRef.current(`HLS playback failed: ${data.details}`);
         });
         hls.attachMedia(video);
         hls.loadSource(src);
@@ -87,12 +96,12 @@ export default function NativePlayer({
       const dashjs = await import("dashjs");
       if (cancelled) return;
       dashPlayer = dashjs.MediaPlayer().create();
-      dashPlayer.on(dashjs.MediaPlayer.events.ERROR, () => onError("DASH playback failed"));
+      dashPlayer.on(dashjs.MediaPlayer.events.ERROR, () => onErrorRef.current("DASH playback failed"));
       dashPlayer.initialize(video, src, false);
     };
 
     void load().catch((error) =>
-      onError(error instanceof Error ? error.message : "Native player failed to initialize"),
+      onErrorRef.current(error instanceof Error ? error.message : "Native player failed to initialize"),
     );
 
     return () => {
@@ -103,7 +112,7 @@ export default function NativePlayer({
       video.removeAttribute("src");
       video.load();
     };
-  }, [onError, source.kind, src]);
+  }, [source.kind, src]);
 
   useEffect(() => {
     if (hlsRef.current) hlsRef.current.currentLevel = quality;

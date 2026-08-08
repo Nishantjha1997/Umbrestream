@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet"><style>::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:99px}::-webkit-scrollbar-track{background:transparent}</style></helmet>
+<div style="position:relative;width:100%;height:100%;overflow:hidden;background:#0a090d;color:#fff;font-family:Inter,-apple-system,system-ui,sans-serif;-webkit-font-smoothing:antialiased;display:flex">
+
+  <!-- rail: hover to expand -->
+  <div style="position:relative;z-index:50;flex:none;width:84px;height:100%;overflow:hidden;transition:width 220ms cubic-bezier(.22,1,.36,1);background:linear-gradient(180deg,rgba(14,13,18,.92),rgba(10,9,13,.98));border-right:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column" style-hover="width:242px">
+    <div style="flex:none;height:78px;display:flex;align-items:center;gap:13px;padding:0 26px">
+      <svg width="34" height="27" viewBox="0 0 40 32" style="flex:none"><circle cx="14" cy="16" r="13" fill="none" stroke="#c4b5fd" stroke-width="2"></circle><circle cx="26" cy="16" r="13" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="2"></circle><path d="M20 4.6a13 13 0 0 1 0 22.8 13 13 0 0 1 0-22.8Z" fill="#c4b5fd"></path></svg>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;gap:3px;padding:10px 14px">
+      <sc-for list="{{ navItems }}" as="n" hint-placeholder-count="5">
+        <button type="button" onClick="{{ n.pick }}" style="border:0;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:15px;height:44px;padding:0 12px;border-radius:11px;background:{{ n.bg }};color:{{ n.color }}">
+          <span style="flex:none;width:22px;height:22px;display:flex;align-items:center;justify-content:center">{{ n.icon }}</span>
+          <span style="font-size:13.5px;font-weight:{{ n.weight }};white-space:nowrap">{{ n.label }}</span>
+        </button>
+      </sc-for>
+    </div>
+    <div style="flex:none;padding:16px 26px;display:flex;align-items:center;gap:13px">
+      <span style="flex:none;width:32px;height:32px;border-radius:99px;background:linear-gradient(145deg,#c4b5fd,#6d28d9);display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:600;color:#140f22">N</span>
+      <span style="font-size:13px;color:rgba(255,255,255,.55);white-space:nowrap">Nishant</span>
+    </div>
+  </div>
+
+  <!-- content column -->
+  <div style="position:relative;flex:1;min-width:0;height:100%;overflow:auto">
+    <div style="position:absolute;inset:0;pointer-events:none;transition:background 800ms cubic-bezier(.22,1,.36,1);background:{{ ambient }}"></div>
+
+    <!-- ══ HOME ══ -->
+    <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+    <div style="position:relative;display:flex;flex-direction:column;gap:52px;padding-bottom:64px">
+
+      <!-- hero -->
+      <div style="position:relative;height:560px;flex:none">
+        <div style="position:absolute;inset:0;background:{{ hero.art }}"></div>
+        <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(10,9,13,.94) 0%,rgba(10,9,13,.6) 42%,rgba(10,9,13,.05) 78%)"></div>
+        <div style="position:absolute;inset:0;background:linear-gradient(0deg,#0a090d 2%,rgba(10,9,13,.1) 46%,transparent 74%)"></div>
+
+        <div style="position:absolute;top:26px;right:40px;display:flex;align-items:center;gap:12px">
+          <div style="display:flex;align-items:center;gap:9px;height:38px;padding:0 16px;border-radius:99px;background:rgba(0,0,0,.36);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(16px) saturate(180%);-webkit-backdrop-filter:blur(16px) saturate(180%)">
+            <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="6.2" stroke="rgba(255,255,255,.55)" stroke-width="1.5"></circle><path d="M13.6 13.6 17 17" stroke="rgba(255,255,255,.55)" stroke-width="1.5" stroke-linecap="round"></path></svg>
+            <span style="font-size:12.5px;color:rgba(255,255,255,.4)">Search Umbra</span>
+          </div>
+          <button type="button" onClick="{{ openPanelParty }}" style="width:38px;height:38px;border-radius:99px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.36);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><circle cx="7" cy="7" r="2.8" stroke="#fff" stroke-width="1.5"></circle><circle cx="14" cy="8.4" r="2.2" stroke="#fff" stroke-width="1.5"></circle><path d="M2.6 16c.5-2.4 2.3-3.7 4.4-3.7 2.1 0 3.9 1.3 4.4 3.7M12.4 16c.3-1.6 1.4-2.6 3-2.6 1 0 1.8.4 2.4 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round"></path></svg>
+          </button>
+        </div>
+
+        <div style="position:absolute;left:48px;right:48px;bottom:56px;display:flex;flex-direction:column;gap:18px;max-width:640px">
+          <div style="display:flex;align-items:center;gap:14px">
+            <div style="position:relative;width:56px;height:56px;flex:none">
+              <svg width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="24.5" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="2.6"></circle><circle cx="28" cy="28" r="24.5" fill="none" stroke="#c4b5fd" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="154" stroke-dashoffset="{{ hero.dash }}" transform="rotate(-90 28 28)"></circle></svg>
+              <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:600">{{ hero.pctLabel }}</span>
+            </div>
+            <p style="margin:0;font-size:12.5px;color:rgba(255,255,255,.56)">{{ hero.tag }} · {{ hero.left }}</p>
+          </div>
+          <h1 style="margin:0;font-family:'Instrument Serif',Georgia,serif;font-weight:400;font-size:78px;line-height:.9;letter-spacing:-.02em;text-wrap:balance">{{ hero.title }}</h1>
+          <p style="margin:0;font-size:14.5px;line-height:1.6;color:rgba(255,255,255,.62)">{{ hero.synopsis }}</p>
+          <div style="display:flex;align-items:center;gap:12px;padding-top:4px">
+            <button type="button" onClick="{{ play }}" style="height:50px;padding:0 30px;border-radius:99px;border:0;background:#fff;color:#0a090d;display:flex;align-items:center;gap:9px;font-size:14.5px;font-weight:600;cursor:pointer;font-family:inherit">
+              <svg width="12" height="13" viewBox="0 0 12 14"><path d="M1 1.4v11.2L11 7 1 1.4Z" fill="#0a090d"></path></svg>Resume
+            </button>
+            <button type="button" onClick="{{ heroOpen }}" style="height:50px;padding:0 26px;border-radius:99px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.08);color:#fff;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit">More info</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 01 still watching -->
+      <section style="display:flex;flex-direction:column;gap:16px">
+        <div style="padding:0 48px;display:flex;align-items:baseline;gap:12px">
+          <span style="font-family:ui-monospace,Menlo,monospace;font-size:10.5px;font-weight:600;letter-spacing:.14em;color:#c4b5fd">01</span>
+          <h2 style="margin:0;font-size:11px;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.48)">Still watching</h2>
+        </div>
+        <div style="display:flex;gap:16px;overflow-x:auto;padding:0 48px 6px">
+          <sc-for list="{{ resume }}" as="item" hint-placeholder-count="6">
+            <button type="button" onClick="{{ item.open }}" style="flex:none;width:172px;padding:0;border:0;background:none;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:10px;transition:transform 200ms cubic-bezier(.22,1,.36,1)" style-hover="transform:translateY(-6px)">
+              <div style="position:relative;width:172px;aspect-ratio:2/3;border-radius:11px;overflow:hidden;background:{{ item.art }};box-shadow:0 16px 34px -16px rgba(0,0,0,.9)">
+                <div style="position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.65),transparent 55%)"></div>
+                <div style="position:absolute;right:8px;bottom:8px;width:30px;height:30px">
+                  <svg width="30" height="30" viewBox="0 0 30 30"><circle cx="15" cy="15" r="12.6" fill="rgba(0,0,0,.55)"></circle><circle cx="15" cy="15" r="12.6" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="2"></circle><circle cx="15" cy="15" r="12.6" fill="none" stroke="#c4b5fd" stroke-width="2" stroke-linecap="round" stroke-dasharray="79.2" stroke-dashoffset="{{ item.dash }}" transform="rotate(-90 15 15)"></circle></svg>
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:2px">
+                <p style="margin:0;font-size:13px;font-weight:500;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ item.title }}</p>
+                <p style="margin:0;font-size:11px;color:rgba(255,255,255,.4)">{{ item.tag }}</p>
+              </div>
+            </button>
+          </sc-for>
+        </div>
+      </section>
+
+      <!-- 02 tonight — full-bleed editorial -->
+      <section style="display:flex;flex-direction:column;gap:16px">
+        <div style="padding:0 48px;display:flex;align-items:baseline;gap:12px">
+          <span style="font-family:ui-monospace,Menlo,monospace;font-size:10.5px;font-weight:600;letter-spacing:.14em;color:#c4b5fd">02</span>
+          <h2 style="margin:0;font-size:11px;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.48)">Tonight</h2>
+        </div>
+        <button type="button" onClick="{{ featured.open }}" style="margin:0 48px;position:relative;border:0;padding:0;cursor:pointer;text-align:left;border-radius:18px;overflow:hidden;aspect-ratio:21/8;display:block">
+          <div style="position:absolute;inset:0;background:{{ featured.art }}"></div>
+          <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(10,9,13,.92),rgba(10,9,13,.2) 62%)"></div>
+          <div style="position:absolute;left:40px;top:0;bottom:0;display:flex;flex-direction:column;justify-content:center;gap:12px;max-width:440px">
+            <p style="margin:0;font-size:11.5px;color:#c4b5fd">{{ featured.reason }}</p>
+            <h3 style="margin:0;font-family:'Instrument Serif',Georgia,serif;font-weight:400;font-size:44px;line-height:.94;letter-spacing:-.02em">{{ featured.title }}</h3>
+            <p style="margin:0;font-size:12px;color:rgba(255,255,255,.55)">{{ featured.meta }}</p>
+            <span style="display:inline-flex;align-items:center;gap:8px;margin-top:6px;height:40px;padding:0 20px;border-radius:99px;background:#fff;color:#0a090d;font-size:13px;font-weight:600;width:fit-content">
+              <svg width="10" height="11" viewBox="0 0 12 14"><path d="M1 1.4v11.2L11 7 1 1.4Z" fill="#0a090d"></path></svg>Play
+            </span>
+          </div>
+        </button>
+      </section>
+
+      <!-- 03 in the mood -->
+      <section style="display:flex;flex-direction:column;gap:16px">
+        <div style="padding:0 48px;display:flex;align-items:baseline;gap:12px">
+          <span style="font-family:ui-monospace,Menlo,monospace;font-size:10.5px;font-weight:600;letter-spacing:.14em;color:#c4b5fd">03</span>
+          <h2 style="margin:0;font-size:11px;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.48)">In the mood for</h2>
+        </div>
+        <div style="display:flex;gap:14px;overflow-x:auto;padding:0 48px 6px">
+          <sc-for list="{{ vibes }}" as="v" hint-placeholder-count="5">
+            <button type="button" onClick="{{ v.open }}" style="flex:none;width:220px;height:150px;border-radius:15px;border:1px solid rgba(255,255,255,.09);padding:18px;cursor:pointer;text-align:left;display:flex;flex-direction:column;justify-content:space-between;background:{{ v.art }};font-family:inherit;color:#fff;transition:transform 200ms cubic-bezier(.22,1,.36,1)" style-hover="transform:translateY(-6px)">
+              <span style="font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:.14em;color:rgba(255,255,255,.42)">{{ v.count }} TITLES</span>
+              <span style="font-family:'Instrument Serif',Georgia,serif;font-size:28px;line-height:1.02">{{ v.label }}</span>
+            </button>
+          </sc-for>
+        </div>
+      </section>
+
+      <!-- 04 airing -->
+      <section style="display:flex;flex-direction:column;gap:16px">
+        <div style="padding:0 48px;display:flex;align-items:baseline;gap:12px">
+          <span style="font-family:ui-monospace,Menlo,monospace;font-size:10.5px;font-weight:600;letter-spacing:.14em;color:#c4b5fd">04</span>
+          <h2 style="margin:0;font-size:11px;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.48)">Next episode drops</h2>
+        </div>
+        <div style="padding:0 48px;display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(255,255,255,.07);border-radius:14px;overflow:hidden">
+          <sc-for list="{{ airing }}" as="a" hint-placeholder-count="3">
+            <button type="button" onClick="{{ a.open }}" style="background:#100f14;padding:20px;border:0;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:10px;font-family:inherit;color:#fff" style-hover="background:#17151d">
+              <span style="font-size:14px;font-weight:500;letter-spacing:-.01em">{{ a.title }}</span>
+              <span style="font-size:11px;color:rgba(255,255,255,.4)">{{ a.ep }}</span>
+              <span style="display:flex;align-items:baseline;gap:6px;margin-top:4px">
+                <span style="font-family:'Instrument Serif',Georgia,serif;font-size:26px;color:#c4b5fd;line-height:1">{{ a.in }}</span>
+                <span style="font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:.1em;color:rgba(255,255,255,.34)">{{ a.when }}</span>
+              </span>
+            </button>
+          </sc-for>
+        </div>
+      </section>
+
+      <!-- 05 trending -->
+      <section style="display:flex;flex-direction:column;gap:16px">
+        <div style="padding:0 48px;display:flex;align-items:baseline;justify-content:space-between">
+          <div style="display:flex;align-items:baseline;gap:12px">
+            <span style="font-family:ui-monospace,Menlo,monospace;font-size:10.5px;font-weight:600;letter-spacing:.14em;color:#c4b5fd">05</span>
+            <h2 style="margin:0;font-size:11px;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.48)">Trending today</h2>
+          </div>
+          <button type="button" onClick="{{ goBrowse }}" style="border:0;background:none;padding:0;cursor:pointer;font-size:12px;color:rgba(255,255,255,.42);font-family:inherit">All</button>
+        </div>
+        <div style="display:flex;gap:14px;overflow-x:auto;padding:0 48px 6px">
+          <sc-for list="{{ trending }}" as="p" hint-placeholder-count="8">
+            <button type="button" onClick="{{ p.open }}" style="flex:none;width:172px;padding:0;border:0;background:none;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:9px;transition:transform 200ms cubic-bezier(.22,1,.36,1)" style-hover="transform:translateY(-6px)">
+              <div style="position:relative;width:172px;aspect-ratio:2/3;border-radius:11px;overflow:hidden;background:{{ p.art }};box-shadow:0 16px 34px -16px rgba(0,0,0,.9)">
+                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 180ms" style-hover="opacity:1">
+                  <span style="width:46px;height:46px;border-radius:99px;background:rgba(0,0,0,.42);border:1px solid rgba(255,255,255,.3);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center">
+                    <svg width="15" height="16" viewBox="0 0 12 14"><path d="M1 1.4v11.2L11 7 1 1.4Z" fill="#fff"></path></svg>
+                  </span>
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:2px">
+                <p style="margin:0;font-size:13px;font-weight:500;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.title }}</p>
+                <p style="margin:0;font-size:11px;color:rgba(255,255,255,.38)">{{ p.meta }}</p>
+              </div>
+            </button>
+          </sc-for>
+        </div>
+      </section>
+
+      <!-- 06 party -->
+      <section style="padding:0 48px 8px;display:flex;flex-direction:column;gap:16px">
+        <div style="display:flex;align-items:baseline;gap:12px">
+          <span style="font-family:ui-monospace,Menlo,monospace;font-size:10.5px;font-weight:600;letter-spacing:.14em;color:#c4b5fd">06</span>
+          <h2 style="margin:0;font-size:11px;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.48)">Room is open</h2>
+        </div>
+        <div style="border-radius:16px;border:1px solid rgba(196,181,253,.18);background:linear-gradient(120deg,rgba(124,58,237,.2),rgba(255,255,255,.02) 70%);padding:26px 30px;display:flex;align-items:center;justify-content:space-between;gap:20px">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <p style="margin:0;font-family:'Instrument Serif',Georgia,serif;font-size:26px;line-height:1.06">Shōgun, episode 7 — in twelve minutes</p>
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="display:flex">
+                <span style="width:24px;height:24px;border-radius:99px;background:linear-gradient(145deg,#c4b5fd,#7c3aed);border:2px solid #14121a"></span>
+                <span style="width:24px;height:24px;border-radius:99px;background:linear-gradient(145deg,#7dd3fc,#2563eb);border:2px solid #14121a;margin-left:-8px"></span>
+                <span style="width:24px;height:24px;border-radius:99px;background:linear-gradient(145deg,#fda4af,#be123c);border:2px solid #14121a;margin-left:-8px"></span>
+              </span>
+              <p style="margin:0;font-size:11.5px;color:rgba(255,255,255,.5)">Aarav, Meera and 1 more are in</p>
+            </div>
+          </div>
+          <button type="button" onClick="{{ openPanelParty }}" style="flex:none;height:44px;padding:0 24px;border-radius:99px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.09);color:#fff;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">Join the room</button>
+        </div>
+      </section>
+
+    </div>
+    </sc-if>
+
+    <!-- ══ BROWSE ══ -->
+    <sc-if value="{{ isBrowse }}" hint-placeholder-val="{{ false }}">
+    <div style="position:relative;padding:56px 48px 64px;display:flex;flex-direction:column;gap:26px">
+      <h1 style="margin:0;font-family:'Instrument Serif',Georgia,serif;font-weight:400;font-size:48px;line-height:1;letter-spacing:-.02em">Browse</h1>
+      <div style="display:flex;gap:26px;border-bottom:1px solid rgba(255,255,255,.08)">
+        <sc-for list="{{ segments }}" as="s" hint-placeholder-count="3">
+          <button type="button" onClick="{{ s.pick }}" style="border:0;background:none;padding:0 0 13px;cursor:pointer;font-family:inherit;font-size:14px;font-weight:{{ s.weight }};color:{{ s.color }};border-bottom:2px solid {{ s.line }};margin-bottom:-1px">{{ s.label }}</button>
+        </sc-for>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:16px 14px">
+        <sc-for list="{{ grid }}" as="p" hint-placeholder-count="21">
+          <button type="button" onClick="{{ p.open }}" style="padding:0;border:0;background:none;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:8px;font-family:inherit;color:#fff;transition:transform 200ms cubic-bezier(.22,1,.36,1)" style-hover="transform:translateY(-5px)">
+            <span style="width:100%;aspect-ratio:2/3;border-radius:10px;background:{{ p.art }};box-shadow:0 12px 26px -14px rgba(0,0,0,.9);display:block"></span>
+            <span style="display:flex;flex-direction:column;gap:1px">
+              <span style="font-size:12px;font-weight:500;line-height:1.28;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.title }}</span>
+              <span style="font-size:10.5px;color:rgba(255,255,255,.36)">{{ p.meta }}</span>
+            </span>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ══ SEARCH ══ -->
+    <sc-if value="{{ isSearch }}" hint-placeholder-val="{{ false }}">
+    <div style="position:relative;padding:56px 48px 64px;display:flex;flex-direction:column;gap:34px;max-width:900px">
+      <h1 style="margin:0;font-family:'Instrument Serif',Georgia,serif;font-weight:400;font-size:48px;line-height:1;letter-spacing:-.02em">What are you after?</h1>
+      <div style="display:flex;align-items:center;gap:11px;height:52px;padding:0 18px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1)">
+        <svg width="17" height="17" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="6.2" stroke="rgba(255,255,255,.45)" stroke-width="1.6"></circle><path d="M13.6 13.6 17 17" stroke="rgba(255,255,255,.45)" stroke-width="1.6" stroke-linecap="round"></path></svg>
+        <span style="font-size:14.5px;color:rgba(255,255,255,.34)">A title, a person, or a feeling…</span>
+      </div>
+      <section style="display:flex;flex-direction:column;gap:14px">
+        <h2 style="margin:0;font-size:11px;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.48)">Or start from a vibe</h2>
+        <div style="display:flex;flex-wrap:wrap;gap:9px">
+          <sc-for list="{{ vibeChips }}" as="c" hint-placeholder-count="8">
+            <button type="button" onClick="{{ c.open }}" style="padding:11px 16px;border-radius:99px;border:1px solid rgba(196,181,253,.22);background:rgba(196,181,253,.07);color:#ece7ff;font-size:13px;font-family:inherit;cursor:pointer">{{ c.label }}</button>
+          </sc-for>
+        </div>
+      </section>
+      <section style="display:flex;flex-direction:column;gap:6px">
+        <h2 style="margin:0 0 8px;font-size:11px;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.48)">Recent</h2>
+        <sc-for list="{{ recent }}" as="r" hint-placeholder-count="4">
+          <button type="button" onClick="{{ r.open }}" style="display:grid;grid-template-columns:40px 1fr auto;gap:14px;align-items:center;padding:12px 0;border:0;border-top:1px solid rgba(255,255,255,.06);background:none;cursor:pointer;text-align:left;font-family:inherit;color:#fff">
+            <span style="width:40px;aspect-ratio:2/3;border-radius:6px;background:{{ r.art }}"></span>
+            <span style="display:flex;flex-direction:column;gap:2px">
+              <span style="font-size:14px;font-weight:500">{{ r.title }}</span>
+              <span style="font-size:11.5px;color:rgba(255,255,255,.4)">{{ r.meta }}</span>
+            </span>
+            <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M7.5 4.5 13 10l-5.5 5.5" stroke="rgba(255,255,255,.28)" stroke-width="1.6" stroke-linecap="round"></path></svg>
+          </button>
+        </sc-for>
+      </section>
+    </div>
+    </sc-if>
+
+    <!-- ══ ANIME ══ -->
+    <sc-if value="{{ isAnime }}" hint-placeholder-val="{{ false }}">
+    <div style="position:relative;padding:56px 48px 64px;display:flex;flex-direction:column;gap:34px">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <h1 style="margin:0;font-family:'Instrument Serif',Georgia,serif;font-weight:400;font-size:48px;line-height:1;letter-spacing:-.02em">Anime</h1>
+        <p style="margin:0;font-size:13px;color:rgba(255,255,255,.44)">Summer 2026 · six shows followed</p>
+      </div>
+      <div style="display:grid;grid-template-columns:1.1fr 1.4fr;gap:24px;align-items:stretch">
+        <div style="border-radius:18px;border:1px solid rgba(255,255,255,.09);background:linear-gradient(150deg,rgba(124,58,237,.2),rgba(255,255,255,.02) 66%);padding:26px;display:flex;flex-direction:column;justify-content:space-between;gap:18px">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:14px">
+            <div style="display:flex;flex-direction:column;gap:4px">
+              <p style="margin:0;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.44)">Next up</p>
+              <p style="margin:0;font-family:'Instrument Serif',Georgia,serif;font-size:30px;line-height:1.04">Frieren S2 · Ep 4</p>
+            </div>
+            <div style="position:relative;flex:none;width:74px;height:74px">
+              <svg width="74" height="74" viewBox="0 0 74 74"><circle cx="37" cy="37" r="32" fill="none" stroke="rgba(255,255,255,.14)" stroke-width="3"></circle><circle cx="37" cy="37" r="32" fill="none" stroke="#c4b5fd" stroke-width="3" stroke-linecap="round" stroke-dasharray="201" stroke-dashoffset="151" transform="rotate(-90 37 37)"></circle></svg>
+              <span style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center"><span style="font-size:15px;font-weight:600">2d</span><span style="font-size:9.5px;color:rgba(255,255,255,.45)">04h</span></span>
+            </div>
+          </div>
+          <div style="display:flex;gap:4px">
+            <sc-for list="{{ epTicks }}" as="t" hint-placeholder-count="12">
+              <span style="flex:1;height:4px;border-radius:99px;background:{{ t.bg }}"></span>
+            </sc-for>
+          </div>
+          <p style="margin:0;font-size:12px;color:rgba(255,255,255,.42)">3 of 12 watched</p>
+        </div>
+        <div style="border-radius:18px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02);padding:8px 22px;display:flex;flex-direction:column">
+          <sc-for list="{{ airing }}" as="a" hint-placeholder-count="3">
+            <button type="button" onClick="{{ a.open }}" style="display:grid;grid-template-columns:1fr auto;align-items:center;gap:14px;padding:14px 0;border:0;border-top:1px solid rgba(255,255,255,.06);background:none;cursor:pointer;text-align:left;font-family:inherit;color:#fff">
+              <span style="display:flex;flex-direction:column;gap:3px">
+                <span style="font-size:14px;font-weight:500">{{ a.title }}</span>
+                <span style="font-size:11px;color:rgba(255,255,255,.42)">{{ a.ep }}</span>
+              </span>
+              <span style="font-family:'Instrument Serif',Georgia,serif;font-size:20px;color:#c4b5fd">{{ a.in }}</span>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+      <section style="display:flex;flex-direction:column;gap:16px">
+        <h2 style="margin:0;font-size:11px;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.48)">Top this season</h2>
+        <div style="display:flex;gap:14px;overflow-x:auto;padding-bottom:6px">
+          <sc-for list="{{ animeTop }}" as="p" hint-placeholder-count="6">
+            <button type="button" onClick="{{ p.open }}" style="flex:none;width:172px;padding:0;border:0;background:none;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:9px;font-family:inherit;color:#fff">
+              <span style="position:relative;width:172px;aspect-ratio:2/3;border-radius:11px;overflow:hidden;background:{{ p.art }};display:block">
+                <span style="position:absolute;top:8px;left:8px;padding:3px 7px;border-radius:6px;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.16);font-size:9px;font-weight:600">{{ p.format }}</span>
+              </span>
+              <span style="display:flex;flex-direction:column;gap:2px">
+                <span style="font-size:13px;font-weight:500;line-height:1.28">{{ p.title }}</span>
+                <span style="font-size:10.5px;color:rgba(255,255,255,.36)">{{ p.meta }}</span>
+              </span>
+            </button>
+          </sc-for>
+        </div>
+      </section>
+    </div>
+    </sc-if>
+
+    <!-- ══ YOU ══ -->
+    <sc-if value="{{ isYou }}" hint-placeholder-val="{{ false }}">
+    <div style="position:relative;padding:56px 48px 64px;display:flex;flex-direction:column;gap:30px;max-width:760px">
+      <div style="display:flex;align-items:center;gap:18px">
+        <div style="width:68px;height:68px;border-radius:99px;background:linear-gradient(145deg,#c4b5fd,#6d28d9);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:600;color:#140f22">N</div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <h1 style="margin:0;font-family:'Instrument Serif',Georgia,serif;font-weight:400;font-size:34px;line-height:1">Nishant</h1>
+          <p style="margin:0;font-size:12.5px;color:rgba(255,255,255,.44)">142 watched · 38 saved · 3 in progress</p>
+        </div>
+      </div>
+      <div>
+        <sc-for list="{{ youRows }}" as="r" hint-placeholder-count="5">
+          <button type="button" onClick="{{ r.open }}" style="width:100%;display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;padding:16px 0;border:0;border-top:1px solid rgba(255,255,255,.07);background:none;cursor:pointer;text-align:left;font-family:inherit;color:#fff">
+            <span style="font-size:15px;font-weight:500;letter-spacing:-.01em">{{ r.label }}</span>
+            <span style="font-size:12.5px;color:rgba(255,255,255,.36)">{{ r.sub }}</span>
+            <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M7.5 4.5 13 10l-5.5 5.5" stroke="rgba(255,255,255,.28)" stroke-width="1.6" stroke-linecap="round"></path></svg>
+          </button>
+        </sc-for>
+      </div>
+      <section style="display:flex;flex-direction:column;gap:12px">
+        <h2 style="margin:0;font-size:11px;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.48)">Not here yet</h2>
+        <div style="display:flex;gap:12px">
+          <div style="flex:1;padding:18px;border-radius:14px;border:1px dashed rgba(255,255,255,.13);display:flex;flex-direction:column;gap:5px">
+            <p style="margin:0;font-size:13.5px;font-weight:500">Live sports</p>
+            <p style="margin:0;font-size:11px;color:rgba(255,255,255,.36)">Match cards, reminders</p>
+          </div>
+          <div style="flex:1;padding:18px;border-radius:14px;border:1px dashed rgba(255,255,255,.13);display:flex;flex-direction:column;gap:5px">
+            <p style="margin:0;font-size:13.5px;font-weight:500">Sparks</p>
+            <p style="margin:0;font-size:11px;color:rgba(255,255,255,.36)">Scene reels</p>
+          </div>
+        </div>
+      </section>
+    </div>
+    </sc-if>
+
+  </div>
+
+  <!-- ══ DETAIL MODAL ══ -->
+  <sc-if value="{{ detailOpen }}" hint-placeholder-val="{{ false }}">
+  <div style="position:absolute;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;padding:40px">
+    <button type="button" onClick="{{ closeDetail }}" aria-label="Close" style="position:absolute;inset:0;border:0;padding:0;cursor:pointer;background:rgba(4,4,7,.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)"></button>
+    <div style="position:relative;width:100%;max-width:940px;max-height:100%;overflow:auto;border-radius:18px;background:#131217;box-shadow:0 40px 100px -20px rgba(0,0,0,.9);display:flex;flex-direction:column">
+      <div style="position:relative;width:100%;aspect-ratio:21/9;flex:none">
+        <div style="position:absolute;inset:0;background:{{ title.art }}"></div>
+        <div style="position:absolute;inset:0;background:linear-gradient(0deg,#131217 4%,rgba(19,18,23,.4) 46%,transparent 82%)"></div>
+        <button type="button" onClick="{{ closeDetail }}" style="position:absolute;top:20px;right:20px;width:38px;height:38px;border-radius:99px;border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.5);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0">
+          <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M5 5l10 10M15 5 5 15" stroke="#fff" stroke-width="1.8" stroke-linecap="round"></path></svg>
+        </button>
+        <div style="position:absolute;left:40px;right:40px;bottom:26px;display:flex;flex-direction:column;gap:12px">
+          <h1 style="margin:0;font-family:'Instrument Serif',Georgia,serif;font-weight:400;font-size:52px;line-height:.92;letter-spacing:-.02em">{{ title.title }}</h1>
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:9px;font-size:12px;color:rgba(255,255,255,.6)">
+            <span>{{ title.year }}</span><span style="opacity:.4">·</span><span>{{ title.runtime }}</span>
+            <span style="padding:2px 7px;border-radius:5px;border:1px solid rgba(255,255,255,.22);font-size:10px;font-weight:600">{{ title.cert }}</span>
+            <span style="color:#fbbf24;font-weight:600">★ {{ title.rating }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding:28px 40px 40px;display:flex;flex-direction:column;gap:26px">
+        <div style="display:flex;gap:10px">
+          <button type="button" onClick="{{ play }}" style="height:48px;padding:0 28px;border-radius:99px;border:0;background:#fff;color:#0a090d;display:flex;align-items:center;gap:9px;font-size:14.5px;font-weight:600;cursor:pointer;font-family:inherit">
+            <svg width="12" height="13" viewBox="0 0 12 14"><path d="M1 1.4v11.2L11 7 1 1.4Z" fill="#0a090d"></path></svg>{{ title.playLabel }}
+          </button>
+          <button type="button" style="width:48px;height:48px;border-radius:99px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M10 4v12M4 10h12" stroke="#fff" stroke-width="1.7" stroke-linecap="round"></path></svg>
+          </button>
+          <button type="button" onClick="{{ openPanelVibeAsTrailer }}" style="width:48px;height:48px;border-radius:99px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><rect x="2.4" y="4.6" width="15.2" height="10.8" rx="2.2" stroke="#fff" stroke-width="1.5"></rect><path d="M8.4 8.2v3.6l3.2-1.8-3.2-1.8Z" fill="#fff"></path></svg>
+          </button>
+          <button type="button" onClick="{{ openPanelParty }}" style="height:48px;padding:0 20px;margin-left:auto;border-radius:99px;border:1px solid rgba(196,181,253,.3);background:rgba(196,181,253,.1);color:#ece7ff;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">Watch together</button>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:36px">
+          <p style="margin:0;font-size:14px;line-height:1.68;color:rgba(255,255,255,.68);text-wrap:pretty">{{ title.synopsis }}</p>
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <h2 style="margin:0;font-size:10.5px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.4)">Where to watch</h2>
+            <div style="display:flex;gap:8px">
+              <sc-for list="{{ title.providers }}" as="p" hint-placeholder-count="3">
+                <span style="width:36px;height:36px;border-radius:9px;border:1px solid rgba(255,255,255,.12);background:{{ p.art }};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">{{ p.short }}</span>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <sc-if value="{{ title.isSeries }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <h2 style="margin:0;font-family:'Instrument Serif',Georgia,serif;font-size:26px;line-height:1">Episodes</h2>
+            <div style="display:flex;gap:14px">
+              <sc-for list="{{ seasons }}" as="se" hint-placeholder-count="4">
+                <button type="button" onClick="{{ se.pick }}" style="border:0;background:none;padding:0 0 8px;cursor:pointer;font-family:inherit;font-size:12.5px;font-weight:{{ se.weight }};color:{{ se.color }};border-bottom:2px solid {{ se.line }};margin-bottom:-1px">{{ se.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px 24px">
+            <sc-for list="{{ episodes }}" as="e" hint-placeholder-count="4">
+              <button type="button" onClick="{{ play }}" style="display:grid;grid-template-columns:120px 1fr;gap:13px;padding:0;border:0;background:none;cursor:pointer;text-align:left;font-family:inherit;color:#fff">
+                <span style="position:relative;width:120px;aspect-ratio:16/9;border-radius:8px;overflow:hidden;background:{{ e.art }};display:block">
+                  <span style="position:absolute;left:0;right:0;bottom:0;height:2.5px;background:rgba(255,255,255,.18);display:block"><span style="display:block;height:100%;background:#c4b5fd;width:{{ e.pct }}"></span></span>
+                </span>
+                <span style="display:flex;flex-direction:column;gap:3px;min-width:0">
+                  <span style="display:flex;align-items:baseline;gap:7px">
+                    <span style="font-family:ui-monospace,Menlo,monospace;font-size:10px;color:#c4b5fd">{{ e.num }}</span>
+                    <span style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ e.title }}</span>
+                  </span>
+                  <span style="font-size:11px;line-height:1.5;color:rgba(255,255,255,.44);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">{{ e.blurb }}</span>
+                  <span style="font-size:10.5px;color:rgba(255,255,255,.32)">{{ e.dur }}</span>
+                </span>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+        </sc-if>
+
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <h2 style="margin:0;font-family:'Instrument Serif',Georgia,serif;font-size:24px;line-height:1">More like this</h2>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
+            <sc-for list="{{ related }}" as="p" hint-placeholder-count="4">
+              <button type="button" onClick="{{ p.open }}" style="padding:0;border:0;background:none;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:7px;font-family:inherit;color:#fff">
+                <span style="width:100%;aspect-ratio:2/3;border-radius:9px;background:{{ p.art }};display:block"></span>
+                <span style="font-size:12px;font-weight:500;line-height:1.3">{{ p.title }}</span>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ══ SMALL PANELS: vibe grid / party / servers ══ -->
+  <sc-if value="{{ panelOpen }}" hint-placeholder-val="{{ false }}">
+  <div style="position:absolute;inset:0;z-index:85;display:flex;align-items:center;justify-content:center;padding:40px">
+    <button type="button" onClick="{{ closePanel }}" aria-label="Close" style="position:absolute;inset:0;border:0;padding:0;cursor:pointer;background:rgba(4,4,7,.68);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)"></button>
+    <div style="position:relative;width:100%;max-width:{{ panelWidth }};max-height:100%;overflow:auto;border-radius:18px;border:1px solid rgba(255,255,255,.1);background:rgba(19,18,23,.96);box-shadow:0 40px 100px -20px rgba(0,0,0,.9);padding:28px 30px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+        <h2 style="margin:0;font-family:'Instrument Serif',Georgia,serif;font-weight:400;font-size:28px;line-height:1">{{ panelTitle }}</h2>
+        <button type="button" onClick="{{ closePanel }}" style="width:32px;height:32px;border-radius:99px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0">
+          <svg width="13" height="13" viewBox="0 0 20 20" fill="none"><path d="M5 5l10 10M15 5 5 15" stroke="rgba(255,255,255,.72)" stroke-width="1.8" stroke-linecap="round"></path></svg>
+        </button>
+      </div>
+
+      <sc-if value="{{ panelIsVibe }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <p style="margin:0;font-size:12.5px;line-height:1.6;color:rgba(255,255,255,.5)">Weighted by how much of each title you actually finished — not just what you opened.</p>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px 12px">
+          <sc-for list="{{ grid }}" as="p" hint-placeholder-count="10">
+            <button type="button" onClick="{{ p.open }}" style="padding:0;border:0;background:none;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:7px;font-family:inherit;color:#fff">
+              <span style="width:100%;aspect-ratio:2/3;border-radius:9px;background:{{ p.art }};display:block"></span>
+              <span style="font-size:11.5px;font-weight:500;line-height:1.28">{{ p.title }}</span>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ panelIsServers }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:9px">
+        <sc-for list="{{ servers }}" as="s" hint-placeholder-count="4">
+          <button type="button" onClick="{{ closePanel }}" style="display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:14px;border-radius:13px;cursor:pointer;text-align:left;font-family:inherit;color:#fff;border:1px solid {{ s.border }};background:{{ s.bg }}">
+            <span style="width:7px;height:7px;border-radius:99px;background:{{ s.dot }}"></span>
+            <span style="display:flex;flex-direction:column;gap:2px">
+              <span style="font-size:13.5px;font-weight:500">{{ s.label }}</span>
+              <span style="font-size:11px;color:rgba(255,255,255,.42)">{{ s.sub }}</span>
+            </span>
+            <span style="font-family:ui-monospace,Menlo,monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:{{ s.tagColor }}">{{ s.tag }}</span>
+          </button>
+        </sc-for>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ panelIsParty }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:14px;border:1px solid rgba(196,181,253,.2);background:linear-gradient(140deg,rgba(124,58,237,.22),rgba(255,255,255,.03))">
+          <div style="width:46px;aspect-ratio:2/3;border-radius:8px;background:{{ title.art }}"></div>
+          <div style="display:flex;flex-direction:column;gap:3px">
+            <p style="margin:0;font-size:14px;font-weight:500">{{ title.title }}</p>
+            <p style="margin:0;font-size:11.5px;color:rgba(255,255,255,.5)">Synced · host controls playback</p>
+          </div>
+        </div>
+        <sc-for list="{{ party }}" as="m" hint-placeholder-count="3">
+          <div style="display:grid;grid-template-columns:auto 1fr auto;gap:11px;align-items:center;padding:10px 0;border-top:1px solid rgba(255,255,255,.06)">
+            <span style="width:30px;height:30px;border-radius:99px;background:{{ m.art }};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#140f22">{{ m.initial }}</span>
+            <span style="display:flex;flex-direction:column;gap:1px">
+              <span style="font-size:13px;font-weight:500">{{ m.name }}</span>
+              <span style="font-size:10.5px;color:rgba(255,255,255,.38)">{{ m.state }}</span>
+            </span>
+            <span style="font-size:15px">{{ m.reaction }}</span>
+          </div>
+        </sc-for>
+        <button type="button" onClick="{{ play }}" style="height:46px;border-radius:99px;border:0;background:#fff;color:#0a090d;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer">Start together</button>
+      </div>
+      </sc-if>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ══ PLAYER (fills content column) ══ -->
+  <sc-if value="{{ isPlayer }}" hint-placeholder-val="{{ false }}">
+  <div style="position:absolute;inset:0;z-index:75;background:#000;display:grid;grid-template-rows:auto 1fr auto">
+    <div style="position:relative;z-index:3;padding:22px 26px 14px;display:flex;align-items:center;gap:14px;background:linear-gradient(180deg,rgba(0,0,0,.85),rgba(0,0,0,0))">
+      <button type="button" onClick="{{ back }}" style="width:38px;height:38px;border-radius:99px;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M12 4.5 6.5 10l5.5 5.5" stroke="#fff" stroke-width="1.8" stroke-linecap="round"></path></svg>
+      </button>
+      <div style="display:flex;flex-direction:column;gap:1px">
+        <p style="margin:0;font-size:13.5px;font-weight:500">{{ title.title }}</p>
+        <p style="margin:0;font-size:11px;color:rgba(255,255,255,.48)">{{ title.nowPlaying }}</p>
+      </div>
+      <button type="button" onClick="{{ openPanelServers }}" style="margin-left:auto;height:32px;padding:0 12px;border-radius:99px;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.4);color:#fff;font-family:inherit;font-size:11.5px;cursor:pointer;display:flex;align-items:center;gap:6px">
+        <span style="width:5px;height:5px;border-radius:99px;background:#4ade80"></span>Vidsrc
+      </button>
+    </div>
+    <div style="position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden">
+      <div style="position:absolute;inset:0;background:{{ title.art }};opacity:.45"></div>
+      <div style="position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(0,0,0,.1),rgba(0,0,0,.74))"></div>
+      <div style="position:relative;z-index:2;display:flex;align-items:center;gap:34px">
+        <button type="button" style="width:52px;height:52px;border-radius:99px;border:0;background:rgba(0,0,0,.32);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0">
+          <svg width="23" height="23" viewBox="0 0 24 24" fill="none"><path d="M11.5 5a7 7 0 1 1-6.9 8.2" stroke="#fff" stroke-width="1.7" stroke-linecap="round"></path><path d="M11.5 5 8.8 2.6M11.5 5 8.8 7.6" stroke="#fff" stroke-width="1.7" stroke-linecap="round"></path></svg>
+        </button>
+        <button type="button" onClick="{{ togglePlay }}" style="width:82px;height:82px;border-radius:99px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.13);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%)">
+          {{ playGlyph }}
+        </button>
+        <button type="button" style="width:52px;height:52px;border-radius:99px;border:0;background:rgba(0,0,0,.32);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0">
+          <svg width="23" height="23" viewBox="0 0 24 24" fill="none"><path d="M12.5 5a7 7 0 1 0 6.9 8.2" stroke="#fff" stroke-width="1.7" stroke-linecap="round"></path><path d="M12.5 5 15.2 2.6M12.5 5l2.7 2.6" stroke="#fff" stroke-width="1.7" stroke-linecap="round"></path></svg>
+        </button>
+      </div>
+    </div>
+    <div style="position:relative;z-index:3;padding:0 26px 24px;display:flex;flex-direction:column;gap:12px;background:linear-gradient(0deg,rgba(0,0,0,.9),rgba(0,0,0,0))">
+      <div style="display:flex;align-items:center;gap:9px;padding:9px 14px;border-radius:12px;border:1px solid rgba(251,191,36,.26);background:rgba(251,191,36,.11)">
+        <p style="margin:0;flex:1;font-size:11.5px;line-height:1.45;color:#fde68a">This server has no captions. Filmxy has them.</p>
+        <button type="button" onClick="{{ openPanelServers }}" style="border:0;background:none;padding:0;cursor:pointer;font-family:inherit;font-size:11.5px;font-weight:600;color:#fff">Switch</button>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:7px">
+        <div style="position:relative;height:4px;border-radius:99px;background:rgba(255,255,255,.2)">
+          <div style="position:absolute;left:0;top:0;bottom:0;width:42%;border-radius:99px;background:rgba(255,255,255,.32)"></div>
+          <div style="position:absolute;left:0;top:0;bottom:0;width:31%;border-radius:99px;background:#fff"></div>
+          <div style="position:absolute;left:31%;top:50%;width:13px;height:13px;border-radius:99px;background:#fff;transform:translate(-50%,-50%)"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:rgba(255,255,255,.55)"><span>42:18</span><span>-1:09:52</span></div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:6px">
+        <div style="display:flex;gap:8px">
+          <button type="button" style="height:34px;padding:0 13px;border-radius:99px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.07);color:#fff;font-family:inherit;font-size:11.5px;cursor:pointer">CC</button>
+          <button type="button" style="height:34px;padding:0 13px;border-radius:99px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.07);color:#fff;font-family:inherit;font-size:11.5px;cursor:pointer">1.0×</button>
+        </div>
+        <button type="button" onClick="{{ backToDetailEpisodes }}" style="height:34px;padding:0 14px;border-radius:99px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.07);color:#fff;font-family:inherit;font-size:11.5px;cursor:pointer">Episodes</button>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1480,&quot;height&quot;:900}}">
+const A = (a, b) => `linear-gradient(155deg,${a} 0%,${b} 100%)`;
+const ART = {
+  shogun: A("#7f2d3a", "#1d1116"), dune: A("#8a6a3f", "#241a12"), severance: A("#2b6f8f", "#101a22"),
+  bear: A("#9a6b2f", "#1e1610"), arcane: A("#5b3d9e", "#160f27"), frieren: A("#3f7f6e", "#111d1a"),
+  jjk: A("#4a4f7a", "#12141f"), samurai: A("#8c3a2a", "#1d100c"), boys: A("#8f2f2f", "#1d0f0f"),
+  fallout: A("#7d6a2b", "#1c1810"), chainsaw: A("#8a5a2c", "#1d1410"), solo: A("#2f5c8f", "#101823"),
+  dandadan: A("#7c3f7a", "#1c1020"), poor: A("#6f8f4a", "#161d10"), oppen: A("#6f6f78", "#15151a"),
+};
+const AMBIENT = {
+  shogun: "radial-gradient(ellipse 90% 60% at 20% 0%,rgba(176,68,85,.28),transparent 62%)",
+  dune: "radial-gradient(ellipse 90% 60% at 20% 0%,rgba(211,160,82,.26),transparent 62%)",
+  frieren: "radial-gradient(ellipse 90% 60% at 20% 0%,rgba(84,179,154,.24),transparent 62%)",
+  arcane: "radial-gradient(ellipse 90% 60% at 20% 0%,rgba(124,90,223,.28),transparent 62%)",
+  severance: "radial-gradient(ellipse 90% 60% at 20% 0%,rgba(59,140,175,.26),transparent 62%)",
+};
+const RING = (c, pct) => c * (1 - pct / 100);
+
+const TITLES = {
+  shogun: { key: "shogun", title: "Shōgun", year: "2024", runtime: "10 episodes", cert: "18+", rating: "8.7", art: ART.shogun, playLabel: "Resume Ep 7", nowPlaying: "S1 · E7 — A Stick of Time", isSeries: true, synopsis: "In feudal Japan an English pilot is shipwrecked into a court of shifting alliances, where a warlord's ambition and a translator's divided loyalties decide the fate of an empire.", providers: [["HULU", A("#1a7f4b", "#0d3b24")], ["MAX", A("#3f3fa0", "#1b1b45")], ["PRIME", A("#1f6f8f", "#0f2a35")]], cast: [["Hiroyuki Sanada", "Toranaga"], ["Cosmo Jarvis", "Blackthorne"], ["Anna Sawai", "Mariko"], ["Tadanobu Asano", "Yabushige"]] },
+  dune: { key: "dune", title: "Dune: Part Two", year: "2024", runtime: "2h 46m", cert: "13+", rating: "8.2", art: ART.dune, playLabel: "Play", nowPlaying: "Feature · 2h 46m", isSeries: false, synopsis: "Paul Atreides unites with the Fremen to wage war on the houses that destroyed his family, torn between the love he holds and the messianic future he alone can see.", providers: [["MAX", A("#3f3fa0", "#1b1b45")], ["PRIME", A("#1f6f8f", "#0f2a35")], ["APPLE", A("#4a4a52", "#1c1c22")]], cast: [["Timothée Chalamet", "Paul"], ["Zendaya", "Chani"], ["Rebecca Ferguson", "Jessica"], ["Austin Butler", "Feyd"]] },
+  frieren: { key: "frieren", title: "Frieren", year: "2026", runtime: "S2 · 12 eps", cert: "13+", rating: "9.0", art: ART.frieren, playLabel: "Resume Ep 3", nowPlaying: "S2 · E3 — The Land of Ash", isSeries: true, synopsis: "An elven mage who outlives her party sets out to understand the humans she never troubled to know, one small errand at a time.", providers: [["CR", A("#c26a1f", "#3a1e08")], ["NFLX", A("#8f2020", "#2c0c0c")], ["HIDIVE", A("#1f6f8f", "#0f2a35")]], cast: [["Atsumi Tanezaki", "Frieren"], ["Kana Ichinose", "Fern"], ["Chiaki Kobayashi", "Stark"], ["Hiroki Touchi", "Himmel"]] },
+};
+
+const EPISODES = [
+  ["E5", "Broken to the Fist", "Toranaga's retreat becomes a wager on the loyalty of men who have every reason to betray him.", "58m", "100%"],
+  ["E6", "Ladies of the Willow World", "A season of quiet manoeuvring at Ajiro ends the only way court intrigue can.", "54m", "100%"],
+  ["E7", "A Stick of Time", "Grief arrives on a still morning, and a stone garden refuses to be finished.", "52m", "31%"],
+  ["E8", "Abyss of Life", "The consequences of a single letter ripple through Osaka.", "56m", "0%"],
+];
+
+const ic = (kind) => {
+  const p = (d) => React.createElement("path", { d, stroke: "currentColor", strokeWidth: 1.6, strokeLinecap: "round", strokeLinejoin: "round", fill: "none" });
+  const svg = (...k) => React.createElement("svg", { width: 22, height: 22, viewBox: "0 0 22 22", fill: "none" }, ...k);
+  if (kind === "home") return svg(p("M3.4 9.2 11 3.2l7.6 6v9.2a.9.9 0 0 1-.9.9h-4.2v-5.6H8.5v5.6H4.3a.9.9 0 0 1-.9-.9V9.2Z"));
+  if (kind === "search") return svg(React.createElement("circle", { cx: 10, cy: 10, r: 6.4, stroke: "currentColor", strokeWidth: 1.6, fill: "none" }), p("M14.8 14.8 18.6 18.6"));
+  if (kind === "browse") return svg(p("M3 5.6h16M3 11h16M3 16.4h10"));
+  if (kind === "anime") return svg(p("M11 3.4c2.2 2.6 2.2 5.6 0 8.2-2.2-2.6-2.2-5.6 0-8.2Z"), p("M11 11.6c2.9-1.3 5.6-.5 7.4 2-3.1.9-5.7.2-7.4-2Zm0 0c-2.9-1.3-5.6-.5-7.4 2 3.1.9 5.7.2 7.4-2Z"), p("M11 13.6v5"));
+  return svg(React.createElement("circle", { cx: 11, cy: 8, r: 3.4, stroke: "currentColor", strokeWidth: 1.6, fill: "none" }), p("M4.6 18.4c.6-3.2 3.2-5 6.4-5s5.8 1.8 6.4 5"));
+};
+
+class Component extends DCLogic {
+  state = { screen: "home", detailKey: null, panel: null, season: 1, playing: true, player: false, prevScreen: "home" };
+  set = (p) => this.setState(p);
+
+  poster(key, title, meta) {
+    return { art: ART[key], title, meta, open: () => this.set({ detailKey: TITLES[key] ? key : "dune", panel: null }) };
+  }
+
+  renderVals() {
+    const s = this.state;
+    const dKey = s.detailKey ?? "shogun";
+    const raw = TITLES[dKey] ?? TITLES.shogun;
+    const title = Object.assign({}, raw, {
+      providers: raw.providers.map(([short, art]) => ({ short, art })),
+      cast: raw.cast.map(([name, role]) => ({ name, role, art: raw.art })),
+    });
+    const openTitle = (k) => () => this.set({ detailKey: TITLES[k] ? k : "dune", panel: null });
+
+    return {
+      ambient: AMBIENT[s.detailKey ?? "shogun"] ?? AMBIENT.shogun,
+      isHome: s.screen === "home", isBrowse: s.screen === "browse", isSearch: s.screen === "search",
+      isAnime: s.screen === "anime", isYou: s.screen === "you",
+      isPlayer: s.player,
+
+      navItems: [["home", "Home", "home"], ["search", "Search", "search"], ["browse", "Browse", "browse"], ["anime", "Anime", "anime"], ["you", "You", "you"]].map(([id, label, kind]) => ({
+        label, icon: ic(kind),
+        bg: s.screen === id ? "rgba(255,255,255,.09)" : "transparent",
+        color: s.screen === id ? "#fff" : "rgba(255,255,255,.5)",
+        weight: s.screen === id ? 600 : 500,
+        pick: () => this.set({ screen: id, detailKey: null, panel: null, player: false }),
+      })),
+
+      goBrowse: () => this.set({ screen: "browse" }),
+      back: () => this.set({ player: false }),
+      play: () => this.set({ player: true, panel: null, playing: true }),
+      togglePlay: () => this.set({ playing: !s.playing }),
+      backToDetailEpisodes: () => this.set({ player: false }),
+      playGlyph: s.playing
+        ? React.createElement("svg", { width: 24, height: 26, viewBox: "0 0 22 24" }, React.createElement("rect", { x: 3, y: 2, width: 5.4, height: 20, rx: 1.6, fill: "#fff" }), React.createElement("rect", { x: 13.6, y: 2, width: 5.4, height: 20, rx: 1.6, fill: "#fff" }))
+        : React.createElement("svg", { width: 24, height: 26, viewBox: "0 0 20 24" }, React.createElement("path", { d: "M2 1.6v20.8L19 12 2 1.6Z", fill: "#fff" })),
+
+      heroOpen: openTitle("shogun"),
+      detailOpen: s.detailKey !== null,
+      closeDetail: () => this.set({ detailKey: null }),
+
+      panelOpen: s.panel !== null,
+      panelIsVibe: s.panel === "vibe", panelIsServers: s.panel === "servers", panelIsParty: s.panel === "party",
+      panelTitle: { vibe: "Slow-burn revenge", servers: "Choose a source", party: "Watch party" }[s.panel] ?? "",
+      panelWidth: s.panel === "vibe" ? "820px" : s.panel === "party" ? "460px" : "420px",
+      openPanelParty: () => this.set({ panel: "party" }),
+      openPanelServers: () => this.set({ panel: "servers" }),
+      openPanelVibeAsTrailer: () => this.set({ panel: "servers" }),
+      closePanel: () => this.set({ panel: null }),
+
+      title,
+
+      hero: { title: "Shōgun", tag: "Season 1, Episode 7", left: "38 minutes left", pctLabel: "31%", dash: RING(154, 31), art: ART.shogun, synopsis: TITLES.shogun.synopsis },
+
+      resume: [
+        { title: "Shōgun", tag: "38 min left", dash: RING(79.2, 31), art: ART.shogun, open: openTitle("shogun") },
+        { title: "Dune: Part Two", tag: "1h 12m left", dash: RING(79.2, 56), art: ART.dune, open: openTitle("dune") },
+        { title: "Frieren", tag: "9 min left", dash: RING(79.2, 78), art: ART.frieren, open: openTitle("frieren") },
+        { title: "The Bear", tag: "14 min left", dash: RING(79.2, 42), art: ART.bear, open: openTitle("bear") },
+        { title: "Severance", tag: "46 min left", dash: RING(79.2, 12), art: ART.severance, open: openTitle("severance") },
+      ],
+
+      featured: { title: "Dune: Part Two", reason: "Because you finished Arrival, and rated it 5", meta: "2024 · Science fiction · 2h 46m", art: ART.dune, open: openTitle("dune") },
+
+      vibes: [
+        { label: "Slow-burn revenge", count: "24", art: A("rgba(139,92,246,.22)", "rgba(20,17,28,.94)"), open: () => this.set({ panel: "vibe" }) },
+        { label: "Cosy, low stakes", count: "31", art: A("rgba(45,140,110,.2)", "rgba(13,22,20,.94)"), open: () => this.set({ panel: "vibe" }) },
+        { label: "Beautifully bleak", count: "18", art: A("rgba(80,110,160,.2)", "rgba(12,16,24,.94)"), open: () => this.set({ panel: "vibe" }) },
+        { label: "One perfect heist", count: "12", art: A("rgba(190,120,40,.2)", "rgba(24,18,12,.94)"), open: () => this.set({ panel: "vibe" }) },
+        { label: "Found family", count: "27", art: A("rgba(191,120,150,.2)", "rgba(24,15,20,.94)"), open: () => this.set({ panel: "vibe" }) },
+      ],
+
+      airing: [
+        { title: "Frieren", ep: "Season 2 · Episode 4", in: "2d 04h", when: "Fri 23:30", open: openTitle("frieren") },
+        { title: "Dan Da Dan", ep: "Season 2 · Episode 9", in: "16h 12m", when: "Thu 00:26", open: openTitle("dandadan") },
+        { title: "Solo Leveling", ep: "Season 3 · Episode 2", in: "4d 09h", when: "Sun 12:00", open: openTitle("solo") },
+      ],
+
+      trending: [
+        this.poster("shogun", "Shōgun", "Series · 2024"), this.poster("dune", "Dune: Part Two", "Film · 2024"),
+        this.poster("severance", "Severance", "Series · 2025"), this.poster("arcane", "Arcane", "Series · 2024"),
+        this.poster("bear", "The Bear", "Series · 2024"), this.poster("poor", "Poor Things", "Film · 2023"),
+        this.poster("boys", "The Boys", "Series · 2024"), this.poster("fallout", "Fallout", "Series · 2024"),
+      ],
+
+      segments: [["movies", "Films"], ["tv", "Series"], ["cats", "Categories"]].map(([id, label], i) => ({
+        label, weight: i === 0 ? 600 : 500, color: i === 0 ? "#fff" : "rgba(255,255,255,.42)", line: i === 0 ? "#c4b5fd" : "transparent",
+        pick: () => {},
+      })),
+
+      grid: Array.from({ length: 21 }, (_, i) => {
+        const keys = ["dune", "oppen", "poor", "samurai", "boys", "fallout", "severance", "bear", "arcane", "shogun", "chainsaw", "solo", "frieren", "jjk", "dandadan"];
+        const titlesList = ["Dune: Part Two", "Oppenheimer", "Poor Things", "Blue Eye Samurai", "The Boys", "Fallout", "Severance", "The Bear", "Arcane", "Shōgun", "Chainsaw Man", "Solo Leveling", "Frieren", "Jujutsu Kaisen", "Dan Da Dan"];
+        const k = keys[i % keys.length];
+        return this.poster(k, titlesList[i % keys.length], "2024");
+      }),
+
+      vibeChips: ["Slow-burn revenge", "Cosy, low stakes", "Beautifully bleak", "One perfect heist", "Found family", "Quietly devastating", "Style over plot", "Comfort rewatch"].map((label) => ({ label, open: () => this.set({ screen: "search", panel: "vibe" }) })),
+
+      recent: [
+        { title: "Shōgun", meta: "Series · 2024", art: ART.shogun, open: openTitle("shogun") },
+        { title: "Frieren", meta: "Anime · 2026", art: ART.frieren, open: openTitle("frieren") },
+        { title: "Blue Eye Samurai", meta: "Anime · 2024", art: ART.samurai, open: openTitle("samurai") },
+        { title: "Oppenheimer", meta: "Film · 2023", art: ART.oppen, open: openTitle("oppen") },
+      ],
+
+      epTicks: Array.from({ length: 12 }, (_, i) => ({ bg: i < 3 ? "#c4b5fd" : "rgba(255,255,255,.13)" })),
+
+      animeTop: [
+        { title: "Frieren", meta: "Madhouse · 12 eps", format: "TV", art: ART.frieren, open: openTitle("frieren") },
+        { title: "Jujutsu Kaisen", meta: "MAPPA · 23 eps", format: "TV", art: ART.jjk, open: openTitle("jjk") },
+        { title: "Dan Da Dan", meta: "Science SARU · 12 eps", format: "TV", art: ART.dandadan, open: openTitle("dandadan") },
+        { title: "Chainsaw Man: Reze Arc", meta: "MAPPA · Film", format: "Film", art: ART.chainsaw, open: openTitle("chainsaw") },
+        { title: "Solo Leveling", meta: "A-1 · 13 eps", format: "TV", art: ART.solo, open: openTitle("solo") },
+        { title: "Blue Eye Samurai", meta: "Blue Spirit · 8 eps", format: "TV", art: ART.samurai, open: openTitle("samurai") },
+      ],
+
+      youRows: [
+        { label: "Watchlist", sub: "38", open: () => this.set({ screen: "browse" }) },
+        { label: "Watch party", sub: "1 live", open: () => this.set({ panel: "party" }) },
+        { label: "Downloads", sub: "4 episodes", open: () => this.set({ screen: "you" }) },
+        { label: "History", sub: "142", open: () => this.set({ screen: "you" }) },
+        { label: "Settings", sub: "", open: () => this.set({ screen: "you" }) },
+      ],
+
+      related: [
+        this.poster("samurai", "Blue Eye Samurai", "2024"), this.poster("boys", "The Boys", "2024"),
+        this.poster("arcane", "Arcane", "2024"), this.poster("fallout", "Fallout", "2024"),
+      ],
+
+      episodes: EPISODES.map(([num, t, blurb, dur, pct]) => ({ num, title: t, blurb, dur, pct, art: raw.art })),
+
+      seasons: [1, 2, 3, 4].map((n) => ({
+        label: `S${n}`, weight: s.season === n ? 600 : 500,
+        color: s.season === n ? "#fff" : "rgba(255,255,255,.42)",
+        line: s.season === n ? "#c4b5fd" : "transparent",
+        pick: () => this.set({ season: n }),
+      })),
+
+      servers: [
+        { label: "Vidsrc", sub: "1080p · captions · fast", tag: "Playing", tagColor: "#4ade80", dot: "#4ade80", border: "rgba(74,222,128,.3)", bg: "rgba(74,222,128,.09)" },
+        { label: "Filmxy", sub: "1080p · captions", tag: "Ready", tagColor: "rgba(255,255,255,.45)", dot: "#4ade80", border: "rgba(255,255,255,.09)", bg: "rgba(255,255,255,.03)" },
+        { label: "Superembed", sub: "4K · no captions", tag: "Ready", tagColor: "rgba(255,255,255,.45)", dot: "#fbbf24", border: "rgba(255,255,255,.09)", bg: "rgba(255,255,255,.03)" },
+        { label: "Smashystream", sub: "720p · unverified", tag: "Failed", tagColor: "#f87171", dot: "#f87171", border: "rgba(255,255,255,.09)", bg: "rgba(255,255,255,.02)" },
+      ],
+
+      party: [
+        { name: "You", state: "Host · ready", initial: "N", reaction: "", art: A("#c4b5fd", "#6d28d9") },
+        { name: "Aarav", state: "Ready", initial: "A", reaction: "🔥", art: A("#7dd3fc", "#2563eb") },
+        { name: "Meera", state: "Buffering…", initial: "M", reaction: "😮", art: A("#fda4af", "#be123c") },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

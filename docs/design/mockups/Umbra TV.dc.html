@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"><style>body{margin:0;background:#000;overflow:hidden}a{color:#c4b5fd;text-decoration:none}a:hover{color:#ddd6fe}::-webkit-scrollbar{display:none}</style></helmet>
+<div style="width:100vw;height:100vh;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;font-family:Inter,system-ui,sans-serif">
+<div style="width:1920px;height:1080px;flex:none;position:relative;overflow:hidden;background:#08080b;color:#fff;transform:{{ stageScale }};transform-origin:center center">
+
+  <!-- ── billboard art ── -->
+  <div style="position:absolute;inset:0">
+    <div style="position:absolute;inset:0;background:{{ hero.art }};transition:opacity 450ms cubic-bezier(.22,1,.36,1);opacity:{{ heroArtOpacity }}"></div>
+    <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(8,8,11,.94) 0%,rgba(8,8,11,.72) 34%,rgba(8,8,11,.1) 66%,rgba(8,8,11,.55) 100%)"></div>
+    <div style="position:absolute;inset:0;background:linear-gradient(0deg,#08080b 6%,rgba(8,8,11,.7) 34%,rgba(8,8,11,0) 74%)"></div>
+    <div style="position:absolute;left:8%;right:8%;bottom:-6%;height:44%;filter:blur(90px);opacity:.4;background:{{ hero.ambient }}"></div>
+  </div>
+
+  <!-- ── nav rail ── -->
+  <div style="position:absolute;left:0;top:0;bottom:0;z-index:40;display:flex;flex-direction:column;padding:44px 0;transition:width 300ms cubic-bezier(.22,1,.36,1),background 300ms;width:{{ railWidth }};background:{{ railBg }};backdrop-filter:blur(40px) saturate(180%);-webkit-backdrop-filter:blur(40px) saturate(180%);overflow:hidden">
+    <div style="display:flex;align-items:center;gap:16px;padding:0 30px;height:60px;flex:none">
+      <svg width="46" height="36" viewBox="0 0 40 32" style="flex:none"><circle cx="14" cy="16" r="13" fill="none" stroke="#c4b5fd" stroke-width="2"></circle><circle cx="26" cy="16" r="13" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="2"></circle><path d="M20 4.6a13 13 0 0 1 0 22.8 13 13 0 0 1 0-22.8Z" fill="#c4b5fd"></path></svg>
+      <span style="font-size:24px;font-weight:700;letter-spacing:.22em;white-space:nowrap;opacity:{{ railTextOpacity }};transition:opacity 300ms">UMBRA</span>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:6px;padding:0 18px">
+      <sc-for list="{{ navItems }}" as="n" hint-placeholder-count="6">
+        <div style="display:flex;align-items:center;gap:20px;height:60px;padding:0 14px;border-radius:14px;transition:background 180ms,color 180ms;background:{{ n.bg }};color:{{ n.color }};box-shadow:{{ n.ring }}">
+          <span style="width:30px;height:30px;flex:none;display:flex;align-items:center;justify-content:center">{{ n.icon }}</span>
+          <span style="font-size:20px;font-weight:{{ n.weight }};white-space:nowrap;opacity:{{ railTextOpacity }};transition:opacity 300ms">{{ n.label }}</span>
+        </div>
+      </sc-for>
+    </div>
+    <div style="padding:0 32px;flex:none;opacity:{{ railTextOpacity }};transition:opacity 300ms">
+      <div style="display:flex;align-items:center;gap:14px">
+        <span style="width:34px;height:34px;flex:none;border-radius:99px;background:linear-gradient(145deg,#c4b5fd,#6d28d9);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#140f22">N</span>
+        <span style="font-size:16px;color:rgba(255,255,255,.55);white-space:nowrap">Nishant</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── hero copy ── -->
+  <div style="position:absolute;left:170px;top:0;width:820px;height:100%;z-index:20;display:flex;flex-direction:column;justify-content:center;gap:26px;transition:opacity 450ms cubic-bezier(.22,1,.36,1),transform 450ms cubic-bezier(.22,1,.36,1);opacity:{{ heroCopyOpacity }};transform:{{ heroCopyShift }};pointer-events:none">
+    <p style="margin:0;font-size:16px;font-weight:600;letter-spacing:.3em;text-transform:uppercase;color:#c4b5fd">{{ hero.kicker }}</p>
+    <h1 style="margin:0;font-size:96px;font-weight:600;letter-spacing:-.055em;line-height:.92;text-wrap:balance">{{ hero.title }}</h1>
+    <div style="display:flex;align-items:center;gap:18px;font-size:20px;color:rgba(255,255,255,.7)">
+      <span style="display:flex;align-items:center;gap:8px;color:#fbbf24;font-weight:600">★ {{ hero.rating }}</span>
+      <span style="opacity:.4">·</span><span>{{ hero.year }}</span>
+      <span style="opacity:.4">·</span><span>{{ hero.runtime }}</span>
+      <span style="padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.28);font-size:15px;font-weight:600">{{ hero.cert }}</span>
+    </div>
+    <p style="margin:0;max-width:640px;font-size:22px;line-height:1.55;color:rgba(255,255,255,.66);text-wrap:pretty">{{ hero.synopsis }}</p>
+    <div style="display:flex;gap:16px;padding-top:8px">
+      <sc-for list="{{ heroButtons }}" as="b" hint-placeholder-count="3">
+        <div style="height:66px;padding:0 34px;border-radius:99px;display:flex;align-items:center;gap:14px;font-size:21px;font-weight:600;transition:transform 180ms cubic-bezier(.22,1,.36,1),background 180ms;background:{{ b.bg }};color:{{ b.color }};border:1px solid {{ b.border }};transform:{{ b.scale }};box-shadow:{{ b.ring }}">
+          <span style="display:flex;align-items:center">{{ b.icon }}</span>{{ b.label }}
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <!-- ── rows ── -->
+  <div style="position:absolute;left:0;right:0;bottom:0;z-index:30;transition:transform 450ms cubic-bezier(.22,1,.36,1);transform:{{ railsShift }}">
+    <div style="display:flex;flex-direction:column;gap:34px;padding:0 0 56px 170px">
+      <sc-for list="{{ rows }}" as="row" hint-placeholder-count="3">
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <h2 style="margin:0;font-size:26px;font-weight:600;letter-spacing:-.02em;transition:color 180ms;color:{{ row.titleColor }}">{{ row.title }}</h2>
+          <div style="display:flex;gap:20px;transition:transform 320ms cubic-bezier(.22,1,.36,1);transform:{{ row.shift }};will-change:transform">
+            <sc-for list="{{ row.cards }}" as="c" hint-placeholder-count="6">
+              <div style="flex:none;width:328px;transition:transform 200ms cubic-bezier(.22,1,.36,1);transform:{{ c.scale }};transform-origin:left center">
+                <div style="position:relative;width:100%;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:{{ c.art }};transition:box-shadow 200ms;box-shadow:{{ c.ring }}">
+                  <div style="position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.82) 0%,rgba(0,0,0,.1) 52%,transparent 100%)"></div>
+                  <div style="position:absolute;left:16px;right:16px;bottom:14px;display:flex;flex-direction:column;gap:6px">
+                    <p style="margin:0;font-size:19px;font-weight:600;letter-spacing:-.015em;text-shadow:0 2px 6px rgba(0,0,0,.85);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.title }}</p>
+                    <p style="margin:0;font-size:14px;color:rgba(255,255,255,.62);text-shadow:0 2px 6px rgba(0,0,0,.85)">{{ c.meta }}</p>
+                  </div>
+                  <div style="position:absolute;left:0;right:0;bottom:0;height:4px;background:rgba(255,255,255,.16);opacity:{{ c.barOpacity }}">
+                    <div style="height:100%;background:#c4b5fd;width:{{ c.pct }}"></div>
+                  </div>
+                  <div style="position:absolute;top:12px;left:12px;padding:4px 9px;border-radius:6px;background:rgba(0,0,0,.62);border:1px solid rgba(255,255,255,.18);font-size:12px;font-weight:600;letter-spacing:.06em;opacity:{{ c.tagOpacity }}">{{ c.tag }}</div>
+                  <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;transition:opacity 200ms;opacity:{{ c.playOpacity }}">
+                    <span style="width:64px;height:64px;border-radius:99px;background:rgba(0,0,0,.42);border:1px solid rgba(255,255,255,.3);backdrop-filter:blur(12px) saturate(180%);-webkit-backdrop-filter:blur(12px) saturate(180%);display:flex;align-items:center;justify-content:center">
+                      <svg width="20" height="22" viewBox="0 0 12 14"><path d="M1 1.4v11.2L11 7 1 1.4Z" fill="#fff"></path></svg>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <!-- ── clock + remote hint ── -->
+  <div style="position:absolute;right:56px;top:44px;z-index:50;display:flex;align-items:center;gap:18px">
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 18px;border-radius:99px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.45);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px)">
+      <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M4 15V5l6 5-6 5ZM11 15V5l6 5-6 5Z" fill="rgba(255,255,255,.55)"></path></svg>
+      <span style="font-size:15px;color:rgba(255,255,255,.55)">Arrow keys · Enter</span>
+    </div>
+    <span style="font-size:20px;font-weight:500;color:rgba(255,255,255,.75);font-variant-numeric:tabular-nums">21:40</span>
+  </div>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const A = (a, b) => `linear-gradient(155deg,${a} 0%,${b} 100%)`;
+const ART = {
+  shogun: A("#7f2d3a", "#1d1116"), dune: A("#8a6a3f", "#241a12"), severance: A("#2b6f8f", "#101a22"),
+  bear: A("#9a6b2f", "#1e1610"), arcane: A("#5b3d9e", "#160f27"), frieren: A("#3f7f6e", "#111d1a"),
+  jjk: A("#4a4f7a", "#12141f"), samurai: A("#8c3a2a", "#1d100c"), boys: A("#8f2f2f", "#1d0f0f"),
+  fallout: A("#7d6a2b", "#1c1810"), chainsaw: A("#8a5a2c", "#1d1410"), solo: A("#2f5c8f", "#101823"),
+  dandadan: A("#7c3f7a", "#1c1020"), poor: A("#6f8f4a", "#161d10"), oppen: A("#6f6f78", "#15151a"),
+};
+
+const HEROES = {
+  shogun: { key: "shogun", title: "Shōgun", kicker: "Continue watching · S1 E7", year: "2024", runtime: "10 episodes", cert: "18+", rating: "8.7", art: ART.shogun, ambient: "radial-gradient(ellipse at 30% 100%,#b04455,transparent 66%)", synopsis: "In feudal Japan an English pilot is shipwrecked into a court of shifting alliances, where a warlord's ambition and a translator's divided loyalties decide the fate of an empire." },
+  dune: { key: "dune", title: "Dune: Part Two", kicker: "Because you finished Arrival", year: "2024", runtime: "2h 46m", cert: "13+", rating: "8.2", art: ART.dune, ambient: "radial-gradient(ellipse at 34% 100%,#d3a052,transparent 64%)", synopsis: "Paul Atreides unites with the Fremen to wage war on the houses that destroyed his family, torn between the love he holds and the messianic future he alone can see." },
+  frieren: { key: "frieren", title: "Frieren", kicker: "Airing now · Episode 4 Friday", year: "2026", runtime: "Season 2 · 12 eps", cert: "13+", rating: "9.0", art: ART.frieren, ambient: "radial-gradient(ellipse at 32% 100%,#54b39a,transparent 64%)", synopsis: "An elven mage who outlives her party sets out to understand the humans she never troubled to know, one small errand at a time." },
+  arcane: { key: "arcane", title: "Arcane", kicker: "Top 10 in India", year: "2024", runtime: "2 seasons", cert: "16+", rating: "9.0", art: ART.arcane, ambient: "radial-gradient(ellipse at 32% 100%,#7c5adf,transparent 64%)", synopsis: "Two sisters on opposite sides of a widening class war discover that the weapons they build are far less dangerous than the loyalties they cannot put down." },
+};
+
+const ROWS = [
+  { title: "Continue watching", progress: true, cards: [["shogun", "Shōgun", "S1 · E7 — 38 min left", "31%", "S1 E7"], ["dune", "Dune: Part Two", "1h 12m left", "56%", "Movie"], ["frieren", "Frieren", "S2 · E3 — 9 min left", "78%", "S2 E3"], ["bear", "The Bear", "S3 · E5 — 14 min left", "42%", "S3 E5"], ["severance", "Severance", "S2 · E1 — 46 min left", "12%", "S2 E1"], ["fallout", "Fallout", "S1 · E4 — 22 min left", "64%", "S1 E4"]] },
+  { title: "Trending now", cards: [["dune", "Dune: Part Two", "2024 · Sci-Fi", "0%", "New"], ["shogun", "Shōgun", "2024 · Historical", "0%", ""], ["severance", "Severance", "2025 · Thriller", "0%", ""], ["arcane", "Arcane", "2024 · Animation", "0%", ""], ["boys", "The Boys", "2024 · Action", "0%", ""], ["poor", "Poor Things", "2023 · Comedy", "0%", ""]] },
+  { title: "Airing this week · Anime", cards: [["frieren", "Frieren S2 · Ep 4", "Fri 23:30 · in 2d 04h", "0%", "2d 04h"], ["dandadan", "Dan Da Dan S2 · Ep 9", "Thu 00:26 · in 16h", "0%", "16h"], ["solo", "Solo Leveling S3 · Ep 2", "Sun 12:00 · in 4d", "0%", "4d 09h"], ["jjk", "Jujutsu Kaisen", "MAPPA · 23 eps", "0%", ""], ["chainsaw", "Chainsaw Man: Reze Arc", "MAPPA · Film", "0%", "Movie"], ["samurai", "Blue Eye Samurai", "Blue Spirit · 8 eps", "0%", ""]] },
+  { title: "Because you watched Arrival", cards: [["oppen", "Oppenheimer", "2023 · Drama", "0%", ""], ["severance", "Severance", "2025 · Thriller", "0%", ""], ["arcane", "Arcane", "2024 · Animation", "0%", ""], ["dune", "Dune: Part Two", "2024 · Sci-Fi", "0%", ""], ["poor", "Poor Things", "2023 · Comedy", "0%", ""], ["fallout", "Fallout", "2024 · Sci-Fi", "0%", ""]] },
+];
+
+const NAV = [
+  ["Search", "search"], ["Home", "home"], ["Movies", "movies"], ["TV Shows", "tv"], ["Anime", "anime"], ["My Space", "space"],
+];
+
+const icon = (kind) => {
+  const p = (d, extra) => React.createElement("path", Object.assign({ d, stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round", strokeLinejoin: "round", fill: "none" }, extra));
+  const svg = (...kids) => React.createElement("svg", { width: 28, height: 28, viewBox: "0 0 24 24", fill: "none" }, ...kids);
+  if (kind === "search") return svg(React.createElement("circle", { cx: 11, cy: 11, r: 7, stroke: "currentColor", strokeWidth: 1.8, fill: "none" }), p("M16.2 16.2 20.5 20.5"));
+  if (kind === "home") return svg(p("M3.6 10 12 3.4l8.4 6.6V20a.9.9 0 0 1-.9.9h-4.7v-6.2H9.2V21H4.5a.9.9 0 0 1-.9-.9V10Z"));
+  if (kind === "movies") return svg(React.createElement("rect", { x: 3, y: 5.4, width: 18, height: 13.2, rx: 2.4, stroke: "currentColor", strokeWidth: 1.8, fill: "none" }), p("M9.6 9.4v5.2l4.6-2.6-4.6-2.6Z"));
+  if (kind === "tv") return svg(React.createElement("rect", { x: 2.6, y: 4.6, width: 18.8, height: 12.4, rx: 2.2, stroke: "currentColor", strokeWidth: 1.8, fill: "none" }), p("M8.4 20.4h7.2"));
+  if (kind === "anime") return svg(p("M12 3.4c2.4 2.9 2.4 6.2 0 9.1-2.4-2.9-2.4-6.2 0-9.1Z"), p("M12 12.5c3.2-1.5 6.1-.6 8.1 2.2-3.4 1-6.2.2-8.1-2.2Zm0 0c-3.2-1.5-6.1-.6-8.1 2.2 3.4 1 6.2.2 8.1-2.2Z"), p("M12 14.6v6"));
+  return svg(React.createElement("circle", { cx: 12, cy: 8.4, r: 3.8, stroke: "currentColor", strokeWidth: 1.8, fill: "none" }), p("M4.8 20.4c.7-3.6 3.6-5.6 7.2-5.6s6.5 2 7.2 5.6"));
+};
+
+const RING = "0 0 0 4px #ffffff, 0 24px 64px -12px rgba(0,0,0,.9)";
+const CARD_STEP = 348;
+
+class Component extends DCLogic {
+  state = { zone: "hero", row: 0, col: 0, heroBtn: 0, nav: 1, navFocused: false, heroKey: "shogun" };
+
+  componentDidMount() {
+    this.onKey = (e) => {
+      const k = e.key;
+      if (!["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Enter"].includes(k)) return;
+      e.preventDefault();
+      this.setState((s) => this.next(s, k));
+    };
+    window.addEventListener("keydown", this.onKey);
+    this.onResize = () => this.forceUpdate();
+    window.addEventListener("resize", this.onResize);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("keydown", this.onKey);
+    window.removeEventListener("resize", this.onResize);
+  }
+
+  next(s, k) {
+    if (s.navFocused) {
+      if (k === "ArrowUp") return { nav: Math.max(0, s.nav - 1) };
+      if (k === "ArrowDown") return { nav: Math.min(NAV.length - 1, s.nav + 1) };
+      if (k === "ArrowRight" || k === "Enter") return { navFocused: false };
+      return {};
+    }
+    if (s.zone === "hero") {
+      if (k === "ArrowLeft") return s.heroBtn > 0 ? { heroBtn: s.heroBtn - 1 } : { navFocused: true };
+      if (k === "ArrowRight") return { heroBtn: Math.min(2, s.heroBtn + 1) };
+      if (k === "ArrowDown") return { zone: "rows", row: 0, col: 0, heroKey: ROWS[0].cards[0][0] };
+      return {};
+    }
+    if (k === "ArrowUp") {
+      if (s.row === 0) return { zone: "hero", heroKey: "shogun" };
+      const r = s.row - 1, c = Math.min(s.col, ROWS[r].cards.length - 1);
+      return { row: r, col: c, heroKey: ROWS[r].cards[c][0] };
+    }
+    if (k === "ArrowDown") {
+      const r = Math.min(ROWS.length - 1, s.row + 1), c = Math.min(s.col, ROWS[r].cards.length - 1);
+      return { row: r, col: c, heroKey: ROWS[r].cards[c][0] };
+    }
+    if (k === "ArrowLeft") {
+      if (s.col === 0) return { navFocused: true };
+      return { col: s.col - 1, heroKey: ROWS[s.row].cards[s.col - 1][0] };
+    }
+    if (k === "ArrowRight") {
+      const c = Math.min(ROWS[s.row].cards.length - 1, s.col + 1);
+      return { col: c, heroKey: ROWS[s.row].cards[c][0] };
+    }
+    return {};
+  }
+
+  renderVals() {
+    const s = this.state;
+    const inRows = s.zone === "rows";
+    const hero = HEROES[s.heroKey] ?? HEROES.shogun;
+    const railOpen = s.navFocused;
+
+    const scale = typeof window === "undefined" ? 1 : Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+
+    const heroBtnDefs = [
+      ["Play", React.createElement("svg", { width: 18, height: 20, viewBox: "0 0 12 14" }, React.createElement("path", { d: "M1 1.4v11.2L11 7 1 1.4Z", fill: "currentColor" }))],
+      ["More info", React.createElement("svg", { width: 22, height: 22, viewBox: "0 0 20 20", fill: "none" }, React.createElement("circle", { cx: 10, cy: 10, r: 7.6, stroke: "currentColor", strokeWidth: 1.6 }), React.createElement("path", { d: "M10 9v5", stroke: "currentColor", strokeWidth: 1.7, strokeLinecap: "round" }), React.createElement("circle", { cx: 10, cy: 6.3, r: 1, fill: "currentColor" }))],
+      ["My list", React.createElement("svg", { width: 22, height: 22, viewBox: "0 0 20 20", fill: "none" }, React.createElement("path", { d: "M10 4v12M4 10h12", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round" }))],
+    ];
+
+    return {
+      stageScale: `scale(${scale})`,
+      hero,
+      heroArtOpacity: inRows ? 0.42 : 1,
+      heroCopyOpacity: inRows ? 0 : 1,
+      heroCopyShift: inRows ? "translateY(-56px)" : "translateY(-60px)",
+      railsShift: inRows
+        ? `translateY(${Math.max(0, 434 - 267 * Math.min(s.row, ROWS.length - 1))}px)`
+        : "translateY(790px)",
+      railWidth: railOpen ? "320px" : "116px",
+      railBg: railOpen ? "linear-gradient(90deg,rgba(8,8,11,.97),rgba(8,8,11,.72))" : "linear-gradient(90deg,rgba(8,8,11,.7),rgba(8,8,11,0))",
+      railTextOpacity: railOpen ? 1 : 0,
+
+      navItems: NAV.map(([label, kind], i) => {
+        const on = railOpen && s.nav === i;
+        return {
+          label, icon: icon(kind),
+          bg: on ? "rgba(255,255,255,.14)" : "transparent",
+          color: on ? "#ffffff" : "rgba(255,255,255,.5)",
+          weight: on ? 600 : 500,
+          ring: on ? "0 0 0 3px rgba(255,255,255,.9)" : "none",
+        };
+      }),
+
+      heroButtons: heroBtnDefs.map(([label, ic], i) => {
+        const on = !inRows && !railOpen && s.heroBtn === i;
+        const primary = i === 0;
+        return {
+          label, icon: ic,
+          bg: on ? "#ffffff" : primary ? "rgba(255,255,255,.92)" : "rgba(255,255,255,.12)",
+          color: on || primary ? "#0b0a0f" : "#ffffff",
+          border: on ? "rgba(255,255,255,1)" : primary ? "transparent" : "rgba(255,255,255,.24)",
+          scale: on ? "scale(1.06)" : "scale(1)",
+          ring: on ? "0 0 0 4px rgba(255,255,255,.4), 0 20px 48px -12px rgba(0,0,0,.85)" : "none",
+        };
+      }),
+
+      rows: ROWS.map((row, ri) => {
+        const active = inRows && s.row === ri;
+        const offset = active ? Math.max(0, s.col - 1) * CARD_STEP : 0;
+        return {
+          title: row.title,
+          titleColor: active ? "#ffffff" : "rgba(255,255,255,.62)",
+          shift: `translateX(${-offset}px)`,
+          cards: row.cards.map(([key, t, meta, pct, tag], ci) => {
+            const on = active && s.col === ci;
+            return {
+              art: ART[key], title: t, meta, pct, tag,
+              scale: on ? "scale(1.09)" : "scale(1)",
+              ring: on ? RING : "0 2px 6px rgba(0,0,0,.5)",
+              playOpacity: on ? 1 : 0,
+              barOpacity: row.progress ? 1 : 0,
+              tagOpacity: tag ? 1 : 0,
+            };
+          }),
+        };
+      }),
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="position:relative;width:100%;height:100%;overflow:hidden;background:#0f1014;color:#fff;font-family:Inter,-apple-system,system-ui,sans-serif;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column">
+
+<!-- ══ TAB SCREENS ══ -->
+<sc-if value="{{ isTabScreen }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-direction:column;height:100%;min-height:0">
+
+  <!-- header -->
+  <div style="flex:none;padding:52px 18px 10px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:linear-gradient(180deg,#0f1014 62%,rgba(15,16,20,0) 100%)">
+    <div style="display:flex;align-items:center;gap:9px">
+      <div style="width:26px;height:26px;border-radius:8px;background:linear-gradient(145deg,#c4b5fd,#7c3aed);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px -4px rgba(139,92,246,.7)">
+        <svg width="13" height="13" viewBox="0 0 16 16"><path d="M8 1.6a6.4 6.4 0 1 0 0 12.8A4.9 4.9 0 0 1 8 1.6Z" fill="#140f22"></path></svg>
+      </div>
+      <span style="font-size:15px;font-weight:700;letter-spacing:.2em;text-transform:uppercase">Umbra</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px">
+      <button type="button" onClick="{{ goCast }}" style="width:34px;height:34px;border-radius:99px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M2 6.2V4.5A1.5 1.5 0 0 1 3.5 3h13A1.5 1.5 0 0 1 18 4.5v11a1.5 1.5 0 0 1-1.5 1.5H12" stroke="rgba(255,255,255,.72)" stroke-width="1.5" stroke-linecap="round"></path><path d="M2 16.8h1.6M2 13.4a3.4 3.4 0 0 1 3.4 3.4M2 10a6.8 6.8 0 0 1 6.8 6.8" stroke="rgba(255,255,255,.72)" stroke-width="1.5" stroke-linecap="round"></path></svg>
+      </button>
+      <button type="button" onClick="{{ goSpace }}" style="width:34px;height:34px;border-radius:99px;border:1px solid rgba(196,181,253,.28);background:linear-gradient(145deg,rgba(196,181,253,.3),rgba(124,58,237,.28));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#ede9fe;cursor:pointer;padding:0">N</button>
+    </div>
+  </div>
+
+  <!-- scroll body -->
+  <div style="flex:1;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;padding-bottom:104px">
+
+    <!-- ── HOME ── -->
+    <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex;flex-direction:column;gap:30px">
+
+      <!-- Jump back in -->
+      <section style="display:flex;flex-direction:column;gap:12px">
+        <div style="padding:0 18px;display:flex;align-items:baseline;justify-content:space-between">
+          <h2 style="margin:0;font-size:19px;font-weight:600;letter-spacing:-.025em">Jump back in</h2>
+          <span style="font-size:12px;color:rgba(255,255,255,.42)">3 in progress</span>
+        </div>
+        <div style="display:flex;gap:11px;overflow-x:auto;padding:0 18px 4px;scrollbar-width:none">
+          <sc-for list="{{ resume }}" as="item" hint-placeholder-count="3">
+            <button type="button" onClick="{{ item.open }}" style="flex:none;width:234px;padding:0;border:0;background:none;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:8px">
+              <div style="position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.4)">
+                <div style="position:absolute;inset:0;background:{{ item.art }}"></div>
+                <div style="position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.88) 0%,rgba(0,0,0,.15) 46%,rgba(0,0,0,.1) 100%)"></div>
+                <div style="position:absolute;top:8px;left:8px;padding:3px 7px;border-radius:99px;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(12px) saturate(180%);-webkit-backdrop-filter:blur(12px) saturate(180%);font-size:9.5px;font-weight:600;letter-spacing:.04em">{{ item.tag }}</div>
+                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
+                  <div style="width:40px;height:40px;border-radius:99px;background:rgba(0,0,0,.42);border:1px solid rgba(255,255,255,.26);backdrop-filter:blur(12px) saturate(180%);-webkit-backdrop-filter:blur(12px) saturate(180%);display:flex;align-items:center;justify-content:center">
+                    <svg width="13" height="14" viewBox="0 0 12 14"><path d="M1 1.4v11.2L11 7 1 1.4Z" fill="#fff"></path></svg>
+                  </div>
+                </div>
+                <div style="position:absolute;left:10px;right:10px;bottom:11px;display:flex;flex-direction:column;gap:5px">
+                  <p style="margin:0;font-size:13px;font-weight:600;letter-spacing:-.01em;text-shadow:0 1px 4px rgba(0,0,0,.8)">{{ item.title }}</p>
+                  <p style="margin:0;font-size:10.5px;color:rgba(255,255,255,.72);text-shadow:0 1px 4px rgba(0,0,0,.8)">{{ item.left }}</p>
+                </div>
+                <div style="position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(255,255,255,.16)"><div style="height:100%;background:#c4b5fd;width:{{ item.pct }}"></div></div>
+              </div>
+            </button>
+          </sc-for>
+        </div>
+      </section>
+
+      <!-- Tonight's pick -->
+      <section style="padding:0 18px;display:flex;flex-direction:column;gap:11px">
+        <h2 style="margin:0;font-size:12px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.42)">Tonight's pick</h2>
+        <button type="button" onClick="{{ openFeatured }}" style="position:relative;width:100%;aspect-ratio:5/6;border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,.09);padding:0;cursor:pointer;text-align:left;display:block;box-shadow:0 24px 64px -18px rgba(0,0,0,.9)">
+          <div style="position:absolute;inset:0;background:{{ featured.art }}"></div>
+          <div style="position:absolute;inset:0;background:linear-gradient(0deg,rgba(6,5,10,.96) 4%,rgba(6,5,10,.55) 34%,rgba(6,5,10,.06) 72%)"></div>
+          <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(6,5,10,.6),transparent 62%)"></div>
+          <div style="position:absolute;top:12px;right:12px;padding:5px 10px;border-radius:99px;background:rgba(0,0,0,.42);border:1px solid rgba(255,255,255,.2);backdrop-filter:blur(12px) saturate(180%);-webkit-backdrop-filter:blur(12px) saturate(180%);font-size:9.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#e9e4ff">New</div>
+          <div style="position:absolute;left:18px;right:18px;bottom:18px;display:flex;flex-direction:column;gap:11px">
+            <p style="margin:0;font-size:10px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:#c4b5fd">{{ featured.kicker }}</p>
+            <h3 style="margin:0;font-size:32px;font-weight:600;letter-spacing:-.045em;line-height:1;text-wrap:balance">{{ featured.title }}</h3>
+            <p style="margin:0;font-size:12px;color:rgba(255,255,255,.66);line-height:1.5">{{ featured.meta }}</p>
+            <div style="display:flex;gap:8px;padding-top:2px">
+              <div style="flex:1;height:42px;border-radius:99px;background:#fff;color:#0b0a0f;display:flex;align-items:center;justify-content:center;gap:7px;font-size:13.5px;font-weight:600">
+                <svg width="11" height="12" viewBox="0 0 12 14"><path d="M1 1.4v11.2L11 7 1 1.4Z" fill="#0b0a0f"></path></svg>Play
+              </div>
+              <div style="width:42px;height:42px;border-radius:99px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.22);backdrop-filter:blur(12px) saturate(180%);-webkit-backdrop-filter:blur(12px) saturate(180%);display:flex;align-items:center;justify-content:center">
+                <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M10 4v12M4 10h12" stroke="#fff" stroke-width="1.7" stroke-linecap="round"></path></svg>
+              </div>
+              <div style="width:42px;height:42px;border-radius:99px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.22);backdrop-filter:blur(12px) saturate(180%);-webkit-backdrop-filter:blur(12px) saturate(180%);display:flex;align-items:center;justify-content:center">
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7.4" stroke="#fff" stroke-width="1.5"></circle><path d="M10 9v5" stroke="#fff" stroke-width="1.6" stroke-linecap="round"></path><circle cx="10" cy="6.4" r=".95" fill="#fff"></circle></svg>
+              </div>
+            </div>
+          </div>
+        </button>
+        <div style="display:flex;justify-content:center;gap:5px;padding-top:2px">
+          <span style="width:16px;height:3px;border-radius:99px;background:#c4b5fd"></span>
+          <span style="width:6px;height:3px;border-radius:99px;background:rgba(255,255,255,.22)"></span>
+          <span style="width:6px;height:3px;border-radius:99px;background:rgba(255,255,255,.22)"></span>
+          <span style="width:6px;height:3px;border-radius:99px;background:rgba(255,255,255,.22)"></span>
+        </div>
+      </section>
+
+      <!-- Vibes -->
+      <section style="display:flex;flex-direction:column;gap:12px">
+        <div style="padding:0 18px;display:flex;flex-direction:column;gap:3px">
+          <h2 style="margin:0;font-size:19px;font-weight:600;letter-spacing:-.025em">What are you in the mood for?</h2>
+          <p style="margin:0;font-size:12.5px;color:rgba(255,255,255,.45)">Vibes, not genres.</p>
+        </div>
+        <div style="display:flex;gap:10px;overflow-x:auto;padding:0 18px 4px;scrollbar-width:none">
+          <sc-for list="{{ vibes }}" as="v" hint-placeholder-count="4">
+            <button type="button" onClick="{{ v.open }}" style="flex:none;width:148px;height:96px;border-radius:14px;border:1px solid rgba(255,255,255,.1);padding:13px;cursor:pointer;text-align:left;display:flex;flex-direction:column;justify-content:space-between;background:{{ v.art }}">
+              <span style="font-size:16px">{{ v.glyph }}</span>
+              <span style="display:flex;flex-direction:column;gap:2px">
+                <span style="font-size:13px;font-weight:600;letter-spacing:-.01em;line-height:1.25">{{ v.label }}</span>
+                <span style="font-size:10.5px;color:rgba(255,255,255,.5)">{{ v.count }}</span>
+              </span>
+            </button>
+          </sc-for>
+        </div>
+      </section>
+
+      <!-- Trending rail: clean art, meta below -->
+      <section style="display:flex;flex-direction:column;gap:12px">
+        <div style="padding:0 18px;display:flex;align-items:baseline;justify-content:space-between">
+          <h2 style="margin:0;font-size:19px;font-weight:600;letter-spacing:-.025em">Trending today</h2>
+          <button type="button" onClick="{{ goBrowse }}" style="border:0;background:none;padding:0;cursor:pointer;font-size:12.5px;color:#c4b5fd">See all</button>
+        </div>
+        <div style="display:flex;gap:11px;overflow-x:auto;padding:0 18px 4px;scrollbar-width:none">
+          <sc-for list="{{ trending }}" as="p" hint-placeholder-count="5">
+            <button type="button" onClick="{{ p.open }}" style="flex:none;width:118px;padding:0;border:0;background:none;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:8px">
+              <div style="position:relative;width:100%;aspect-ratio:2/3;border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.4);background:{{ p.art }}">
+                <div style="position:absolute;inset:0;display:flex;align-items:flex-end;padding:9px"><span style="font-size:10px;font-weight:600;letter-spacing:.1em;color:rgba(255,255,255,.34);text-transform:uppercase">Poster</span></div>
+                <div style="position:absolute;top:7px;right:7px;padding:3px 6px;border-radius:6px;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.16);font-size:9px;font-weight:600">{{ p.rating }}</div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:2px">
+                <p style="margin:0;font-size:12.5px;font-weight:500;letter-spacing:-.005em;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">{{ p.title }}</p>
+                <p style="margin:0;font-size:10.5px;color:rgba(255,255,255,.4)">{{ p.meta }}</p>
+              </div>
+            </button>
+          </sc-for>
+        </div>
+      </section>
+
+      <!-- Airing this week -->
+      <section style="display:flex;flex-direction:column;gap:12px">
+        <div style="padding:0 18px;display:flex;flex-direction:column;gap:3px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <h2 style="margin:0;font-size:19px;font-weight:600;letter-spacing:-.025em">Airing this week</h2>
+            <span style="padding:3px 7px;border-radius:6px;background:rgba(196,181,253,.14);border:1px solid rgba(196,181,253,.24);font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#c4b5fd">Anime</span>
+          </div>
+          <p style="margin:0;font-size:12.5px;color:rgba(255,255,255,.45)">Countdown to the next episode of shows you follow.</p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;padding:0 18px">
+          <sc-for list="{{ airing }}" as="a" hint-placeholder-count="3">
+            <button type="button" onClick="{{ a.open }}" style="display:grid;grid-template-columns:46px 1fr auto;gap:12px;align-items:center;padding:9px;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.032);cursor:pointer;text-align:left" style-hover="background:rgba(255,255,255,.06)">
+              <div style="width:46px;aspect-ratio:2/3;border-radius:8px;background:{{ a.art }}"></div>
+              <div style="display:flex;flex-direction:column;gap:3px;min-width:0">
+                <p style="margin:0;font-size:13px;font-weight:600;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.title }}</p>
+                <p style="margin:0;font-size:11px;color:rgba(255,255,255,.45)">{{ a.ep }}</p>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
+                <span style="font-size:13px;font-weight:600;color:#c4b5fd;font-variant-numeric:tabular-nums">{{ a.in }}</span>
+                <span style="font-size:9.5px;color:rgba(255,255,255,.38);letter-spacing:.06em;text-transform:uppercase">{{ a.when }}</span>
+              </div>
+            </button>
+          </sc-for>
+        </div>
+      </section>
+
+      <!-- Watch party -->
+      <section style="padding:0 18px">
+        <div style="position:relative;border-radius:18px;overflow:hidden;border:1px solid rgba(196,181,253,.2);background:linear-gradient(140deg,rgba(124,58,237,.28),rgba(24,20,38,.9) 62%);padding:18px;display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="display:flex">
+              <span style="width:26px;height:26px;border-radius:99px;background:linear-gradient(145deg,#c4b5fd,#7c3aed);border:2px solid #17131f"></span>
+              <span style="width:26px;height:26px;border-radius:99px;background:linear-gradient(145deg,#7dd3fc,#2563eb);border:2px solid #17131f;margin-left:-9px"></span>
+              <span style="width:26px;height:26px;border-radius:99px;background:linear-gradient(145deg,#fda4af,#be123c);border:2px solid #17131f;margin-left:-9px"></span>
+            </div>
+            <p style="margin:0;font-size:11.5px;color:rgba(255,255,255,.6)">Aarav, Meera and 1 more are watching</p>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <h3 style="margin:0;font-size:18px;font-weight:600;letter-spacing:-.025em">Shōgun · Ep 7 starts in 12 min</h3>
+            <p style="margin:0;font-size:12.5px;line-height:1.55;color:rgba(255,255,255,.55)">Synced playback, one shared watchlist, reactions in the corner.</p>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button type="button" onClick="{{ openParty }}" style="flex:1;height:38px;border-radius:99px;border:0;background:#fff;color:#0b0a0f;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit">Join party</button>
+            <button type="button" onClick="{{ openParty }}" style="height:38px;padding:0 15px;border-radius:99px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.06);color:#fff;font-size:12.5px;font-weight:500;cursor:pointer;font-family:inherit">Details</button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+    </sc-if>
+
+    <!-- ── BROWSE ── -->
+    <sc-if value="{{ isBrowse }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex;flex-direction:column;gap:22px">
+      <div style="padding:0 18px">
+        <h1 style="margin:0;font-size:30px;font-weight:600;letter-spacing:-.04em">Browse</h1>
+      </div>
+      <div style="padding:0 18px">
+        <div style="display:flex;gap:4px;padding:4px;border-radius:99px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)">
+          <sc-for list="{{ segments }}" as="s" hint-placeholder-count="3">
+            <button type="button" onClick="{{ s.pick }}" style="flex:1;height:32px;border-radius:99px;border:0;cursor:pointer;font-family:inherit;font-size:12.5px;font-weight:{{ s.weight }};background:{{ s.bg }};color:{{ s.color }}">{{ s.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+      <div style="padding:0 18px;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none">
+        <sc-for list="{{ filters }}" as="f" hint-placeholder-count="5">
+          <span style="flex:none;padding:7px 13px;border-radius:99px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);font-size:12px;color:rgba(255,255,255,.68)">{{ f.label }}</span>
+        </sc-for>
+      </div>
+      <div style="padding:0 18px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px 9px">
+        <sc-for list="{{ grid }}" as="p" hint-placeholder-count="12">
+          <button type="button" onClick="{{ p.open }}" style="padding:0;border:0;background:none;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:7px">
+            <div style="position:relative;width:100%;aspect-ratio:2/3;border-radius:11px;overflow:hidden;background:{{ p.art }};box-shadow:0 1px 2px rgba(0,0,0,.4)">
+              <div style="position:absolute;top:6px;right:6px;padding:2px 5px;border-radius:5px;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.16);font-size:8.5px;font-weight:600">{{ p.rating }}</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:1px">
+              <p style="margin:0;font-size:11.5px;font-weight:500;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">{{ p.title }}</p>
+              <p style="margin:0;font-size:10px;color:rgba(255,255,255,.38)">{{ p.meta }}</p>
+            </div>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ── SEARCH ── -->
+    <sc-if value="{{ isSearch }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex;flex-direction:column;gap:24px">
+      <div style="padding:0 18px;display:flex;flex-direction:column;gap:14px">
+        <h1 style="margin:0;font-size:30px;font-weight:600;letter-spacing:-.04em">Search</h1>
+        <div style="display:flex;align-items:center;gap:9px;height:44px;padding:0 14px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1)">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="6.2" stroke="rgba(255,255,255,.5)" stroke-width="1.6"></circle><path d="M13.6 13.6 17 17" stroke="rgba(255,255,255,.5)" stroke-width="1.6" stroke-linecap="round"></path></svg>
+          <span style="font-size:14px;color:rgba(255,255,255,.36)">Titles, people, or a vibe…</span>
+        </div>
+      </div>
+
+      <section style="display:flex;flex-direction:column;gap:12px">
+        <div style="padding:0 18px;display:flex;flex-direction:column;gap:3px">
+          <h2 style="margin:0;font-size:12px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.42)">Search by vibe</h2>
+          <p style="margin:0;font-size:12.5px;color:rgba(255,255,255,.45)">Describe the feeling. We'll find the titles.</p>
+        </div>
+        <div style="padding:0 18px;display:flex;flex-wrap:wrap;gap:8px">
+          <sc-for list="{{ vibeChips }}" as="c" hint-placeholder-count="8">
+            <button type="button" onClick="{{ c.open }}" style="padding:9px 14px;border-radius:99px;border:1px solid rgba(196,181,253,.22);background:rgba(196,181,253,.08);color:#e9e4ff;font-size:12.5px;font-family:inherit;cursor:pointer">{{ c.label }}</button>
+          </sc-for>
+        </div>
+      </section>
+
+      <section style="display:flex;flex-direction:column;gap:10px">
+        <h2 style="margin:0;padding:0 18px;font-size:12px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.42)">Recent</h2>
+        <div style="display:flex;flex-direction:column">
+          <sc-for list="{{ recent }}" as="r" hint-placeholder-count="4">
+            <button type="button" onClick="{{ r.open }}" style="display:grid;grid-template-columns:38px 1fr auto;gap:12px;align-items:center;padding:9px 18px;border:0;background:none;cursor:pointer;text-align:left;border-bottom:1px solid rgba(255,255,255,.05)">
+              <div style="width:38px;aspect-ratio:2/3;border-radius:6px;background:{{ r.art }}"></div>
+              <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
+                <p style="margin:0;font-size:13.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.title }}</p>
+                <p style="margin:0;font-size:11px;color:rgba(255,255,255,.4)">{{ r.meta }}</p>
+              </div>
+              <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M7.5 4.5 13 10l-5.5 5.5" stroke="rgba(255,255,255,.3)" stroke-width="1.6" stroke-linecap="round"></path></svg>
+            </button>
+          </sc-for>
+        </div>
+      </section>
+    </div>
+    </sc-if>
+
+    <!-- ── ANIME ── -->
+    <sc-if value="{{ isAnime }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex;flex-direction:column;gap:26px">
+      <div style="padding:0 18px;display:flex;flex-direction:column;gap:6px">
+        <h1 style="margin:0;font-size:30px;font-weight:600;letter-spacing:-.04em">Anime</h1>
+        <p style="margin:0;font-size:13px;color:rgba(255,255,255,.45);line-height:1.55">Summer 2026 · studios, formats and episode counts from AniList.</p>
+      </div>
+
+      <section style="padding:0 18px;display:flex;flex-direction:column;gap:12px">
+        <h2 style="margin:0;font-size:12px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.42)">Your season tracker</h2>
+        <div style="border-radius:18px;border:1px solid rgba(255,255,255,.09);background:linear-gradient(160deg,rgba(124,58,237,.2),rgba(255,255,255,.03) 58%);padding:16px;display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px">
+            <div style="display:flex;flex-direction:column;gap:3px">
+              <p style="margin:0;font-size:11px;color:rgba(255,255,255,.5)">Next up</p>
+              <p style="margin:0;font-size:20px;font-weight:600;letter-spacing:-.03em">Frieren S2 · Ep 4</p>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end">
+              <span style="font-size:24px;font-weight:600;color:#c4b5fd;letter-spacing:-.03em;font-variant-numeric:tabular-nums">2d 04h</span>
+              <span style="font-size:10px;color:rgba(255,255,255,.4);letter-spacing:.1em;text-transform:uppercase">Fri 23:30</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:4px">
+            <sc-for list="{{ epTicks }}" as="t" hint-placeholder-count="12">
+              <span style="flex:1;height:5px;border-radius:99px;background:{{ t.bg }}"></span>
+            </sc-for>
+          </div>
+          <p style="margin:0;font-size:11.5px;color:rgba(255,255,255,.45)">3 of 12 watched · 6 shows followed this season</p>
+        </div>
+      </section>
+
+      <section style="display:flex;flex-direction:column;gap:12px">
+        <h2 style="margin:0;padding:0 18px;font-size:19px;font-weight:600;letter-spacing:-.025em">Airing schedule</h2>
+        <div style="display:flex;flex-direction:column;gap:8px;padding:0 18px">
+          <sc-for list="{{ airing }}" as="a" hint-placeholder-count="3">
+            <button type="button" onClick="{{ a.open }}" style="display:grid;grid-template-columns:46px 1fr auto;gap:12px;align-items:center;padding:9px;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.032);cursor:pointer;text-align:left">
+              <div style="width:46px;aspect-ratio:2/3;border-radius:8px;background:{{ a.art }}"></div>
+              <div style="display:flex;flex-direction:column;gap:3px;min-width:0">
+                <p style="margin:0;font-size:13px;font-weight:600;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.title }}</p>
+                <p style="margin:0;font-size:11px;color:rgba(255,255,255,.45)">{{ a.studio }}</p>
+              </div>
+              <span style="font-size:13px;font-weight:600;color:#c4b5fd;font-variant-numeric:tabular-nums">{{ a.in }}</span>
+            </button>
+          </sc-for>
+        </div>
+      </section>
+
+      <section style="display:flex;flex-direction:column;gap:12px">
+        <h2 style="margin:0;padding:0 18px;font-size:19px;font-weight:600;letter-spacing:-.025em">Top this season</h2>
+        <div style="display:flex;gap:11px;overflow-x:auto;padding:0 18px 4px;scrollbar-width:none">
+          <sc-for list="{{ animeTop }}" as="p" hint-placeholder-count="5">
+            <button type="button" onClick="{{ p.open }}" style="flex:none;width:118px;padding:0;border:0;background:none;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:8px">
+              <div style="position:relative;width:100%;aspect-ratio:2/3;border-radius:12px;overflow:hidden;background:{{ p.art }}">
+                <div style="position:absolute;top:7px;left:7px;padding:3px 6px;border-radius:6px;background:rgba(0,0,0,.62);border:1px solid rgba(255,255,255,.16);font-size:8.5px;font-weight:600;letter-spacing:.06em">{{ p.format }}</div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:2px">
+                <p style="margin:0;font-size:12.5px;font-weight:500;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">{{ p.title }}</p>
+                <p style="margin:0;font-size:10.5px;color:rgba(255,255,255,.4)">{{ p.meta }}</p>
+              </div>
+            </button>
+          </sc-for>
+        </div>
+      </section>
+    </div>
+    </sc-if>
+
+    <!-- ── MY SPACE ── -->
+    <sc-if value="{{ isSpace }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex;flex-direction:column;gap:24px">
+      <div style="padding:0 18px;display:flex;align-items:center;gap:13px">
+        <div style="width:54px;height:54px;border-radius:99px;background:linear-gradient(145deg,#c4b5fd,#6d28d9);display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:600;color:#140f22">N</div>
+        <div style="display:flex;flex-direction:column;gap:3px">
+          <h1 style="margin:0;font-size:22px;font-weight:600;letter-spacing:-.03em">Nishant</h1>
+          <p style="margin:0;font-size:12px;color:rgba(255,255,255,.45)">142 titles watched · 38 on watchlist</p>
+        </div>
+      </div>
+
+      <div style="padding:0 18px;display:grid;grid-template-columns:1fr 1fr;gap:9px">
+        <sc-for list="{{ spaceTiles }}" as="t" hint-placeholder-count="4">
+          <button type="button" onClick="{{ t.open }}" style="padding:14px;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.035);cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:9px;font-family:inherit">
+            <span style="font-size:15px">{{ t.glyph }}</span>
+            <span style="display:flex;flex-direction:column;gap:2px">
+              <span style="font-size:13.5px;font-weight:600;color:#fff">{{ t.label }}</span>
+              <span style="font-size:11px;color:rgba(255,255,255,.42)">{{ t.sub }}</span>
+            </span>
+          </button>
+        </sc-for>
+      </div>
+
+      <section style="display:flex;flex-direction:column;gap:12px">
+        <div style="padding:0 18px;display:flex;align-items:baseline;justify-content:space-between">
+          <h2 style="margin:0;font-size:19px;font-weight:600;letter-spacing:-.025em">Watchlist</h2>
+          <span style="font-size:12px;color:rgba(255,255,255,.42)">38</span>
+        </div>
+        <div style="padding:0 18px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px 9px">
+          <sc-for list="{{ watchlist }}" as="p" hint-placeholder-count="6">
+            <button type="button" onClick="{{ p.open }}" style="padding:0;border:0;background:none;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:7px">
+              <div style="width:100%;aspect-ratio:2/3;border-radius:11px;background:{{ p.art }};box-shadow:0 1px 2px rgba(0,0,0,.4)"></div>
+              <p style="margin:0;font-size:11.5px;font-weight:500;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">{{ p.title }}</p>
+            </button>
+          </sc-for>
+        </div>
+      </section>
+
+      <section style="padding:0 18px;display:flex;flex-direction:column;gap:10px">
+        <h2 style="margin:0;font-size:19px;font-weight:600;letter-spacing:-.025em">Coming soon</h2>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:grid;grid-template-columns:36px 1fr auto;gap:12px;align-items:center;padding:13px;border-radius:14px;border:1px dashed rgba(255,255,255,.12);background:rgba(255,255,255,.02)">
+            <div style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;font-size:14px">⚽</div>
+            <div style="display:flex;flex-direction:column;gap:2px">
+              <p style="margin:0;font-size:13px;font-weight:600">Live Sports</p>
+              <p style="margin:0;font-size:11px;color:rgba(255,255,255,.42)">Match cards, scores, reminders</p>
+            </div>
+            <span style="padding:4px 8px;border-radius:99px;border:1px solid rgba(255,255,255,.14);font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.5)">Soon</span>
+          </div>
+          <div style="display:grid;grid-template-columns:36px 1fr auto;gap:12px;align-items:center;padding:13px;border-radius:14px;border:1px dashed rgba(255,255,255,.12);background:rgba(255,255,255,.02)">
+            <div style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;font-size:14px">✦</div>
+            <div style="display:flex;flex-direction:column;gap:2px">
+              <p style="margin:0;font-size:13px;font-weight:600">Sparks</p>
+              <p style="margin:0;font-size:11px;color:rgba(255,255,255,.42)">Short-form clips and scene reels</p>
+            </div>
+            <span style="padding:4px 8px;border-radius:99px;border:1px solid rgba(255,255,255,.14);font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.5)">Soon</span>
+          </div>
+        </div>
+      </section>
+    </div>
+    </sc-if>
+
+  </div>
+
+  <!-- tab bar -->
+  <div style="position:absolute;left:0;right:0;bottom:0;z-index:40;padding:9px 10px 26px;background:rgba(11,12,16,.72);border-top:1px solid rgba(255,255,255,.08);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%)">
+    <div style="display:grid;grid-template-columns:repeat(5,1fr)">
+      <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="5">
+        <button type="button" onClick="{{ t.pick }}" style="border:0;background:none;padding:5px 0 0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;font-family:inherit;min-height:44px;justify-content:center">
+          <span style="position:relative;display:flex;align-items:center;justify-content:center;width:26px;height:22px;color:{{ t.color }}">{{ t.icon }}</span>
+          <span style="font-size:9.5px;font-weight:{{ t.weight }};letter-spacing:.01em;color:{{ t.color }}">{{ t.label }}</span>
+          <span style="width:14px;height:2px;border-radius:99px;background:{{ t.dot }}"></span>
+        </button>
+      </sc-for>
+    </div>
+  </div>
+
+</div>
+</sc-if>
+
+<!-- ══ DETAIL ══ -->
+<sc-if value="{{ isDetail }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;z-index:60;background:#0b0a0f;display:flex;flex-direction:column">
+  <div style="flex:1;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;padding-bottom:24px">
+    <!-- ambient key art -->
+    <div style="position:relative;width:100%;aspect-ratio:4/5">
+      <div style="position:absolute;inset:0;background:{{ title.art }}"></div>
+      <div style="position:absolute;inset:0;background:linear-gradient(0deg,#0b0a0f 2%,rgba(11,10,15,.6) 32%,rgba(11,10,15,.05) 74%)"></div>
+      <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.55),transparent 26%)"></div>
+      <!-- ambient tint bloom pulled from the poster (useExtractColors) -->
+      <div style="position:absolute;left:-10%;right:-10%;bottom:-14%;height:52%;filter:blur(46px);opacity:.55;background:{{ title.ambient }}"></div>
+
+      <div style="position:absolute;top:52px;left:14px;right:14px;display:flex;align-items:center;justify-content:space-between">
+        <button type="button" onClick="{{ back }}" style="width:36px;height:36px;border-radius:99px;border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.42);backdrop-filter:blur(12px) saturate(180%);-webkit-backdrop-filter:blur(12px) saturate(180%);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M12 4.5 6.5 10l5.5 5.5" stroke="#fff" stroke-width="1.8" stroke-linecap="round"></path></svg>
+        </button>
+        <div style="display:flex;gap:8px">
+          <button type="button" onClick="{{ openParty }}" style="height:36px;padding:0 12px;border-radius:99px;border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.42);backdrop-filter:blur(12px) saturate(180%);-webkit-backdrop-filter:blur(12px) saturate(180%);display:flex;align-items:center;gap:6px;cursor:pointer;color:#fff;font-family:inherit;font-size:11.5px;font-weight:500">
+            <svg width="13" height="13" viewBox="0 0 20 20" fill="none"><circle cx="7" cy="7" r="2.8" stroke="#fff" stroke-width="1.5"></circle><circle cx="14" cy="8.4" r="2.2" stroke="#fff" stroke-width="1.5"></circle><path d="M2.6 16c.5-2.4 2.3-3.7 4.4-3.7 2.1 0 3.9 1.3 4.4 3.7M12.4 16c.3-1.6 1.4-2.6 3-2.6 1 0 1.8.4 2.4 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round"></path></svg>
+            Party
+          </button>
+          <button type="button" style="width:36px;height:36px;border-radius:99px;border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.42);backdrop-filter:blur(12px) saturate(180%);-webkit-backdrop-filter:blur(12px) saturate(180%);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0">
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M10 3v9.5M6 9l4 4 4-4M4 16h12" stroke="#fff" stroke-width="1.6" stroke-linecap="round"></path></svg>
+          </button>
+        </div>
+      </div>
+
+      <div style="position:absolute;left:18px;right:18px;bottom:16px;display:flex;flex-direction:column;gap:9px">
+        <h1 style="margin:0;font-size:34px;font-weight:600;letter-spacing:-.05em;line-height:.98;text-wrap:balance">{{ title.title }}</h1>
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:7px;font-size:11.5px;color:rgba(255,255,255,.62)">
+          <span>{{ title.year }}</span><span style="opacity:.45">·</span>
+          <span>{{ title.runtime }}</span><span style="opacity:.45">·</span>
+          <span style="padding:2px 6px;border-radius:5px;border:1px solid rgba(255,255,255,.22);font-size:9.5px;font-weight:600">{{ title.cert }}</span>
+          <span style="display:flex;align-items:center;gap:4px;color:#fbbf24;font-weight:600">★ {{ title.rating }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="padding:16px 18px 0;display:flex;flex-direction:column;gap:20px">
+      <div style="display:flex;gap:9px">
+        <button type="button" onClick="{{ play }}" style="flex:1;height:46px;border-radius:99px;border:0;background:#fff;color:#0b0a0f;display:flex;align-items:center;justify-content:center;gap:8px;font-size:14.5px;font-weight:600;cursor:pointer;font-family:inherit">
+          <svg width="12" height="13" viewBox="0 0 12 14"><path d="M1 1.4v11.2L11 7 1 1.4Z" fill="#0b0a0f"></path></svg>{{ title.playLabel }}
+        </button>
+        <button type="button" style="width:46px;height:46px;border-radius:99px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0">
+          <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M10 4v12M4 10h12" stroke="#fff" stroke-width="1.7" stroke-linecap="round"></path></svg>
+        </button>
+        <button type="button" onClick="{{ openTrailer }}" style="width:46px;height:46px;border-radius:99px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0">
+          <svg width="17" height="17" viewBox="0 0 20 20" fill="none"><rect x="2.4" y="4.6" width="15.2" height="10.8" rx="2.2" stroke="#fff" stroke-width="1.5"></rect><path d="M8.4 8.2v3.6l3.2-1.8-3.2-1.8Z" fill="#fff"></path></svg>
+        </button>
+      </div>
+
+      <p style="margin:0;font-size:13.5px;line-height:1.65;color:rgba(255,255,255,.7);text-wrap:pretty">{{ title.synopsis }}</p>
+
+      <div style="display:flex;flex-wrap:wrap;gap:7px">
+        <sc-for list="{{ title.genres }}" as="g" hint-placeholder-count="3">
+          <span style="padding:6px 11px;border-radius:99px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);font-size:11.5px;color:rgba(255,255,255,.66)">{{ g.label }}</span>
+        </sc-for>
+      </div>
+
+      <!-- providers: fetched today, never rendered -->
+      <div style="display:flex;flex-direction:column;gap:9px">
+        <h2 style="margin:0;font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.4)">Where to watch</h2>
+        <div style="display:flex;gap:8px">
+          <sc-for list="{{ title.providers }}" as="p" hint-placeholder-count="3">
+            <span style="width:38px;height:38px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:{{ p.art }};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:rgba(255,255,255,.85)">{{ p.short }}</span>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- episodes -->
+      <sc-if value="{{ title.isSeries }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;flex-direction:column;gap:11px">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <h2 style="margin:0;font-size:18px;font-weight:600;letter-spacing:-.025em">Episodes</h2>
+          <button type="button" onClick="{{ openEpisodes }}" style="height:32px;padding:0 13px;border-radius:99px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;font-family:inherit;font-size:12px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px">
+            {{ title.seasonLabel }}
+            <svg width="11" height="11" viewBox="0 0 20 20" fill="none"><path d="M5 8l5 5 5-5" stroke="rgba(255,255,255,.7)" stroke-width="1.8" stroke-linecap="round"></path></svg>
+          </button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <sc-for list="{{ episodes }}" as="e" hint-placeholder-count="3">
+            <button type="button" onClick="{{ play }}" style="display:grid;grid-template-columns:104px 1fr;gap:12px;padding:0;border:0;background:none;cursor:pointer;text-align:left">
+              <div style="position:relative;width:104px;aspect-ratio:16/9;border-radius:9px;overflow:hidden;background:{{ e.art }}">
+                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
+                  <span style="width:26px;height:26px;border-radius:99px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.24);display:flex;align-items:center;justify-content:center">
+                    <svg width="9" height="10" viewBox="0 0 12 14"><path d="M1 1.4v11.2L11 7 1 1.4Z" fill="#fff"></path></svg>
+                  </span>
+                </div>
+                <div style="position:absolute;left:0;right:0;bottom:0;height:2.5px;background:rgba(255,255,255,.18)"><div style="height:100%;background:#c4b5fd;width:{{ e.pct }}"></div></div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:3px;min-width:0">
+                <div style="display:flex;align-items:baseline;gap:7px">
+                  <span style="font-size:11px;font-weight:600;color:#c4b5fd">{{ e.num }}</span>
+                  <p style="margin:0;font-size:13px;font-weight:600;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ e.title }}</p>
+                </div>
+                <p style="margin:0;font-size:11px;line-height:1.5;color:rgba(255,255,255,.48);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">{{ e.blurb }}</p>
+                <p style="margin:0;font-size:10.5px;color:rgba(255,255,255,.34)">{{ e.dur }}</p>
+              </div>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- cast -->
+      <div style="display:flex;flex-direction:column;gap:11px">
+        <h2 style="margin:0;font-size:18px;font-weight:600;letter-spacing:-.025em">Cast</h2>
+        <div style="display:flex;gap:11px;overflow-x:auto;margin:0 -18px;padding:0 18px 4px;scrollbar-width:none">
+          <sc-for list="{{ title.cast }}" as="c" hint-placeholder-count="4">
+            <div style="flex:none;width:84px;display:flex;flex-direction:column;gap:7px">
+              <div style="width:84px;aspect-ratio:2/3;border-radius:11px;background:{{ c.art }}"></div>
+              <div style="display:flex;flex-direction:column;gap:1px">
+                <p style="margin:0;font-size:11.5px;font-weight:500;line-height:1.3">{{ c.name }}</p>
+                <p style="margin:0;font-size:10px;color:rgba(255,255,255,.4);line-height:1.3">{{ c.role }}</p>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- more like this -->
+      <div style="display:flex;flex-direction:column;gap:11px;padding-bottom:8px">
+        <h2 style="margin:0;font-size:18px;font-weight:600;letter-spacing:-.025em">More like this</h2>
+        <div style="display:flex;gap:10px;overflow-x:auto;margin:0 -18px;padding:0 18px 4px;scrollbar-width:none">
+          <sc-for list="{{ related }}" as="p" hint-placeholder-count="4">
+            <button type="button" onClick="{{ p.open }}" style="flex:none;width:100px;padding:0;border:0;background:none;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:7px">
+              <div style="width:100px;aspect-ratio:2/3;border-radius:11px;background:{{ p.art }}"></div>
+              <p style="margin:0;font-size:11.5px;font-weight:500;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">{{ p.title }}</p>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<!-- ══ PLAYER ══ -->
+<sc-if value="{{ isPlayer }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;z-index:70;background:#000;display:grid;grid-template-rows:auto 1fr auto">
+
+  <!-- row 1: top bar -->
+  <div style="position:relative;z-index:3;padding:50px 14px 10px;display:flex;align-items:center;justify-content:space-between;gap:10px;background:linear-gradient(180deg,rgba(0,0,0,.85),rgba(0,0,0,0))">
+    <button type="button" onClick="{{ back }}" style="width:36px;height:36px;border-radius:99px;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)">
+      <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M5 5l10 10M15 5 5 15" stroke="#fff" stroke-width="1.7" stroke-linecap="round"></path></svg>
+    </button>
+    <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;text-align:center">
+      <p style="margin:0;font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ title.title }}</p>
+      <p style="margin:0;font-size:10.5px;color:rgba(255,255,255,.5)">{{ title.nowPlaying }}</p>
+    </div>
+    <button type="button" onClick="{{ openServers }}" style="height:30px;padding:0 11px;border-radius:99px;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.4);color:#fff;font-family:inherit;font-size:11px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:5px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)">
+      <span style="width:5px;height:5px;border-radius:99px;background:#4ade80"></span>Vidsrc
+    </button>
+  </div>
+
+  <!-- row 2: video + centre transport -->
+  <div style="position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden">
+    <div style="position:absolute;inset:0;background:{{ title.art }};opacity:.5"></div>
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(0,0,0,.15),rgba(0,0,0,.72))"></div>
+    <div style="position:relative;z-index:2;display:flex;align-items:center;gap:26px">
+      <button type="button" style="width:48px;height:48px;border-radius:99px;border:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M11.5 5a7 7 0 1 1-6.9 8.2" stroke="#fff" stroke-width="1.7" stroke-linecap="round"></path><path d="M11.5 5 8.8 2.6M11.5 5 8.8 7.6" stroke="#fff" stroke-width="1.7" stroke-linecap="round"></path><text x="12" y="15.5" font-size="7" font-weight="700" fill="#fff" text-anchor="middle" font-family="Inter">10</text></svg>
+      </button>
+      <button type="button" onClick="{{ togglePlay }}" style="width:70px;height:70px;border-radius:99px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%)">
+        {{ playGlyph }}
+      </button>
+      <button type="button" style="width:48px;height:48px;border-radius:99px;border:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12.5 5a7 7 0 1 0 6.9 8.2" stroke="#fff" stroke-width="1.7" stroke-linecap="round"></path><path d="M12.5 5 15.2 2.6M12.5 5l2.7 2.6" stroke="#fff" stroke-width="1.7" stroke-linecap="round"></path><text x="12" y="15.5" font-size="7" font-weight="700" fill="#fff" text-anchor="middle" font-family="Inter">10</text></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- row 3: notification slot + scrubber + bottom bar -->
+  <div style="position:relative;z-index:3;padding:0 14px 26px;display:flex;flex-direction:column;gap:12px;background:linear-gradient(0deg,rgba(0,0,0,.9),rgba(0,0,0,0))">
+    <!-- ONE notification slot — alerts queue here instead of stacking absolutely -->
+    <div style="display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:12px;border:1px solid rgba(251,191,36,.28);background:rgba(251,191,36,.12);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%)">
+      <span style="font-size:12px">⚠</span>
+      <p style="margin:0;flex:1;font-size:11px;line-height:1.45;color:#fde68a">This server has no captions. Switch to Filmxy for subtitles.</p>
+      <button type="button" onClick="{{ openServers }}" style="border:0;background:none;padding:0;cursor:pointer;font-family:inherit;font-size:11px;font-weight:600;color:#fff;white-space:nowrap">Switch</button>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:7px">
+      <div style="position:relative;height:4px;border-radius:99px;background:rgba(255,255,255,.2)">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:42%;border-radius:99px;background:rgba(255,255,255,.34)"></div>
+        <div style="position:absolute;left:0;top:0;bottom:0;width:31%;border-radius:99px;background:#fff"></div>
+        <div style="position:absolute;left:31%;top:50%;width:12px;height:12px;border-radius:99px;background:#fff;transform:translate(-50%,-50%);box-shadow:0 2px 8px rgba(0,0,0,.6)"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:10.5px;color:rgba(255,255,255,.6);font-variant-numeric:tabular-nums">
+        <span>42:18</span><span>-1:09:52</span>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:6px">
+      <div style="display:flex;gap:6px">
+        <button type="button" style="height:34px;padding:0 12px;border-radius:99px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.07);color:#fff;font-family:inherit;font-size:11.5px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px">
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><rect x="2.5" y="5" width="15" height="10" rx="2" stroke="#fff" stroke-width="1.4"></rect><path d="M5.5 11.5h3M11 11.5h3.5" stroke="#fff" stroke-width="1.4" stroke-linecap="round"></path></svg>
+          CC
+        </button>
+        <button type="button" style="height:34px;padding:0 12px;border-radius:99px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.07);color:#fff;font-family:inherit;font-size:11.5px;font-weight:500;cursor:pointer">1.0×</button>
+      </div>
+      <button type="button" onClick="{{ openEpisodes }}" style="height:34px;padding:0 13px;border-radius:99px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.07);color:#fff;font-family:inherit;font-size:11.5px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px">
+        <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M4 6h12M4 10h12M4 14h7" stroke="#fff" stroke-width="1.5" stroke-linecap="round"></path></svg>
+        Episodes
+      </button>
+    </div>
+
+    <!-- rotate = fullscreen. no fullscreen button, no three fallback paths -->
+    <div style="display:flex;align-items:center;justify-content:center;gap:7px;padding-top:2px">
+      <svg width="13" height="13" viewBox="0 0 20 20" fill="none"><rect x="3" y="6" width="14" height="8" rx="1.6" stroke="rgba(255,255,255,.34)" stroke-width="1.4"></rect><path d="M9 17.4a8 8 0 0 0 0-14.8" stroke="rgba(255,255,255,.34)" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="2 2"></path></svg>
+      <span style="font-size:10.5px;color:rgba(255,255,255,.34)">Rotate for fullscreen</span>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<!-- ══ SHEETS ══ -->
+<sc-if value="{{ sheetOpen }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;z-index:90;display:flex;flex-direction:column;justify-content:flex-end">
+  <button type="button" onClick="{{ closeSheet }}" aria-label="Close" style="position:absolute;inset:0;border:0;padding:0;cursor:pointer;background:rgba(4,4,7,.62);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)"></button>
+  <div style="position:relative;max-height:78%;display:flex;flex-direction:column;border-radius:22px 22px 0 0;border-top:1px solid rgba(255,255,255,.12);background:rgba(16,15,22,.86);backdrop-filter:blur(40px) saturate(180%);-webkit-backdrop-filter:blur(40px) saturate(180%);box-shadow:0 -24px 64px -12px rgba(0,0,0,.85)">
+    <div style="flex:none;display:flex;justify-content:center;padding:9px 0 3px"><span style="width:36px;height:4px;border-radius:99px;background:rgba(255,255,255,.24)"></span></div>
+    <div style="flex:none;padding:6px 18px 12px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <h2 style="margin:0;font-size:17px;font-weight:600;letter-spacing:-.025em">{{ sheetTitle }}</h2>
+      <button type="button" onClick="{{ closeSheet }}" style="width:30px;height:30px;border-radius:99px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0">
+        <svg width="12" height="12" viewBox="0 0 20 20" fill="none"><path d="M5 5l10 10M15 5 5 15" stroke="rgba(255,255,255,.72)" stroke-width="1.8" stroke-linecap="round"></path></svg>
+      </button>
+    </div>
+    <div style="flex:1;min-height:0;overflow:auto;padding:0 18px 32px">
+
+      <sc-if value="{{ sheetIsEpisodes }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;gap:7px;overflow-x:auto;scrollbar-width:none">
+          <sc-for list="{{ seasons }}" as="s" hint-placeholder-count="4">
+            <button type="button" onClick="{{ s.pick }}" style="flex:none;height:32px;padding:0 14px;border-radius:99px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:{{ s.weight }};border:1px solid {{ s.border }};background:{{ s.bg }};color:{{ s.color }}">{{ s.label }}</button>
+          </sc-for>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <sc-for list="{{ episodes }}" as="e" hint-placeholder-count="5">
+            <button type="button" onClick="{{ play }}" style="display:grid;grid-template-columns:104px 1fr;gap:12px;padding:0;border:0;background:none;cursor:pointer;text-align:left">
+              <div style="position:relative;width:104px;aspect-ratio:16/9;border-radius:9px;overflow:hidden;background:{{ e.art }}">
+                <div style="position:absolute;left:0;right:0;bottom:0;height:2.5px;background:rgba(255,255,255,.18)"><div style="height:100%;background:#c4b5fd;width:{{ e.pct }}"></div></div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:3px;min-width:0">
+                <div style="display:flex;align-items:baseline;gap:7px">
+                  <span style="font-size:11px;font-weight:600;color:#c4b5fd">{{ e.num }}</span>
+                  <p style="margin:0;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ e.title }}</p>
+                </div>
+                <p style="margin:0;font-size:11px;line-height:1.5;color:rgba(255,255,255,.48);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">{{ e.blurb }}</p>
+                <p style="margin:0;font-size:10.5px;color:rgba(255,255,255,.34)">{{ e.dur }}</p>
+              </div>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ sheetIsServers }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:9px">
+        <p style="margin:0 0 3px;font-size:12px;line-height:1.6;color:rgba(255,255,255,.5)">Sources are probed in order. Captions and 4K availability shown up front, so a switch is never a guess.</p>
+        <sc-for list="{{ servers }}" as="s" hint-placeholder-count="4">
+          <button type="button" onClick="{{ closeSheet }}" style="display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:13px;border-radius:14px;cursor:pointer;text-align:left;font-family:inherit;border:1px solid {{ s.border }};background:{{ s.bg }}">
+            <span style="width:8px;height:8px;border-radius:99px;background:{{ s.dot }}"></span>
+            <span style="display:flex;flex-direction:column;gap:3px">
+              <span style="font-size:13.5px;font-weight:600;color:#fff">{{ s.label }}</span>
+              <span style="font-size:11px;color:rgba(255,255,255,.45)">{{ s.sub }}</span>
+            </span>
+            <span style="font-size:10.5px;font-weight:600;color:{{ s.tagColor }};letter-spacing:.06em;text-transform:uppercase">{{ s.tag }}</span>
+          </button>
+        </sc-for>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ sheetIsParty }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div style="display:flex;align-items:center;gap:11px;padding:14px;border-radius:16px;border:1px solid rgba(196,181,253,.22);background:linear-gradient(140deg,rgba(124,58,237,.24),rgba(255,255,255,.03))">
+          <div style="width:44px;aspect-ratio:2/3;border-radius:8px;background:{{ title.art }}"></div>
+          <div style="display:flex;flex-direction:column;gap:3px">
+            <p style="margin:0;font-size:14px;font-weight:600">{{ title.title }}</p>
+            <p style="margin:0;font-size:11.5px;color:rgba(255,255,255,.55)">Synced · host controls playback</p>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <h3 style="margin:0;font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.4)">In the room</h3>
+          <sc-for list="{{ party }}" as="m" hint-placeholder-count="3">
+            <div style="display:grid;grid-template-columns:auto 1fr auto;gap:11px;align-items:center;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.03)">
+              <span style="width:30px;height:30px;border-radius:99px;background:{{ m.art }};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#140f22">{{ m.initial }}</span>
+              <span style="display:flex;flex-direction:column;gap:1px">
+                <span style="font-size:13px;font-weight:500">{{ m.name }}</span>
+                <span style="font-size:10.5px;color:rgba(255,255,255,.4)">{{ m.state }}</span>
+              </span>
+              <span style="font-size:15px">{{ m.reaction }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button type="button" onClick="{{ play }}" style="flex:1;height:44px;border-radius:99px;border:0;background:#fff;color:#0b0a0f;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer">Start together</button>
+          <button type="button" onClick="{{ closeSheet }}" style="height:44px;padding:0 16px;border-radius:99px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);color:#fff;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">Copy link</button>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ sheetIsVibe }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <p style="margin:0;font-size:12.5px;line-height:1.6;color:rgba(255,255,255,.55)">{{ vibeBlurb }}</p>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px 9px">
+          <sc-for list="{{ grid }}" as="p" hint-placeholder-count="6">
+            <button type="button" onClick="{{ p.open }}" style="padding:0;border:0;background:none;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:6px">
+              <div style="width:100%;aspect-ratio:2/3;border-radius:11px;background:{{ p.art }}"></div>
+              <p style="margin:0;font-size:11.5px;font-weight:500;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">{{ p.title }}</p>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ sheetIsTrailer }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="position:relative;width:100%;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:{{ title.art }}">
+          <div style="position:absolute;inset:0;background:rgba(0,0,0,.42)"></div>
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
+            <span style="width:54px;height:54px;border-radius:99px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);display:flex;align-items:center;justify-content:center">
+              <svg width="17" height="19" viewBox="0 0 12 14"><path d="M1 1.4v11.2L11 7 1 1.4Z" fill="#fff"></path></svg>
+            </span>
+          </div>
+        </div>
+        <p style="margin:0;font-size:12.5px;color:rgba(255,255,255,.5);line-height:1.6">Trailer plays only on a deliberate tap — never auto-started under your thumb.</p>
+      </div>
+      </sc-if>
+
+    </div>
+  </div>
+</div>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:402,&quot;height&quot;:874}}">
+const A = (a, b) => `linear-gradient(155deg,${a} 0%,${b} 100%)`;
+
+const ART = {
+  dune: A("#8a6a3f", "#241a12"),
+  shogun: A("#7f2d3a", "#1d1116"),
+  severance: A("#2b6f8f", "#101a22"),
+  bear: A("#9a6b2f", "#1e1610"),
+  arcane: A("#5b3d9e", "#160f27"),
+  frieren: A("#3f7f6e", "#111d1a"),
+  jjk: A("#4a4f7a", "#12141f"),
+  samurai: A("#8c3a2a", "#1d100c"),
+  boys: A("#8f2f2f", "#1d0f0f"),
+  fallout: A("#7d6a2b", "#1c1810"),
+  chainsaw: A("#8a5a2c", "#1d1410"),
+  solo: A("#2f5c8f", "#101823"),
+  dandadan: A("#7c3f7a", "#1c1020"),
+  poor: A("#6f8f4a", "#161d10"),
+  oppen: A("#6f6f78", "#15151a"),
+  gojo: A("#3c6f8a", "#111a20"),
+};
+
+const TITLES = {
+  shogun: {
+    key: "shogun", title: "Shōgun", year: "2024", runtime: "10 episodes", cert: "18+", rating: "8.7",
+    art: ART.shogun, ambient: "radial-gradient(ellipse at 30% 100%,#b04455,transparent 66%),radial-gradient(ellipse at 78% 100%,#6b2233,transparent 62%)",
+    playLabel: "Resume Ep 7", nowPlaying: "S1 · E7 — A Stick of Time", isSeries: true, seasonLabel: "Season 1",
+    synopsis: "In feudal Japan, an English pilot is shipwrecked into a court of shifting alliances, where a warlord's ambition and a translator's divided loyalties decide the fate of an empire.",
+    genres: ["Historical", "Drama", "War"],
+    providers: [["HULU", A("#1a7f4b", "#0d3b24")], ["MAX", A("#3f3fa0", "#1b1b45")], ["PRIME", A("#1f6f8f", "#0f2a35")]],
+    cast: [["Hiroyuki Sanada", "Yoshii Toranaga"], ["Cosmo Jarvis", "John Blackthorne"], ["Anna Sawai", "Toda Mariko"], ["Tadanobu Asano", "Kashigi Yabushige"]],
+  },
+  dune: {
+    key: "dune", title: "Dune: Part Two", year: "2024", runtime: "2h 46m", cert: "13+", rating: "8.2",
+    art: ART.dune, ambient: "radial-gradient(ellipse at 34% 100%,#d3a052,transparent 64%),radial-gradient(ellipse at 76% 100%,#8a5a2a,transparent 60%)",
+    playLabel: "Play", nowPlaying: "Feature · 2h 46m", isSeries: false, seasonLabel: "",
+    synopsis: "Paul Atreides unites with the Fremen to wage war on the houses that destroyed his family, torn between the love he holds and the messianic future he alone can see.",
+    genres: ["Sci-Fi", "Adventure", "Drama"],
+    providers: [["MAX", A("#3f3fa0", "#1b1b45")], ["PRIME", A("#1f6f8f", "#0f2a35")], ["APPLE", A("#4a4a52", "#1c1c22")]],
+    cast: [["Timothée Chalamet", "Paul Atreides"], ["Zendaya", "Chani"], ["Rebecca Ferguson", "Jessica"], ["Austin Butler", "Feyd-Rautha"]],
+  },
+  frieren: {
+    key: "frieren", title: "Frieren: Beyond Journey's End", year: "2026", runtime: "Season 2 · 12 eps", cert: "13+", rating: "9.0",
+    art: ART.frieren, ambient: "radial-gradient(ellipse at 32% 100%,#54b39a,transparent 64%),radial-gradient(ellipse at 74% 100%,#2c6f5f,transparent 60%)",
+    playLabel: "Resume Ep 3", nowPlaying: "S2 · E3 — The Land of Ash", isSeries: true, seasonLabel: "Season 2",
+    synopsis: "An elven mage who outlives her party sets out to understand the humans she never troubled to know, one small errand at a time.",
+    genres: ["Fantasy", "Adventure", "Slice of Life"],
+    providers: [["CRUNCH", A("#c26a1f", "#3a1e08")], ["NETFLIX", A("#8f2020", "#2c0c0c")], ["HIDIVE", A("#1f6f8f", "#0f2a35")]],
+    cast: [["Atsumi Tanezaki", "Frieren"], ["Kana Ichinose", "Fern"], ["Chiaki Kobayashi", "Stark"], ["Hiroki Touchi", "Himmel"]],
+  },
+};
+
+const EPISODES = [
+  ["E5", "Broken to the Fist", "Toranaga's retreat becomes a wager on the loyalty of men who have every reason to betray him.", "58m", "100%"],
+  ["E6", "Ladies of the Willow World", "A season of quiet manoeuvring at Ajiro ends the only way court intrigue can.", "54m", "100%"],
+  ["E7", "A Stick of Time", "Grief arrives on a still morning, and a stone garden refuses to be finished.", "52m", "31%"],
+  ["E8", "Abyss of Life", "The consequences of a single letter ripple through Osaka.", "56m", "0%"],
+  ["E9", "Crimson Sky", "Mariko walks into the castle knowing exactly what it will cost.", "61m", "0%"],
+];
+
+class Component extends DCLogic {
+  state = { tab: "home", screen: "home", sheet: null, titleKey: "shogun", segment: "movies", season: 1, playing: true, vibe: "Slow-burn revenge" };
+
+  set = (patch) => this.setState(patch);
+
+  poster(key, title, meta, rating) {
+    return { art: ART[key], title, meta, rating, open: () => this.set({ screen: "detail", titleKey: TITLES[key] ? key : "dune", sheet: null }) };
+  }
+
+  renderVals() {
+    const s = this.state;
+    const raw = TITLES[s.titleKey] ?? TITLES.shogun;
+    const title = Object.assign({}, raw, {
+      genres: raw.genres.map((label) => ({ label })),
+      providers: raw.providers.map(([short, art]) => ({ short, art })),
+      cast: raw.cast.map(([name, role]) => ({ name, role, art: raw.art })),
+    });
+    const openTitle = (k) => () => this.set({ screen: "detail", titleKey: TITLES[k] ? k : "dune", sheet: null });
+
+    const tabDef = [
+      ["home", "Home", React.createElement("svg", { width: 21, height: 21, viewBox: "0 0 22 22", fill: "none" }, React.createElement("path", { d: "M3.4 9.2 11 3.2l7.6 6v9.2a.9.9 0 0 1-.9.9h-4.2v-5.6H8.5v5.6H4.3a.9.9 0 0 1-.9-.9V9.2Z", stroke: "currentColor", strokeWidth: 1.6, strokeLinecap: "round", strokeLinejoin: "round" }))],
+      ["search", "Search", React.createElement("svg", { width: 21, height: 21, viewBox: "0 0 22 22", fill: "none" }, React.createElement("circle", { cx: 10, cy: 10, r: 6.4, stroke: "currentColor", strokeWidth: 1.6 }), React.createElement("path", { d: "M14.8 14.8 18.6 18.6", stroke: "currentColor", strokeWidth: 1.6, strokeLinecap: "round" }))],
+      ["browse", "Browse", React.createElement("svg", { width: 21, height: 21, viewBox: "0 0 22 22", fill: "none" }, React.createElement("rect", { x: 3, y: 3.6, width: 6.6, height: 6.6, rx: 1.8, stroke: "currentColor", strokeWidth: 1.6 }), React.createElement("rect", { x: 12.4, y: 3.6, width: 6.6, height: 6.6, rx: 1.8, stroke: "currentColor", strokeWidth: 1.6 }), React.createElement("rect", { x: 3, y: 12.8, width: 6.6, height: 6.6, rx: 1.8, stroke: "currentColor", strokeWidth: 1.6 }), React.createElement("rect", { x: 12.4, y: 12.8, width: 6.6, height: 6.6, rx: 1.8, stroke: "currentColor", strokeWidth: 1.6 }))],
+      ["anime", "Anime", React.createElement("svg", { width: 21, height: 21, viewBox: "0 0 22 22", fill: "none" }, React.createElement("path", { d: "M11 3.4c2.2 2.6 2.2 5.6 0 8.2-2.2-2.6-2.2-5.6 0-8.2Z", stroke: "currentColor", strokeWidth: 1.5 }), React.createElement("path", { d: "M11 11.6c2.9-1.3 5.6-.5 7.4 2-3.1.9-5.7.2-7.4-2Zm0 0c-2.9-1.3-5.6-.5-7.4 2 3.1.9 5.7.2 7.4-2Z", stroke: "currentColor", strokeWidth: 1.5 }), React.createElement("path", { d: "M11 13.4v5.2", stroke: "currentColor", strokeWidth: 1.5, strokeLinecap: "round" }))],
+      ["space", "My Space", React.createElement("svg", { width: 21, height: 21, viewBox: "0 0 22 22", fill: "none" }, React.createElement("circle", { cx: 11, cy: 8, r: 3.4, stroke: "currentColor", strokeWidth: 1.6 }), React.createElement("path", { d: "M4.6 18.4c.6-3.2 3.2-5 6.4-5s5.8 1.8 6.4 5", stroke: "currentColor", strokeWidth: 1.6, strokeLinecap: "round" }))],
+    ];
+
+    const openVibe = (label) => () => this.set({ sheet: "vibe", vibe: label });
+
+    return {
+      isTabScreen: s.screen !== "detail" && s.screen !== "player",
+      isHome: s.screen === "home", isBrowse: s.screen === "browse", isSearch: s.screen === "search",
+      isAnime: s.screen === "anime", isSpace: s.screen === "space",
+      isDetail: s.screen === "detail", isPlayer: s.screen === "player",
+
+      tabs: tabDef.map(([id, label, icon]) => ({
+        label, icon,
+        color: s.screen === id ? "#ffffff" : "rgba(255,255,255,.42)",
+        weight: s.screen === id ? 600 : 500,
+        dot: s.screen === id ? "#c4b5fd" : "transparent",
+        pick: () => this.set({ screen: id, tab: id, sheet: null }),
+      })),
+
+      goSpace: () => this.set({ screen: "space", sheet: null }),
+      goBrowse: () => this.set({ screen: "browse", sheet: null }),
+      goCast: () => this.set({ sheet: "servers" }),
+      back: () => this.set({ screen: s.screen === "player" ? "detail" : s.tab, sheet: null }),
+      play: () => this.set({ screen: "player", sheet: null, playing: true }),
+      togglePlay: () => this.set({ playing: !s.playing }),
+      playGlyph: s.playing
+        ? React.createElement("svg", { width: 22, height: 24, viewBox: "0 0 22 24" }, React.createElement("rect", { x: 3, y: 2, width: 5.4, height: 20, rx: 1.6, fill: "#fff" }), React.createElement("rect", { x: 13.6, y: 2, width: 5.4, height: 20, rx: 1.6, fill: "#fff" }))
+        : React.createElement("svg", { width: 22, height: 24, viewBox: "0 0 20 24" }, React.createElement("path", { d: "M2 1.6v20.8L19 12 2 1.6Z", fill: "#fff" })),
+      openEpisodes: () => this.set({ sheet: "episodes" }),
+      openServers: () => this.set({ sheet: "servers" }),
+      openParty: () => this.set({ sheet: "party" }),
+      openTrailer: () => this.set({ sheet: "trailer" }),
+      closeSheet: () => this.set({ sheet: null }),
+      openFeatured: openTitle("dune"),
+
+      sheetOpen: s.sheet !== null,
+      sheetIsEpisodes: s.sheet === "episodes", sheetIsServers: s.sheet === "servers",
+      sheetIsParty: s.sheet === "party", sheetIsVibe: s.sheet === "vibe", sheetIsTrailer: s.sheet === "trailer",
+      sheetTitle: { episodes: "Episodes", servers: "Choose a source", party: "Watch party", vibe: s.vibe, trailer: "Trailer" }[s.sheet] ?? "",
+      vibeBlurb: "Built from your watch history — weighted by how much of each title you actually finished, not just what you opened.",
+
+      title,
+
+      resume: [
+        { title: "Shōgun", tag: "S1 · E7", left: "38 min left", pct: "31%", art: ART.shogun, open: openTitle("shogun") },
+        { title: "Dune: Part Two", tag: "Movie", left: "1h 12m left", pct: "56%", art: ART.dune, open: openTitle("dune") },
+        { title: "Frieren", tag: "S2 · E3", left: "9 min left", pct: "78%", art: ART.frieren, open: openTitle("frieren") },
+      ],
+
+      featured: { title: "Dune: Part Two", kicker: "Because you finished Arrival", meta: "2024 · Sci-Fi · 2h 46m · ★ 8.2", art: ART.dune },
+
+      vibes: [
+        { label: "Slow-burn revenge", count: "24 titles", glyph: "🗡", art: A("rgba(139,92,246,.26)", "rgba(23,19,31,.9)"), open: openVibe("Slow-burn revenge") },
+        { label: "Cosy and low stakes", count: "31 titles", glyph: "🍵", art: A("rgba(45,140,110,.24)", "rgba(15,25,22,.9)"), open: openVibe("Cosy and low stakes") },
+        { label: "Beautifully bleak", count: "18 titles", glyph: "🌫", art: A("rgba(80,110,160,.24)", "rgba(14,18,26,.9)"), open: openVibe("Beautifully bleak") },
+        { label: "One perfect heist", count: "12 titles", glyph: "🎲", art: A("rgba(190,120,40,.24)", "rgba(26,20,13,.9)"), open: openVibe("One perfect heist") },
+      ],
+
+      trending: [
+        this.poster("shogun", "Shōgun", "2024 · Series", "8.7"),
+        this.poster("dune", "Dune: Part Two", "2024 · Movie", "8.2"),
+        this.poster("severance", "Severance", "2025 · Series", "8.8"),
+        this.poster("bear", "The Bear", "2024 · Series", "8.6"),
+        this.poster("arcane", "Arcane", "2024 · Series", "9.0"),
+        this.poster("poor", "Poor Things", "2023 · Movie", "7.9"),
+      ],
+
+      airing: [
+        { title: "Frieren S2", ep: "Episode 4", studio: "Madhouse · TV", in: "2d 04h", when: "Fri 23:30", art: ART.frieren, open: openTitle("frieren") },
+        { title: "Dan Da Dan S2", ep: "Episode 9", studio: "Science SARU · TV", in: "16h 12m", when: "Thu 00:26", art: ART.dandadan, open: openTitle("dandadan") },
+        { title: "Solo Leveling S3", ep: "Episode 2", studio: "A-1 Pictures · TV", in: "4d 09h", when: "Sun 12:00", art: ART.solo, open: openTitle("solo") },
+      ],
+
+      segments: [["movies", "Movies"], ["tv", "TV Shows"], ["cats", "Categories"]].map(([id, label]) => ({
+        label,
+        bg: s.segment === id ? "#ffffff" : "transparent",
+        color: s.segment === id ? "#0b0a0f" : "rgba(255,255,255,.6)",
+        weight: s.segment === id ? 600 : 500,
+        pick: () => this.set({ segment: id }),
+      })),
+      filters: ["All", "2026", "Top rated", "Sci-Fi", "Drama", "4K"].map((label) => ({ label })),
+
+      grid: [
+        this.poster("dune", "Dune: Part Two", "2024", "8.2"),
+        this.poster("oppen", "Oppenheimer", "2023", "8.1"),
+        this.poster("poor", "Poor Things", "2023", "7.9"),
+        this.poster("samurai", "Blue Eye Samurai", "2024", "8.8"),
+        this.poster("boys", "The Boys", "2024", "8.4"),
+        this.poster("fallout", "Fallout", "2024", "8.3"),
+        this.poster("severance", "Severance", "2025", "8.8"),
+        this.poster("bear", "The Bear", "2024", "8.6"),
+        this.poster("arcane", "Arcane", "2024", "9.0"),
+        this.poster("shogun", "Shōgun", "2024", "8.7"),
+        this.poster("gojo", "Gojo", "2025", "7.6"),
+        this.poster("chainsaw", "Chainsaw Man", "2025", "8.5"),
+      ],
+
+      vibeChips: ["Slow-burn revenge", "Cosy and low stakes", "Beautifully bleak", "One perfect heist", "Found family", "Quietly devastating", "Style over plot", "Comfort rewatch"].map((label) => ({ label, open: openVibe(label) })),
+
+      recent: [
+        { title: "Shōgun", meta: "Series · 2024", art: ART.shogun, open: openTitle("shogun") },
+        { title: "Frieren: Beyond Journey's End", meta: "Anime · 2026", art: ART.frieren, open: openTitle("frieren") },
+        { title: "Blue Eye Samurai", meta: "Anime · 2024", art: ART.samurai, open: openTitle("samurai") },
+        { title: "Oppenheimer", meta: "Movie · 2023", art: ART.oppen, open: openTitle("oppen") },
+      ],
+
+      epTicks: Array.from({ length: 12 }, (_, i) => ({ bg: i < 3 ? "#c4b5fd" : "rgba(255,255,255,.14)" })),
+
+      animeTop: [
+        { title: "Frieren: Beyond Journey's End", meta: "Madhouse · 12 eps", format: "TV", art: ART.frieren, open: openTitle("frieren") },
+        { title: "Jujutsu Kaisen", meta: "MAPPA · 23 eps", format: "TV", art: ART.jjk, open: openTitle("jjk") },
+        { title: "Dan Da Dan", meta: "Science SARU · 12 eps", format: "TV", art: ART.dandadan, open: openTitle("dandadan") },
+        { title: "Chainsaw Man: Reze Arc", meta: "MAPPA · Film", format: "Movie", art: ART.chainsaw, open: openTitle("chainsaw") },
+        { title: "Solo Leveling", meta: "A-1 Pictures · 13 eps", format: "TV", art: ART.solo, open: openTitle("solo") },
+      ],
+
+      spaceTiles: [
+        { label: "Watchlist", sub: "38 titles", glyph: "🔖", open: () => this.set({ screen: "space" }) },
+        { label: "Watch party", sub: "1 room live", glyph: "👥", open: () => this.set({ sheet: "party" }) },
+        { label: "Downloads", sub: "4 episodes", glyph: "⤓", open: () => this.set({ screen: "space" }) },
+        { label: "History", sub: "142 watched", glyph: "🕘", open: () => this.set({ screen: "space" }) },
+      ],
+
+      watchlist: [
+        this.poster("severance", "Severance", "2025", "8.8"),
+        this.poster("arcane", "Arcane", "2024", "9.0"),
+        this.poster("samurai", "Blue Eye Samurai", "2024", "8.8"),
+        this.poster("fallout", "Fallout", "2024", "8.3"),
+        this.poster("oppen", "Oppenheimer", "2023", "8.1"),
+        this.poster("solo", "Solo Leveling", "2026", "8.0"),
+      ],
+
+      related: [
+        this.poster("samurai", "Blue Eye Samurai", "2024", "8.8"),
+        this.poster("boys", "The Boys", "2024", "8.4"),
+        this.poster("arcane", "Arcane", "2024", "9.0"),
+        this.poster("fallout", "Fallout", "2024", "8.3"),
+      ],
+
+      episodes: EPISODES.map(([num, t, blurb, dur, pct]) => ({ num, title: t, blurb, dur, pct, art: title.art })),
+
+      seasons: [1, 2, 3, 4].map((n) => ({
+        label: `Season ${n}`,
+        weight: s.season === n ? 600 : 500,
+        border: s.season === n ? "rgba(196,181,253,.4)" : "rgba(255,255,255,.12)",
+        bg: s.season === n ? "rgba(196,181,253,.16)" : "rgba(255,255,255,.04)",
+        color: s.season === n ? "#e9e4ff" : "rgba(255,255,255,.6)",
+        pick: () => this.set({ season: n }),
+      })),
+
+      servers: [
+        { label: "Vidsrc", sub: "1080p · captions · fast", tag: "Playing", tagColor: "#4ade80", dot: "#4ade80", border: "rgba(74,222,128,.32)", bg: "rgba(74,222,128,.1)" },
+        { label: "Filmxy", sub: "1080p · captions", tag: "Ready", tagColor: "rgba(255,255,255,.5)", dot: "#4ade80", border: "rgba(255,255,255,.09)", bg: "rgba(255,255,255,.035)" },
+        { label: "Superembed", sub: "4K · no captions", tag: "Ready", tagColor: "rgba(255,255,255,.5)", dot: "#fbbf24", border: "rgba(255,255,255,.09)", bg: "rgba(255,255,255,.035)" },
+        { label: "Smashystream", sub: "720p · unverified", tag: "Failed", tagColor: "#f87171", dot: "#f87171", border: "rgba(255,255,255,.09)", bg: "rgba(255,255,255,.02)" },
+      ],
+
+      party: [
+        { name: "You", state: "Host · ready", initial: "N", reaction: "", art: A("#c4b5fd", "#6d28d9") },
+        { name: "Aarav", state: "Ready", initial: "A", reaction: "🔥", art: A("#7dd3fc", "#2563eb") },
+        { name: "Meera", state: "Buffering…", initial: "M", reaction: "😮", art: A("#fda4af", "#be123c") },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>
