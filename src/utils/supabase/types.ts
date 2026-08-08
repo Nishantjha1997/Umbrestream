@@ -43,6 +43,7 @@ export type Database = {
           release_date: string;
           season: number;
           title: string;
+          total_watched_seconds: number;
           type: string;
           updated_at: string;
           user_id: string;
@@ -62,6 +63,7 @@ export type Database = {
           release_date: string;
           season?: number;
           title: string;
+          total_watched_seconds?: number;
           type: string;
           updated_at?: string;
           user_id: string;
@@ -81,6 +83,7 @@ export type Database = {
           release_date?: string;
           season?: number;
           title?: string;
+          total_watched_seconds?: number;
           type?: string;
           updated_at?: string;
           user_id?: string;

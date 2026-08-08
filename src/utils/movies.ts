@@ -59,6 +59,22 @@ export const formatTimeLeft = (lastPosition: number, duration: number): string =
 };
 
 /**
+ * Total watched time as "Xh Ym" (or "Ym" under an hour, or "0m"), for the
+ * Account watch-time analytics. Deliberately not `movieDurationString`:
+ * that formats via `intervalToDuration`, whose `hours` is hours-within-the-
+ * current-day (0-23) — fine for a single title's runtime, which never
+ * approaches 24h, but silently wrong for a cumulative total, which easily
+ * can.
+ */
+export const formatWatchTime = (totalSeconds: number): string => {
+  const totalMinutes = Math.max(0, Math.round(totalSeconds / 60));
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  if (hours === 0) return `${minutes}m`;
+  return `${hours}h ${minutes}m`;
+};
+
+/**
  * Returns a string representing the time elapsed since the given date.
  *
  * @param date - The date to compare with the current date.

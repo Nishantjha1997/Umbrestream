@@ -18,6 +18,7 @@
 import Link from "next/link";
 import EclipseRing from "@/components/media/EclipseRing";
 import HomeEmptyState from "@/components/sections/Home/EmptyState";
+import HistoryItemActions from "@/components/ui/button/HistoryItemActions";
 import { useHomeHero, type HomeHeroPick } from "@/hooks/useHomeHero";
 
 const KIND_LABEL: Record<HomeHeroPick["media"]["kind"], string> = {
@@ -109,6 +110,16 @@ export default function ResumeHero() {
             className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/42 to-transparent to-[58%]"
           />
         </div>
+        {isResume && (
+          <HistoryItemActions
+            mediaId={pick.media.id}
+            type={pick.media.kind}
+            season={pick.season}
+            episode={pick.episode}
+            title={pick.media.title}
+            className="absolute top-2 right-2 z-20 flex gap-1"
+          />
+        )}
       </Link>
 
       <div className="flex min-w-0 flex-1 flex-col gap-[13px] pb-0.5">

@@ -44,6 +44,11 @@ export interface HomeHeroPick {
   remainingLabel?: string;
   /** Resume only, tv/anime, e.g. "Season 1, Episode 7". */
   episodeLabel?: string;
+  /** Resume only — the raw history row's identity, needed by
+   *  `HistoryItemActions` (mark-complete/remove) since it isn't derivable
+   *  from `playHref`'s string. */
+  season?: number;
+  episode?: number;
   /** Where the primary button goes — resumes at the saved position for a
    *  resume pick, starts from the top otherwise. */
   playHref: string;
@@ -86,6 +91,8 @@ function fromHistory(h: HistoryDetail): HomeHeroPick {
     progressPercent: percent,
     remainingLabel: formatTimeLeft(h.last_position, h.duration),
     episodeLabel: kind === "tv" || kind === "anime" ? `Season ${h.season} · Episode ${h.episode}` : undefined,
+    season: h.season,
+    episode: h.episode,
     playHref: playHrefFor(kind, h.media_id, h.season, h.episode),
   };
 }
@@ -130,7 +137,11 @@ export function useHomeHero() {
   });
 
   const pick = useMemo<HomeHeroPick | undefined>(() => {
-    if (histories.length > 0) return fromHistory(histories[0]);
+    // A completed title isn't "in progress" — `StillWatching`/
+    // `StillWatchingDesktop` apply the same filter so the rail always skips
+    // exactly whichever entry lands here, not just positional index 0.
+    const active = histories.find((h) => !h.completed);
+    if (active) return fromHistory(active);
 
     const rec = (recsQuery.data ?? [])[0];
     if (rec) {

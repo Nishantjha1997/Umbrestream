@@ -1,10 +1,11 @@
 "use client";
 
 /**
- * Section 01, "Still watching" (DESKTOP_SPEC.md §G) — continue-watching items
- * *after* whichever one `useHomeHero` already promoted to the hero above.
- * Same query key as `useHomeHero`/`ContinueWatching.tsx`, so this is a cache
- * hit rather than a second network round trip.
+ * Section 01, "Still watching" (DESKTOP_SPEC.md §G) — completed titles
+ * filtered out, then everything *after* whichever non-completed entry
+ * `useHomeHero` already promoted to the hero above. Same query key as
+ * `useHomeHero`, so this is a cache hit rather than a second network round
+ * trip.
  *
  * Built bespoke rather than on top of `<PosterCard>`/`<Shelf>`: this card
  * carries a corner progress ring sitting on the art (§G's "01" table), which
@@ -14,9 +15,11 @@
 
 import EclipseRing from "@/components/media/EclipseRing";
 import { getUserHistories } from "@/actions/histories";
+import HistoryItemActions from "@/components/ui/button/HistoryItemActions";
 import { useCustomCarousel } from "@/hooks/useCustomCarousel";
 import useSupabaseUser from "@/hooks/useSupabaseUser";
 import type { HistoryDetail } from "@/types/movie";
+import type { MediaKind } from "@/types/media";
 import { cn } from "@/utils/helpers";
 import { formatTimeLeft, getImageUrl } from "@/utils/movies";
 import { useQuery } from "@tanstack/react-query";
@@ -44,8 +47,11 @@ export default function StillWatchingDesktop() {
   });
 
   const histories = data?.success ? data.data ?? [] : [];
-  // Index 0 is already the hero above — this rail picks up where it leaves off.
-  const items = histories.slice(1, 1 + MAX_ITEMS);
+  // Completed titles aren't "still watching" — filtered before the slice so
+  // it always skips whichever entry the hero above is showing, not just
+  // positional index 0 (`useHomeHero` applies the same filter).
+  const active = histories.filter((h) => !h.completed);
+  const items = active.slice(1, 1 + MAX_ITEMS);
 
   const { emblaRef, scrollPrev, scrollNext, canScrollPrev, canScrollNext } = useCustomCarousel({
     align: "start",
@@ -53,9 +59,9 @@ export default function StillWatchingDesktop() {
     containScroll: "trimSnaps",
   });
 
-  // Fewer than two items total means the hero already shows the only one —
+  // Fewer than two active items means the hero already shows the only one —
   // an orphan header with nothing under it is worse than no section at all.
-  if (histories.length < 2) return null;
+  if (active.length < 2) return null;
 
   return (
     <section className="flex flex-col gap-4">
@@ -100,6 +106,14 @@ export default function StillWatchingDesktop() {
                       withBacking
                     />
                   </div>
+                  <HistoryItemActions
+                    mediaId={item.media_id}
+                    type={item.type as MediaKind}
+                    season={item.season}
+                    episode={item.episode}
+                    title={item.title}
+                    className="absolute top-2 right-2 flex gap-1"
+                  />
                 </div>
                 <div className="flex flex-col gap-0.5">
                   <p className="truncate text-[13px] leading-[1.3] font-medium text-white">

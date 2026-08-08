@@ -7,6 +7,7 @@ create table public.histories (
   episode integer not null default 0,
   duration double precision not null default 0,
   last_position double precision not null default 0,
+  total_watched_seconds double precision not null default 0,
   completed boolean not null default false,
   adult boolean not null,
   backdrop_path text,

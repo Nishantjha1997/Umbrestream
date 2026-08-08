@@ -1,7 +1,15 @@
 import { siteConfig } from "@/config/site";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { FiClock, FiDownload, FiHelpCircle, FiInfo, FiSettings, FiUser } from "react-icons/fi";
+import {
+  FiActivity,
+  FiClock,
+  FiDownload,
+  FiHelpCircle,
+  FiInfo,
+  FiSettings,
+  FiUser,
+} from "react-icons/fi";
 import { FiBarChart2 } from "react-icons/fi";
 import { getAdminAccess } from "@/lib/admin";
 
@@ -10,6 +18,12 @@ export const metadata: Metadata = { title: `My Space | ${siteConfig.name}` };
 const items = [
   { title: "Library", copy: "Saved movies, TV, and Anime", href: "/library", Icon: FiClock },
   { title: "Profile", copy: "Sign in and manage your account", href: "/auth", Icon: FiUser },
+  {
+    title: "Watch History",
+    copy: "Minutes watched, per title and in total",
+    href: "/space/history",
+    Icon: FiActivity,
+  },
   {
     title: "Playback settings",
     copy: "Theme-free, distraction-free playback",

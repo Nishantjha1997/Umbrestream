@@ -3,17 +3,19 @@
 /**
  * `PHONE_SPEC.md` §G "01 — Still watching" — the narrow ringed rail right
  * below the resume hero. Reads the same `["continue-watching", user?.id]`
- * query `ResumeHero` (via `useHomeHero`) and the old `ContinueWatching.tsx`
- * already populate, so this never issues a second network request, and
- * slices off index 0 — the hero above already promoted that one.
+ * query `ResumeHero` (via `useHomeHero`) already populates, so this never
+ * issues a second network request. Filters out completed titles, then
+ * slices off index 0 — the hero above already promoted whichever
+ * non-completed entry comes first.
  *
- * Tapping a card resumes playback directly rather than opening the detail
- * page, mirroring the existing `Home/Cards/Resume.tsx` card.
+ * Tapping a card resumes playback directly. `HistoryItemActions` lets a
+ * viewer remove a title or mark it complete without leaving the rail.
  */
 
 import Link from "next/link";
 import { getUserHistories } from "@/actions/histories";
 import EclipseRing from "@/components/media/EclipseRing";
+import HistoryItemActions from "@/components/ui/button/HistoryItemActions";
 import useSupabaseUser from "@/hooks/useSupabaseUser";
 import type { HistoryDetail } from "@/types/movie";
 import type { MediaKind } from "@/types/media";
@@ -37,7 +39,11 @@ export default function StillWatching() {
     enabled: !isUserLoading,
   });
 
-  const rest = (data?.success ? data.data ?? [] : []).slice(1);
+  // Completed titles aren't "still watching" — filtered before the slice so
+  // it always skips whichever entry the hero above is showing, not just
+  // positional index 0 (`useHomeHero` applies the same filter).
+  const active = (data?.success ? data.data ?? [] : []).filter((h) => !h.completed);
+  const rest = active.slice(1);
 
   if (rest.length === 0) return null;
 
@@ -74,6 +80,14 @@ export default function StillWatching() {
                   percent={percent}
                   withBacking
                   className="absolute right-[6px] bottom-[6px]"
+                />
+                <HistoryItemActions
+                  mediaId={item.media_id}
+                  type={item.type as MediaKind}
+                  season={item.season}
+                  episode={item.episode}
+                  title={item.title}
+                  className="absolute top-1 right-1 flex gap-1"
                 />
               </div>
               <div className="flex flex-col gap-0.5">

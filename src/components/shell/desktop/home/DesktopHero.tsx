@@ -11,6 +11,7 @@
 
 import EclipseRing from "@/components/media/EclipseRing";
 import HomeEmptyState from "@/components/sections/Home/EmptyState";
+import HistoryItemActions from "@/components/ui/button/HistoryItemActions";
 import { tmdbBrowser } from "@/api/tmdb-browser";
 import { useHomeHero, type HomeHeroPick } from "@/hooks/useHomeHero";
 import { cn } from "@/utils/helpers";
@@ -182,6 +183,16 @@ export default function DesktopHero() {
             <Info size={13} aria-hidden="true" />
             More info
           </Link>
+          {pick.source === "resume" && (
+            <HistoryItemActions
+              mediaId={pick.media.id}
+              type={pick.media.kind}
+              season={pick.season}
+              episode={pick.episode}
+              title={pick.media.title}
+              className="flex gap-1"
+            />
+          )}
         </div>
       </div>
     </section>
