@@ -343,3 +343,19 @@ Published handoff commits: `99ccaa4` (implementation) and `ee22166` (handoff sta
 - Completed in commit `4f38142`, pushed to `main`, and confirmed READY on Vercel production (`umbrestream-du0oq4o3e-nishants-projects-7d9628b2.vercel.app`, 1m 8s build).
 - Live `streamfree.online` verification confirmed the `02 Tonight` image source is `https://image.tmdb.org/t/p/original/etj8E2o0Bud0HkONVQPjyCkIvpv.jpg`.
 - `/admin` correctly redirects unauthenticated visitors to `/auth`. The supplied email/password did not authenticate: the live form returned “That email and password don’t match an account.” No account was created automatically.
+
+## Portfolio deployment and nishant.top DNS handoff — 2026-08-10
+
+- Portfolio repository: `C:\Users\DELL_\OneDrive\Desktop\Projects\Projects\My Web Sites\nishant-portfolio`.
+- Portfolio GitHub: `https://github.com/Nishantjha1997/nishant-portfolio`.
+- Portfolio content release is pushed as `825b18c`; the README/privacy and deployment handoff update is pushed as `5c324e8`.
+- Local portfolio validation remains green: typecheck, lint (one pre-existing PostCSS anonymous-default-export warning), production build, route generation, resume headers, and the phone-number leak scan.
+- Vercel project: `nishant-portfolio` under `Nishant's projects`.
+- Root cause of the failed `825b18c` deployment was Vercel's stale Root Directory setting pointing to `portfolio`, which does not exist in the separate repository. The setting was changed to the repository root in Vercel Project Settings.
+- A corrected redeploy of `825b18c` completed successfully as Vercel deployment `Gx53wH9zCg2duqXnDB46Fw4igLUN`, and the README commit `5c324e8` completed successfully as deployment `2jKtfDV89sSkwxsc2syXBUchWPn3`. The latest portfolio deployment is Ready.
+- Vercel has `nishant.top` and `www.nishant.top` attached to Production but currently reports both as Invalid Configuration because DNS is not yet pointed at Vercel.
+- Exact Namecheap records shown by Vercel:
+  - `A` host `@` -> `216.198.79.1`
+  - `CNAME` host `www` -> `3fb42bb65e845d94.vercel-dns-017.com.`
+- The available automated browser session reached Namecheap's login page, so no DNS records were changed in this session. Do not guess or reuse StreamFree's CNAME. The next agent should sign in to the correct Namecheap account, preserve unrelated records, replace only parking/redirect records for `nishant.top`, then refresh Vercel and verify SSL, apex, and `www` redirect.
+- YouTube Scripto-Scribe remains the final/lowest-priority task and must not be advertised as live until real transcript extraction works on a Vercel deployment.
