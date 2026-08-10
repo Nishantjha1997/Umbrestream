@@ -20,6 +20,7 @@ import EclipseRing from "@/components/media/EclipseRing";
 import HomeEmptyState from "@/components/sections/Home/EmptyState";
 import HistoryItemActions from "@/components/ui/button/HistoryItemActions";
 import { useHomeHero, type HomeHeroPick } from "@/hooks/useHomeHero";
+import { getHighResolutionImageUrl } from "@/utils/movies";
 
 const KIND_LABEL: Record<HomeHeroPick["media"]["kind"], string> = {
   movie: "Movie",
@@ -75,6 +76,7 @@ export default function ResumeHero() {
   }
 
   const isResume = pick.source === "resume";
+  const heroPosterUrl = getHighResolutionImageUrl(pick.media.posterUrl) ?? pick.media.posterUrl;
   const topLine = pick.episodeLabel ?? metaCaption(pick);
   const bottomLine = pick.remainingLabel ?? "New for you";
   const pctLabel = `${Math.round(pick.progressPercent ?? 0)}%`;
@@ -89,7 +91,7 @@ export default function ResumeHero() {
         {/* Decorative bloom: the crisp plate below carries the real art. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={pick.media.posterUrl}
+          src={heroPosterUrl}
           alt=""
           aria-hidden="true"
           className="absolute inset-x-2 top-[22px] -bottom-3.5 rounded-[18px] object-cover opacity-90 blur-[30px]"
@@ -97,7 +99,7 @@ export default function ResumeHero() {
         <div className="relative z-10 aspect-2/3 w-[146px] overflow-hidden rounded-[13px] shadow-[0_28px_62px_-20px_rgba(0,0,0,.98),0_0_0_1px_rgba(255,255,255,.11)] transition-transform duration-(--duration-base) ease-(--ease-out-quint) group-focus-visible:scale-[1.02] motion-reduce:transition-none">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={pick.media.posterUrl}
+            src={heroPosterUrl}
             alt=""
             aria-hidden="true"
             loading="eager"

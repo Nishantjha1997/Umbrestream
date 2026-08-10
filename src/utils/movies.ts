@@ -148,6 +148,18 @@ export const getImageUrl = (
   return path ? `https://image.tmdb.org/t/p/${size}/${path}` : fallback;
 };
 
+/**
+ * Promotes a ready-to-render TMDB image to the original asset for cinematic
+ * hero surfaces. Rails intentionally keep using the smaller `w500` variant;
+ * only the large hero should pay the cost of the HD artwork. Non-TMDB URLs
+ * (including AniList artwork) are already provider-sized and pass through.
+ */
+export const getHighResolutionImageUrl = (url?: string): string | undefined => {
+  if (!url) return undefined;
+  if (!url.includes("image.tmdb.org/t/p/")) return url;
+  return url.replace(/\/t\/p\/(?:w500|w780|w1280|w1920)\//, "/t/p/original/");
+};
+
 /** Minimal structural shape of a TMDB `images.logos` entry. */
 type TmdbLogo = { iso_639_1: string | null; file_path: string };
 

@@ -16,6 +16,7 @@ import { tmdbBrowser } from "@/api/tmdb-browser";
 import { useHomeHero, type HomeHeroPick } from "@/hooks/useHomeHero";
 import { cn } from "@/utils/helpers";
 import { Info, PlayFilled } from "@/utils/icons";
+import { getHighResolutionImageUrl } from "@/utils/movies";
 import { Skeleton } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
@@ -87,7 +88,11 @@ export default function DesktopHero() {
     );
   }
 
-  const art = pick.media.backdropUrl ?? pick.media.posterUrl;
+  const art =
+    getHighResolutionImageUrl(pick.media.backdropUrl) ??
+    getHighResolutionImageUrl(pick.media.posterUrl) ??
+    pick.media.backdropUrl ??
+    pick.media.posterUrl;
   const caption = captionFor(pick);
   const showRing = pick.source === "resume" && pick.progressPercent !== undefined;
 

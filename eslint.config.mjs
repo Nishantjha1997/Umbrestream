@@ -25,6 +25,7 @@ const eslintConfig = [
       "next-env.d.ts",
       "public/sw.js",
       "public/workbox-*.js",
+      "portfolio/**",
     ],
   },
   {
