@@ -31,7 +31,9 @@ export type QueryList<T extends Movie | TV> = {
 
 export type SiteConfigType = {
   name: string;
+  seoTitle: string;
   description: string;
+  keywords: string[];
   favicon: string;
   navItems: {
     label: string;

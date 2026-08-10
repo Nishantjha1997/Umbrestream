@@ -22,11 +22,30 @@ import ImmersiveAppShell from "@/components/ui/layout/ImmersiveAppShell";
 import SiteActivityTracker from "@/components/analytics/SiteActivityTracker";
 
 const UMBRA_UI_V2_ENABLED = process.env.NEXT_PUBLIC_UMBRA_UI_V2 !== "false";
+const SITE_URL = "https://umbrestream.vercel.app";
 
 export const metadata: Metadata = {
-  title: siteConfig.name,
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: siteConfig.seoTitle,
+    // Child routes already provide their complete branded titles.
+    template: "%s",
+  },
   applicationName: siteConfig.name,
   description: siteConfig.description,
+  keywords: siteConfig.keywords,
+  alternates: { canonical: "/" },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
   manifest: "/manifest.json",
   icons: {
     icon: siteConfig.favicon,
@@ -42,20 +61,15 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary",
-    title: {
-      default: siteConfig.name,
-      template: siteConfig.name,
-    },
+    title: siteConfig.seoTitle,
     description: siteConfig.description,
   },
   openGraph: {
     type: "website",
     siteName: siteConfig.name,
-    title: {
-      default: siteConfig.name,
-      template: siteConfig.name,
-    },
+    title: siteConfig.seoTitle,
     description: siteConfig.description,
+    url: SITE_URL,
   },
   formatDetection: {
     telephone: false,

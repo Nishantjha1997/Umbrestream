@@ -24,8 +24,22 @@ type PagedResult<T> = {
 };
 
 export const siteConfig: SiteConfigType = {
-  name: "Umbra",
-  description: "Discover movies, TV shows, and anime in one place.",
+  name: "Umbra Stream",
+  seoTitle: "Umbra Stream | Free Movies, TV Series & Anime",
+  description:
+    "Umbra Stream helps you discover movies, TV series, and anime in one place, with episode browsing, subtitles, watch history, and a mobile-friendly viewing experience.",
+  keywords: [
+    "umbrestream",
+    "umbra stream",
+    "free movies",
+    "watch movies online",
+    "TV series streaming",
+    "anime streaming",
+    "watch anime online",
+    "movie discovery",
+    "subtitles",
+    "mobile streaming",
+  ],
   favicon: "/favicon.ico",
   // Five items (Phase 3, §7 — "Seven dock items, two of which go nowhere").
   // Movies, TV, and Categories folded into Browse as segments

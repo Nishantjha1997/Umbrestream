@@ -1,8 +1,8 @@
 {
   "id": "/",
-  "name": "Umbra",
+  "name": "Umbra Stream",
   "short_name": "Umbra",
-  "description": "Discover movies, TV shows, and anime in one place.",
+  "description": "Discover movies, TV series, and anime with episode browsing, subtitles, and watch history.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

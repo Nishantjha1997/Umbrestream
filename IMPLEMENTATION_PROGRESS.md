@@ -2,6 +2,14 @@
 
 Last updated: 2026-08-10
 
+## SEO identity and DMCA pages (2026-08-10)
+
+- Rebranded public metadata from the minimal `Umbra` title to `Umbra Stream | Free Movies, TV Series & Anime`; removed any Vercel branding from site metadata, Open Graph, Twitter cards, and the PWA manifest.
+- Expanded the description and keyword set around `umbrestream`, movies, TV series, anime, subtitles, watch history, and mobile viewing. Search engines may take time to recrawl and replace the current result snippet.
+- Added `src/app/robots.ts` and `src/app/sitemap.ts` with public discovery, legal, and navigation routes.
+- Added `/dmca` with a specific copyright-reporting path using the owner contact email provided for this project. The page states that a DMCA notice is a reporting process, not a guarantee of legal compliance or legal advice.
+- Mounted a crawlable full Footer menu in the redesigned shell for Movies, TV Shows, Anime, Search, Browse, Categories, About, Disclaimer, and DMCA.
+
 ## UI refinement pass (2026-08-10)
 
 - Fixed an unclosed CSS comment in `src/styles/globals.css` that caused the compiled stylesheet to ignore the safe-area helpers and glass material utilities used by the redesigned shell.

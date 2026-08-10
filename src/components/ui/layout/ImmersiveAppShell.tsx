@@ -22,6 +22,7 @@ import { AmbientLayers } from "@/components/media/AmbientProvider";
 import DesktopHeader from "@/components/shell/desktop/Header";
 import DesktopRail from "@/components/shell/desktop/Rail";
 import TabBar from "@/components/shell/phone/TabBar";
+import Footer from "@/components/ui/layout/Footer";
 import { cn } from "@/utils/helpers";
 import { SpacingClasses } from "@/utils/constants";
 import { usePathname } from "next/navigation";
@@ -63,6 +64,7 @@ export default function ImmersiveAppShell({ children, modal }: ImmersiveAppShell
             screens own the whole viewport. */}
         {!chromeHidden && <DesktopHeader />}
         {children}
+        {!chromeHidden && <Footer />}
       </main>
       {!chromeHidden && <TabBar pathname={pathname} />}
       {modal}
