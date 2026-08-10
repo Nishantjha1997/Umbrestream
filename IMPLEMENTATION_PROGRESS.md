@@ -2,6 +2,15 @@
 
 Last updated: 2026-08-10
 
+## Current handoff: StreamFree is live; Nishant.top portfolio is in implementation (2026-08-10)
+
+- StreamFree rebrand/domain work is complete and pushed to `main` in commit `241ab20`. Live checks passed for `https://streamfree.online/`, `https://www.streamfree.online/` (permanent redirect to the apex), and `https://umbrestream.vercel.app/`.
+- Namecheap now points `streamfree.online` to Vercel with `A @ -> 216.198.79.1` and `CNAME www -> e8fa04909d424665.vercel-dns-017.com`. The old `umbrestream.vercel.app` hostname remains reachable.
+- The portfolio source is being maintained at `C:\Users\DELL_\OneDrive\Desktop\Projects\Projects\My Web Sites\nishant-portfolio` and has also been copied into the connected Umbra repository under `portfolio/` so it can be deployed as a separate Vercel project with that root directory. It has the homepage, selected-work case-study routes, AI TTS lab, resume page/download route, contact page, SEO metadata, Person JSON-LD, robots, sitemap, responsive styling, and `www.nishant.top` -> `nishant.top` host redirect configuration.
+- Portfolio source facts are sanitized from the supplied resume and local GitLab documentation. The public site uses the current role `Executive, Founder's Office at CallHippo`, includes the verified GitLab automation impact (`up to 24 hours` to a maximum `30-minute` processing window), and excludes the phone number from public HTML and metadata.
+- Portfolio verification completed locally: production webpack build passed, typecheck passed, all planned route smoke requests returned `200`, the resume endpoint returned `application/pdf` with `X-Robots-Tag: noindex, noarchive`, and no phone number appeared in rendered public HTML. The local browser snapshot confirmed the homepage navigation and all five project cards.
+- Remaining portfolio work: initialize/commit the portfolio repository, publish it through Vercel, attach `nishant.top` and `www.nishant.top` with the exact DNS records Vercel provides, then perform live-domain checks. YouTube Scripto-Scribe remains explicitly last priority and must not be presented as working until its transcript extraction is verified on Vercel.
+
 ## Active implementation: StreamFree domain cutover and public rebrand (2026-08-10)
 
 - `streamfree.online` and `www.streamfree.online` have been added to the existing Vercel project `umbrestream` as Production domains. `umbrestream.vercel.app` remains attached and reachable; the new apex has **not** been made the production alias yet.
