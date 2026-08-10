@@ -359,3 +359,18 @@ Published handoff commits: `99ccaa4` (implementation) and `ee22166` (handoff sta
   - `CNAME` host `www` -> `3fb42bb65e845d94.vercel-dns-017.com.`
 - The available automated browser session reached Namecheap's login page, so no DNS records were changed in this session. Do not guess or reuse StreamFree's CNAME. The next agent should sign in to the correct Namecheap account, preserve unrelated records, replace only parking/redirect records for `nishant.top`, then refresh Vercel and verify SSL, apex, and `www` redirect.
 - YouTube Scripto-Scribe remains the final/lowest-priority task and must not be advertised as live until real transcript extraction works on a Vercel deployment.
+
+## nishant.top DNS rollout completed — 2026-08-10
+
+- Namecheap authentication was confirmed and only the two old parking/redirect records for `nishant.top` were removed.
+- Added the exact Vercel records:
+  - `A @ -> 216.198.79.1`
+  - `CNAME www -> 3fb42bb65e845d94.vercel-dns-017.com.`
+- Preserved the unrelated Namecheap email-forwarding TXT record.
+- Vercel Project Settings -> Domains now reports `nishant.top` and `www.nishant.top` as **Valid Configuration** for Production.
+- Public resolver checks through Google, Cloudflare, and Quad9 return the expected apex A record and `www` CNAME.
+- Live portfolio verification through the resolved Vercel endpoint passed: homepage returned `200`, canonical is `https://nishant.top`, the expanded description is present, and the phone number is absent from homepage HTML.
+- `https://www.nishant.top/` returns Vercel's permanent redirect to `https://nishant.top/`.
+- `https://nishant.top/robots.txt` points to `https://nishant.top/sitemap.xml`.
+- `https://nishant.top/api/resume` returns the PDF with `Content-Disposition: attachment` and `X-Robots-Tag: noindex, noarchive`.
+- The local Windows resolver may continue to report the old NXDOMAIN briefly; this is local DNS cache propagation, not a Vercel or Namecheap configuration failure.
