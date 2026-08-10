@@ -17,7 +17,7 @@ export default function MediaHub({ kind }: { kind: "movie" | "tv" }) {
         <div className="absolute inset-0 [background-image:linear-gradient(rgba(255,255,255,.035)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.035)_1px,transparent_1px)] [mask-image:linear-gradient(to_bottom,black,transparent)] [background-size:44px_44px] opacity-25" />
         <div className="relative max-w-3xl">
           <p className="mb-3 text-xs font-semibold tracking-[0.24em] text-violet-300 uppercase">
-            Umbra collection
+            StreamFree collection
           </p>
           <h1 className="text-4xl font-semibold tracking-[-0.045em] text-white sm:text-6xl md:text-7xl">
             {title}

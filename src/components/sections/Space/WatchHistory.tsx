@@ -47,7 +47,7 @@ export default function WatchHistory() {
   return (
     <div className="mx-auto max-w-5xl pt-6 pb-28 md:pt-12 md:pb-12">
       <p className="text-xs font-semibold tracking-[0.24em] text-violet-300 uppercase">
-        Your Umbra
+        Your StreamFree
       </p>
       <h1 className="mt-3 text-4xl font-semibold tracking-[-0.045em] sm:text-6xl">
         Watch History

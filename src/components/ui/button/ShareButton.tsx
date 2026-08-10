@@ -32,7 +32,7 @@ interface ShareButtonProps {
   type?: ContentType;
 }
 
-const HASTAGS = ["umbra", "free", "movies", "streaming"];
+const HASTAGS = ["streamfree", "movies", "tvshows", "anime"];
 
 const SHARE_BUTTONS = [
   {
@@ -79,7 +79,7 @@ const SHARE_BUTTONS = [
 
 const ShareButton: React.FC<ShareButtonProps> = ({ title, id, type = "movie" }) => {
   const url = `https://${location.hostname}/${type}/${id}`;
-  const description = `Check out and stream ${title} on Umbra for FREE!!`;
+  const description = `Check out ${title} on StreamFree.`;
 
   const [opened, { open, close }] = useDisclosure(false);
 

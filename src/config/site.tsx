@@ -8,6 +8,7 @@ import { IoIosSunny } from "react-icons/io";
 import { IoMoon } from "react-icons/io5";
 import { TbUserCircle, TbUserFilled } from "react-icons/tb";
 import { PiFlowerLotusLight, PiFlowerLotusFill } from "react-icons/pi";
+import { brand } from "@/config/brand";
 
 /**
  * Matches QueryList<T>["query"]'s return shape. MediaRow.tsx calls these
@@ -24,15 +25,18 @@ type PagedResult<T> = {
 };
 
 export const siteConfig: SiteConfigType = {
-  name: "Umbra Stream",
-  seoTitle: "Umbra Stream | Free Movies, TV Series & Anime",
-  description:
-    "Umbra Stream helps you discover movies, TV series, and anime in one place, with episode browsing, subtitles, watch history, and a mobile-friendly viewing experience.",
+  name: brand.name,
+  seoTitle: "StreamFree | Movies, TV Series & Anime",
+  description: brand.description,
   keywords: [
+    "streamfree",
+    "stream free",
+    "streamfree online",
     "umbrestream",
     "umbra stream",
-    "free movies",
+    "movies",
     "watch movies online",
+    "movies and TV shows",
     "TV series streaming",
     "anime streaming",
     "watch anime online",
@@ -40,7 +44,7 @@ export const siteConfig: SiteConfigType = {
     "subtitles",
     "mobile streaming",
   ],
-  favicon: "/favicon.ico",
+  favicon: "/streamfree-mark.svg",
   // Five items (Phase 3, §7 — "Seven dock items, two of which go nowhere").
   // Movies, TV, and Categories folded into Browse as segments
   // (`/app/browse/page.tsx`); Sports and Sparks (desktopOnly preview chips

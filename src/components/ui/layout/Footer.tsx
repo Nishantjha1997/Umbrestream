@@ -30,9 +30,9 @@ const LINK_GROUPS = [
     ],
   },
   {
-    title: "Umbra Stream",
+    title: "StreamFree",
     links: [
-      { label: "About Umbra", href: "/about" },
+      { label: "About StreamFree", href: "/about" },
       { label: "DMCA Notice", href: "/dmca" },
       { label: "Disclaimer", href: "/about#disclaimer" },
     ],
@@ -54,17 +54,17 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
           <div className="max-w-xs">
             <Link
               href="/"
-              aria-label="Umbra Stream home"
+              aria-label="StreamFree home"
               className="text-lg font-semibold tracking-[0.16em] text-white transition-opacity hover:opacity-80"
             >
-              UMBRA
+              STREAMFREE
             </Link>
             <p className="mt-3 text-sm leading-6 text-white/45">{siteConfig.description}</p>
             <Link
               href={siteConfig.socials.github}
               target="_blank"
               rel="noreferrer"
-              aria-label="Umbra Stream on GitHub"
+              aria-label="StreamFree on GitHub"
               className="mt-5 inline-flex size-10 items-center justify-center rounded-full border border-white/12 text-white/65 transition-colors hover:border-white/30 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-300"
             >
               <FaGithub size={18} />
@@ -100,7 +100,7 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
         </div>
 
         <div className="flex flex-col gap-2 border-t border-white/8 pt-5 text-xs text-white/35 sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} Umbra Stream. Built for discovery.</p>
+          <p>© {new Date().getFullYear()} StreamFree. Built for discovery.</p>
           <p>Third-party playback links may be operated by their respective providers.</p>
         </div>
       </div>

@@ -1,6 +1,5 @@
 import type { MetadataRoute } from "next";
-
-const SITE_URL = "https://umbrestream.vercel.app";
+import { SITE_URL } from "@/config/brand";
 
 const PUBLIC_ROUTES = [
   "/",

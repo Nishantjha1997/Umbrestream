@@ -10,7 +10,7 @@ export default function SportsPage() {
     <ComingSoon
       eyebrow="Live experiences in progress"
       title="Sports"
-      description="A fast, match-first sports space is taking shape. We will only launch it when the feeds and schedules meet Umbra’s reliability standard."
+      description="A fast, match-first sports space is taking shape. We will only launch it when the feeds and schedules meet StreamFree’s reliability standard."
       Icon={TbBallFootball}
     />
   );

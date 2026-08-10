@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { siteConfig } from "@/config/site";
+import { SITE_URL } from "@/config/brand";
 // Inter Variable's @font-face rules (§1.4). Imported before `globals.css` so
 // the faces are declared ahead of the stylesheet that binds them to
 // `--font-sans`; the family itself is applied via Tailwind's default sans, so
@@ -22,7 +23,6 @@ import ImmersiveAppShell from "@/components/ui/layout/ImmersiveAppShell";
 import SiteActivityTracker from "@/components/analytics/SiteActivityTracker";
 
 const UMBRA_UI_V2_ENABLED = process.env.NEXT_PUBLIC_UMBRA_UI_V2 !== "false";
-const SITE_URL = "https://umbrestream.vercel.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   icons: {
     icon: siteConfig.favicon,
-    apple: [{ url: "/icons/ios/180.png", sizes: "180x180", type: "image/png" }],
+    apple: [{ url: "/streamfree-mark.svg", type: "image/svg+xml" }],
   },
   appleWebApp: {
     capable: true,
@@ -96,6 +96,21 @@ export default function RootLayout({
 }>) {
   return (
     <html suppressHydrationWarning lang="en">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: siteConfig.name,
+              alternateName: "StreamFree",
+              url: SITE_URL,
+              description: siteConfig.description,
+            }),
+          }}
+        />
+      </head>
       <body className="min-h-dvh overflow-x-hidden bg-[#0a090d] font-sans text-white antialiased select-none">
         <Suspense>
           <NuqsAdapter>

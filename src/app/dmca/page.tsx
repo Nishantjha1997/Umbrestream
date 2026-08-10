@@ -5,7 +5,7 @@ import { siteConfig } from "@/config/site";
 export const metadata: Metadata = {
   title: `DMCA & Copyright Notice | ${siteConfig.name}`,
   description:
-    "Umbra Stream's copyright and DMCA notice explains how rights holders can report a specific concern for review.",
+    "StreamFree's copyright and DMCA notice explains how rights holders can report a specific concern for review.",
   alternates: { canonical: "/dmca" },
 };
 
@@ -16,13 +16,13 @@ export default function DmcaPage() {
     <article className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-10 pb-28 sm:px-6 md:py-16 md:pb-16">
       <header className="flex flex-col gap-4">
         <p className="text-xs font-semibold tracking-[0.24em] text-violet-300 uppercase">
-          Umbra Stream legal
+          StreamFree legal
         </p>
         <h1 className="font-serif text-5xl leading-none tracking-tight sm:text-6xl">
           DMCA &amp; Copyright Notice
         </h1>
         <p className="max-w-2xl text-base leading-7 text-white/60">
-          Umbra Stream is an entertainment discovery interface. We do not knowingly host or store
+          StreamFree is an entertainment discovery interface. We do not knowingly host or store
           movie, television, or anime video files on our own servers. Playback may be provided by
           independently operated third-party services.
         </p>
@@ -33,7 +33,7 @@ export default function DmcaPage() {
           <h2 className="mb-2 text-lg font-semibold text-white">How to report a concern</h2>
           <p>
             If you are a copyright owner or authorized representative and believe a specific link
-            on Umbra Stream should be reviewed, send a notice to{" "}
+            on StreamFree should be reviewed, send a notice to{" "}
             <a
               className="font-medium text-violet-200 underline decoration-violet-300/40 underline-offset-4 hover:text-white"
               href={`mailto:${CONTACT_EMAIL}`}
@@ -49,7 +49,7 @@ export default function DmcaPage() {
           <ul className="list-disc space-y-2 pl-5">
             <li>Your name, organization, and contact information.</li>
             <li>The copyrighted work or works you represent.</li>
-            <li>The exact Umbra Stream URL and the specific material at issue.</li>
+            <li>The exact StreamFree URL and the specific material at issue.</li>
             <li>A statement that you have a good-faith belief the use is unauthorized.</li>
             <li>A statement that the information in the notice is accurate and that you are authorized to act.</li>
             <li>Your physical or electronic signature.</li>

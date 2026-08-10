@@ -61,7 +61,7 @@ export default function ResumeHero() {
           headline={isSignedOut ? "Pick up where you left off" : "Nothing in progress"}
           description={
             isSignedOut
-              ? "Sign in and Umbra keeps your place in everything you watch, on every device."
+              ? "Sign in and StreamFree keeps your place in everything you watch, on every device."
               : "Start a title and it reappears here at the exact second you stopped."
           }
           action={

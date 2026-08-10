@@ -1,5 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="SF StreamFree icon">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title">
+  <title id="title">SF StreamFree icon</title>
   <defs><linearGradient id="g" x1="32" y1="24" x2="228" y2="238" gradientUnits="userSpaceOnUse"><stop stop-color="#a78bfa"/><stop offset=".47" stop-color="#7c3aed"/><stop offset="1" stop-color="#4c1d95"/></linearGradient></defs>
   <rect width="256" height="256" rx="64" fill="#0a090d"/><rect x="11" y="11" width="234" height="234" rx="54" fill="url(#g)"/>
-  <path d="M64 75h130v31H101v22h72v30h-72v23h95v31H64V75Z" fill="#fff"/><path d="M132 106h62v31h-62zM132 137h42v30h-42z" fill="#7c3aed"/><path d="m179 91 39 24-39 24V91Z" fill="#fff"/>
+  <path d="M64 75h130v31H101v22h72v30h-72v23h95v31H64V75Z" fill="#fff"/><path d="M132 106h62v31h-62z" fill="#7c3aed"/><path d="M132 137h42v30h-42z" fill="#6d28d9"/><path d="m179 91 39 24-39 24V91Z" fill="#fff"/>
 </svg>

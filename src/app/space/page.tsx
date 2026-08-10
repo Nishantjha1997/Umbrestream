@@ -31,13 +31,13 @@ const items = [
     Icon: FiSettings,
   },
   {
-    title: "Install Umbra",
-    copy: "Add Umbra to your iPhone home screen",
+    title: "Install StreamFree",
+    copy: "Add StreamFree to your iPhone home screen",
     href: "/space#install",
     Icon: FiDownload,
   },
   { title: "Help", copy: "Playback and server guidance", href: "/about", Icon: FiHelpCircle },
-  { title: "About", copy: "Umbra, privacy, and project details", href: "/about", Icon: FiInfo },
+  { title: "About", copy: "StreamFree, privacy, and project details", href: "/about", Icon: FiInfo },
 ];
 
 export default async function MySpacePage() {
@@ -57,7 +57,7 @@ export default async function MySpacePage() {
   return (
     <div className="mx-auto max-w-5xl pt-6 pb-28 md:pt-12 md:pb-12">
       <p className="text-xs font-semibold tracking-[0.24em] text-violet-300 uppercase">
-        Your Umbra
+        Your StreamFree
       </p>
       <h1 className="mt-3 text-4xl font-semibold tracking-[-0.045em] sm:text-6xl">My Space</h1>
       <p className="mt-4 max-w-xl text-white/55">
@@ -86,7 +86,7 @@ export default async function MySpacePage() {
       >
         <h2 className="text-xl font-semibold">Install on iPhone</h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-white/55">
-          Open Umbra in Safari, tap Share, choose Add to Home Screen, then tap Add. Umbra launches
+          Open StreamFree in Safari, tap Share, choose Add to Home Screen, then tap Add. StreamFree launches
           standalone with safe-area-aware navigation and playback.
         </p>
       </section>
@@ -96,7 +96,7 @@ export default async function MySpacePage() {
       >
         <h2 className="text-xl font-semibold">Playback defaults</h2>
         <p className="mt-2 text-sm leading-6 text-white/55">
-          Umbra remembers the last provider that played successfully during your session, keeps
+          StreamFree remembers the last provider that played successfully during your session, keeps
           manual server choices pinned, and stops after one complete fallback pass.
         </p>
       </section>

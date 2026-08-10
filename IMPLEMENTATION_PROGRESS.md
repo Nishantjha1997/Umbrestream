@@ -2,6 +2,29 @@
 
 Last updated: 2026-08-10
 
+## Active implementation: StreamFree domain cutover and public rebrand (2026-08-10)
+
+- `streamfree.online` and `www.streamfree.online` have been added to the existing Vercel project `umbrestream` as Production domains. `umbrestream.vercel.app` remains attached and reachable; the new apex has **not** been made the production alias yet.
+- Vercel requires these exact Namecheap host records before either new URL can load:
+  - `A` host `@` -> `216.198.79.1`
+  - `CNAME` host `www` -> `e8fa04909d424665.vercel-dns-017.com`
+- Current blocker: the available automated browser session is not signed into Namecheap, so its existing parking records have not yet been replaced. A browser error such as `ERR_CONNECTION_CLOSED` for `www.streamfree.online` is expected until those records are saved and DNS propagates. Do **not** infer a deployment/player problem from that error.
+- StreamFree rebrand work is underway. Public-facing identity and URL work now centralizes in `src/config/brand.ts`; the code targets `https://streamfree.online` for canonical metadata while preserving the old Vercel hostname. The original `SF` mark is in `public/streamfree-mark.svg` and `src/app/icon.svg`.
+- Public branding changed in progress: metadata/structured data, robots/sitemap, manifest/PWA, Capacitor display name and URL, logo/footer, DMCA/disclaimer/FAQ, sharing, account UI, admin heading, auth email templates, and README. Compatibility-sensitive internal identifiers (the `umbra_events` table, analytics symbols, local-storage keys, and feature flag) remain unchanged intentionally.
+- `next.config.ts` now includes a permanent `www.streamfree.online` -> `streamfree.online` host redirect. It is only effective after the domain reaches Vercel.
+- DNS is now live and verified through public resolvers: apex `A @ -> 216.198.79.1`; `www CNAME -> e8fa04909d424665.vercel-dns-017.com`. A direct HTTPS request to `https://www.streamfree.online` returned `200 OK` from Vercel. A browser may briefly retain the earlier pre-DNS failure; a fresh tab or normal DNS cache expiry resolves that.
+- Rebrand validation completed locally: player source checks passed (12 adapters), secret leak scan passed, `tsc --noEmit` passed, changed-file ESLint passed, `git diff --check` passed, and the Next 16.2.1 webpack production build passed. The build still prints the pre-existing handled dynamic-cookie notices for `/library`, `/space`, and `/space/history`; those routes are emitted dynamic and this is not a build failure.
+- Next required checks after the pending DNS change: run source/type/build/leak validation, deploy the rebrand, configure `NEXT_PUBLIC_SITE_URL=https://streamfree.online` in Vercel, set the primary domain, verify redirects/metadata/PWA with a fresh browser profile, then begin the separate `nishant.top` portfolio project.
+
+## Approved next program: StreamFree domains/rebrand and Nishant.top portfolio (planning audit, 2026-08-10)
+
+- The authoritative execution sequence is now in `STREAMFREE_PORTFOLIO_MASTER_PLAN.md`.
+- Required order: identify the existing Vercel project -> attach and verify `streamfree.online` without making it primary -> implement and deploy the StreamFree rebrand -> switch the primary/canonical domain -> build and launch a separate portfolio at `nishant.top` -> repair/deploy YouTube Scripto-Scribe last.
+- StreamFree/Umbra was clean on `main` at `b96f83c` during the planning audit and had no local `.vercel/project.json`; a future agent must not accidentally create a duplicate Vercel project.
+- The GitLab automation worktree contains uncommitted user changes and credential-bearing local configuration. Treat it as read-only for portfolio research, never expose its secrets, and do not reset or push it as part of this program.
+- The portfolio must not show the owner's phone number in site HTML or metadata. The downloadable resume may contain it and must be served with noindex/noarchive headers.
+- No production code, DNS, Vercel project, or Namecheap setting was changed during this planning audit.
+
 ## SEO identity and DMCA pages (2026-08-10)
 
 - Rebranded public metadata from the minimal `Umbra` title to `Umbra Stream | Free Movies, TV Series & Anime`; removed any Vercel branding from site metadata, Open Graph, Twitter cards, and the PWA manifest.

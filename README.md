@@ -1,6 +1,6 @@
-# Umbra — Movies, TV Shows & Anime
+# StreamFree — Movies, TV Shows & Anime
 
-Umbra is a personal movies, TV shows, and anime discovery platform. It offers a seamless
+StreamFree is a personal movies, TV shows, and anime discovery platform. It offers a seamless
 browsing experience for discovering, searching, and tracking a vast library of content.
 
 ## Key Features
@@ -45,5 +45,5 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the git workflow and known environmen
 
 ## Acknowledgements
 
-Umbra's foundation is built on [cinextma](https://github.com/wisnuwirayuda15/cinextma) by
+StreamFree's foundation is built on [cinextma](https://github.com/wisnuwirayuda15/cinextma) by
 Wisnu Wirayuda, used under the MIT License (see [LICENSE](LICENSE)).

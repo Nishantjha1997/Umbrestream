@@ -26,7 +26,7 @@ export default function RoomIsOpenDesktop() {
       >
         <div className="flex flex-col gap-2">
           <h3 className="font-serif text-[26px] leading-[1.06] text-white">
-            Watch parties are coming to Umbra
+            Watch parties are coming to StreamFree
           </h3>
           <p className="text-[12px] text-white/50">
             Sync playback with friends and react together, in real time — coming soon.

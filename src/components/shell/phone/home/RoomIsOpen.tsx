@@ -30,7 +30,7 @@ export default function RoomIsOpen() {
 
       <div className="flex flex-col gap-[14px] rounded-[16px] border border-accent/18 bg-[linear-gradient(150deg,rgba(124,58,237,.2),rgba(255,255,255,.025)_64%)] p-[18px]">
         <p className="m-0 font-serif text-[25px] leading-[1.06] tracking-[-0.01em] text-balance">
-          Watch parties are coming to Umbra
+          Watch parties are coming to StreamFree
         </p>
         <p className="m-0 text-[11.5px] text-white/50">
           Sync playback with friends and react together, in real time — coming soon.

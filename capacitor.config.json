@@ -1,9 +1,9 @@
 {
   "appId": "com.umbrestream.app",
-  "appName": "Umbra",
+  "appName": "StreamFree",
   "webDir": "out",
   "server": {
-    "url": "https://umbrestream.vercel.app",
+    "url": "https://streamfree.online",
     "cleartext": true
   }
 }

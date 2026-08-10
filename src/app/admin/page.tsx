@@ -149,7 +149,7 @@ export default async function AdminPage() {
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-xs font-semibold tracking-[0.2em] text-violet-300 uppercase">
-            Umbra admin
+            StreamFree admin
           </p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight">Site activity</h1>
           <p className="mt-2 max-w-2xl text-sm text-white/55">
@@ -161,7 +161,7 @@ export default async function AdminPage() {
           className="rounded-full border border-white/15 px-4 py-2 text-sm text-white/75 hover:bg-white/10"
           href="/"
         >
-          Back to Umbra
+          Back to StreamFree
         </Link>
       </div>
 

@@ -78,9 +78,9 @@ export default function DesktopHero() {
     return (
       <div className="px-12 pt-8">
         <HomeEmptyState
-          title="Umbra"
+          title="StreamFree"
           headline="Nothing to feature yet"
-          description="Sign in and Umbra builds this space around what you actually watch."
+          description="Sign in and StreamFree builds this space around what you actually watch."
           action={{ label: "Sign in", href: "/auth" }}
         />
       </div>

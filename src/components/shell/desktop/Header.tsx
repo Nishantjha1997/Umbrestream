@@ -64,7 +64,7 @@ export default function DesktopHeader({ className }: DesktopHeaderProps) {
           into a real control means it needs them. */}
       <Link
         href="/search"
-        aria-label="Search Umbra. Keyboard shortcut Command K or Control K."
+        aria-label="Search StreamFree. Keyboard shortcut Command K or Control K."
         className="group inline-flex h-[38px] items-center gap-[9px] rounded-full border border-white/14 bg-black/36 px-4 text-white outline-none transition-colors duration-(--duration-fast) ease-(--ease-out-quint) hover:border-white/22 hover:bg-black/45 focus-visible:ring-2 focus-visible:ring-violet-400/60 motion-reduce:transition-none"
         style={{
           backdropFilter: "blur(16px) saturate(var(--glass-saturate))",
@@ -83,7 +83,7 @@ export default function DesktopHeader({ className }: DesktopHeaderProps) {
           <circle cx="9" cy="9" r="6.2" stroke="currentColor" strokeWidth="1.5" />
           <path d="M13.6 13.6 17 17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
         </svg>
-        <span className="text-[12.5px] whitespace-nowrap text-white/40">Search Umbra</span>
+        <span className="text-[12.5px] whitespace-nowrap text-white/40">Search StreamFree</span>
         {/* Discoverability for the shortcut above — the mockup has neither
             the handler nor the hint. `font-mono` ties it to the app's
             existing "numerals/data" register (`--font-mono`, §5.1) rather

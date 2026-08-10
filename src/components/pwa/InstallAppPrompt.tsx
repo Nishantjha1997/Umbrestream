@@ -92,13 +92,13 @@ export default function InstallAppPrompt() {
         <div className="flex items-start gap-3">
           <Image
             src="/icons/ios/120.png"
-            alt="Umbra app icon"
+            alt="StreamFree app icon"
             width={48}
             height={48}
             className="rounded-xl"
           />
           <div className="min-w-0 flex-1">
-            <p className="font-semibold">Install Umbra</p>
+            <p className="font-semibold">Install StreamFree</p>
             <p className="text-default-500 text-xs leading-relaxed">
               Open it full-screen from your home screen with faster repeat visits.
             </p>

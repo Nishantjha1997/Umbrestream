@@ -77,6 +77,12 @@ const nextConfig: NextConfig = {
    */
   async redirects() {
     return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "www.streamfree.online" }],
+        destination: "https://streamfree.online/:path*",
+        permanent: true,
+      },
       { source: "/movies", destination: "/browse?tab=films", permanent: false },
       { source: "/tv", destination: "/browse?tab=series", permanent: false },
       { source: "/categories", destination: "/browse?tab=categories", permanent: false },
