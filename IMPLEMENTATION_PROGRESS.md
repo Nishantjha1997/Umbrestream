@@ -340,5 +340,6 @@ Published handoff commits: `99ccaa4` (implementation) and `ee22166` (handoff sta
 - Anime remains provider-native: AniList banner art is retained because AniList IDs cannot safely be treated as TMDB IDs.
 - Typecheck, focused lint, leak scan, diff validation, and the full Next.js production build passed after the artwork changes.
 - The selector was exercised against live TMDB House of the Dragon data and chose an inspected 3840×2160 alternate backdrop (`/etj8E2o0Bud0HkONVQPjyCkIvpv.jpg`) instead of the default `w500` image.
-- Pending: commit, push `main`, and confirm the Vercel production deployment.
+- Completed in commit `4f38142`, pushed to `main`, and confirmed READY on Vercel production (`umbrestream-du0oq4o3e-nishants-projects-7d9628b2.vercel.app`, 1m 8s build).
+- Live `streamfree.online` verification confirmed the `02 Tonight` image source is `https://image.tmdb.org/t/p/original/etj8E2o0Bud0HkONVQPjyCkIvpv.jpg`.
 - `/admin` correctly redirects unauthenticated visitors to `/auth`. The supplied email/password did not authenticate: the live form returned “That email and password don’t match an account.” No account was created automatically.
