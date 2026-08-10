@@ -374,3 +374,34 @@ Published handoff commits: `99ccaa4` (implementation) and `ee22166` (handoff sta
 - `https://nishant.top/robots.txt` points to `https://nishant.top/sitemap.xml`.
 - `https://nishant.top/api/resume` returns the PDF with `Content-Disposition: attachment` and `X-Robots-Tag: noindex, noarchive`.
 - The local Windows resolver may continue to report the old NXDOMAIN briefly; this is local DNS cache propagation, not a Vercel or Namecheap configuration failure.
+
+## Portfolio completion pass — 2026-08-10
+
+- Portfolio repository: `C:\Users\DELL_\OneDrive\Desktop\Projects\Projects\My Web Sites\nishant-portfolio`.
+- Expanded all six published project pages into recruiter-ready case studies with a clearly separated challenge, implementation decisions, outcome, and privacy/disclosure boundary.
+- The GitLab Access Automation case study now documents the approved `up to 24 hours -> maximum 30 minutes` impact, validation/approval flow, reliability controls, expiry/audit behavior, and sanitized-publication boundary without publishing source, internal URLs, employee data, or credentials.
+- Replaced the static AI TTS concept card with a working browser SpeechSynthesis lab at `/labs/ai-tts`: installed voice selection, rate, pitch, play/restart, pause/resume, stop, text download, accessibility status, browser-capability errors, and an explicit local-processing/privacy explanation. It does not falsely claim downloadable audio.
+- Added a contact composer at `/contact` that validates name, email, subject, and message, then opens a prefilled email draft. The website does not store or transmit the form contents and introduces no mail-service credential or public submission endpoint.
+- Added project-specific canonical/Open Graph metadata and SoftwareApplication/CreativeWork structured data.
+- Limited the public CallHippo experience copy to the approved current title; no unverified role achievements or dates were invented.
+- Updated the portfolio README to reflect the live domain, working lab, contact workflow, and richer case studies.
+- Verification passed: full typecheck, focused and full ESLint with zero errors (one existing PostCSS anonymous-default-export warning), two optimized Next.js production builds, all 17 generated routes, `git diff --check`, public-link checks, and phone/password/service-key/private-key scans outside the downloadable resume.
+- Local browser verification passed for the homepage, AI TTS controls and installed-voice list, contact form semantics, GitLab case-study content/disclosure, desktop overflow, metadata titles, and absence of the phone number from rendered pages.
+- Portfolio release commit: `e104410` (`feat: complete interactive portfolio case studies`), pushed to `main`.
+- Vercel production deployment: `8GYY9HboeXWPbWbnGuojXLqohxfy`, URL `https://nishant-portfolio-i21ze5cum-nishants-projects-7d9628b2.vercel.app`, status **Ready**, build duration shown as 31 seconds, exact commit `e104410`.
+- Live `https://nishant.top/labs/ai-tts` contains the working lab, and `https://nishant.top/work/gitlab-access-automation` contains the expanded case study. The resume route still returns `200`, `Content-Disposition: attachment`, and `X-Robots-Tag: noindex, noarchive`.
+
+## Claude Usage Uploader public handoff — 2026-08-10
+
+- Repository cloned to `C:\Users\DELL_\OneDrive\Desktop\Projects\Projects\My Web Sites\claude-uploader-releases` from `Nishantjha1997/claude-uploader-releases`.
+- Replaced the one-word placeholder README with a public release guide covering the verified v2.0.5 Windows/Linux/macOS assets, checksums, offline-first reliability model, 95% lock-collision reduction, high-level architecture, privacy/security limits, recovery guidance, latest-stable-release link, and portfolio case-study link.
+- The README explicitly states that source code, organization configuration, private infrastructure, credentials, endpoints, and telemetry records are not published.
+- Release documentation commit: `3dc8f76` (`docs: publish Claude uploader release guide`), pushed to `main`.
+
+## YouTube Scripto-Scribe paused state — 2026-08-10
+
+- The user reprioritized portfolio completion ahead of YouTube work. Do not resume this final phase until explicitly continuing after the portfolio release.
+- Repository: `C:\Users\DELL_\OneDrive\Desktop\Projects\Projects\My Web Sites\youtube-scripto-scribe`.
+- There is an uncommitted implementation in progress: mock transcript fallback removed; strict YouTube ID parsing and typed client errors added; a Vercel Python `/api/transcript` spike using `youtube-transcript-api==1.2.4` added; language/search/TXT-SRT-VTT UI added; Lovable/GPT Engineer metadata removed; README and Vercel configuration added.
+- The dependency install/validation step was interrupted before completion. The working tree also contains generated `pnpm-lock.yaml` and `pnpm-workspace.yaml`; inspect them before deciding whether they belong in the final commit. Do not discard the in-progress files.
+- No YouTube Scripto-Scribe commit, GitHub push, Vercel project, live caption proof, or portfolio project entry has been completed. The portfolio correctly continues to omit this project until real caption extraction works on Vercel.
