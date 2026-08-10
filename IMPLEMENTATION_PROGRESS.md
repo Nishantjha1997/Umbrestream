@@ -1,6 +1,79 @@
 # Umbra implementation progress
 
-Last updated: 2026-08-07
+Last updated: 2026-08-10
+
+## Active fix: detail modal Play navigation (2026-08-10)
+
+- After the new intercepted-route design rollout, opening a title and pressing Play inside its detail modal changes routes without visibly opening the player; opening the same Play link in a new tab works.
+- Root cause: the `@modal` parallel-route slot had intercepted movie/TV/anime detail routes and a hard-navigation `default.tsx`, but no catch-all route. Next.js therefore retained the last modal subtree during same-tab soft navigation and rendered the player behind it.
+- Added `src/app/@modal/[...catchAll]/page.tsx`, returning `null`, so any client navigation away from an intercepted detail route clears the modal slot.
+- Local production-browser verification now passes for all three paths:
+  - Movie: Home -> `/movie/1284041` intercepted modal -> Play -> `/movie/1284041/player?src=filmu`; zero visible modal Close buttons and one full-viewport Filmu iframe.
+  - TV: Home -> `/tv/291496` intercepted modal -> Play S1 E1 -> `/tv/291496/1/1/player?src=vidking`; zero visible modal Close buttons and one VidKing iframe.
+  - Anime: Anime -> `/anime/21` intercepted modal -> Play Episode 1 -> `/anime/21/player/1?src=anilink-sub`; zero visible modal Close buttons and one AniLink Sub iframe.
+- No browser console warnings/errors were recorded during the checked Movie flow. Provider playback itself was not asserted because the frames are cross-origin; this fix concerns route visibility/mounting, not provider availability.
+- Player/provider code is intentionally unchanged.
+- Typecheck, focused lint, secret scan, source registry checks, `git diff --check`, and the Next 16.2.1 production build pass.
+- Repaired `scripts/check-player-sources.mjs`: Phase 6 deleted `src/utils/players.ts`, but the script still imported and asserted against those legacy generators. The obsolete import/assertions were removed; all 12 current adapters pass.
+
+## Current redesign architecture survey (2026-08-10)
+
+This section supersedes older architectural descriptions lower in this file. Historical sections remain useful as an evidence trail, but future work must use the current files named here. The Claude redesign from `15e5217` through `08f40bb` changed 120 files (approximately 13,869 insertions and 3,578 deletions) after the TV rollback baseline.
+
+### Design system and application shell
+
+- The app is dark-only with one accent, local Instrument Serif display fonts, ambient color context/layers, and `EclipseRing` artwork treatment.
+- `src/components/ui/layout/ImmersiveAppShell.tsx` is the composition root. Desktop and phone shells render concurrently and CSS selects the correct one at `md` (768px), avoiding hydration/media-query flashes.
+- Desktop owns `src/components/shell/desktop/Rail.tsx` and `Header.tsx`; phone owns `src/components/shell/phone/TabBar.tsx`.
+- Navigation is now five destinations: Home, Search, Browse, Anime, and You. `/movies`, `/tv`, and `/categories` redirect into Browse tabs through `next.config.ts`; detail and player subroutes are unaffected.
+- `NEXT_PUBLIC_UMBRA_UI_V2=false` still selects the legacy shell in `src/app/layout.tsx`.
+
+### Home and discovery
+
+- The previous shared `Hero`/home-list composition was replaced by separate `PhoneHome` and `DesktopHome` trees with their own hero, Tonight, Vibe, Continue Watching, Trending, episode-drop, and preview sections.
+- `src/hooks/useHomeHero.ts` coordinates hero selection/trailer behavior. Home data remains live TMDB/AniList data rather than mock content.
+- `src/components/media/PosterCard.tsx` is still the shared normalized card used by rails/grids. Poster clicks navigate to media detail routes; on supported client navigation those routes are intercepted into the detail modal.
+- Browse consolidates Films, Series, and Categories through `src/app/browse/page.tsx` and `BrowseTabs.tsx`.
+
+### Detail routes and modal behavior
+
+- Direct routes under `src/app/{movie,tv,anime}/[id]/page.tsx` render full detail pages.
+- Client-side poster navigation is intercepted by `src/app/@modal/(.){movie,tv,anime}/[id]/page.tsx`, reusing the same extracted `DetailContent` components inside `src/components/shell/DetailModal.tsx`.
+- `DetailModal` portals to `document.body` so route-template transforms cannot break its fixed positioning and locks body scroll while mounted.
+- `src/app/@modal/default.tsx` handles hard navigation. The new `src/app/@modal/[...catchAll]/page.tsx` is equally required for soft navigation away from the modal; do not remove either.
+- `MediaBackdrop` is decorative and globally `pointer-events-none`; commit `c844924` fixed its invisible veil swallowing Play/detail taps.
+
+### Player architecture
+
+- Phase 6 deleted `ReliablePlayer`, `usePlayerEngine`, the old source-selection components, `StuckStreamToast`, and `src/utils/players.ts`.
+- `src/components/player/PlayerShell.tsx` is now the shared Movie/TV/Anime controller. It portals a single full-viewport iframe/native player, builds public embed sources synchronously, and enriches with an optional authorized direct source asynchronously.
+- It deliberately does not preflight all providers or automatically switch opaque embeds. Providers own playback/fullscreen. Umbra owns one source sheet and one notification slot.
+- Current defaults remain Movie Filmu, TV VidKing, and Anime AniLink Sub. Stable `?src=<provider-id>` and legacy ID translation remain.
+- Media-specific headers and episode sheets/panels are under `src/components/sections/{Movie,TV,Anime}/Player`.
+- Source contracts still live in `src/lib/sources`; `/api/player/sources` is only the non-blocking direct-source enrichment path for `PlayerShell`.
+
+### History, account, and analytics
+
+- `src/actions/histories.ts` now tracks accumulated `total_watched_seconds`, supports deleting and marking history complete, and returns per-media watch-time summaries.
+- `/space/history`, `WatchHistory.tsx`, and `HistoryItemActions.tsx` provide account history management and watch-time tiles.
+- Migration `supabase/migrations/20260809120000_history_watched_seconds.sql` must be applied to the connected Supabase project for the new watch-time field.
+- First-party admin analytics, Vercel Analytics, and Speed Insights remain separate from the personal watch-history view.
+
+### Runtime, PWA, and validation notes
+
+- `next.config.ts` enables aggressive front-end navigation caching. Previous verification repeatedly saw stale service workers serve an older build after deployment; production smoke tests must verify the deployed commit and may require a hard refresh/service-worker update before conclusions are drawn.
+- The build intentionally sets `typescript.ignoreBuildErrors=true` because Next's forked typecheck crashes on this Windows environment. A successful build is not sufficient; always run `tsc --noEmit` separately.
+- The production build succeeds but logs handled dynamic-cookie bailouts for `/library`, `/space`, and `/space/history`. The routes are emitted as dynamic (`ƒ`), so this is not a build failure, but explicit dynamic declarations/error handling should be cleaned up later to prevent noisy logs from hiding real auth failures.
+- Player source tests now target the adapter registry only and pass for 12 adapters.
+- The in-app production browser could not attach during the first remote attempt. The completed evidence above comes from the freshly built local production server at `http://localhost:3212`.
+
+### Recommended next checks
+
+1. Commit and push the modal catch-all/source-test repair, wait for Vercel, and repeat Movie/TV/Anime modal-to-player navigation on production.
+2. Verify a returning PWA client receives the new route bundle rather than a stale cached build.
+3. Add an automated regression test for intercepted detail -> player navigation so a future shell redesign cannot reintroduce this exact soft-navigation bug.
+4. Clean up the handled dynamic-cookie build logging on authenticated routes.
+5. Apply and verify the `total_watched_seconds` Supabase migration before relying on account watch-time analytics.
 
 ## TV player rollback — implemented and locally verified (2026-08-07)
 
