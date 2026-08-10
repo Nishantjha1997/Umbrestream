@@ -180,16 +180,28 @@ export default function PlayerShell({
   }, [request, directResult, directRequestKey]);
 
   const [sourceParam, setSourceParam] = useQueryState("src", parseAsString);
+  // Query-state updates are asynchronous. Keep a request-scoped override so
+  // an explicit server click remounts the selected iframe immediately rather
+  // than waiting for Next's URL update to complete behind a cross-origin
+  // player.
+  const [selectedSourceOverride, setSelectedSourceOverride] = useState<{
+    id: string;
+    requestKey: string;
+  } | null>(null);
+  const requestedSourceId =
+    selectedSourceOverride?.requestKey === directRequestKey
+      ? selectedSourceOverride.id
+      : legacySourceId(request.mediaType, sourceParam);
 
   const selectedSource = useMemo(() => {
     if (!sources.length) return null;
     return selectDefaultSource(sources, {
-      requestedId: legacySourceId(request.mediaType, sourceParam),
+      requestedId: requestedSourceId,
       defaultId: sources[0]?.id,
       preferredSubtitle: request.preferredSubtitle,
       preferredAudio: request.preferredAudio,
     });
-  }, [sourceParam, sources, request.mediaType, request.preferredSubtitle, request.preferredAudio]);
+  }, [requestedSourceId, sources, request.preferredSubtitle, request.preferredAudio]);
 
   // Keep `?src=` a stable provider id. Never blocks the mount above — the
   // stage below renders from `selectedSource` on the same render regardless
@@ -205,11 +217,12 @@ export default function PlayerShell({
   // `requestedId` before this effect ever runs, so there's nothing to wait
   // for in that case.
   useEffect(() => {
+    if (selectedSourceOverride?.requestKey === directRequestKey) return;
     if (!directSettled) return;
     if (selectedSource && sourceParam !== selectedSource.id) {
       void setSourceParam(selectedSource.id);
     }
-  }, [directSettled, selectedSource, setSourceParam, sourceParam]);
+  }, [directRequestKey, directSettled, selectedSource, selectedSourceOverride, setSourceParam, sourceParam]);
 
   useEffect(() => {
     setAllowedOrigin(selectedSource?.providerOrigin ?? null);
@@ -268,14 +281,17 @@ export default function PlayerShell({
 
   const selectSource = useCallback(
     async (id: string) => {
-      // Do not unmount the selection panel in the same event that targets a
-      // source button. With a cross-origin iframe below it, that lets the
-      // pointer interaction appear to fall through to the provider instead
-      // of visibly switching the source.
-      await setSourceParam(id);
-      setSourceOpened(false);
+      // Update the rendered source before dismissing the overlay. This makes
+      // the selection visible even when the URL update is deferred and keeps
+      // the cross-origin iframe from receiving the click sequence.
+      setSelectedSourceOverride({ id, requestKey: directRequestKey });
+      try {
+        await setSourceParam(id);
+      } finally {
+        setSourceOpened(false);
+      }
     },
-    [setSourceParam],
+    [directRequestKey, setSourceParam],
   );
 
   const notifications = useMemo<PlayerNotification[]>(() => {

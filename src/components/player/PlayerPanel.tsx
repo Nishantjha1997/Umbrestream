@@ -50,10 +50,10 @@ export default function PlayerPanel({
         type="button"
         aria-label="Close"
         onClick={onClose}
-        className="fixed inset-0 bg-[rgba(4,4,7,.68)] backdrop-blur-[8px]"
+        className="fixed inset-0 z-0 bg-[rgba(4,4,7,.68)] backdrop-blur-[8px]"
       />
       <div
-        className={`relative max-h-full w-full overflow-y-auto rounded-[18px] border border-white/10 bg-[rgba(19,18,23,.96)] p-7 shadow-[0_40px_100px_-20px_rgba(0,0,0,.9)] ${maxWidthClassName}`}
+        className={`relative z-10 max-h-full w-full overflow-y-auto rounded-[18px] border border-white/10 bg-[rgba(19,18,23,.96)] p-7 shadow-[0_40px_100px_-20px_rgba(0,0,0,.9)] ${maxWidthClassName}`}
       >
         <div className="mb-5 flex items-center justify-between gap-4">
           <h2 className="font-serif text-[28px] leading-none text-white">{title}</h2>
