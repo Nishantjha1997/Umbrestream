@@ -186,6 +186,7 @@
     min-height: 100%;
     background: #0a090d;
     color: white;
+    overflow-x: clip;
     overscroll-behavior-y: none;
     -webkit-tap-highlight-color: transparent;
   }
@@ -218,6 +219,19 @@
   bottom: max(1.5rem, env(safe-area-inset-bottom));
 }
 
+/* Keep intercepted detail close controls clear of phone notches. */
+.safe-detail-close {
+  top: max(0.75rem, env(safe-area-inset-top));
+  right: max(0.75rem, env(safe-area-inset-right));
+}
+
+@media (min-width: 768px) {
+  .safe-detail-close {
+    top: 1.25rem;
+    right: 1.25rem;
+  }
+}
+
 /*
  * Phase 6, §10: nothing in the player is ever hidden by media query or by a
  * fullscreen/cinema-mode fallback path — that is what hid the server switcher
@@ -225,6 +239,7 @@
  * the viewport directly (`fixed inset-0`, portalled — see `PlayerShell.tsx`)
  * from the moment it mounts, in both orientations, so rotating to landscape
  * *is* fullscreen with no `requestFullscreen()` call and no separate CSS path.
+ */
 
 .safe-bottom-nav {
   padding-bottom: max(0.5rem, env(safe-area-inset-bottom));

@@ -135,7 +135,7 @@ export default function TabBar({ pathname }: { pathname: string }) {
   return (
     <nav
       aria-label="Mobile navigation"
-      className="fixed inset-x-0 bottom-0 z-40 md:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-white/8 md:hidden"
       style={{
         // §E container. Three-value shorthand: 12px top, 12px left/right,
         // and a safe-area-aware bottom (see file header note 2 above).
@@ -143,6 +143,7 @@ export default function TabBar({ pathname }: { pathname: string }) {
         background: "linear-gradient(180deg, rgba(10,9,13,0), rgba(10,9,13,.82) 34%, rgba(10,9,13,.96))",
         backdropFilter: "blur(24px) saturate(180%)",
         WebkitBackdropFilter: "blur(24px) saturate(180%)",
+        boxShadow: "0 -14px 32px rgba(0, 0, 0, .24)",
       }}
     >
       <div className="grid grid-cols-5">

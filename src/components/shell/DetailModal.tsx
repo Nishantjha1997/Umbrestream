@@ -82,7 +82,7 @@ export default function DetailModal({ children }: PropsWithChildren) {
           type="button"
           aria-label="Close"
           onClick={close}
-          className="glass-control absolute top-4 right-4 z-10 flex size-9 items-center justify-center rounded-full md:top-5 md:right-5"
+          className="glass-control safe-detail-close absolute z-10 flex size-11 items-center justify-center rounded-full"
         >
           <Close size={22} />
         </button>

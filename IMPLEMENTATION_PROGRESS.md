@@ -2,6 +2,14 @@
 
 Last updated: 2026-08-10
 
+## UI refinement pass (2026-08-10)
+
+- Fixed an unclosed CSS comment in `src/styles/globals.css` that caused the compiled stylesheet to ignore the safe-area helpers and glass material utilities used by the redesigned shell.
+- Added horizontal overflow clipping at the app root/body so decorative bleed cannot create a narrow-screen side gutter or horizontal scroll.
+- Increased the intercepted-detail close button to a 44px touch target and added notch-aware positioning for iPhone safe areas.
+- Added a subtle top separation and bottom shadow to the mobile navigation bar so it remains legible over long pages without obscuring the final content row.
+- Typecheck, focused lint, `git diff --check`, and the Next 16.2.1 webpack production build pass. Generated CSS contains `glass-chrome`, `safe-bottom-nav`, `safe-detail-close`, and `overflow-x: clip`.
+
 ## Active fix: detail modal Play navigation (2026-08-10)
 
 - After the new intercepted-route design rollout, opening a title and pressing Play inside its detail modal changes routes without visibly opening the player; opening the same Play link in a new tab works.

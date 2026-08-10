@@ -43,7 +43,7 @@ export default function ImmersiveAppShell({ children, modal }: ImmersiveAppShell
   const chromeHidden = pathname.includes("/player") || pathname.startsWith("/auth");
 
   return (
-    <div className="relative min-h-dvh bg-[#0a090d] text-white">
+    <div className="relative min-h-dvh overflow-x-clip bg-[#0a090d] text-white">
       {/* Ambient theming (Phase 1). Mounted here, not in `providers.tsx`,
           because this is the `position: relative` root the `inset-0` layers
           need — see `AmbientProvider.tsx`'s file header. No page sets an
