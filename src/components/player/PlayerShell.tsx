@@ -266,6 +266,18 @@ export default function PlayerShell({
 
   const openSource = useCallback(() => setSourceOpened(true), []);
 
+  const selectSource = useCallback(
+    async (id: string) => {
+      // Do not unmount the selection panel in the same event that targets a
+      // source button. With a cross-origin iframe below it, that lets the
+      // pointer interaction appear to fall through to the provider instead
+      // of visibly switching the source.
+      await setSourceParam(id);
+      setSourceOpened(false);
+    },
+    [setSourceParam],
+  );
+
   const notifications = useMemo<PlayerNotification[]>(() => {
     const list: PlayerNotification[] = [];
     if (nativeError) {
@@ -375,7 +387,7 @@ export default function PlayerShell({
         onClose={() => setSourceOpened(false)}
         sources={sources}
         selectedSourceId={selectedSource?.id ?? ""}
-        onSelect={(id) => void setSourceParam(id)}
+        onSelect={selectSource}
       />
     </div>,
     document.body,

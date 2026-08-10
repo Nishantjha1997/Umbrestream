@@ -28,7 +28,10 @@ export interface PlayerSourceSheetProps {
   onClose: () => void;
   sources: PlayerSource[];
   selectedSourceId: string;
-  onSelect: (sourceId: string) => void;
+  /** Resolves only after the player has accepted the new source. The parent
+   * owns closing the sheet so its overlay remains above the iframe during
+   * the complete click/update sequence. */
+  onSelect: (sourceId: string) => Promise<void> | void;
 }
 
 const HEALTH_LABEL: Record<ServerHealthStatus, string> = {
@@ -99,8 +102,7 @@ export default function PlayerSourceSheet({
             groupType="list"
             value={selectedSourceId}
             onChange={(value) => {
-              if (value) onSelect(value);
-              onClose();
+              if (value) void onSelect(value);
             }}
             data={sources.map((source, index) => {
               const health = healthMap[index] || "checking";
@@ -139,9 +141,15 @@ export default function PlayerSourceSheet({
               <button
                 key={source.id}
                 type="button"
-                onClick={() => {
-                  onSelect(source.id);
-                  onClose();
+                onPointerDown={(event) => {
+                  // Keep an iframe below the panel from seeing a pointer
+                  // sequence while a source selection is in progress.
+                  event.stopPropagation();
+                }}
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  void onSelect(source.id);
                 }}
                 className={cn(
                   "grid grid-cols-[auto_1fr_auto] items-center gap-3 rounded-[13px] border p-3.5 text-left transition-colors",
