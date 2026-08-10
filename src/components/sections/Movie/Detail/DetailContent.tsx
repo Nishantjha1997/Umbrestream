@@ -17,7 +17,12 @@ import { Cast } from "tmdb-ts/dist/types/credits";
 import { notFound } from "next/navigation";
 import { Image } from "tmdb-ts";
 import dynamic from "next/dynamic";
-import { getEnglishLogoUrl, getImageUrl, mutateMovieTitle } from "@/utils/movies";
+import {
+  getCinematicBackdropUrl,
+  getEnglishLogoUrl,
+  getImageUrl,
+  mutateMovieTitle,
+} from "@/utils/movies";
 const PhotosSection = dynamic(() => import("@/components/ui/other/PhotosSection"));
 const MediaBackdrop = dynamic(() => import("@/components/media/MediaBackdrop"));
 const OverviewSection = dynamic(() => import("@/components/sections/Movie/Detail/Overview"));
@@ -56,7 +61,10 @@ export default function MovieDetailContent({ id }: { id: number }) {
         <div className="flex flex-col gap-10">
           <MediaBackdrop
             alt={mutateMovieTitle(movie)}
-            backdropUrl={getImageUrl(movie.backdrop_path, "backdrop", true)}
+            backdropUrl={getCinematicBackdropUrl(
+              movie.images.backdrops,
+              getImageUrl(movie.backdrop_path, "backdrop", true),
+            )}
             logoUrl={getEnglishLogoUrl(movie.images.logos)}
           />
           <OverviewSection movie={movie} />

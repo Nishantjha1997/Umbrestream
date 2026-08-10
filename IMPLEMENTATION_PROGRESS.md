@@ -329,4 +329,16 @@ Published handoff commits: `99ccaa4` (implementation) and `ee22166` (handoff sta
 - After more than 20 seconds, the live route stayed on Filmu instead of racing through providers, and the Source and Episodes controls remained visible.
 - Manual VidKing selection changed the URL to `?src=vidking`; the live iframe exposed one video element with `readyState: 4`, `duration: 1855.989` seconds, `currentTime: 0`, `paused: true`, and no media error. Its player text showed `30:55`, confirming the episode media loaded.
 - The live Episodes drawer opened and listed the Ted Lasso season episodes.
+
+## HD cinematic artwork upgrade — 2026-08-10
+
+- Root cause of the blurred screenshot was isolated to the desktop `02 Tonight` billboard. It rendered the recommendation list's TMDB `w500` backdrop across an approximately `21:8` desktop surface.
+- Added one shared TMDB cinematic-art selector. It filters for genuinely landscape images at least 1280px wide, then scores resolution, community rating/vote confidence, neutral artwork without baked-in language, and 16:9 crop suitability.
+- The `Tonight` billboard now renders an original-resolution fallback immediately and asynchronously selects a high-quality alternate TMDB backdrop, deliberately excluding the default artwork when a suitable alternative exists.
+- The main desktop hero now requests TMDB image metadata and selects its landscape artwork through the same logic without blocking initial rendering.
+- Movie/TV hover previews and detail-page backdrops now use the shared selector too, preventing other wide surfaces from stretching `w500` thumbnails.
+- Anime remains provider-native: AniList banner art is retained because AniList IDs cannot safely be treated as TMDB IDs.
+- Typecheck, focused lint, leak scan, diff validation, and the full Next.js production build passed after the artwork changes.
+- The selector was exercised against live TMDB House of the Dragon data and chose an inspected 3840×2160 alternate backdrop (`/etj8E2o0Bud0HkONVQPjyCkIvpv.jpg`) instead of the default `w500` image.
+- Pending: commit, push `main`, and confirm the Vercel production deployment.
 - `/admin` correctly redirects unauthenticated visitors to `/auth`. The supplied email/password did not authenticate: the live form returned “That email and password don’t match an account.” No account was created automatically.

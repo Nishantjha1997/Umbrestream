@@ -7,7 +7,7 @@ import type { MediaSummary } from "@/types/media";
 import type { SavedMovieDetails } from "@/types/movie";
 import { cn, isEmpty } from "@/utils/helpers";
 import { Calendar, Clock, List, PlayFilled, Season, Star } from "@/utils/icons";
-import { getImageUrl, movieDurationString } from "@/utils/movies";
+import { getCinematicBackdropUrl, getImageUrl, movieDurationString } from "@/utils/movies";
 import { Button, Link, Skeleton } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
 
@@ -70,7 +70,10 @@ function playLabelFor(media: MediaSummary): string {
 
 async function fetchPreview(media: MediaSummary) {
   if (media.kind === "movie") {
-    return { kind: "movie", detail: await tmdbBrowser.movies.details(media.id, ["images"]) } as const;
+    return {
+      kind: "movie",
+      detail: await tmdbBrowser.movies.details(media.id, ["images"]),
+    } as const;
   }
   if (media.kind === "tv") {
     return { kind: "tv", detail: await tmdbBrowser.tvShows.details(media.id, ["images"]) } as const;
@@ -103,7 +106,9 @@ const HoverPreview: React.FC<HoverPreviewProps> = ({ media, fullWidth }) => {
 
   return (
     <article
-      className={cn("w-80 max-w-[calc(100vw-2rem)] overflow-hidden", { "w-full max-w-none": fullWidth })}
+      className={cn("w-80 max-w-[calc(100vw-2rem)] overflow-hidden", {
+        "w-full max-w-none": fullWidth,
+      })}
     >
       <div className="relative aspect-video w-full overflow-hidden bg-black/40">
         {!isEmpty(heroUrl) && (
@@ -248,12 +253,19 @@ function toModel(media: MediaSummary, result: PreviewQueryResult): PreviewModel 
     const movie = result.detail;
     const year = movie.release_date ? new Date(movie.release_date).getFullYear() : undefined;
     return {
-      heroUrl: getImageUrl(movie.backdrop_path, "backdrop"),
+      heroUrl:
+        getCinematicBackdropUrl(
+          movie.images.backdrops,
+          getImageUrl(movie.backdrop_path, "backdrop"),
+        ) ?? getImageUrl(movie.backdrop_path, "backdrop", true),
       logoUrl: englishLogo(movie.images.logos),
       kindLabel: "Movie",
       title: movie.title || media.title,
       facts: [
-        { icon: <Clock className="size-3" aria-hidden="true" />, label: movieDurationString(movie.runtime) },
+        {
+          icon: <Clock className="size-3" aria-hidden="true" />,
+          label: movieDurationString(movie.runtime),
+        },
         ...(year
           ? [{ icon: <Calendar className="size-3" aria-hidden="true" />, label: String(year) }]
           : []),
@@ -281,9 +293,15 @@ function toModel(media: MediaSummary, result: PreviewQueryResult): PreviewModel 
     const tv = result.detail;
     const first = tv.first_air_date ? new Date(tv.first_air_date).getFullYear() : undefined;
     const last = tv.last_air_date ? new Date(tv.last_air_date).getFullYear() : undefined;
-    const years = first ? (last && last !== first ? `${first} – ${last}` : String(first)) : undefined;
+    const years = first
+      ? last && last !== first
+        ? `${first} – ${last}`
+        : String(first)
+      : undefined;
     return {
-      heroUrl: getImageUrl(tv.backdrop_path, "backdrop"),
+      heroUrl:
+        getCinematicBackdropUrl(tv.images.backdrops, getImageUrl(tv.backdrop_path, "backdrop")) ??
+        getImageUrl(tv.backdrop_path, "backdrop", true),
       logoUrl: englishLogo(tv.images.logos),
       kindLabel: "TV",
       title: tv.name || media.title,
@@ -327,10 +345,7 @@ function toModel(media: MediaSummary, result: PreviewQueryResult): PreviewModel 
 
   return {
     heroUrl:
-      anime.bannerImage ??
-      anime.coverImage.extraLarge ??
-      anime.coverImage.large ??
-      media.posterUrl,
+      anime.bannerImage ?? anime.coverImage.extraLarge ?? anime.coverImage.large ?? media.posterUrl,
     kindLabel: media.format ?? "Anime",
     title: anime.title.english ?? anime.title.romaji ?? anime.title.native ?? media.title,
     facts: [

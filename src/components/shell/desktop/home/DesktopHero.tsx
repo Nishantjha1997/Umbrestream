@@ -16,7 +16,7 @@ import { tmdbBrowser } from "@/api/tmdb-browser";
 import { useHomeHero, type HomeHeroPick } from "@/hooks/useHomeHero";
 import { cn } from "@/utils/helpers";
 import { Info, PlayFilled } from "@/utils/icons";
-import { getHighResolutionImageUrl } from "@/utils/movies";
+import { getCinematicBackdropUrl, getHighResolutionImageUrl } from "@/utils/movies";
 import { Skeleton } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
@@ -32,19 +32,24 @@ const FALLBACK_ART = "linear-gradient(155deg,#7f2d3a 0%,#1d1116 100%)";
  * extra per-title round trip is visible at its only call site. Anime has no
  * TMDB id space, so it's skipped rather than guessed at.
  */
-function useHeroSynopsis(media: HomeHeroPick["media"] | undefined) {
-  return useQuery<string | null>({
-    queryKey: ["hero-synopsis", media?.kind, media?.id],
+function useHeroPresentation(media: HomeHeroPick["media"] | undefined) {
+  return useQuery<{ synopsis: string | null; artwork?: string }>({
+    queryKey: ["hero-presentation", media?.kind, media?.id],
     enabled: media !== undefined && media.kind !== "anime",
     staleTime: Infinity,
     retry: false,
     queryFn: async () => {
-      if (!media) return null;
+      if (!media || media.kind === "anime") {
+        return { synopsis: null, artwork: getHighResolutionImageUrl(media?.backdropUrl) };
+      }
       const detail =
         media.kind === "tv"
-          ? await tmdbBrowser.tvShows.details(media.id)
-          : await tmdbBrowser.movies.details(media.id);
-      return detail.overview?.trim() || null;
+          ? await tmdbBrowser.tvShows.details(media.id, ["images"])
+          : await tmdbBrowser.movies.details(media.id, ["images"]);
+      return {
+        synopsis: detail.overview?.trim() || null,
+        artwork: getCinematicBackdropUrl(detail.images.backdrops, media.backdropUrl),
+      };
     },
   });
 }
@@ -65,7 +70,7 @@ function captionFor(pick: HomeHeroPick): string | undefined {
 
 export default function DesktopHero() {
   const { pick, isLoading } = useHomeHero();
-  const { data: synopsis } = useHeroSynopsis(pick?.media);
+  const { data: presentation } = useHeroPresentation(pick?.media);
 
   if (isLoading) {
     return (
@@ -89,6 +94,7 @@ export default function DesktopHero() {
   }
 
   const art =
+    presentation?.artwork ??
     getHighResolutionImageUrl(pick.media.backdropUrl) ??
     getHighResolutionImageUrl(pick.media.posterUrl) ??
     pick.media.backdropUrl ??
@@ -137,7 +143,7 @@ export default function DesktopHero() {
         }}
       />
 
-      <div className="absolute right-12 left-12 bottom-14 flex max-w-[640px] flex-col gap-[18px]">
+      <div className="absolute right-12 bottom-14 left-12 flex max-w-[640px] flex-col gap-[18px]">
         {(showRing || caption) && (
           <div className="flex items-center gap-[14px]">
             {showRing && (
@@ -159,8 +165,10 @@ export default function DesktopHero() {
           {pick.media.title}
         </h1>
 
-        {synopsis && (
-          <p className="line-clamp-3 text-[14.5px] leading-[1.6] text-white/62">{synopsis}</p>
+        {presentation?.synopsis && (
+          <p className="line-clamp-3 text-[14.5px] leading-[1.6] text-white/62">
+            {presentation.synopsis}
+          </p>
         )}
 
         <div className="flex items-center gap-3 pt-1">
@@ -170,7 +178,7 @@ export default function DesktopHero() {
             className={cn(
               "inline-flex h-[50px] items-center gap-[9px] rounded-full bg-white px-[30px] text-[14.5px] font-semibold text-[#0a090d]",
               "transition-colors duration-(--duration-fast) ease-(--ease-out-quint) motion-reduce:transition-none",
-              "hover:bg-white/85 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black/50",
+              "hover:bg-white/85 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black/50 focus-visible:outline-hidden",
             )}
           >
             <PlayFilled size={13} aria-hidden="true" />
@@ -182,7 +190,7 @@ export default function DesktopHero() {
             className={cn(
               "inline-flex h-[50px] items-center gap-2 rounded-full border border-white/22 bg-white/8 px-[26px] text-sm font-medium text-white",
               "transition-colors duration-(--duration-fast) ease-(--ease-out-quint) motion-reduce:transition-none",
-              "hover:bg-black/55 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white/80",
+              "hover:bg-black/55 focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:outline-hidden",
             )}
           >
             <Info size={13} aria-hidden="true" />

@@ -10,11 +10,13 @@
  */
 
 import { getPersonalizedRecommendations } from "@/actions/recommendations";
+import { tmdbBrowser } from "@/api/tmdb-browser";
 import { useHomeHero } from "@/hooks/useHomeHero";
 import useSupabaseUser from "@/hooks/useSupabaseUser";
 import type { MediaSummary } from "@/types/media";
 import { cn } from "@/utils/helpers";
 import { PlayFilled } from "@/utils/icons";
+import { getCinematicBackdropUrl, getHighResolutionImageUrl } from "@/utils/movies";
 import { fromAnime, fromMovie, fromTvShow } from "@/utils/normalize-media";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
@@ -51,7 +53,27 @@ export default function TonightInset() {
     return undefined;
   }, [recommendations, heroPick]);
 
+  const { data: artwork } = useQuery({
+    queryKey: ["cinematic-backdrop", pick?.kind, pick?.id, "alternate"],
+    enabled: pick !== undefined && pick.kind !== "anime",
+    staleTime: 30 * 60 * 1000,
+    queryFn: async () => {
+      if (!pick || pick.kind === "anime") return undefined;
+      const detail =
+        pick.kind === "tv"
+          ? await tmdbBrowser.tvShows.details(pick.id, ["images"])
+          : await tmdbBrowser.movies.details(pick.id, ["images"]);
+      return getCinematicBackdropUrl(detail.images.backdrops, pick.backdropUrl, true);
+    },
+  });
+
   if (!pick) return null;
+
+  const cinematicArt =
+    artwork ??
+    getHighResolutionImageUrl(pick.backdropUrl) ??
+    getHighResolutionImageUrl(pick.posterUrl) ??
+    pick.posterUrl;
 
   const meta = [pick.year, pick.rating && pick.rating > 0 ? pick.rating.toFixed(1) : undefined]
     .filter(Boolean)
@@ -71,7 +93,7 @@ export default function TonightInset() {
         {/* Decorative: the title renders as real text below. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={pick.backdropUrl ?? pick.posterUrl}
+          src={cinematicArt}
           alt=""
           aria-hidden="true"
           draggable={false}
@@ -87,13 +109,15 @@ export default function TonightInset() {
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0"
-          style={{ backgroundImage: "linear-gradient(90deg,rgba(10,9,13,.92),rgba(10,9,13,.2) 62%)" }}
+          style={{
+            backgroundImage: "linear-gradient(90deg,rgba(10,9,13,.92),rgba(10,9,13,.2) 62%)",
+          }}
         />
 
         <div className="absolute inset-y-0 left-10 flex max-w-[440px] flex-col justify-center gap-3">
           {/* Honest and generic on purpose — there is no per-title "why this"
               signal to report, so nothing specific is invented. */}
-          <p className="text-[11.5px] text-accent">Picked for tonight</p>
+          <p className="text-accent text-[11.5px]">Picked for tonight</p>
           <h3 className="font-serif text-[44px] leading-[.94] tracking-[-.02em] text-white">
             {pick.title}
           </h3>

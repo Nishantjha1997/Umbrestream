@@ -8,7 +8,7 @@ import {
   differenceInMonths,
   differenceInYears,
 } from "date-fns";
-import { Movie, MovieDetails, TV, TvShowDetails } from "tmdb-ts";
+import type { Movie, MovieDetails, TV, TvShowDetails } from "tmdb-ts";
 
 /**
  * Converts a movie duration from minutes to a human-readable format.
@@ -138,6 +138,7 @@ export const getImageUrl = (
   if (path && (path.startsWith("http://") || path.startsWith("https://"))) {
     return path;
   }
+  const normalizedPath = path?.replace(/^\/+/, "");
   const size = fullSize ? "original" : "w500";
   const fallback =
     type === "poster"
@@ -145,7 +146,7 @@ export const getImageUrl = (
       : type === "backdrop"
         ? "https://wallpapercave.com/wp/wp1945939.jpg"
         : "";
-  return path ? `https://image.tmdb.org/t/p/${size}/${path}` : fallback;
+  return normalizedPath ? `https://image.tmdb.org/t/p/${size}/${normalizedPath}` : fallback;
 };
 
 /**
@@ -158,6 +159,70 @@ export const getHighResolutionImageUrl = (url?: string): string | undefined => {
   if (!url) return undefined;
   if (!url.includes("image.tmdb.org/t/p/")) return url;
   return url.replace(/\/t\/p\/(?:w500|w780|w1280|w1920)\//, "/t/p/original/");
+};
+
+/** The subset of TMDB image metadata needed to choose cinematic artwork. */
+export interface TmdbBackdropArtwork {
+  aspect_ratio: number;
+  file_path: string;
+  height: number;
+  iso_639_1?: string | null;
+  vote_average: number;
+  vote_count: number;
+  width: number;
+}
+
+function tmdbPathFromUrl(url?: string): string | undefined {
+  if (!url) return undefined;
+  const match = url.match(/image\.tmdb\.org\/t\/p\/[^/]+(\/[^?#]+)/);
+  return match?.[1];
+}
+
+/**
+ * Selects artwork for large landscape surfaces from TMDB's complete backdrop
+ * set instead of stretching the list endpoint's small `w500` thumbnail.
+ *
+ * Resolution is the first gate. Within that pool we favour backdrops with a
+ * useful landscape crop, meaningful community votes, and no language-specific
+ * text baked into the image. `preferAlternative` is used by editorial panels
+ * so they do not repeat the title's familiar default backdrop when an equally
+ * strong alternate exists.
+ */
+export const getCinematicBackdropUrl = (
+  backdrops?: readonly TmdbBackdropArtwork[],
+  primaryUrl?: string,
+  preferAlternative = false,
+): string | undefined => {
+  if (!backdrops?.length) return getHighResolutionImageUrl(primaryUrl);
+
+  const primaryPath = tmdbPathFromUrl(primaryUrl);
+  const suitable = backdrops.filter(
+    ({ aspect_ratio, width, height, file_path }) =>
+      Boolean(file_path) &&
+      width >= 1280 &&
+      height >= 650 &&
+      aspect_ratio >= 1.55 &&
+      aspect_ratio <= 2.45,
+  );
+  const candidates = suitable.length > 0 ? suitable : backdrops;
+  const alternatives = preferAlternative
+    ? candidates.filter(({ file_path }) => file_path !== primaryPath)
+    : candidates;
+  const pool = alternatives.length > 0 ? alternatives : candidates;
+
+  const score = (image: TmdbBackdropArtwork) => {
+    const resolution = Math.min(image.width, 3840) / 160;
+    const rating = Math.max(0, image.vote_average) * 2.5;
+    const confidence = Math.log2(Math.max(0, image.vote_count) + 1) * 2;
+    const cleanArtwork = image.iso_639_1 == null ? 4 : 0;
+    const landscapeFit = Math.max(0, 5 - Math.abs(image.aspect_ratio - 16 / 9) * 8);
+    return resolution + rating + confidence + cleanArtwork + landscapeFit;
+  };
+
+  const selected = [...pool].sort((a, b) => score(b) - score(a))[0];
+  return selected
+    ? getImageUrl(selected.file_path, "backdrop", true)
+    : getHighResolutionImageUrl(primaryUrl);
 };
 
 /** Minimal structural shape of a TMDB `images.logos` entry. */

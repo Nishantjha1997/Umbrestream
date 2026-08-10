@@ -14,7 +14,12 @@ import { useQuery } from "@tanstack/react-query";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import dynamic from "next/dynamic";
-import { getEnglishLogoUrl, getImageUrl, mutateTvShowTitle } from "@/utils/movies";
+import {
+  getCinematicBackdropUrl,
+  getEnglishLogoUrl,
+  getImageUrl,
+  mutateTvShowTitle,
+} from "@/utils/movies";
 const PhotosSection = dynamic(() => import("@/components/ui/other/PhotosSection"));
 const TvShowRelatedSection = dynamic(() => import("@/components/sections/TV/Details/Related"));
 const TvShowCastsSection = dynamic(() => import("@/components/sections/TV/Details/Casts"));
@@ -67,7 +72,10 @@ export default function TvShowDetailContent({ id }: { id: number }) {
         <div className="flex flex-col gap-10">
           <MediaBackdrop
             alt={mutateTvShowTitle(tv)}
-            backdropUrl={getImageUrl(tv.backdrop_path, "backdrop", true)}
+            backdropUrl={getCinematicBackdropUrl(
+              tv.images.backdrops,
+              getImageUrl(tv.backdrop_path, "backdrop", true),
+            )}
             logoUrl={getEnglishLogoUrl(tv.images.logos)}
           />
           <TvShowOverviewSection
