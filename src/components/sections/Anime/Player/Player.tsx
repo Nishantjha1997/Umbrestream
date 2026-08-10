@@ -50,7 +50,7 @@ const AnimePlayer: React.FC<AnimePlayerProps> = ({ anime, episode, startAt }) =>
       request={request}
       identity={identity}
       historyMetadata={{ episode }}
-      renderHeader={({ selectedSourceId, onOpenSource }) => (
+      renderHeader={({ selectedSourceId, onOpenSource, chromeHidden }) => (
         <AnimePlayerHeader
           id={anime.id}
           animeTitle={animeTitle}
@@ -59,6 +59,7 @@ const AnimePlayer: React.FC<AnimePlayerProps> = ({ anime, episode, startAt }) =>
           selectedSource={selectedSourceId}
           onOpenSource={onOpenSource}
           onOpenEpisode={episodeHandlers.open}
+          hidden={chromeHidden}
         />
       )}
       renderExtras={({ selectedSourceId }) => (

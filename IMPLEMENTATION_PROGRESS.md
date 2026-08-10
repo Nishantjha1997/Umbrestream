@@ -2,6 +2,14 @@
 
 Last updated: 2026-08-10
 
+## Active fix: player server selection and provider-control overlap (2026-08-10)
+
+- User-reported production regression: the StreamFree source list opens, but selecting another provider closes the list without reliably demonstrating or retaining the new selection. Provider-owned region/server controls can also sit underneath StreamFree's always-visible top-right chrome and lose pointer input.
+- Implemented: the phone source list now uses explicit native radio buttons in a bottom sheet; selection commits the new iframe synchronously before the overlay closes, persists `src=<provider-id>` independently of a delayed Safari History API update, records a privacy-safe manual-switch event, and shows `Switching to` / `Now using` feedback. Desktop uses the same button path.
+- Implemented: StreamFree's player header fades and becomes inert after three idle seconds so provider-owned region/server/caption/fullscreen controls receive pointer input. A 44px left-edge reveal control restores StreamFree controls; reduced-motion users retain persistent controls. The former persistent no-caption switch prompt was removed because it could cover provider controls during playback; caption capability remains labelled in the server picker.
+- Validation: TypeScript, focused ESLint, all 12 source-registry fixtures, leak scan, React quality review, and `git diff --check` pass. The production build and local browser route compile both exceeded the OneDrive workspace command window without a compile error; verify the interaction again on the Vercel deployment after push.
+- Scope guard: do not reorder providers, add ad blocking, scrape provider internals, or infer provider playback from an opaque iframe load. This pass is limited to reliable user selection and unobstructed provider controls.
+
 ## Current handoff: StreamFree is live; Nishant.top portfolio is in implementation (2026-08-10)
 
 - StreamFree rebrand/domain work is complete and pushed to `main` in commit `241ab20`. Live checks passed for `https://streamfree.online/`, `https://www.streamfree.online/` (permanent redirect to the apex), and `https://umbrestream.vercel.app/`.

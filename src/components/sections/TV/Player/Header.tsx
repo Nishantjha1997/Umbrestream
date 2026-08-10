@@ -1,11 +1,13 @@
 import { ArrowLeft, List, Next, Prev, Server } from "@/utils/icons";
 import PlayerActionButton from "@/components/ui/button/PlayerActionButton";
+import { cn } from "@/utils/helpers";
 import { TvShowPlayerProps } from "./Player";
 
 interface TvShowPlayerHeaderProps extends Omit<TvShowPlayerProps, "episodes" | "tv" | "startAt"> {
   selectedSource: string;
   onOpenSource: () => void;
   onOpenEpisode: () => void;
+  hidden?: boolean;
 }
 
 /**
@@ -24,11 +26,19 @@ const TvShowPlayerHeader: React.FC<TvShowPlayerHeaderProps> = ({
   prevEpisodeNumber,
   onOpenSource,
   onOpenEpisode,
+  hidden,
 }) => {
   const sourceQuery = selectedSource ? `?src=${encodeURIComponent(selectedSource)}` : "";
 
   return (
-    <div className="player-safe-header pointer-events-none absolute top-0 z-40 flex h-24 w-full items-start justify-between gap-2 bg-linear-to-b from-black/80 to-transparent text-white sm:h-28">
+    <div
+      aria-hidden={hidden || undefined}
+      inert={hidden || undefined}
+      className={cn(
+        "player-safe-header pointer-events-none absolute top-0 z-40 flex h-24 w-full items-start justify-between gap-2 bg-linear-to-b from-black/80 to-transparent text-white transition-[opacity,transform] duration-300 sm:h-28",
+        hidden && "-translate-y-3 opacity-0",
+      )}
+    >
       {/* One accent (Phase 1, §1.1.3 / §5.2): was `color="warning"` — TV no
           longer gets its own media-type hue. Movie/TV/Anime players all
           render `color="primary"`, which `hero.ts` points at the single

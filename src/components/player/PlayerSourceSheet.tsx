@@ -1,26 +1,19 @@
 "use client";
 
 /**
- * The server picker, shared by Movie/TV/Anime (Phase 6, §10). One component
- * with two renderings rather than two components: phone gets `VaulDrawer`'s
- * bottom sheet (the exact list UI TV's `SourceSelection.tsx` already shipped
- * and proved out), desktop gets `PlayerPanel`'s centred card
- * (`DESKTOP_SPEC.md` §I — desktop has no drawers at all). Both are always in
- * the DOM, `md:hidden` / `hidden md:flex`, so there is no "wrong sheet"
- * flash — the same technique `ImmersiveAppShell` uses for the nav shell.
- *
- * Health comes from `useServerHealth`, a plain URL ping with no dependency
- * on the old `usePlayerEngine` — it already worked this way for TV.
+ * Shared Movie/TV/Anime server picker. Phone uses a bottom sheet and desktop
+ * uses the centred player panel, but both render the same native button list.
+ * Keeping the selection path on plain buttons avoids press/gesture arbitration
+ * between a component-library radio group and Vaul's draggable surface.
  */
 
 import PlayerPanel from "@/components/player/PlayerPanel";
 import VaulDrawer from "@/components/ui/overlay/VaulDrawer";
-import SelectButton from "@/components/ui/input/SelectButton";
 import { useServerHealth, type ServerHealthStatus } from "@/hooks/useServerHealth";
 import type { PlayerSource } from "@/lib/sources/types";
 import type { PlayersProps } from "@/types";
 import { cn } from "@/utils/helpers";
-import { Clock, Rocket, Star } from "@/utils/icons";
+import { Check, Clock, Rocket, Star } from "@/utils/icons";
 import { useMemo } from "react";
 
 export interface PlayerSourceSheetProps {
@@ -28,9 +21,8 @@ export interface PlayerSourceSheetProps {
   onClose: () => void;
   sources: PlayerSource[];
   selectedSourceId: string;
-  /** Resolves only after the player has accepted the new source. The parent
-   * owns closing the sheet so its overlay remains above the iframe during
-   * the complete click/update sequence. */
+  switchingSourceId?: string | null;
+  /** The parent commits the iframe swap before dismissing this overlay. */
   onSelect: (sourceId: string) => Promise<void> | void;
 }
 
@@ -53,6 +45,7 @@ export default function PlayerSourceSheet({
   onClose,
   sources,
   selectedSourceId,
+  switchingSourceId,
   onSelect,
 }: PlayerSourceSheetProps) {
   const players: PlayersProps[] = useMemo(
@@ -69,6 +62,54 @@ export default function PlayerSourceSheet({
   );
   const healthMap = useServerHealth(players, opened);
 
+  const sourceOptions = sources.map((source, index) => {
+    const health = healthMap[index] || "checking";
+    const isSelected = source.id === selectedSourceId;
+    const isSwitching = source.id === switchingSourceId;
+
+    return (
+      <button
+        key={source.id}
+        type="button"
+        role="radio"
+        aria-checked={isSelected}
+        onPointerDown={(event) => event.stopPropagation()}
+        onClick={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          void onSelect(source.id);
+        }}
+        className={cn(
+          "grid min-h-14 w-full touch-manipulation grid-cols-[auto_1fr_auto] items-center gap-3 rounded-[13px] border p-3.5 text-left transition-[background-color,border-color,transform] duration-200 active:scale-[.985]",
+          isSelected
+            ? "border-primary/45 bg-primary/15"
+            : "border-white/8 bg-white/[0.025] hover:border-white/18 hover:bg-white/[0.055]",
+          "focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:outline-hidden",
+        )}
+      >
+        <span className={cn("size-[7px] rounded-full", HEALTH_DOT[health])} />
+        <span className="flex min-w-0 flex-col gap-0.5">
+          <span className="truncate text-[13.5px] font-medium text-white">{source.label}</span>
+          <span className="truncate text-[11px] text-white/48">
+            {[
+              source.capabilities.recommended && "Recommended",
+              source.capabilities.fast && "Fast",
+              source.capabilities.subtitles === "native" && "Captions",
+              source.audioVariant === "sub" && "Subbed",
+              source.audioVariant === "dub" && "Dubbed",
+            ]
+              .filter(Boolean)
+              .join(" · ") || "Available"}
+          </span>
+        </span>
+        <span className="flex min-w-[66px] items-center justify-end gap-2 text-[9.5px] font-medium tracking-[.08em] text-white/45 uppercase">
+          {isSwitching ? "Switching" : isSelected ? "Selected" : HEALTH_LABEL[health]}
+          {isSelected && <Check aria-hidden size={12} className="text-primary" />}
+        </span>
+      </button>
+    );
+  });
+
   return (
     <>
       <VaulDrawer
@@ -76,12 +117,12 @@ export default function PlayerSourceSheet({
         onClose={onClose}
         backdrop="blur"
         title="Select Video Server"
-        direction="right"
+        direction="bottom"
         hiddenHandler
         withCloseButton
         classNames={{ contentWrapper: "md:hidden", overlay: "md:hidden" }}
       >
-        <div className="flex flex-col gap-4 p-5">
+        <div className="flex max-h-[72dvh] flex-col gap-4 overflow-y-auto p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
           <div className="grid grid-cols-2 gap-2 px-1 py-2 text-xs">
             <div className="flex items-center gap-1.5">
               <Star className="text-warning-500" size={14} />
@@ -97,87 +138,15 @@ export default function PlayerSourceSheet({
             </div>
           </div>
 
-          <SelectButton
-            color="primary"
-            groupType="list"
-            value={selectedSourceId}
-            onChange={(value) => {
-              if (value) void onSelect(value);
-            }}
-            data={sources.map((source, index) => {
-              const health = healthMap[index] || "checking";
-              return {
-                label: source.label,
-                value: source.id,
-                endContent: (
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span
-                      className={cn(
-                        "rounded-full border px-2 py-0.5 text-[10px] font-medium",
-                        "border-white/15 bg-white/5 text-white/70",
-                      )}
-                    >
-                      {HEALTH_LABEL[health]}
-                    </span>
-                    {source.capabilities.recommended && (
-                      <Star className="text-warning" size={16} />
-                    )}
-                    {source.capabilities.fast && <Rocket className="text-danger" size={16} />}
-                    {source.capabilities.resumable && <Clock className="text-success" size={16} />}
-                  </div>
-                ),
-              };
-            })}
-          />
+          <div className="flex flex-col gap-2.5" role="radiogroup" aria-label="Video servers">
+            {sourceOptions}
+          </div>
         </div>
       </VaulDrawer>
 
       <PlayerPanel open={opened} onClose={onClose} title="Select a source">
-        <div className="flex flex-col gap-2.5">
-          {sources.map((source, index) => {
-            const health = healthMap[index] || "checking";
-            const isSelected = source.id === selectedSourceId;
-            return (
-              <button
-                key={source.id}
-                type="button"
-                onPointerDown={(event) => {
-                  // Keep an iframe below the panel from seeing a pointer
-                  // sequence while a source selection is in progress.
-                  event.stopPropagation();
-                }}
-                onClick={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  void onSelect(source.id);
-                }}
-                className={cn(
-                  "grid grid-cols-[auto_1fr_auto] items-center gap-3 rounded-[13px] border p-3.5 text-left transition-colors",
-                  isSelected
-                    ? "border-accent/30 bg-accent/10"
-                    : "border-white/8 bg-white/[0.02] hover:border-white/15",
-                  "focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:outline-hidden",
-                )}
-              >
-                <span className={cn("size-[7px] rounded-full", HEALTH_DOT[health])} />
-                <span className="flex min-w-0 flex-col gap-0.5">
-                  <span className="text-[13.5px] font-medium text-white">{source.label}</span>
-                  <span className="text-[11px] text-white/42">
-                    {[
-                      source.capabilities.recommended && "Recommended",
-                      source.capabilities.fast && "Fast",
-                      source.capabilities.subtitles === "native" && "Captions",
-                    ]
-                      .filter(Boolean)
-                      .join(" · ") || "Available"}
-                  </span>
-                </span>
-                <span className="text-[9.5px] font-medium tracking-[.1em] text-white/40 uppercase">
-                  {HEALTH_LABEL[health]}
-                </span>
-              </button>
-            );
-          })}
+        <div className="flex flex-col gap-2.5" role="radiogroup" aria-label="Video servers">
+          {sourceOptions}
         </div>
       </PlayerPanel>
     </>

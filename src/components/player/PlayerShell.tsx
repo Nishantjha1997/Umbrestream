@@ -33,9 +33,10 @@
  * Rotating to landscape *is* fullscreen: the persistent nav chrome is
  * already hidden on `/player` routes (`ImmersiveAppShell.tsx`), and the top
  * and bottom bars are overlays on a full-bleed stage in both orientations,
- * not grid rows that would letterbox the video. There is no
- * `webkitEnterFullscreen` → `requestFullscreen` → cinema-mode cascade to
- * silently cancel.
+ * not grid rows that would letterbox the video. StreamFree chrome yields to
+ * provider controls after three idle seconds and can be restored from a
+ * small left-edge reveal target. There is no `webkitEnterFullscreen` →
+ * `requestFullscreen` → cinema-mode cascade to silently cancel.
  */
 
 import NativePlayer from "@/components/player/NativePlayer";
@@ -43,18 +44,22 @@ import PlayerNotificationSlot, {
   type PlayerNotification,
 } from "@/components/player/PlayerNotificationSlot";
 import PlayerSourceSheet from "@/components/player/PlayerSourceSheet";
+import { usePlayerChromeVisibility } from "@/hooks/usePlayerChromeVisibility";
 import { usePlayerEvents, type PlayerEventIdentity } from "@/hooks/usePlayerEvents";
+import { trackUmbraEvent } from "@/lib/analytics/client";
 import { createPublicEmbedSources } from "@/lib/sources/adapters/embed";
 import { legacySourceId } from "@/lib/sources/legacy";
 import { selectDefaultSource } from "@/lib/sources/selectDefault";
 import type { PlayerSource, SourceRequest, SourceResolutionResponse } from "@/lib/sources/types";
+import { Menu } from "@/utils/icons";
 import { parseAsString, useQueryState } from "nuqs";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { createPortal } from "react-dom";
+import { createPortal, flushSync } from "react-dom";
 
 export interface PlayerShellHeaderContext {
   selectedSourceId: string;
   onOpenSource: () => void;
+  chromeHidden: boolean;
 }
 
 export interface PlayerShellProps {
@@ -110,6 +115,13 @@ export default function PlayerShell({
 
   const [sourceOpened, setSourceOpened] = useState(false);
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
+  const { hidden: chromeHidden, reveal: revealChrome } = usePlayerChromeVisibility(sourceOpened);
+
+  useEffect(() => {
+    const revealFromKeyboard = () => revealChrome();
+    window.addEventListener("keydown", revealFromKeyboard);
+    return () => window.removeEventListener("keydown", revealFromKeyboard);
+  }, [revealChrome]);
 
   const events = usePlayerEvents({ saveHistory: true, metadata: historyMetadata, identity });
   const { setAllowedOrigin } = events;
@@ -188,6 +200,13 @@ export default function PlayerShell({
     id: string;
     requestKey: string;
   } | null>(null);
+  const [switchingSourceId, setSwitchingSourceId] = useState<string | null>(null);
+  const [sourceFeedback, setSourceFeedback] = useState<{
+    sourceId: string;
+    label: string;
+    phase: "switching" | "selected";
+  } | null>(null);
+  const selectionVersionRef = useRef(0);
   const requestedSourceId =
     selectedSourceOverride?.requestKey === directRequestKey
       ? selectedSourceOverride.id
@@ -222,7 +241,28 @@ export default function PlayerShell({
     if (selectedSource && sourceParam !== selectedSource.id) {
       void setSourceParam(selectedSource.id);
     }
-  }, [directRequestKey, directSettled, selectedSource, selectedSourceOverride, setSourceParam, sourceParam]);
+  }, [
+    directRequestKey,
+    directSettled,
+    selectedSource,
+    selectedSourceOverride,
+    setSourceParam,
+    sourceParam,
+  ]);
+
+  // Once the shallow URL update is observable through nuqs, the query string
+  // becomes the source of truth again. Until then the request-scoped override
+  // prevents Safari's slower History API scheduling from snapping the iframe
+  // back to the previous provider.
+  useEffect(() => {
+    if (
+      selectedSourceOverride?.requestKey === directRequestKey &&
+      sourceParam === selectedSourceOverride.id
+    ) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSelectedSourceOverride(null);
+    }
+  }, [directRequestKey, selectedSourceOverride, sourceParam]);
 
   useEffect(() => {
     setAllowedOrigin(selectedSource?.providerOrigin ?? null);
@@ -277,22 +317,74 @@ export default function PlayerShell({
     return () => window.clearTimeout(timer);
   }, [selectedSource?.id, selectedSource?.capabilities.events]);
 
-  const openSource = useCallback(() => setSourceOpened(true), []);
+  useEffect(() => {
+    if (!sourceFeedback) return;
+    const timeout = window.setTimeout(
+      () => {
+        if (sourceFeedback.phase === "switching") {
+          setSwitchingSourceId((current) => (current === sourceFeedback.sourceId ? null : current));
+        }
+        setSourceFeedback((current) => (current === sourceFeedback ? null : current));
+      },
+      sourceFeedback.phase === "switching" ? 8_000 : 2_500,
+    );
+    return () => window.clearTimeout(timeout);
+  }, [sourceFeedback]);
+
+  const openSource = useCallback(() => {
+    revealChrome();
+    setSourceOpened(true);
+  }, [revealChrome]);
 
   const selectSource = useCallback(
-    async (id: string) => {
-      // Update the rendered source before dismissing the overlay. This makes
-      // the selection visible even when the URL update is deferred and keeps
-      // the cross-origin iframe from receiving the click sequence.
-      setSelectedSourceOverride({ id, requestKey: directRequestKey });
-      try {
-        await setSourceParam(id);
-      } finally {
+    (id: string) => {
+      const nextSource = sources.find((source) => source.id === id);
+      if (!nextSource) return;
+
+      if (selectedSource?.id === id) {
         setSourceOpened(false);
+        revealChrome();
+        return;
       }
+
+      const selectionVersion = ++selectionVersionRef.current;
+
+      // Commit the iframe swap synchronously while the modal scrim is still
+      // above the old cross-origin frame. This prevents the provider below
+      // from receiving the tail of the same touch/pointer sequence.
+      flushSync(() => {
+        setSwitchingSourceId(id);
+        setSelectedSourceOverride({ id, requestKey: directRequestKey });
+        setSourceFeedback({ sourceId: id, label: nextSource.label, phase: "switching" });
+      });
+      setSourceOpened(false);
+      revealChrome();
+
+      trackUmbraEvent("player_manual_switch", {
+        mediaType: request.mediaType,
+        fromProvider: selectedSource?.providerId ?? "unknown",
+        toProvider: nextSource.providerId,
+      });
+
+      // The selected iframe already changed above; URL persistence is
+      // intentionally non-blocking. A failed History API update must never
+      // undo a user's server choice.
+      void setSourceParam(id, { history: "replace", shallow: true, scroll: false }).catch(() => {
+        if (selectionVersionRef.current !== selectionVersion) return;
+        const nextUrl = new URL(window.location.href);
+        nextUrl.searchParams.set("src", id);
+        window.history.replaceState(window.history.state, "", nextUrl);
+      });
     },
-    [directRequestKey, setSourceParam],
+    [directRequestKey, request.mediaType, revealChrome, selectedSource, setSourceParam, sources],
   );
+
+  const handleIframeLoad = useCallback((sourceId: string, label: string) => {
+    setSwitchingSourceId((current) => (current === sourceId ? null : current));
+    setSourceFeedback((current) =>
+      current?.sourceId === sourceId ? { sourceId, label, phase: "selected" } : current,
+    );
+  }, []);
 
   const notifications = useMemo<PlayerNotification[]>(() => {
     const list: PlayerNotification[] = [];
@@ -316,21 +408,8 @@ export default function PlayerShell({
         tone: "warning",
       });
     }
-    if (
-      request.preferredSubtitle &&
-      selectedSource &&
-      selectedSource.capabilities.subtitles === "none"
-    ) {
-      list.push({
-        id: "no-captions",
-        message: `${selectedSource.label} has no captions. Choose a caption server.`,
-        actionLabel: "Switch Server",
-        onAction: openSource,
-        tone: "warning",
-      });
-    }
     return list.filter((n) => !dismissedIds.has(n.id));
-  }, [nativeError, stuckVisible, request.preferredSubtitle, selectedSource, dismissedIds, openSource]);
+  }, [nativeError, stuckVisible, dismissedIds, openSource]);
 
   const handleDismiss = useCallback((id: string) => {
     setDismissedIds((prev) => new Set(prev).add(id));
@@ -339,6 +418,7 @@ export default function PlayerShell({
   const headerContext: PlayerShellHeaderContext = {
     selectedSourceId: selectedSource?.id ?? "",
     onOpenSource: openSource,
+    chromeHidden,
   };
 
   if (!mounted) return null;
@@ -354,6 +434,7 @@ export default function PlayerShell({
             allow={selectedSource.capabilities.iframe?.allow}
             referrerPolicy={selectedSource.capabilities.iframe?.referrerPolicy}
             title={`${selectedSource.label} player`}
+            onLoad={() => handleIframeLoad(selectedSource.id, selectedSource.label)}
             className="absolute inset-0 h-full w-full border-0"
           />
         ) : (
@@ -388,6 +469,31 @@ export default function PlayerShell({
 
       {renderHeader(headerContext)}
 
+      {chromeHidden && !sourceOpened && (
+        <button
+          type="button"
+          aria-label="Show StreamFree player controls"
+          title="Show player controls"
+          onClick={revealChrome}
+          className="player-controls-reveal glass-control absolute z-40 flex size-11 touch-manipulation items-center justify-center rounded-full border border-white/12 text-white/85 shadow-lg transition-[opacity,transform] duration-200 hover:text-white focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:outline-hidden"
+        >
+          <Menu size={21} />
+        </button>
+      )}
+
+      {sourceFeedback && (
+        <div className="player-source-feedback pointer-events-none absolute inset-x-0 z-40 flex justify-center px-4">
+          <div
+            role="status"
+            aria-live="polite"
+            className="rounded-full border border-white/12 bg-black/72 px-3.5 py-2 text-[11.5px] font-medium text-white/90 shadow-xl backdrop-blur-xl"
+          >
+            {sourceFeedback.phase === "switching" ? "Switching to" : "Now using"}{" "}
+            {sourceFeedback.label}
+          </div>
+        </div>
+      )}
+
       {notifications.length > 0 && (
         <div className="player-safe-bottom pointer-events-none absolute inset-x-0 bottom-0 z-40 flex justify-center px-3 pb-3 sm:px-6">
           <div className="pointer-events-auto w-full max-w-lg">
@@ -403,6 +509,7 @@ export default function PlayerShell({
         onClose={() => setSourceOpened(false)}
         sources={sources}
         selectedSourceId={selectedSource?.id ?? ""}
+        switchingSourceId={switchingSourceId}
         onSelect={selectSource}
       />
     </div>,

@@ -34,20 +34,18 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, startAt }) => {
     [movie.id, startAt],
   );
 
-  const identity = useMemo(
-    () => ({ mediaId: movie.id, mediaType: "movie" as const }),
-    [movie.id],
-  );
+  const identity = useMemo(() => ({ mediaId: movie.id, mediaType: "movie" as const }), [movie.id]);
 
   return (
     <PlayerShell
       request={request}
       identity={identity}
-      renderHeader={({ onOpenSource }) => (
+      renderHeader={({ onOpenSource, chromeHidden }) => (
         <MoviePlayerHeader
           id={movie.id}
           movieName={title}
           onOpenSource={onOpenSource}
+          hidden={chromeHidden}
         />
       )}
     />

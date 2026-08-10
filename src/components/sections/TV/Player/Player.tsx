@@ -65,13 +65,14 @@ const TvShowPlayer: React.FC<TvShowPlayerProps> = ({
       request={request}
       identity={identity}
       historyMetadata={{ season, episode: episodeNumber }}
-      renderHeader={({ selectedSourceId, onOpenSource }) => (
+      renderHeader={({ selectedSourceId, onOpenSource, chromeHidden }) => (
         <TvShowPlayerHeader
           id={id}
           episode={episode}
           selectedSource={selectedSourceId}
           onOpenSource={onOpenSource}
           onOpenEpisode={episodeHandlers.open}
+          hidden={chromeHidden}
           {...headerProps}
         />
       )}

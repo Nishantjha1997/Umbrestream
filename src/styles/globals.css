@@ -219,6 +219,18 @@
   bottom: max(1.5rem, env(safe-area-inset-bottom));
 }
 
+/* Player chrome yields the provider's complete control surface after idle.
+   The small left-edge reveal target stays clear of the provider's common
+   top-right server/region menus and respects phone cutouts. */
+.player-controls-reveal {
+  top: max(0.5rem, env(safe-area-inset-top));
+  left: max(0.5rem, env(safe-area-inset-left));
+}
+
+.player-source-feedback {
+  top: max(0.75rem, env(safe-area-inset-top));
+}
+
 /* Keep intercepted detail close controls clear of phone notches. */
 .safe-detail-close {
   top: max(0.75rem, env(safe-area-inset-top));
