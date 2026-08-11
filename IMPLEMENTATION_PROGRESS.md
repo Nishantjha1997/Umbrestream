@@ -422,3 +422,12 @@ Published handoff commits: `99ccaa4` (implementation) and `ee22166` (handoff sta
 - Documented production option awaiting owner approval: Supadata's transcript API requires a server-side API key and advertises 100 free requests per month with no credit card. Documentation: `https://docs.supadata.ai/`; product/free-tier page: `https://supadata.ai/video-transcript`.
 - No Supadata or paid proxy account was created, no API key was requested, and no secret was added to Git or Vercel. Per the master plan, obtain approval before creating the keyed service account or accepting its quota/pricing terms.
 - The portfolio intentionally still omits YouTube Scripto-Scribe. Add it only after a keyed fallback is configured in Vercel and several fresh, uncached production fixtures succeed.
+
+## YouTube Scripto-Scribe Node extractor and region check - 2026-08-11
+
+- Replaced the Vercel Python extractor with the community `youtube-transcript@1.3.1` Node package. The implementation keeps strict video/language validation, bounded responses, five-minute success caching, rate limiting, typed errors, and TXT/SRT/WebVTT export support.
+- The first Node deployment was pushed as `7c25346` and the package-fallback guard was corrected in `76050fc`.
+- Local Node verification passed for `Ks-_Mh1QhMc` (428 English segments and 52 languages), Spanish for the same video (422 segments), `jNQXAC9IVRw` (6 segments), and `dQw4w9WgXcQ` (61 segments). Local typecheck, lint, build, syntax checks, diff validation, and secret scan passed.
+- Vercel production was configured for the Mumbai Hobby region (`bom1`) and pushed as `f5265b5`. This is a latency experiment for the owner's audience, not a reliability guarantee.
+- Live production probes after the region deployment: `dQw4w9WgXcQ` returned `200` with 61 segments and 5 languages; fresh probes for `Ks-_Mh1QhMc` and `jNQXAC9IVRw` still returned `404 NO_CAPTIONS`. The regional move did not solve YouTube's data-center caption restriction.
+- Result: do not advertise the app as reliably live or add it as a normal portfolio project yet. A keyed transcript service such as the already documented Supadata option still requires the owner's approval before account creation or a secret is added.
