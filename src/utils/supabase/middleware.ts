@@ -62,8 +62,15 @@ export async function updateSession(request: NextRequest) {
       return redirectRes;
     };
 
-    // Not signed in and heading somewhere protected -> sign in first.
-    if (!user && PROTECTED_PATHS.some((url) => pathname.startsWith(url))) {
+    // Recovery links may carry the temporary session in the URL fragment,
+    // which is invisible to server middleware. Let the browser hydrate this
+    // page before checking authentication.
+    const isPasswordRecoveryPath = pathname === "/auth/reset-password";
+    if (
+      !user &&
+      !isPasswordRecoveryPath &&
+      PROTECTED_PATHS.some((url) => pathname.startsWith(url))
+    ) {
       return redirectTo("/auth");
     }
 

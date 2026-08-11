@@ -154,7 +154,7 @@
                       "
                     >
                       <a
-                        href="{{ .SiteURL }}/api/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/auth/reset-password"
+                        href="{{ .RedirectTo }}"
                         target="_blank"
                         style="
                           display: inline-block;
@@ -221,12 +221,11 @@
                   "
                 >
                   <a
-                    href="{{ .SiteURL }}/api/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/auth/reset-password"
+                    href="{{ .RedirectTo }}"
                     target="_blank"
                     style="color: #006fee; text-decoration: none"
                   >
-                    {{ .SiteURL }}/api/auth/confirm?token_hash={{ .TokenHash
-                    }}&type=recovery&next=/auth/reset-password
+                    {{ .RedirectTo }}
                   </a>
                 </p>
               </td>

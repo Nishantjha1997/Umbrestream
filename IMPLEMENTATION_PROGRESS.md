@@ -452,3 +452,27 @@ Published handoff commits: `99ccaa4` (implementation) and `ee22166` (handoff sta
 - Portfolio commit `70dcd30` was pushed to `Nishantjha1997/nishant-portfolio` on `main`.
 - Verification passed: sequential typecheck, ESLint with zero errors (one existing PostCSS warning), production build, and `git diff --check`.
 - Live verification passed on `https://nishant.top/work/flowcreate`: response `200` contained the MakeCV title, `makecv.site` link, AI Assistant text, and Master Profiles text.
+
+## StreamFree password-reset recovery fix - 2026-08-11
+
+- Fixed the existing partial reset flow for `https://streamfree.online`.
+- `sendResetPasswordEmailAction` now passes the canonical recovery redirect
+  (`https://streamfree.online/auth/reset-password`) to Supabase instead of
+  relying on a possibly stale hosted Site URL.
+- `/auth/reset-password` is no longer part of the default protected-path list,
+  and middleware explicitly exempts it from unauthenticated redirects so the
+  browser can hydrate Supabase's temporary recovery session from the link.
+- The reset form now checks for the recovery session in the browser, uses
+  Supabase's documented `updateUser({ password })` recovery flow, shows a
+  useful expired-link state, and links back to request a fresh email.
+- Updated the repository recovery email template to use Supabase's
+  `{{ .RedirectTo }}` value for the reset CTA. The hosted Supabase email
+  template must use the same template or be updated in its Auth dashboard;
+  repository templates do not automatically overwrite a hosted project.
+- Validation: `tsc --noEmit` passed; focused ESLint passed with one existing
+  React Hook Form compiler warning and no errors; `git diff --check` passed.
+- The Next production build was started with the bundled Node runtime but ran
+  beyond the shell command window on the OneDrive checkout. Its process was
+  still active and consuming CPU when recorded; rerun after it completes or
+  from a local non-OneDrive checkout before release if the deployment gate
+  requires a completed build.

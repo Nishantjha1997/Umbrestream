@@ -23,6 +23,7 @@ import { z } from "zod";
 import type { ActionResponse } from "@/types";
 import { isCaptchaEnabled } from "@/utils/captcha";
 import { env } from "@/utils/env";
+import { SITE_URL } from "@/config/brand";
 
 /**
  * A generic type for our authentication actions.
@@ -306,6 +307,9 @@ const sendResetPasswordEmailAction: AuthAction<ForgotPasswordFormInput> = async 
   supabase,
 ) => {
   const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
+    // Keep recovery links on the canonical StreamFree domain after the
+    // rebrand instead of relying on a stale Supabase Site URL.
+    redirectTo: `${SITE_URL}/auth/reset-password`,
     captchaToken: data.captchaToken,
   });
 
