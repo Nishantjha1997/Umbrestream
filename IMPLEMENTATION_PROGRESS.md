@@ -477,3 +477,9 @@ Published handoff commits: `99ccaa4` (implementation) and `ee22166` (handoff sta
   still active and consuming CPU when recorded; rerun after it completes or
   from a local non-OneDrive checkout before release if the deployment gate
   requires a completed build.
+- Commits `1b2ffc5` and `339813f` were pushed to `Nishantjha1997/Umbrestream`
+  `main`, triggering the connected Vercel deployment.
+- Live verification on `https://streamfree.online` passed after deployment:
+  `/auth?form=forgot` returned `200`, `/auth/reset-password` returned `200`
+  while signed out, the reset route had no auth redirect, and the deployed
+  JavaScript contained the new recovery-session and fresh-link UI.
