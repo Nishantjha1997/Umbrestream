@@ -431,3 +431,14 @@ Published handoff commits: `99ccaa4` (implementation) and `ee22166` (handoff sta
 - Vercel production was configured for the Mumbai Hobby region (`bom1`) and pushed as `f5265b5`. This is a latency experiment for the owner's audience, not a reliability guarantee.
 - Live production probes after the region deployment: `dQw4w9WgXcQ` returned `200` with 61 segments and 5 languages; fresh probes for `Ks-_Mh1QhMc` and `jNQXAC9IVRw` still returned `404 NO_CAPTIONS`. The regional move did not solve YouTube's data-center caption restriction.
 - Result: do not advertise the app as reliably live or add it as a normal portfolio project yet. A keyed transcript service such as the already documented Supadata option still requires the owner's approval before account creation or a secret is added.
+
+## Portfolio photo, UI refinement, and YT Transcriber beta entry - 2026-08-11
+
+- Portfolio repository: `C:\Users\DELL_\OneDrive\Desktop\Projects\Projects\My Web Sites\nishant-portfolio`.
+- Added the approved profile photo at `public/images/nishant-jha-profile.jpg` and used it in the homepage hero/profile panel. It is not used to publish personal contact details.
+- Refined the portfolio UI with a sticky translucent header, clearer navigation hierarchy, stronger responsive hero layout, personal profile panel, improved card surfaces, hover/focus states, mobile sizing, and preserved reduced-motion behavior.
+- Added `YT Transcriber` beside Labs in the primary navigation and added a truthful beta case study at `/work/yt-transcriber`, linking to `https://youtube-scripto-scribe.vercel.app/` and its GitHub repository. The copy explicitly explains that caption availability varies by video and request origin; it does not claim reliable extraction for all videos.
+- Added the project to generated static params and sitemap through the shared project registry. Expanded public metadata keywords and Person image metadata.
+- Portfolio release commit `11ff32b` was pushed to `Nishantjha1997/nishant-portfolio` on `main`.
+- Verification passed after the complete change: typecheck, ESLint (0 errors; one existing PostCSS warning), Next.js production build with `/work/yt-transcriber` generated, `git diff --check`, and phone-number leak scan outside `public/resume`.
+- Vercel production propagation should be confirmed from the connected `nishant-portfolio` project. A direct shell probe to `nishant.top` timed out during this session, so do not report live propagation as verified until the domain responds with the new portrait and YT Transcriber route.
