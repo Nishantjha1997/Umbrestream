@@ -465,10 +465,11 @@ Published handoff commits: `99ccaa4` (implementation) and `ee22166` (handoff sta
 - The reset form now checks for the recovery session in the browser, uses
   Supabase's documented `updateUser({ password })` recovery flow, shows a
   useful expired-link state, and links back to request a fresh email.
-- Updated the repository recovery email template to use Supabase's
-  `{{ .RedirectTo }}` value for the reset CTA. The hosted Supabase email
-  template must use the same template or be updated in its Auth dashboard;
-  repository templates do not automatically overwrite a hosted project.
+- Updated the repository recovery email template to use Supabase's full
+  token-bearing `{{ .ConfirmationURL }}` value for the reset CTA. The hosted
+  Supabase email template must use the same template or be updated in its Auth
+  dashboard; repository templates do not automatically overwrite a hosted
+  project.
 - Validation: `tsc --noEmit` passed; focused ESLint passed with one existing
   React Hook Form compiler warning and no errors; `git diff --check` passed.
 - The Next production build was started with the bundled Node runtime but ran
