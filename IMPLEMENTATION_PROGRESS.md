@@ -442,3 +442,13 @@ Published handoff commits: `99ccaa4` (implementation) and `ee22166` (handoff sta
 - Portfolio release commit `11ff32b` was pushed to `Nishantjha1997/nishant-portfolio` on `main`.
 - Verification passed after the complete change: typecheck, ESLint (0 errors; one existing PostCSS warning), Next.js production build with `/work/yt-transcriber` generated, `git diff --check`, and phone-number leak scan outside `public/resume`.
 - Live propagation was subsequently verified: `https://nishant.top/` returned `200` with `/images/nishant-jha-profile.jpg` and `YT Transcriber` in the rendered HTML; `/work/yt-transcriber` returned `200` with the new portrait and case-study content; `/robots.txt` and `/sitemap.xml` also returned `200`.
+
+## MakeCV / FlowCreate portfolio refresh - 2026-08-11
+
+- Updated the FlowCreate case study in `nishant-portfolio` to `MakeCV — FlowCreate` using the current live domain `https://makecv.site/`.
+- Refreshed the public product description from the live app: AI Assistant, ATS-optimized templates, resume and cover-letter workflows, PDF/DOCX/TXT export, privacy messaging, and reusable Master Profiles.
+- Added the important access boundary: Master Profiles are sign-in protected in the live product, so the portfolio does not imply that private profile data is publicly visible.
+- Updated project tags, details, operating flow, challenge, decisions, outcomes, disclosure, and README copy.
+- Portfolio commit `70dcd30` was pushed to `Nishantjha1997/nishant-portfolio` on `main`.
+- Verification passed: sequential typecheck, ESLint with zero errors (one existing PostCSS warning), production build, and `git diff --check`.
+- Live verification passed on `https://nishant.top/work/flowcreate`: response `200` contained the MakeCV title, `makecv.site` link, AI Assistant text, and Master Profiles text.
