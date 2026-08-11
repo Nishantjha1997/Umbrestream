@@ -441,4 +441,4 @@ Published handoff commits: `99ccaa4` (implementation) and `ee22166` (handoff sta
 - Added the project to generated static params and sitemap through the shared project registry. Expanded public metadata keywords and Person image metadata.
 - Portfolio release commit `11ff32b` was pushed to `Nishantjha1997/nishant-portfolio` on `main`.
 - Verification passed after the complete change: typecheck, ESLint (0 errors; one existing PostCSS warning), Next.js production build with `/work/yt-transcriber` generated, `git diff --check`, and phone-number leak scan outside `public/resume`.
-- Vercel production propagation should be confirmed from the connected `nishant-portfolio` project. A direct shell probe to `nishant.top` timed out during this session, so do not report live propagation as verified until the domain responds with the new portrait and YT Transcriber route.
+- Live propagation was subsequently verified: `https://nishant.top/` returned `200` with `/images/nishant-jha-profile.jpg` and `YT Transcriber` in the rendered HTML; `/work/yt-transcriber` returned `200` with the new portrait and case-study content; `/robots.txt` and `/sitemap.xml` also returned `200`.
