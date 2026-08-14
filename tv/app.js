@@ -114,7 +114,7 @@ function nativeBridge() {
 function setPlaybackOrientation() {
   nativeBridge()?.lockLandscape?.();
   try {
-    void screen.orientation?.lock?.("landscape");
+    void Promise.resolve(screen.orientation?.lock?.("landscape")).catch(() => undefined);
   } catch {
     // Android TV's native bridge keeps the activity in landscape.
   }
@@ -170,6 +170,19 @@ async function notify(type = NotificationType.Success) {
 
 function absoluteUrl(path) {
   return /^https?:\/\//.test(path) ? path : `${BACKEND_ORIGIN}${path}`;
+}
+
+function autoplaySourceUrl(sourceUrl) {
+  try {
+    const url = new URL(sourceUrl);
+    const autoplayKey = [...url.searchParams.keys()].find((key) => key.toLowerCase() === "autoplay");
+    url.searchParams.set(autoplayKey || "autoplay", "true");
+    const autoPlayKey = [...url.searchParams.keys()].find((key) => key === "autoPlay");
+    if (autoPlayKey) url.searchParams.set(autoPlayKey, "true");
+    return url.toString();
+  } catch {
+    return sourceUrl;
+  }
 }
 
 async function requestJson(path, { method = "GET", body, headers: extraHeaders = {} } = {}) {
@@ -782,8 +795,7 @@ async function renderHome() {
   try {
     const region = await getRegion();
     const localParams = regionalParams(region);
-    const isIndia = region.country === "IN";
-    const [trending, movies, shows, nowPlaying, topShows, topMovies, airing, regionalMovies, regionalSeries, bollywood, indianSeries, animeData] = await Promise.all([
+    const [trending, movies, shows, nowPlaying, topShows, topMovies, airing, regionalMovies, regionalSeries, animeData] = await Promise.all([
       tmdb("trending/all/day", { region: region.country }),
       tmdb("movie/popular", localParams),
       tmdb("tv/popular", localParams),
@@ -793,8 +805,6 @@ async function renderHome() {
       tmdb("tv/airing_today"),
       tmdb("discover/movie", localParams),
       tmdb("discover/tv", localParams),
-      isIndia ? tmdb("discover/movie", { ...localParams, with_original_language: "hi" }) : Promise.resolve({ results: [] }),
-      isIndia ? tmdb("discover/tv", { ...localParams, with_origin_country: "IN" }) : Promise.resolve({ results: [] }),
       anilist("query { Page(page: 1, perPage: 14) { media(sort: TRENDING_DESC, type: ANIME, isAdult: false) { id title { romaji english } coverImage { large extraLarge } bannerImage averageScore episodes format status genres description } } }"),
     ]);
     const history = latestHistoryTitles(currentHistory().filter((item) => !item.completed));
@@ -819,8 +829,6 @@ async function renderHome() {
       ${section("Picked for you", picked.slice(0, 12), "movie", { kicker: state.user ? "Based on your watches" : "Critic favorites" })}
       ${section(`${countryLabel} trending movies`, regionalMovies.results?.slice(0, 14), "movie", { kicker: "What people are watching nearby", ranked: true })}
       ${section(`${countryLabel} trending series`, regionalSeries.results?.slice(0, 14), "tv", { kicker: "Series popular in your region" })}
-      ${isIndia ? section("Bollywood movies", bollywood.results?.slice(0, 14), "movie", { kicker: "Hindi cinema trending in India" }) : ""}
-      ${isIndia ? section("Indian web series & TV", indianSeries.results?.slice(0, 14), "tv", { kicker: "Indian-origin shows" }) : ""}
       ${section("Trending anime", anime.slice(0, 14), "anime", { kicker: "Fresh picks from AniList" })}
       ${section("Trending now", trending.results.slice(0, 14), "movie", { kicker: "Everyone is watching", ranked: true })}
       ${vibeMarkup([movies.results[2], movies.results[5], topMovies.results[2], shows.results[3]])}
@@ -1033,8 +1041,8 @@ async function openPlayer(mediaTypeValue, id, title, season = 0, episode = 0) {
     const response = await requestJson(`/api/player/sources?${params}`);
     if (!response.sources?.length) throw new Error("No playback source available");
     state.player = {
-      sources: response.sources,
-      index: 0,
+      sources: response.sources.map((source) => ({ ...source, url: autoplaySourceUrl(source.url) })),
+      index: Math.max(0, response.sources.findIndex((source) => source.id === response.defaultId)),
       fullscreen: true,
       media: { ...media, title: title || media.title, season, episode },
     };
@@ -1433,6 +1441,7 @@ function remoteBack() {
     return true;
   }
   if (document.querySelector(".player-page") && state.player) {
+    setPlaybackOrientation();
     setRoute(`detail/${state.player.media.media_type}/${state.player.media.id}`);
     return true;
   }

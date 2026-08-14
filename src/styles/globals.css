@@ -542,6 +542,17 @@
   animation: splash-tagline-in 550ms 1280ms ease-out forwards;
 }
 
+.splash-signature {
+  margin-top: 9px;
+  color: rgba(240, 171, 252, 0.78);
+  font-family: "Brush Script MT", "Segoe Script", cursive;
+  font-size: 18px;
+  letter-spacing: 0.02em;
+  opacity: 0;
+  transform: rotate(-3deg);
+  animation: splash-tagline-in 650ms 1460ms ease-out forwards;
+}
+
 .splash-progress {
   width: min(240px, 58vw);
   height: 2px;

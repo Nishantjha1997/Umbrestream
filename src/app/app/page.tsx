@@ -3,8 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { brand } from "@/config/brand";
 
-const APK_PATH = "/downloads/StreamFree-local-debug.apk";
-const APK_SHA256 = "0D5CEC4955F1F7B149B5A778720797236640AF4D00E482547DB19C45C30F269D";
+const APK_PATH = "/downloads/StreamFree-Android-v1.2.apk";
+const APK_SHA256 = "6031CBED6380012E5AEE791E9EFF14FF75716B189F2940916EDF79012D17A1AA";
 
 export const metadata: Metadata = {
   title: `Get the Android app | ${brand.name}`,
@@ -68,8 +68,8 @@ export default function AndroidAppPage() {
           <div className="mt-5 flex flex-wrap gap-2 text-[11px] font-medium text-white/62">
             {[
               "Android 7.0+",
-              "Beta 1.1",
-              "4.06 MB",
+              "Beta 1.2",
+              "4.07 MB",
               "Shared account sync",
               "Internet required for catalogue and streaming",
             ].map((label) => (
@@ -240,7 +240,7 @@ export default function AndroidAppPage() {
         <article className="rounded-2xl border border-white/8 bg-white/[0.025] p-5 text-sm leading-6 text-white/58 sm:p-6">
           <h2 className="text-lg font-semibold text-white">Signed beta details</h2>
           <p className="mt-3">
-            Version 1.1 is APK Signature Scheme v2 debug-signed for direct installation. It is not a
+            Version 1.2 is APK Signature Scheme v2 debug-signed for direct installation. It is not a
             Play Store release, so Android can still show its normal install-from-this-source or
             Play Protect confirmation.
           </p>

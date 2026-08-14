@@ -92,8 +92,8 @@ const definitions: EmbedDefinition[] = [
     label: "Cinezo",
     origin: "https://player.cinezo.live",
     tier: "stable",
-    // TV: 3rd (TV_PLAYER_ROLLBACK_HANDOFF.md). Movie order is untouched.
-    priorities: { movie: 10, tv: 3 },
+    // Cinezo is the verified movie default and a stable TV fallback.
+    priorities: { movie: 1, tv: 2 },
     requirements: movieAndTvRequirements,
     build: (request) => {
       const base = movieOrTv(
@@ -128,8 +128,8 @@ const definitions: EmbedDefinition[] = [
     origin: "https://vidlink.pro",
     tier: "stable",
     variant: "jw",
-    // TV: 4th (TV_PLAYER_ROLLBACK_HANDOFF.md). Movie order is untouched.
-    priorities: { movie: 20, tv: 4 },
+    // VidLink remains a stable fallback for both movies and TV.
+    priorities: { movie: 2, tv: 3 },
     requirements: movieAndTvRequirements,
     build: (request) => {
       const base = movieOrTv(
@@ -165,8 +165,8 @@ const definitions: EmbedDefinition[] = [
     origin: "https://vidlink.pro",
     tier: "stable",
     variant: "native",
-    // TV: 5th (TV_PLAYER_ROLLBACK_HANDOFF.md). Movie order is untouched.
-    priorities: { movie: 21, tv: 5 },
+    // The native VidLink variant is a second stable fallback.
+    priorities: { movie: 3, tv: 4 },
     requirements: movieAndTvRequirements,
     build: (request) => {
       const base = movieOrTv(
@@ -199,8 +199,8 @@ const definitions: EmbedDefinition[] = [
     tier: "stable",
     // TV: 1st — the only checked TV fixture that reached a playable media
     // state after the Filmu-first outage (TV_PLAYER_ROLLBACK_HANDOFF.md).
-    // Movie order is untouched (Filmu stays first for Movies).
-    priorities: { movie: 30, tv: 1 },
+    // Movies use the stable providers above before reaching experimental fallbacks.
+    priorities: { movie: 4, tv: 1 },
     requirements: movieAndTvRequirements,
     build: (request) => {
       const base = movieOrTv(
@@ -285,8 +285,8 @@ const definitions: EmbedDefinition[] = [
     // TV: 2nd. Filmu's outer HTML loads but its TV iframe has been observed
     // to expose no playable media on some titles — never default TV to it
     // again without VidKing checked first (TV_PLAYER_ROLLBACK_HANDOFF.md).
-    // Movie order is untouched (Filmu stays first for Movies).
-    priorities: { movie: 5, tv: 2 },
+    // Filmu remains available for manual recovery, but is not the automatic default.
+    priorities: { movie: 90, tv: 90 },
     requirements: movieAndTvRequirements,
     build: (request) =>
       movieOrTv(
@@ -416,7 +416,7 @@ const recoveredAnimeDefinitions: EmbedDefinition[] = [
     origin: "https://anilink.cc",
     tier: "stable",
     variant: "anime-sub",
-    priorities: { anime: 10 },
+    priorities: { anime: 30 },
     requirements: { anime: ["anilistId", "episode"] },
     build: (request) =>
       request.anilistId && request.episode
@@ -445,7 +445,7 @@ const recoveredAnimeDefinitions: EmbedDefinition[] = [
     origin: "https://anilink.cc",
     tier: "stable",
     variant: "anime-dub",
-    priorities: { anime: 11 },
+    priorities: { anime: 31 },
     requirements: { anime: ["anilistId", "episode"] },
     build: (request) =>
       request.anilistId && request.episode
@@ -473,7 +473,7 @@ const recoveredAnimeDefinitions: EmbedDefinition[] = [
     origin: "https://vidnest.fun",
     tier: "stable",
     variant: "animepahe-sub",
-    priorities: { anime: 20 },
+    priorities: { anime: 10 },
     requirements: { anime: ["anilistId", "episode"] },
     build: (request) =>
       request.anilistId && request.episode
@@ -495,7 +495,7 @@ const recoveredAnimeDefinitions: EmbedDefinition[] = [
     origin: "https://vidnest.fun",
     tier: "stable",
     variant: "animepahe-dub",
-    priorities: { anime: 21 },
+    priorities: { anime: 11 },
     requirements: { anime: ["anilistId", "episode"] },
     build: (request) =>
       request.anilistId && request.episode
@@ -588,7 +588,10 @@ const quarantinedAnimeDefinitions: EmbedDefinition[] = [
 const allDefinitions = [
   ...definitions,
   ...(ANIME_SOURCES_V2_ENABLED
-    ? recoveredAnimeDefinitions
+    ? [
+        ...recoveredAnimeDefinitions,
+        ...legacyAnimeDefinitions.filter((definition) => definition.id.startsWith("cinezo-anime-")),
+      ]
     : [...legacyAnimeDefinitions, ...quarantinedAnimeDefinitions]),
 ];
 

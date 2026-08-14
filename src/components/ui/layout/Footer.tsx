@@ -62,6 +62,7 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
               STREAMFREE
             </Link>
             <p className="mt-3 text-sm leading-6 text-white/45">{siteConfig.description}</p>
+            <p className="mt-3 font-[cursive] text-base text-violet-200/75 italic">Created with love by Nishant</p>
             <Link
               href={siteConfig.socials.github}
               target="_blank"
@@ -102,7 +103,7 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
         </div>
 
         <div className="flex flex-col gap-2 border-t border-white/8 pt-5 text-xs text-white/35 sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} StreamFree. Built for discovery.</p>
+          <p>© {new Date().getFullYear()} StreamFree. Built for discovery by Nishant.</p>
           <p>Third-party playback links may be operated by their respective providers.</p>
         </div>
       </div>

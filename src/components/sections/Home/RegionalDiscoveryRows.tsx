@@ -4,7 +4,6 @@ import { anilistApi } from "@/api/anilist";
 import { getBrowserRegion, type GeoRegion } from "@/api/geo-browser";
 import { tmdbBrowser } from "@/api/tmdb-browser";
 import MediaRow from "@/components/media/MediaRow";
-import useSupabaseUser from "@/hooks/useSupabaseUser";
 import { useQuery } from "@tanstack/react-query";
 import type { Movie, TV } from "tmdb-ts/dist/types";
 
@@ -25,7 +24,6 @@ function regionParams(region: GeoRegion) {
 }
 
 export default function RegionalDiscoveryRows({ idPrefix }: { idPrefix: "phone" | "desktop" }) {
-  const { data: user } = useSupabaseUser();
   const { data: region } = useQuery({
     queryKey: ["browser-region"],
     queryFn: getBrowserRegion,
@@ -37,7 +35,6 @@ export default function RegionalDiscoveryRows({ idPrefix }: { idPrefix: "phone" 
   if (!region) return null;
 
   const params = regionParams(region);
-  const isIndia = region.country === "IN";
   const countryLabel = region.country === "US" && region.source === "default" ? "Global" : region.countryName;
 
   return (
@@ -57,38 +54,10 @@ export default function RegionalDiscoveryRows({ idPrefix }: { idPrefix: "phone" 
         param="regionalSeries"
         query={() => tmdbBrowser.discover.tv<PagedResult<TV>>(params)}
       />
-      {isIndia && (
-        <>
-          <MediaRow
-            idPrefix={idPrefix}
-            kind="movie"
-            name="Bollywood movies"
-            param="bollywood"
-            query={() =>
-              tmdbBrowser.discover.movie<PagedResult<Movie>>({
-                ...params,
-                with_original_language: "hi",
-              })
-            }
-          />
-          <MediaRow
-            idPrefix={idPrefix}
-            kind="tv"
-            name="Indian web series & TV"
-            param="indianSeries"
-            query={() =>
-              tmdbBrowser.discover.tv<PagedResult<TV>>({
-                ...params,
-                with_origin_country: "IN",
-              })
-            }
-          />
-        </>
-      )}
       <MediaRow
         idPrefix={idPrefix}
         kind="anime"
-        name={user ? "Anime trending for you" : "Trending anime"}
+        name="Trending anime"
         param="animeTrending"
         query={() => anilistApi.trending()}
       />

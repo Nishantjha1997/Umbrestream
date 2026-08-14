@@ -26,7 +26,7 @@ type PagedResult<T> = {
 
 export const siteConfig: SiteConfigType = {
   name: brand.name,
-  seoTitle: "StreamFree | Movies, TV Series & Anime",
+  seoTitle: "StreamFree | Discover Movies, TV Series & Anime",
   description: brand.description,
   keywords: [
     "streamfree",
@@ -43,6 +43,10 @@ export const siteConfig: SiteConfigType = {
     "movie discovery",
     "subtitles",
     "mobile streaming",
+    "StreamFree Android app",
+    "StreamFree Android TV app",
+    "regional movie recommendations",
+    "anime discovery",
   ],
   favicon: "/streamfree-mark.svg",
   // Five items (Phase 3, §7 — "Seven dock items, two of which go nowhere").

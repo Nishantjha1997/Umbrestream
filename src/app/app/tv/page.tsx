@@ -4,7 +4,7 @@ import Link from "next/link";
 import { brand } from "@/config/brand";
 
 const TV_APK_PATH = "/downloads/StreamFree-TV-v1.1.apk";
-const TV_APK_SHA256 = "865B6AAF744150538EEDF36E5551820F792F2BEAEA16B66C05044FD47D7F3D44";
+const TV_APK_SHA256 = "7407020DD6087A8C0E0649ED62608E974363BFDFF213306AAF32E0D8A05526C9";
 
 export const metadata: Metadata = {
   title: `Get the Android TV app | ${brand.name}`,
@@ -90,7 +90,7 @@ export default function AndroidTVAppPage() {
               {[
                 "Android TV 7.0+",
                 "Mi TV compatible",
-                "Version 1.0 beta",
+                "Version 1.1 beta",
                 "4.14 MB",
                 "Signed APK",
               ].map((label) => (
@@ -270,7 +270,7 @@ export default function AndroidTVAppPage() {
         <article className="rounded-2xl border border-white/8 bg-white/[0.025] p-5 text-sm leading-6 text-white/58 sm:p-6">
           <h2 className="text-lg font-semibold text-white">Signed beta details</h2>
           <p className="mt-3">
-            Version 1.0 is APK Signature Scheme v2 signed for direct installation. It is not a Play
+            Version 1.1 is APK Signature Scheme v2 signed for direct installation. It is not a Play
             Store release, so Android TV can still show the standard unknown-source or Play Protect
             confirmation.
           </p>

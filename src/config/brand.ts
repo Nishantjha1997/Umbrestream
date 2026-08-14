@@ -9,6 +9,7 @@ export const brand = {
   name: "StreamFree",
   shortName: "SF",
   domain: "streamfree.online",
+  creatorName: "Nishant",
   description:
-    "Discover movies, TV series, and anime with episode browsing, subtitles, watch history, and a mobile-friendly viewing experience.",
+    "StreamFree is a movie, TV series, and anime discovery experience with regional recommendations, episode browsing, watch history, and dedicated Android and Android TV apps.",
 } as const;

@@ -104,7 +104,6 @@ const orderedIds = (request) =>
     .map((adapter) => adapter.id);
 
 assert.deepEqual(orderedIds(fixtures.movie), [
-  "filmu",
   "cinezo",
   "vidlink",
   "vidlink-native",
@@ -112,26 +111,27 @@ assert.deepEqual(orderedIds(fixtures.movie), [
   "vidrift",
   "vidbolt",
   "videasy",
+  "filmu",
 ]);
-// TV order was rolled back to VidKing-first after a production outage: Filmu's
-// outer TV shell loaded while its iframe exposed no playable media on the
-// `/tv/97546/1/1/player` fixture. See TV_PLAYER_ROLLBACK_HANDOFF.md. Movie
-// order is unaffected (Filmu stays first for Movies, asserted above).
+// VidKing is the verified TV default. Filmu remains last because its outer
+// shell can load while exposing no playable media on the checked fixture.
 assert.deepEqual(orderedIds(fixtures.tv), [
   "vidking",
-  "filmu",
   "cinezo",
   "vidlink",
   "vidlink-native",
   "vidrift",
   "vidbolt",
   "videasy",
+  "filmu",
 ]);
 assert.deepEqual(orderedIds(fixtures.anime), [
-  "anilink-sub",
-  "anilink-dub",
   "vidnest-animepahe-sub",
   "vidnest-animepahe-dub",
+  "cinezo-anime-sub",
+  "cinezo-anime-dub",
+  "anilink-sub",
+  "anilink-dub",
 ]);
 
 const instantStartedAt = performance.now();
@@ -140,7 +140,7 @@ assert(
   performance.now() - instantStartedAt < 100,
   "Public manifest should be synchronous and fast",
 );
-assert.equal(instantMovie[0].id, "filmu");
+assert.equal(instantMovie[0].id, "cinezo");
 assert(instantMovie.every((source) => source.availability === "unverified"));
 
 const cinezoMovie = { ...(await resolveOne("cinezo", fixtures.movie)), availability: "unverified" };

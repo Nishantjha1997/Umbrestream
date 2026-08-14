@@ -55,6 +55,7 @@ export default function CinematicSplash() {
           ))}
         </div>
         <p className="splash-tagline">Lights&nbsp;&nbsp;•&nbsp;&nbsp;Camera&nbsp;&nbsp;•&nbsp;&nbsp;Stream</p>
+        <p className="splash-signature">Created with love by Nishant</p>
         <div className="splash-progress" aria-hidden="true">
           <span />
         </div>

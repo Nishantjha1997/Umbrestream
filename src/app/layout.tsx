@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { siteConfig } from "@/config/site";
-import { SITE_URL } from "@/config/brand";
+import { brand, SITE_URL } from "@/config/brand";
 // Inter Variable's @font-face rules (§1.4). Imported before `globals.css` so
 // the faces are declared ahead of the stylesheet that binds them to
 // `--font-sans`; the family itself is applied via Tailwind's default sans, so
@@ -33,6 +33,10 @@ export const metadata: Metadata = {
     template: "%s",
   },
   applicationName: siteConfig.name,
+  authors: [{ name: brand.creatorName, url: "https://github.com/Nishantjha1997" }],
+  creator: brand.creatorName,
+  publisher: siteConfig.name,
+  category: "entertainment",
   description: siteConfig.description,
   keywords: siteConfig.keywords,
   alternates: { canonical: "/" },
@@ -108,6 +112,7 @@ export default function RootLayout({
               alternateName: "StreamFree",
               url: SITE_URL,
               description: siteConfig.description,
+              creator: { "@type": "Person", name: brand.creatorName },
             }),
           }}
         />
