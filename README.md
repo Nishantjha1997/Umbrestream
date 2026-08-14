@@ -3,6 +3,9 @@
 StreamFree is a personal movies, TV shows, and anime discovery platform. It offers a seamless
 browsing experience for discovering, searching, and tracking a vast library of content.
 
+For the current production status, architecture, playback providers, Android build steps, and
+handoff context, read [STREAMFREE_HANDOFF.md](STREAMFREE_HANDOFF.md).
+
 ## Key Features
 
 - **🌗 Light and Dark Mode**: Both light and dark modes, adapting to user preference.
