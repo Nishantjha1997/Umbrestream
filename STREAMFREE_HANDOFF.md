@@ -563,9 +563,23 @@ section as each item is completed.
     unbounded per-history provider fan-out.
 15. Consider a durable shared rate limiter for the TMDB proxy if traffic exceeds a single
     serverless instance.
+16. **Anime Sub/Dub labeling:** under the same anime episode, present Sub and Dub servers as
+    separate, explicit choices. Do not create duplicate episode rows or leave viewers with
+    ambiguous labels such as Server 1 and Server 2. Preserve stable provider IDs such as
+    vidnest-animepahe-sub, vidnest-animepahe-dub, cinezo-anime-sub, and cinezo-anime-dub. Verify
+    the labels in the episode picker, source picker, URL persistence, and next-episode flow.
+17. **Conditional native Android ad-blocking review:** investigate whether a narrowly scoped,
+    native Android/WebView-level filter can block clearly identified nuisance ad or popup
+    requests without changing the website, mutating provider iframes, blocking provider scripts,
+    breaking video playback, breaking login/update downloads, or violating provider terms. Do
+    not implement it unless a feasibility spike passes movie, TV, anime, fullscreen, next-episode,
+    account, and update regression tests on a real device. If safe filtering cannot be proven,
+    document a no-go decision and leave playback untouched. This is not permission to add a
+    general ad blocker or to scrape/intercept protected media.
 
-Do not reintroduce Bollywood/Indian TV shelves, direct provider scraping, ad blocking, or secret
-client-side tokens without a new explicit product/security review.
+Do not reintroduce Bollywood/Indian TV shelves, direct provider scraping, or secret client-side
+tokens. Native ad blocking remains disabled unless the conditional safety review in item 17
+passes.
 
 ## 15. Attribution
 
