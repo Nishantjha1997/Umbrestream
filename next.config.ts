@@ -100,14 +100,23 @@ const nextConfig: NextConfig = {
 
     return [
       ...[
-        "/downloads/StreamFree-Android-v1.2.apk",
-        "/downloads/StreamFree-TV-v1.1.apk",
-        "/downloads/StreamFree-local-debug.apk",
-      ].map((source) => ({
+        {
+          source: "/downloads/StreamFree-Android-v1.2.apk",
+          filename: "StreamFree-Android-v1.2.apk",
+        },
+        {
+          source: "/downloads/StreamFree-TV-v1.1.apk",
+          filename: "StreamFree-TV-v1.1.apk",
+        },
+        {
+          source: "/downloads/StreamFree-local-debug.apk",
+          filename: "StreamFree-local-debug.apk",
+        },
+      ].map(({ source, filename }) => ({
         source,
         headers: [
           { key: "Content-Type", value: "application/vnd.android.package-archive" },
-          { key: "Content-Disposition", value: 'attachment; filename="StreamFree-Android-beta.apk"' },
+          { key: "Content-Disposition", value: `attachment; filename="${filename}"` },
           { key: "X-Content-Type-Options", value: "nosniff" },
         ],
       })),
