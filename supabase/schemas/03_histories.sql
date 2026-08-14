@@ -41,6 +41,9 @@ execute function public.set_updated_at();
 create index histories_user_updated_idx
 on public.histories (user_id, updated_at desc);
 
+create index histories_continue_watching_idx
+on public.histories (user_id, completed, updated_at desc, id desc);
+
 -- Enable Row Level Security
 alter table public.histories enable row level security;
 
@@ -69,3 +72,41 @@ on public.histories
 for delete
 to authenticated
 using ((( SELECT auth.uid() AS uid) = user_id));
+
+-- A title may have dozens of episode rows. Deduplicate before applying the
+-- cursor so every active title can appear without unbounded client payloads.
+create or replace function public.get_continue_watching_page(
+  p_limit integer default 24,
+  p_cursor_updated_at timestamp with time zone default null,
+  p_cursor_id bigint default null
+)
+returns setof public.histories
+language sql
+stable
+security invoker
+set search_path = ''
+as $$
+  with latest_per_title as (
+    select distinct on (h.type, h.media_id) h.*
+    from public.histories h
+    where h.user_id = (select auth.uid())
+      and h.completed = false
+    order by h.type, h.media_id, h.updated_at desc, h.id desc
+  )
+  select latest_per_title.*
+  from latest_per_title
+  where p_cursor_updated_at is null
+     or latest_per_title.updated_at < p_cursor_updated_at
+     or (
+       latest_per_title.updated_at = p_cursor_updated_at
+       and latest_per_title.id < p_cursor_id
+     )
+  order by latest_per_title.updated_at desc, latest_per_title.id desc
+  limit greatest(1, least(coalesce(p_limit, 24), 50));
+$$;
+
+revoke all on function public.get_continue_watching_page(integer, timestamp with time zone, bigint)
+from public;
+
+grant execute on function public.get_continue_watching_page(integer, timestamp with time zone, bigint)
+to authenticated;

@@ -1,6 +1,7 @@
 import { ArrowLeft, List, Next, Prev, Server } from "@/utils/icons";
 import PlayerActionButton from "@/components/ui/button/PlayerActionButton";
 import { cn } from "@/utils/helpers";
+import type { AudioVariant } from "@/lib/sources/types";
 
 interface AnimePlayerHeaderProps {
   id: number;
@@ -8,6 +9,7 @@ interface AnimePlayerHeaderProps {
   episode: number;
   totalEpisodes?: number | null;
   selectedSource: string;
+  audioVariant: AudioVariant;
   onOpenSource: () => void;
   onOpenEpisode: () => void;
   hidden?: boolean;
@@ -27,13 +29,16 @@ const AnimePlayerHeader: React.FC<AnimePlayerHeaderProps> = ({
   episode,
   totalEpisodes,
   selectedSource,
+  audioVariant,
   onOpenSource,
   onOpenEpisode,
   hidden,
 }) => {
   const hasPrev = episode > 1;
   const hasNext = totalEpisodes ? episode < totalEpisodes : true;
-  const sourceQuery = selectedSource ? `?src=${encodeURIComponent(selectedSource)}` : "";
+  const sourceParams = new URLSearchParams({ audio: audioVariant });
+  if (selectedSource) sourceParams.set("src", selectedSource);
+  const sourceQuery = `?${sourceParams.toString()}`;
 
   return (
     <div
@@ -53,7 +58,7 @@ const AnimePlayerHeader: React.FC<AnimePlayerHeaderProps> = ({
       <div className="absolute left-1/2 hidden -translate-x-1/2 flex-col justify-center text-center sm:flex">
         <p className="text-sm text-white text-shadow-lg sm:text-lg lg:text-xl">{animeTitle}</p>
         <p className="text-primary text-xs text-shadow-lg sm:text-sm lg:text-base">
-          Episode {episode}
+          Episode {episode} · {audioVariant === "dub" ? "Dub" : "Sub"}
           {totalEpisodes ? ` of ${totalEpisodes}` : ""}
         </p>
       </div>

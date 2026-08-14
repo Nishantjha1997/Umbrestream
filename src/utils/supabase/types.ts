@@ -195,7 +195,14 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      get_continue_watching_page: {
+        Args: {
+          p_cursor_id?: number | null;
+          p_cursor_updated_at?: string | null;
+          p_limit?: number;
+        };
+        Returns: Database["public"]["Tables"]["histories"]["Row"][];
+      };
     };
     Enums: {
       [_ in never]: never;

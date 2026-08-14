@@ -10,6 +10,7 @@ import type {
 } from "@/lib/sources/types";
 import type { MediaType } from "@/types/title";
 import { callerKey, rateLimit, tooManyRequests } from "@/lib/rate-limit";
+import { PLAYBACK_POLICY } from "@/lib/sources/playbackPolicy";
 
 export const runtime = "nodejs";
 
@@ -150,6 +151,7 @@ export async function GET(request: Request): Promise<Response> {
   const response: SourceResolutionResponse = {
     sources,
     defaultId: selectedDefault?.id ?? null,
+    policy: PLAYBACK_POLICY,
     errors: groups
       .filter((group) => group.error)
       .map((group) => ({ providerId: group.adapterId, message: group.error! })),

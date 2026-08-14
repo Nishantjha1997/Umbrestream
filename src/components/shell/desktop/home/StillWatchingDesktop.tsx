@@ -14,16 +14,16 @@
  */
 
 import EclipseRing from "@/components/media/EclipseRing";
-import { getUserHistories } from "@/actions/histories";
 import HistoryItemActions from "@/components/ui/button/HistoryItemActions";
+import useContinueWatching from "@/hooks/useContinueWatching";
 import { useCustomCarousel } from "@/hooks/useCustomCarousel";
-import useSupabaseUser from "@/hooks/useSupabaseUser";
 import type { HistoryDetail } from "@/types/movie";
 import type { MediaKind } from "@/types/media";
 import { cn } from "@/utils/helpers";
 import { formatTimeLeft, getImageUrl } from "@/utils/movies";
-import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
+import { useInViewport } from "@mantine/hooks";
+import { useEffect } from "react";
 import SectionHeader from "./SectionHeader";
 import ShelfArrows from "./ShelfArrows";
 
@@ -36,15 +36,12 @@ function playHrefFor(item: HistoryDetail): string {
 }
 
 export default function StillWatchingDesktop() {
-  const { data: user, isLoading: isUserLoading } = useSupabaseUser();
+  const { ref, inViewport } = useInViewport<HTMLDivElement>();
+  const { items: histories, fetchNextPage, hasNextPage, isFetchingNextPage } = useContinueWatching();
 
-  const { data } = useQuery({
-    queryKey: ["continue-watching", user?.id],
-    queryFn: () => getUserHistories(),
-    enabled: !isUserLoading,
-  });
-
-  const histories = data?.success ? data.data ?? [] : [];
+  useEffect(() => {
+    if (inViewport && hasNextPage && !isFetchingNextPage) fetchNextPage();
+  }, [fetchNextPage, hasNextPage, inViewport, isFetchingNextPage]);
   // Completed titles aren't "still watching" — filtered before the slice so
   // it always skips whichever entry the hero above is showing, not just
   // positional index 0 (`useHomeHero` applies the same filter).
@@ -114,6 +111,7 @@ export default function StillWatchingDesktop() {
                     season={item.season}
                     episode={item.episode}
                     title={item.title}
+                    scope="title"
                     className="absolute top-2 right-2 flex gap-1"
                   />
                 </div>
@@ -127,6 +125,7 @@ export default function StillWatchingDesktop() {
                 </div>
               </Link>
             ))}
+            <div ref={ref} className="h-1 w-1 flex-none" aria-hidden="true" />
           </div>
         </div>
         <ShelfArrows

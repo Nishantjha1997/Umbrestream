@@ -8,12 +8,11 @@
  * and shows the real air date instead of a fabricated clock time.
  */
 
-import { getUserHistories } from "@/actions/histories";
 import { tmdbBrowser } from "@/api/tmdb-browser";
-import useSupabaseUser from "@/hooks/useSupabaseUser";
+import useContinueWatching from "@/hooks/useContinueWatching";
 import type { HistoryDetail } from "@/types/movie";
 import { cn } from "@/utils/helpers";
-import { useQueries, useQuery } from "@tanstack/react-query";
+import { useQueries } from "@tanstack/react-query";
 import { differenceInCalendarDays, format, parseISO } from "date-fns";
 import Link from "next/link";
 import { useState } from "react";
@@ -47,15 +46,9 @@ async function getTvDetails(id: number): Promise<TvShowDetails> {
 }
 
 export default function NextEpisodeDropsDesktop() {
-  const { data: user, isLoading: isUserLoading } = useSupabaseUser();
+  const { items: histories } = useContinueWatching();
 
-  const { data: historiesRes } = useQuery({
-    queryKey: ["continue-watching", user?.id],
-    queryFn: () => getUserHistories(),
-    enabled: !isUserLoading,
-  });
-
-  const tvItems: HistoryDetail[] = (historiesRes?.success ? historiesRes.data ?? [] : [])
+  const tvItems: HistoryDetail[] = histories
     .filter((item) => item.type === "tv")
     .slice(0, MAX_CANDIDATES);
 

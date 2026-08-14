@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { brand } from "@/config/brand";
 
-const TV_APK_PATH = "/downloads/StreamFree-TV-v1.1.apk";
+const TV_APK_PATH = "/downloads/StreamFree-TV-v1.2.apk";
 const TV_APK_SHA256 = "7407020DD6087A8C0E0649ED62608E974363BFDFF213306AAF32E0D8A05526C9";
 
 export const metadata: Metadata = {

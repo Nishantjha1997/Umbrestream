@@ -7,6 +7,11 @@ import {
 import { legacySourceId } from "../src/lib/sources/legacy.ts";
 import { fallbackChain, register, resolveAll } from "../src/lib/sources/registry.ts";
 import { selectDefaultSource } from "../src/lib/sources/selectDefault.ts";
+import {
+  findNextFallbackSource,
+  findPreferredSource,
+  PLAYBACK_POLICY,
+} from "../src/lib/sources/playbackPolicy.ts";
 
 const fixtures = {
   movie: { mediaType: "movie", tmdbId: 1212763, startAt: 137, preferredSubtitle: "en" },
@@ -104,6 +109,7 @@ const orderedIds = (request) =>
     .map((adapter) => adapter.id);
 
 assert.deepEqual(orderedIds(fixtures.movie), [
+  "filmu",
   "cinezo",
   "vidlink",
   "vidlink-native",
@@ -111,7 +117,6 @@ assert.deepEqual(orderedIds(fixtures.movie), [
   "vidrift",
   "vidbolt",
   "videasy",
-  "filmu",
 ]);
 // VidKing is the verified TV default. Filmu remains last because its outer
 // shell can load while exposing no playable media on the checked fixture.
@@ -140,8 +145,12 @@ assert(
   performance.now() - instantStartedAt < 100,
   "Public manifest should be synchronous and fast",
 );
-assert.equal(instantMovie[0].id, "cinezo");
+assert.equal(instantMovie[0].id, "filmu");
 assert(instantMovie.every((source) => source.availability === "unverified"));
+assert.equal(PLAYBACK_POLICY.timeoutMs, 20_000);
+assert.equal(PLAYBACK_POLICY.fallbackMode, "prompt");
+assert.equal(findPreferredSource(instantMovie, { rememberedId: "cinezo" })?.id, "cinezo");
+assert.equal(findNextFallbackSource(instantMovie, "filmu", ["filmu"])?.id, "cinezo");
 
 const cinezoMovie = { ...(await resolveOne("cinezo", fixtures.movie)), availability: "unverified" };
 const filmuMovie = { ...(await resolveOne("filmu", fixtures.movie)), availability: "unverified" };

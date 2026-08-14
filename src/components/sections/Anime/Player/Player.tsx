@@ -3,9 +3,12 @@
 import PlayerShell from "@/components/player/PlayerShell";
 import { siteConfig } from "@/config/site";
 import type { SourceRequest } from "@/lib/sources/types";
+import { normalizeAudioVariant } from "@/lib/sources/playbackPolicy";
+import type { AudioVariant } from "@/lib/sources/types";
 import type { AniListMediaDetail } from "@/types/anilist";
 import { useDisclosure, useDocumentTitle } from "@mantine/hooks";
-import { useMemo } from "react";
+import { parseAsString, useQueryState } from "nuqs";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import AnimePlayerEpisodeSheet from "./EpisodeSheet";
 import AnimePlayerHeader from "./Header";
 
@@ -22,7 +25,32 @@ interface AnimePlayerProps {
  */
 const AnimePlayer: React.FC<AnimePlayerProps> = ({ anime, episode, startAt }) => {
   const [episodeOpened, episodeHandlers] = useDisclosure(false);
+  const [audioParam, setAudioParam] = useQueryState("audio", parseAsString);
+  const [rememberedAudio, setRememberedAudio] = useState<AudioVariant>("sub");
   const animeTitle = anime.title.english ?? anime.title.romaji ?? anime.title.native ?? "Untitled";
+  const explicitAudio = audioParam === "sub" || audioParam === "dub" ? audioParam : null;
+  const audio = normalizeAudioVariant(explicitAudio ?? rememberedAudio);
+
+  useEffect(() => {
+    const stored = normalizeAudioVariant(window.localStorage.getItem("streamfree:anime-audio:v1"));
+    setRememberedAudio(stored);
+    if (!explicitAudio) {
+      void setAudioParam(stored, { history: "replace", shallow: true, scroll: false });
+    }
+  }, [explicitAudio, setAudioParam]);
+
+  const changeAudio = useCallback(
+    (nextAudio: AudioVariant) => {
+      setRememberedAudio(nextAudio);
+      try {
+        window.localStorage.setItem("streamfree:anime-audio:v1", nextAudio);
+      } catch {
+        // Audio selection still works when storage is unavailable.
+      }
+      void setAudioParam(nextAudio, { history: "replace", shallow: true, scroll: false });
+    },
+    [setAudioParam],
+  );
 
   useDocumentTitle(`Play ${animeTitle} - Ep ${episode} | ${siteConfig.name}`);
 
@@ -34,10 +62,10 @@ const AnimePlayer: React.FC<AnimePlayerProps> = ({ anime, episode, startAt }) =>
       malId: anime.idMal ?? undefined,
       episode,
       startAt,
-      preferredAudio: "sub",
+      preferredAudio: audio,
       preferredSubtitle: "en",
     }),
-    [animeTitle, anime.id, anime.idMal, episode, startAt],
+    [animeTitle, anime.id, anime.idMal, audio, episode, startAt],
   );
 
   const identity = useMemo(
@@ -50,25 +78,28 @@ const AnimePlayer: React.FC<AnimePlayerProps> = ({ anime, episode, startAt }) =>
       request={request}
       identity={identity}
       historyMetadata={{ episode }}
-      renderHeader={({ selectedSourceId, onOpenSource, chromeHidden }) => (
+      onAudioVariantChange={changeAudio}
+      renderHeader={({ selectedSourceId, selectedAudioVariant, onOpenSource, chromeHidden }) => (
         <AnimePlayerHeader
           id={anime.id}
           animeTitle={animeTitle}
           episode={episode}
           totalEpisodes={anime.episodes}
           selectedSource={selectedSourceId}
+          audioVariant={selectedAudioVariant ?? audio}
           onOpenSource={onOpenSource}
           onOpenEpisode={episodeHandlers.open}
           hidden={chromeHidden}
         />
       )}
-      renderExtras={({ selectedSourceId }) => (
+      renderExtras={({ selectedSourceId, selectedAudioVariant }) => (
         <AnimePlayerEpisodeSheet
           opened={episodeOpened}
           onClose={episodeHandlers.close}
           anime={anime}
           currentEpisode={episode}
           selectedSourceId={selectedSourceId}
+          audioVariant={selectedAudioVariant ?? audio}
         />
       )}
     />

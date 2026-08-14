@@ -1,10 +1,11 @@
 "use client";
 
-import { deleteHistory, markHistoryComplete } from "@/actions/histories";
+import { deleteHistory, markHistoryComplete, restoreHistories } from "@/actions/histories";
 import useSupabaseUser from "@/hooks/useSupabaseUser";
 import type { ContentType } from "@/types";
+import type { HistoryDetail } from "@/types/movie";
 import { Check, Trash } from "@/utils/icons";
-import { addToast } from "@heroui/react";
+import { addToast, Button } from "@heroui/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTransition } from "react";
 import IconButton from "./IconButton";
@@ -19,6 +20,8 @@ interface HistoryItemActionsProps {
    *  only the Watch History list (which shows completed rows too) passes
    *  this; Continue Watching surfaces never render a completed row at all. */
   completed?: boolean;
+  /** Continue Watching cards remove the title; the full history page removes one episode row. */
+  scope?: "episode" | "title";
   className?: string;
 }
 
@@ -36,6 +39,7 @@ const HistoryItemActions: React.FC<HistoryItemActionsProps> = ({
   episode = 0,
   title,
   completed,
+  scope = "episode",
   className,
 }) => {
   const queryClient = useQueryClient();
@@ -53,7 +57,7 @@ const HistoryItemActions: React.FC<HistoryItemActionsProps> = ({
 
   const handleComplete = () => {
     startTransition(async () => {
-      const result = await markHistoryComplete(mediaId, type, season, episode);
+      const result = await markHistoryComplete(mediaId, type, season, episode, scope);
       if (result.success) {
         invalidate();
         addToast({ title: `${title} marked as complete`, color: "success" });
@@ -64,16 +68,97 @@ const HistoryItemActions: React.FC<HistoryItemActionsProps> = ({
   };
 
   const handleRemove = () => {
+    const querySnapshots = queryClient.getQueriesData({
+      queryKey: ["continue-watching", user?.id],
+    });
+
+    const removeFromCache = (old: unknown): unknown => {
+      if (!old || typeof old !== "object") return old;
+      const value = old as {
+        pages?: Array<{ success?: boolean; data?: { items?: HistoryDetail[] } }>;
+        success?: boolean;
+        data?: HistoryDetail[];
+      };
+
+      if (Array.isArray(value.pages)) {
+        return {
+          ...value,
+          pages: value.pages.map((page) =>
+            page.success && page.data?.items
+              ? {
+                  ...page,
+                  data: {
+                    ...page.data,
+                    items: page.data.items.filter(
+                      (item) =>
+                        scope === "title"
+                          ? item.type !== type || item.media_id !== mediaId
+                          : item.type !== type ||
+                            item.media_id !== mediaId ||
+                            item.season !== season ||
+                            item.episode !== episode,
+                    ),
+                  },
+                }
+              : page,
+          ),
+        };
+      }
+
+      if (value.success && Array.isArray(value.data)) {
+        return {
+          ...value,
+          data: value.data.filter(
+            (item) =>
+              scope === "title"
+                ? item.type !== type || item.media_id !== mediaId
+                : item.type !== type ||
+                  item.media_id !== mediaId ||
+                  item.season !== season ||
+                  item.episode !== episode,
+          ),
+        };
+      }
+
+      return old;
+    };
+
+    for (const [queryKey, old] of querySnapshots) {
+      queryClient.setQueryData(queryKey, removeFromCache(old));
+    }
+
     startTransition(async () => {
-      const result = await deleteHistory(mediaId, type, season, episode);
+      const result = await deleteHistory(mediaId, type, season, episode, scope);
       if (result.success) {
         invalidate();
         addToast({
           title: `${title} removed from Continue Watching`,
-          color: "danger",
+          color: "warning",
           icon: <Trash />,
+          endContent: result.data?.length ? (
+            <Button
+              size="sm"
+              variant="flat"
+              color="warning"
+              onPress={async () => {
+                const restored = await restoreHistories(result.data ?? []);
+                if (restored.success) {
+                  queryClient.invalidateQueries({ queryKey: ["continue-watching", user?.id] });
+                  queryClient.invalidateQueries({ queryKey: ["watch-history", user?.id] });
+                  addToast({ title: "Restored", color: "success" });
+                } else {
+                  addToast({ title: "Could not restore", description: restored.message, color: "danger" });
+                }
+              }}
+            >
+              Undo
+            </Button>
+          ) : undefined,
         });
       } else {
+        for (const [queryKey, old] of querySnapshots) {
+          queryClient.setQueryData(queryKey, old);
+        }
         addToast({ title: "Error", description: result.message, color: "danger" });
       }
     });

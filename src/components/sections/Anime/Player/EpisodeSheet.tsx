@@ -21,12 +21,14 @@ import { PlayOutline } from "@/utils/icons";
 import Link from "next/link";
 import Image from "next/image";
 import type { AniListMediaDetail } from "@/types/anilist";
+import type { AudioVariant } from "@/lib/sources/types";
 import React, { useMemo, useState } from "react";
 
 interface AnimePlayerEpisodeSheetProps extends HandlerType {
   anime: AniListMediaDetail;
   currentEpisode: number;
   selectedSourceId?: string;
+  audioVariant: AudioVariant;
 }
 
 const CHUNK_SIZE = 50;
@@ -37,6 +39,7 @@ const AnimePlayerEpisodeSheet: React.FC<AnimePlayerEpisodeSheetProps> = ({
   anime,
   currentEpisode,
   selectedSourceId,
+  audioVariant,
 }) => {
   const totalEpisodes = anime.episodes || 12;
   const totalChunks = Math.ceil(totalEpisodes / CHUNK_SIZE);
@@ -56,7 +59,11 @@ const AnimePlayerEpisodeSheet: React.FC<AnimePlayerEpisodeSheetProps> = ({
 
   const title = anime.title.english ?? anime.title.romaji ?? anime.title.native ?? "Anime";
   const coverUrl = anime.coverImage.large || anime.coverImage.medium || "";
-  const sourceQuery = selectedSourceId ? `?src=${encodeURIComponent(selectedSourceId)}` : "";
+  const episodeHref = (episodeNumber: number, targetAudio: AudioVariant) => {
+    const params = new URLSearchParams({ audio: targetAudio });
+    if (selectedSourceId && targetAudio === audioVariant) params.set("src", selectedSourceId);
+    return `/anime/${anime.id}/player/${episodeNumber}?${params.toString()}`;
+  };
 
   const chunkTabs = totalChunks > 1 && (
     <div className="border-foreground-100 flex items-center gap-1 overflow-x-auto border-b pb-2">
@@ -87,10 +94,6 @@ const AnimePlayerEpisodeSheet: React.FC<AnimePlayerEpisodeSheetProps> = ({
         return (
           <Card
             key={epNum}
-            isPressable
-            as={Link}
-            href={`/anime/${anime.id}/player/${epNum}${sourceQuery}`}
-            onClick={onClose}
             className={`group relative flex flex-row items-center gap-3 overflow-hidden border p-2 transition-all ${
               isCurrent
                 ? "border-primary-500 bg-primary-500/20 font-bold"
@@ -128,6 +131,24 @@ const AnimePlayerEpisodeSheet: React.FC<AnimePlayerEpisodeSheetProps> = ({
                 <h4 className="text-foreground truncate text-xs font-semibold">Episode {epNum}</h4>
               </div>
               <p className="text-default-400 truncate text-[11px]">{title}</p>
+              <div className="mt-1.5 flex gap-1.5" role="group" aria-label={`Episode ${epNum} audio`}>
+                {(["sub", "dub"] as const).map((variant) => (
+                  <Button
+                    key={variant}
+                    as={Link}
+                    href={episodeHref(epNum, variant)}
+                    onPress={onClose}
+                    size="sm"
+                    radius="full"
+                    variant={isCurrent && audioVariant === variant ? "solid" : "flat"}
+                    color={isCurrent && audioVariant === variant ? "primary" : "default"}
+                    className="h-8 min-w-14 px-3 text-[11px] font-semibold"
+                    aria-label={`Play episode ${epNum} ${variant === "dub" ? "dubbed" : "subtitled"}`}
+                  >
+                    {variant === "dub" ? "Dub" : "Sub"}
+                  </Button>
+                ))}
+              </div>
             </div>
           </Card>
         );

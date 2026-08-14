@@ -2,6 +2,6 @@
 <resources>
     <string name="app_name">StreamFree</string>
     <string name="title_activity_main">StreamFree</string>
-    <string name="package_name">com.umbrestream.app</string>
-    <string name="custom_url_scheme">com.umbrestream.app</string>
+    <string name="package_name">online.streamfree.app</string>
+    <string name="custom_url_scheme">online.streamfree.app</string>
 </resources>

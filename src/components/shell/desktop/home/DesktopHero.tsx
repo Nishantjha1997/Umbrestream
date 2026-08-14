@@ -203,6 +203,7 @@ export default function DesktopHero() {
               season={pick.season}
               episode={pick.episode}
               title={pick.media.title}
+              scope="title"
               className="flex gap-1"
             />
           )}

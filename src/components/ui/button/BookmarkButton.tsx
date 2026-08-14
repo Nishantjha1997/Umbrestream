@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { BsBookmarkCheckFill, BsBookmarkFill } from "react-icons/bs";
-import { addToast } from "@heroui/react";
+import { addToast, Button } from "@heroui/react";
 import IconButton from "./IconButton";
 import { Trash } from "@/utils/icons";
 import useDeviceVibration from "@/hooks/useDeviceVibration";
@@ -25,6 +25,38 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({ data, isTooltipDisabled
   const [isPending, startTransition] = useTransition();
   const [isSaved, setIsSaved] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
+
+  const watchlistItem = {
+    id: data.id,
+    type: data.type,
+    adult: data.adult,
+    backdrop_path: data.backdrop_path,
+    poster_path: data.poster_path || null,
+    release_date: data.release_date,
+    title: data.title,
+    vote_average: data.vote_average,
+  };
+
+  const updateWatchlistCache = (remove: boolean) => {
+    queryClient.setQueriesData({ queryKey: ["watchlist"] }, (old: unknown) => {
+      if (!old || typeof old !== "object") return old;
+      const value = old as {
+        pages?: Array<{ data?: Array<{ id: number; type: string }> }>;
+      };
+      if (!Array.isArray(value.pages)) return old;
+      return {
+        ...value,
+        pages: value.pages.map((page) => ({
+          ...page,
+          data: Array.isArray(page.data)
+            ? remove
+              ? page.data.filter((item) => item.id !== data.id || item.type !== data.type)
+              : page.data
+            : page.data,
+        })),
+      };
+    });
+  };
 
   useEffect(() => {
     const checkWatchlistStatus = async () => {
@@ -62,21 +94,46 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({ data, isTooltipDisabled
     startTransition(async () => {
       try {
         if (isSaved) {
+          setIsSaved(false);
+          updateWatchlistCache(true);
           const result = await removeFromWatchlist(data.id, data.type);
 
           if (result.success) {
-            setIsSaved(false);
-
             addToast({
               title: `${data.title} removed from your watchlist!`,
-              color: "danger",
+              color: "warning",
               icon: <Trash />,
+              endContent: (
+                <Button
+                  size="sm"
+                  variant="flat"
+                  color="warning"
+                  onPress={async () => {
+                    const restored = await addToWatchlist(watchlistItem);
+                    if (restored.success) {
+                      setIsSaved(true);
+                      queryClient.invalidateQueries({ queryKey: ["watchlist"] });
+                      addToast({ title: "Restored to watchlist", color: "success" });
+                    } else {
+                      addToast({
+                        title: "Could not restore",
+                        description: restored.error,
+                        color: "danger",
+                      });
+                    }
+                  }}
+                >
+                  Undo
+                </Button>
+              ),
             });
 
             if (pathname.startsWith("/library")) {
               queryClient.invalidateQueries({ queryKey: ["watchlist"] });
             }
           } else {
+            setIsSaved(true);
+            queryClient.invalidateQueries({ queryKey: ["watchlist"] });
             addToast({
               title: "Error",
               description: result.error || "Failed to remove from watchlist",
@@ -84,17 +141,6 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({ data, isTooltipDisabled
             });
           }
         } else {
-          const watchlistItem = {
-            id: data.id,
-            type: data.type,
-            adult: data.adult,
-            backdrop_path: data.backdrop_path,
-            poster_path: data.poster_path || null,
-            release_date: data.release_date,
-            title: data.title,
-            vote_average: data.vote_average,
-          };
-
           const result = await addToWatchlist(watchlistItem);
 
           if (result.success) {
@@ -133,16 +179,33 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({ data, isTooltipDisabled
   };
 
   return (
-    <IconButton
-      onPress={handleBookmark}
-      icon={isSaved ? <BsBookmarkCheckFill size={20} /> : <BsBookmarkFill size={20} />}
-      variant={isSaved ? "shadow" : "faded"}
-      color="warning"
-      isLoading={isUserLoading || isChecking || isPending}
-      tooltip={
-        isTooltipDisabled ? undefined : isSaved ? "Remove from Watchlist" : "Add to Watchlist"
-      }
-    />
+    <span
+      className="inline-flex"
+      onPointerDown={(event) => event.stopPropagation()}
+      onMouseDown={(event) => event.stopPropagation()}
+      onTouchStart={(event) => event.stopPropagation()}
+      onClick={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+      }}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+      }}
+    >
+      <IconButton
+        onPress={handleBookmark}
+        icon={isSaved ? <BsBookmarkCheckFill size={20} /> : <BsBookmarkFill size={20} />}
+        variant={isSaved ? "shadow" : "faded"}
+        color="warning"
+        isLoading={isUserLoading || isChecking || isPending}
+        tooltip={
+          isTooltipDisabled ? undefined : isSaved ? "Remove from Watchlist" : "Add to Watchlist"
+        }
+      />
+    </span>
   );
 };
 

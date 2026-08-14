@@ -1,12 +1,14 @@
-package com.umbrestream.app;
+package online.streamfree.app;
 
-import android.app.Activity;
 import android.app.DownloadManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.Signature;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
@@ -14,7 +16,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
 import android.webkit.CookieManager;
-import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import android.webkit.WebSettings;
 import android.widget.Toast;
@@ -24,21 +25,37 @@ import androidx.core.content.FileProvider;
 import com.getcapacitor.BridgeActivity;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.security.MessageDigest;
 
 public class MainActivity extends BridgeActivity {
+    private static final long EXPECTED_UPDATE_SIZE = 3269079L;
+    private static final String EXPECTED_UPDATE_SHA256 = "5206A135601AA218A13DA13870011E40F09203CA9BAB542C946E1F59DD2FA836";
+    private static final String EXPECTED_UPDATE_PACKAGE = "online.streamfree.app";
+    private static final String EXPECTED_UPDATE_CERTIFICATE = "577D4F3C9BBE0A87C3F2CDFC087BD1A6D26EF1A613F392091DF0A26F10677DB9";
     private long updateDownloadId = -1L;
     private BroadcastReceiver updateReceiver;
+    private File expectedUpdateFile;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        registerPlugin(StreamFreeNativePlugin.class);
         super.onCreate(savedInstanceState);
 
         WebView webView = bridge.getWebView();
-        webView.addJavascriptInterface(new StreamFreeNativeBridge(this), "StreamFreeNative");
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
         settings.setDatabaseEnabled(true);
+        settings.setAllowFileAccess(false);
+        settings.setAllowContentAccess(false);
+        settings.setAllowFileAccessFromFileURLs(false);
+        settings.setAllowUniversalAccessFromFileURLs(false);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) settings.setSafeBrowsingEnabled(true);
+        WebView.setWebContentsDebuggingEnabled(false);
         settings.setMediaPlaybackRequiresUserGesture(false);
         settings.setSupportMultipleWindows(false);
         settings.setJavaScriptCanOpenWindowsAutomatically(false);
@@ -71,12 +88,14 @@ public class MainActivity extends BridgeActivity {
         super.onDestroy();
     }
 
-    private void downloadApk(String url) {
+    void downloadOfficialUpdate() {
         try {
-            Uri source = Uri.parse(url);
-            if (!"https".equalsIgnoreCase(source.getScheme()) && !"http".equalsIgnoreCase(source.getScheme())) {
-                throw new IllegalArgumentException("Update URL must use HTTPS");
-            }
+            Uri source = Uri.parse("https://streamfree.online/downloads/StreamFree-Android-v1.3.apk");
+            if (!"https".equalsIgnoreCase(source.getScheme()) ||
+                !"streamfree.online".equalsIgnoreCase(source.getHost()) ||
+                !source.getPath().startsWith("/downloads/")) throw new IllegalArgumentException("Invalid update source");
+            expectedUpdateFile = new File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "streamfree-update.apk");
+            if (expectedUpdateFile.exists()) expectedUpdateFile.delete();
             DownloadManager.Request request = new DownloadManager.Request(source)
                 .setTitle("StreamFree update")
                 .setDescription("Downloading the latest StreamFree app")
@@ -100,11 +119,12 @@ public class MainActivity extends BridgeActivity {
                 Toast.makeText(this, "Update download failed", Toast.LENGTH_LONG).show();
                 return;
             }
-            String localUri = cursor.getString(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_LOCAL_URI));
-            Uri packageUri = Uri.parse(localUri);
-            if ("file".equalsIgnoreCase(packageUri.getScheme())) {
-                packageUri = FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", new File(packageUri.getPath()));
+            if (expectedUpdateFile == null || !verifyOfficialApk(expectedUpdateFile)) {
+                if (expectedUpdateFile != null) expectedUpdateFile.delete();
+                Toast.makeText(this, "Update verification failed", Toast.LENGTH_LONG).show();
+                return;
             }
+            Uri packageUri = FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", expectedUpdateFile);
             Intent install = new Intent(Intent.ACTION_VIEW)
                 .setDataAndType(packageUri, "application/vnd.android.package-archive")
                 .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -120,26 +140,37 @@ public class MainActivity extends BridgeActivity {
         }
     }
 
-    private static final class StreamFreeNativeBridge {
-        private final MainActivity activity;
-
-        StreamFreeNativeBridge(MainActivity activity) {
-            this.activity = activity;
-        }
-
-        @JavascriptInterface
-        public void lockLandscape() {
-            activity.runOnUiThread(() -> activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE));
-        }
-
-        @JavascriptInterface
-        public void lockPortrait() {
-            activity.runOnUiThread(() -> activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT));
-        }
-
-        @JavascriptInterface
-        public void installApk(String url) {
-            activity.runOnUiThread(() -> activity.downloadApk(url));
+    private boolean verifyOfficialApk(File apk) {
+        try {
+            if (!apk.isFile() || apk.length() != EXPECTED_UPDATE_SIZE) return false;
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            try (FileInputStream input = new FileInputStream(apk)) {
+                byte[] buffer = new byte[8192];
+                int count;
+                while ((count = input.read(buffer)) >= 0) if (count > 0) digest.update(buffer, 0, count);
+            }
+            if (!EXPECTED_UPDATE_SHA256.equalsIgnoreCase(toHex(digest.digest()))) return false;
+            int flags = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
+                ? PackageManager.GET_SIGNING_CERTIFICATES
+                : PackageManager.GET_SIGNATURES;
+            PackageInfo info = getPackageManager().getPackageArchiveInfo(apk.getAbsolutePath(), flags);
+            if (info == null || !EXPECTED_UPDATE_PACKAGE.equals(info.packageName)) return false;
+            Signature[] signatures = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
+                ? info.signingInfo.getApkContentsSigners()
+                : info.signatures;
+            if (signatures == null || signatures.length == 0) return false;
+            return EXPECTED_UPDATE_CERTIFICATE.equalsIgnoreCase(
+                toHex(MessageDigest.getInstance("SHA-256").digest(signatures[0].toByteArray()))
+            );
+        } catch (Exception error) {
+            return false;
         }
     }
+
+    private static String toHex(byte[] bytes) {
+        StringBuilder result = new StringBuilder(bytes.length * 2);
+        for (byte value : bytes) result.append(String.format("%02X", value));
+        return result.toString();
+    }
+
 }

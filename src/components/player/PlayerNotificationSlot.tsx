@@ -20,6 +20,9 @@ export interface PlayerNotification {
   message: string;
   actionLabel?: string;
   onAction?: () => void;
+  secondaryActionLabel?: string;
+  onSecondaryAction?: () => void;
+  dismissLabel?: string;
   tone?: "warning" | "danger";
   dismissible?: boolean;
 }
@@ -41,7 +44,7 @@ export default function PlayerNotificationSlot({
     <div
       role="status"
       className={cn(
-        "flex items-center gap-2.5 rounded-xl border px-3 py-2.5 text-sm",
+        "flex flex-wrap items-center gap-2.5 rounded-xl border px-3 py-2.5 text-sm",
         active.tone === "danger"
           ? "border-danger/30 bg-danger/15 text-danger-200"
           : "border-warning/30 bg-warning/12 text-warning-200",
@@ -53,17 +56,27 @@ export default function PlayerNotificationSlot({
         <button
           type="button"
           onClick={active.onAction}
-          className="shrink-0 text-[11px] font-semibold text-white underline-offset-2 hover:underline"
+          className="min-h-11 shrink-0 rounded-lg bg-white px-3 text-[11px] font-semibold text-black focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:outline-none"
         >
           {active.actionLabel}
+        </button>
+      )}
+      {active.secondaryActionLabel && active.onSecondaryAction && (
+        <button
+          type="button"
+          onClick={active.onSecondaryAction}
+          className="min-h-11 shrink-0 rounded-lg border border-white/20 px-3 text-[11px] font-semibold text-white focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:outline-none"
+        >
+          {active.secondaryActionLabel}
         </button>
       )}
       {active.dismissible !== false && (
         <button
           type="button"
-          aria-label="Dismiss"
+          aria-label={active.dismissLabel ?? "Dismiss"}
+          title={active.dismissLabel}
           onClick={() => onDismiss(active.id)}
-          className="shrink-0 text-white/50 hover:text-white"
+          className="flex size-11 shrink-0 items-center justify-center rounded-lg text-white/50 hover:text-white focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:outline-none"
         >
           <Close size={16} />
         </button>

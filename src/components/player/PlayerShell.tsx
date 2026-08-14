@@ -49,8 +49,21 @@ import { usePlayerEvents, type PlayerEventIdentity } from "@/hooks/usePlayerEven
 import { trackUmbraEvent } from "@/lib/analytics/client";
 import { createPublicEmbedSources } from "@/lib/sources/adapters/embed";
 import { legacySourceId } from "@/lib/sources/legacy";
-import { selectDefaultSource } from "@/lib/sources/selectDefault";
-import type { PlayerSource, SourceRequest, SourceResolutionResponse } from "@/lib/sources/types";
+import {
+  clearPlaybackPreference,
+  findNextFallbackSource,
+  findPreferredSource,
+  PLAYBACK_RECOVERY_TIMEOUT_MS,
+  readPlaybackPreference,
+  withResumePosition,
+  writePlaybackPreference,
+} from "@/lib/sources/playbackPolicy";
+import type {
+  AudioVariant,
+  PlayerSource,
+  SourceRequest,
+  SourceResolutionResponse,
+} from "@/lib/sources/types";
 import { Menu } from "@/utils/icons";
 import { parseAsString, useQueryState } from "nuqs";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
@@ -58,6 +71,7 @@ import { createPortal, flushSync } from "react-dom";
 
 export interface PlayerShellHeaderContext {
   selectedSourceId: string;
+  selectedAudioVariant?: AudioVariant;
   onOpenSource: () => void;
   chromeHidden: boolean;
 }
@@ -74,11 +88,8 @@ export interface PlayerShellProps {
   /** Extra sheets a specific media type owns — episode drawers/panels. */
   renderExtras?: (context: PlayerShellHeaderContext) => ReactNode;
   onEnded?: () => void;
+  onAudioVariantChange?: (audioVariant: AudioVariant) => void;
 }
-
-/** How long a source that claims postMessage support gets before the
- *  "can't confirm playback" nudge appears. Matches the old toast's delay. */
-const STUCK_DELAY_MS = 12_000;
 
 function directSourceParams(request: SourceRequest): URLSearchParams {
   const params = new URLSearchParams({ mediaType: request.mediaType, version: "3" });
@@ -101,6 +112,7 @@ export default function PlayerShell({
   renderHeader,
   renderExtras,
   onEnded,
+  onAudioVariantChange,
 }: PlayerShellProps) {
   const [mounted, setMounted] = useState(false);
   // Standard one-tick-late mount guard for `createPortal` — see `DetailModal.tsx`.
@@ -206,6 +218,7 @@ export default function PlayerShell({
         request.animeTmdbId,
         request.season,
         request.episode,
+        request.preferredAudio,
       ].join(":"),
     [
       request.mediaType,
@@ -215,6 +228,7 @@ export default function PlayerShell({
       request.animeTmdbId,
       request.season,
       request.episode,
+      request.preferredAudio,
     ],
   );
   const [directResult, setDirectResult] = useState<{ key: string; sources: PlayerSource[] } | null>(
@@ -253,6 +267,15 @@ export default function PlayerShell({
   }, [request, directResult, directRequestKey]);
 
   const [sourceParam, setSourceParam] = useQueryState("src", parseAsString);
+  const preferredAudio: AudioVariant | undefined =
+    request.mediaType === "anime" ? (request.preferredAudio === "dub" ? "dub" : "sub") : undefined;
+  const [rememberedSourceId, setRememberedSourceId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setRememberedSourceId(
+      readPlaybackPreference(window.localStorage, request.mediaType, preferredAudio),
+    );
+  }, [request.mediaType, preferredAudio]);
   // Query-state updates are asynchronous. Keep a request-scoped override so
   // an explicit server click remounts the selected iframe immediately rather
   // than waiting for Next's URL update to complete behind a cross-origin
@@ -261,6 +284,11 @@ export default function PlayerShell({
     id: string;
     requestKey: string;
   } | null>(null);
+  const [resumeOverride, setResumeOverride] = useState<{
+    requestKey: string;
+    sourceId: string;
+    seconds: number;
+  } | null>(null);
   const [switchingSourceId, setSwitchingSourceId] = useState<string | null>(null);
   const [sourceFeedback, setSourceFeedback] = useState<{
     sourceId: string;
@@ -268,20 +296,29 @@ export default function PlayerShell({
     phase: "switching" | "selected";
   } | null>(null);
   const selectionVersionRef = useRef(0);
-  const requestedSourceId =
-    selectedSourceOverride?.requestKey === directRequestKey
-      ? selectedSourceOverride.id
+  const requestedSourceId = selectedSourceOverride?.requestKey === directRequestKey
+    ? selectedSourceOverride.id
+    : sources.some((source) => source.id === sourceParam)
+      ? sourceParam
       : legacySourceId(request.mediaType, sourceParam);
 
   const selectedSource = useMemo(() => {
     if (!sources.length) return null;
-    return selectDefaultSource(sources, {
-      requestedId: requestedSourceId,
-      defaultId: sources[0]?.id,
-      preferredSubtitle: request.preferredSubtitle,
-      preferredAudio: request.preferredAudio,
+    return findPreferredSource(sources, {
+      explicitId: requestedSourceId,
+      rememberedId: sourceParam ? null : rememberedSourceId,
+      audioVariant: preferredAudio,
     });
-  }, [requestedSourceId, sources, request.preferredSubtitle, request.preferredAudio]);
+  }, [preferredAudio, rememberedSourceId, requestedSourceId, sourceParam, sources]);
+  const selectedSourceUrl = useMemo(
+    () =>
+      selectedSource &&
+      resumeOverride?.requestKey === directRequestKey &&
+      resumeOverride.sourceId === selectedSource.id
+        ? withResumePosition(selectedSource, resumeOverride.seconds)
+        : selectedSource?.url,
+    [directRequestKey, resumeOverride, selectedSource],
+  );
 
   // Keep `?src=` a stable provider id. Never blocks the mount above — the
   // stage below renders from `selectedSource` on the same render regardless
@@ -336,6 +373,17 @@ export default function PlayerShell({
   const [confirmedReadySourceId, setConfirmedReadySourceId] = useState<string | null>(null);
   const confirmedReady = confirmedReadySourceId === selectedSource?.id;
   const confirmedReadyRef = useRef(confirmedReady);
+  const [recoveryPrompt, setRecoveryPrompt] = useState<{
+    requestKey: string;
+    sourceId: string;
+    reason: "timeout" | "error";
+  } | null>(null);
+  const [attemptedState, setAttemptedState] = useState<{
+    requestKey: string;
+    ids: Set<string>;
+  }>({ requestKey: directRequestKey, ids: new Set() });
+  const attemptedSourceIds =
+    attemptedState.requestKey === directRequestKey ? attemptedState.ids : new Set<string>();
   useEffect(() => {
     confirmedReadyRef.current = confirmedReady;
   }, [confirmedReady]);
@@ -351,8 +399,32 @@ export default function PlayerShell({
       // derivable from props/state already available at render time.
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setConfirmedReadySourceId(selectedSource.id);
+      setRecoveryPrompt((current) =>
+        current?.sourceId === selectedSource.id ? null : current,
+      );
+      if (!confirmedReady) {
+        trackUmbraEvent("player_playback_confirmed", {
+          mediaType: request.mediaType,
+          provider: selectedSource.providerId,
+          audio: selectedSource.audioVariant ?? "none",
+        });
+      }
+    } else if (events.lastEvent === "error") {
+      setRecoveryPrompt({
+        requestKey: directRequestKey,
+        sourceId: selectedSource.id,
+        reason: "error",
+      });
     }
-  }, [events.eventVersion, events.lastEvent, events.lastEventOrigin, selectedSource]);
+  }, [
+    directRequestKey,
+    confirmedReady,
+    events.eventVersion,
+    events.lastEvent,
+    events.lastEventOrigin,
+    request.mediaType,
+    selectedSource,
+  ]);
 
   const [nativeErrorState, setNativeErrorState] = useState<{
     sourceId: string;
@@ -366,17 +438,43 @@ export default function PlayerShell({
   // Only sources that declare postMessage support get the "can't confirm
   // playback" nudge — for a source that never claimed to send events,
   // Umbra was never going to hear from it, and that is not a fault to flag.
-  const [stuckSourceId, setStuckSourceId] = useState<string | null>(null);
-  const stuckVisible = stuckSourceId === selectedSource?.id && !confirmedReady;
-
   useEffect(() => {
-    if (!selectedSource?.capabilities.events) return;
-    const id = selectedSource.id;
-    const timer = window.setTimeout(() => {
-      if (!confirmedReadyRef.current) setStuckSourceId(id);
-    }, STUCK_DELAY_MS);
-    return () => window.clearTimeout(timer);
-  }, [selectedSource?.id, selectedSource?.capabilities.events]);
+    if (!selectedSource) return;
+    const sourceId = selectedSource.id;
+    let remainingMs = PLAYBACK_RECOVERY_TIMEOUT_MS;
+    let startedAt = performance.now();
+    let timer: number | null = null;
+
+    const showPrompt = () => {
+      if (confirmedReadyRef.current) return;
+      setRecoveryPrompt({ requestKey: directRequestKey, sourceId, reason: "timeout" });
+      trackUmbraEvent("player_recovery_prompted", {
+        mediaType: request.mediaType,
+        provider: selectedSource.providerId,
+        reason: selectedSource.capabilities.events ? "unconfirmed" : "eventless",
+        audio: selectedSource.audioVariant ?? "none",
+      });
+    };
+    const startTimer = () => {
+      startedAt = performance.now();
+      timer = window.setTimeout(showPrompt, remainingMs);
+    };
+    const handleVisibility = () => {
+      if (document.hidden) {
+        if (timer !== null) window.clearTimeout(timer);
+        remainingMs = Math.max(0, remainingMs - (performance.now() - startedAt));
+      } else if (!confirmedReadyRef.current) {
+        startTimer();
+      }
+    };
+
+    if (!document.hidden) startTimer();
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => {
+      if (timer !== null) window.clearTimeout(timer);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, [directRequestKey, request.mediaType, selectedSource]);
 
   useEffect(() => {
     if (!sourceFeedback) return;
@@ -397,12 +495,16 @@ export default function PlayerShell({
     setSourceOpened(true);
   }, [revealChrome]);
 
-  const selectSource = useCallback(
-    (id: string) => {
+  const switchSource = useCallback(
+    (id: string, reason: "manual" | "recovery" | "reset" = "manual") => {
       const nextSource = sources.find((source) => source.id === id);
       if (!nextSource) return;
 
       if (selectedSource?.id === id) {
+        if (reason === "reset") {
+          clearPlaybackPreference(window.localStorage, request.mediaType, preferredAudio);
+          setRememberedSourceId(null);
+        }
         setSourceOpened(false);
         revealChrome();
         return;
@@ -416,16 +518,54 @@ export default function PlayerShell({
       flushSync(() => {
         setSwitchingSourceId(id);
         setSelectedSourceOverride({ id, requestKey: directRequestKey });
+        if (events.currentTime > 0) {
+          setResumeOverride({
+            requestKey: directRequestKey,
+            sourceId: id,
+            seconds: events.currentTime,
+          });
+        }
         setSourceFeedback({ sourceId: id, label: nextSource.label, phase: "switching" });
       });
       setSourceOpened(false);
+      setRecoveryPrompt(null);
       revealChrome();
 
-      trackUmbraEvent("player_manual_switch", {
-        mediaType: request.mediaType,
-        fromProvider: selectedSource?.providerId ?? "unknown",
-        toProvider: nextSource.providerId,
-      });
+      if (nextSource.audioVariant && nextSource.audioVariant !== preferredAudio) {
+        onAudioVariantChange?.(nextSource.audioVariant);
+      }
+
+      if (reason === "manual") {
+        writePlaybackPreference(
+          window.localStorage,
+          request.mediaType,
+          nextSource.id,
+          nextSource.audioVariant ?? preferredAudio,
+        );
+        setRememberedSourceId(nextSource.id);
+        setAttemptedState({ requestKey: directRequestKey, ids: new Set() });
+        trackUmbraEvent("player_manual_switch", {
+          mediaType: request.mediaType,
+          fromProvider: selectedSource?.providerId ?? "unknown",
+          toProvider: nextSource.providerId,
+          audio: nextSource.audioVariant ?? "none",
+        });
+      } else if (reason === "recovery") {
+        setAttemptedState((current) => {
+          const ids = current.requestKey === directRequestKey ? new Set(current.ids) : new Set<string>();
+          if (selectedSource) ids.add(selectedSource.id);
+          return { requestKey: directRequestKey, ids };
+        });
+        trackUmbraEvent("player_recovery_accepted", {
+          mediaType: request.mediaType,
+          fromProvider: selectedSource?.providerId ?? "unknown",
+          toProvider: nextSource.providerId,
+          audio: nextSource.audioVariant ?? "none",
+        });
+      } else {
+        clearPlaybackPreference(window.localStorage, request.mediaType, preferredAudio);
+        setRememberedSourceId(null);
+      }
 
       // The selected iframe already changed above; URL persistence is
       // intentionally non-blocking. A failed History API update must never
@@ -437,8 +577,25 @@ export default function PlayerShell({
         window.history.replaceState(window.history.state, "", nextUrl);
       });
     },
-    [directRequestKey, request.mediaType, revealChrome, selectedSource, setSourceParam, sources],
+    [
+      directRequestKey,
+      events.currentTime,
+      onAudioVariantChange,
+      preferredAudio,
+      request.mediaType,
+      revealChrome,
+      selectedSource,
+      setSourceParam,
+      sources,
+    ],
   );
+
+  const selectSource = useCallback((id: string) => switchSource(id, "manual"), [switchSource]);
+
+  const resetPreferredSource = useCallback(() => {
+    const recommended = findPreferredSource(sources, { audioVariant: preferredAudio });
+    if (recommended) switchSource(recommended.id, "reset");
+  }, [preferredAudio, sources, switchSource]);
 
   const handleIframeLoad = useCallback((sourceId: string, label: string) => {
     setSwitchingSourceId((current) => (current === sourceId ? null : current));
@@ -447,37 +604,97 @@ export default function PlayerShell({
     );
   }, []);
 
+  const activeRecovery =
+    recoveryPrompt?.requestKey === directRequestKey &&
+    recoveryPrompt.sourceId === selectedSource?.id &&
+    !confirmedReady;
+  const recoveryFallback = useMemo(
+    () =>
+      activeRecovery
+        ? findNextFallbackSource(
+            sources,
+            selectedSource?.id,
+            attemptedSourceIds,
+            selectedSource?.audioVariant ?? preferredAudio,
+          )
+        : null,
+    [activeRecovery, attemptedSourceIds, preferredAudio, selectedSource, sources],
+  );
+
+  const declineRecovery = useCallback(() => {
+    if (!selectedSource) return;
+    setRecoveryPrompt(null);
+    trackUmbraEvent("player_recovery_declined", {
+      mediaType: request.mediaType,
+      provider: selectedSource.providerId,
+      audio: selectedSource.audioVariant ?? "none",
+    });
+  }, [request.mediaType, selectedSource]);
+
+  const acceptRecovery = useCallback(() => {
+    if (recoveryFallback) switchSource(recoveryFallback.id, "recovery");
+  }, [recoveryFallback, switchSource]);
+
+  const reportPlaybackIssue = useCallback(() => {
+    if (!selectedSource) return;
+    trackUmbraEvent("player_all_sources_exhausted", {
+      mediaType: request.mediaType,
+      provider: selectedSource.providerId,
+      audio: selectedSource.audioVariant ?? "none",
+    });
+    setRecoveryPrompt(null);
+  }, [request.mediaType, selectedSource]);
+
   const notifications = useMemo<PlayerNotification[]>(() => {
     const list: PlayerNotification[] = [];
     if (nativeError) {
       list.push({
         id: "native-error",
         message: nativeError,
-        actionLabel: "Switch Server",
-        onAction: openSource,
+        actionLabel: recoveryFallback ? `Try ${recoveryFallback.label}` : "Choose server",
+        onAction: recoveryFallback ? acceptRecovery : openSource,
+        secondaryActionLabel: recoveryFallback ? "Choose server" : undefined,
+        onSecondaryAction: recoveryFallback ? openSource : undefined,
         tone: "danger",
         dismissible: false,
       });
     }
-    if (stuckVisible) {
+    if (activeRecovery && selectedSource) {
       list.push({
-        id: "stuck",
-        message:
-          "This provider loaded but cannot confirm playback. If the video is stuck, choose another available server.",
-        actionLabel: "Switch Server",
-        onAction: openSource,
+        id: `recovery:${selectedSource.id}`,
+        message: recoveryFallback
+          ? selectedSource.capabilities.events
+            ? `${selectedSource.label} hasn’t started yet. Try ${recoveryFallback.label}?`
+            : `Having trouble with ${selectedSource.label}? Try ${recoveryFallback.label} or choose another server.`
+          : "No other stable server remains in this session. Retry this server or report the issue.",
+        actionLabel: recoveryFallback ? `Try ${recoveryFallback.label}` : "Report issue",
+        onAction: recoveryFallback ? acceptRecovery : reportPlaybackIssue,
+        secondaryActionLabel: "Choose server",
+        onSecondaryAction: openSource,
+        dismissLabel: "Keep current server",
         tone: "warning",
       });
     }
     return list.filter((n) => !dismissedIds.has(n.id));
-  }, [nativeError, stuckVisible, dismissedIds, openSource]);
+  }, [
+    acceptRecovery,
+    activeRecovery,
+    dismissedIds,
+    nativeError,
+    openSource,
+    recoveryFallback,
+    reportPlaybackIssue,
+    selectedSource,
+  ]);
 
   const handleDismiss = useCallback((id: string) => {
     setDismissedIds((prev) => new Set(prev).add(id));
-  }, []);
+    if (id.startsWith("recovery:")) declineRecovery();
+  }, [declineRecovery]);
 
   const headerContext: PlayerShellHeaderContext = {
     selectedSourceId: selectedSource?.id ?? "",
+    selectedAudioVariant: selectedSource?.audioVariant,
     onOpenSource: openSource,
     chromeHidden,
   };
@@ -489,8 +706,8 @@ export default function PlayerShell({
       {selectedSource ? (
         selectedSource.kind === "iframe" ? (
           <iframe
-            key={`${selectedSource.id}:${selectedSource.url}`}
-            src={selectedSource.url}
+            key={`${selectedSource.id}:${selectedSourceUrl}`}
+            src={selectedSourceUrl}
             allowFullScreen
             allow={selectedSource.capabilities.iframe?.allow}
             referrerPolicy={selectedSource.capabilities.iframe?.referrerPolicy}
@@ -500,12 +717,19 @@ export default function PlayerShell({
           />
         ) : (
           <NativePlayer
-            key={`${selectedSource.id}:${selectedSource.url}`}
+            key={`${selectedSource.id}:${selectedSourceUrl}`}
             source={selectedSource}
-            src={selectedSource.url}
+            src={selectedSourceUrl ?? selectedSource.url}
             startAt={events.currentTime || request.startAt}
             onReady={() => setConfirmedReadySourceId(selectedSource.id)}
-            onError={(message) => setNativeErrorState({ sourceId: selectedSource.id, message })}
+            onError={(message) => {
+              setNativeErrorState({ sourceId: selectedSource.id, message });
+              setRecoveryPrompt({
+                requestKey: directRequestKey,
+                sourceId: selectedSource.id,
+                reason: "error",
+              });
+            }}
             onEvent={(event, currentTime, duration) =>
               events.reportNativeEvent({
                 event,
@@ -580,6 +804,8 @@ export default function PlayerShell({
         sources={sources}
         selectedSourceId={selectedSource?.id ?? ""}
         switchingSourceId={switchingSourceId}
+        hasPreference={Boolean(rememberedSourceId)}
+        onResetPreference={resetPreferredSource}
         onSelect={selectSource}
       />
     </div>,

@@ -1,20 +1,10 @@
 "use client";
 
-/**
- * Shared Movie/TV/Anime server picker. Phone uses a bottom sheet and desktop
- * uses the centred player panel, but both render the same native button list.
- * Keeping the selection path on plain buttons avoids press/gesture arbitration
- * between a component-library radio group and Vaul's draggable surface.
- */
-
 import PlayerPanel from "@/components/player/PlayerPanel";
 import VaulDrawer from "@/components/ui/overlay/VaulDrawer";
-import { useServerHealth, type ServerHealthStatus } from "@/hooks/useServerHealth";
 import type { PlayerSource } from "@/lib/sources/types";
-import type { PlayersProps } from "@/types";
 import { cn } from "@/utils/helpers";
-import { Check, Clock, Rocket, Star } from "@/utils/icons";
-import { useMemo } from "react";
+import { Check, Rocket, Star } from "@/utils/icons";
 
 export interface PlayerSourceSheetProps {
   opened: boolean;
@@ -22,23 +12,11 @@ export interface PlayerSourceSheetProps {
   sources: PlayerSource[];
   selectedSourceId: string;
   switchingSourceId?: string | null;
+  hasPreference?: boolean;
+  onResetPreference?: () => void;
   /** The parent commits the iframe swap before dismissing this overlay. */
   onSelect: (sourceId: string) => Promise<void> | void;
 }
-
-const HEALTH_LABEL: Record<ServerHealthStatus, string> = {
-  checking: "Testing...",
-  online: "Online",
-  slow: "Slow",
-  offline: "Offline",
-};
-
-const HEALTH_DOT: Record<ServerHealthStatus, string> = {
-  checking: "bg-default-400",
-  online: "bg-success",
-  slow: "bg-warning",
-  offline: "bg-danger",
-};
 
 export default function PlayerSourceSheet({
   opened,
@@ -46,24 +24,11 @@ export default function PlayerSourceSheet({
   sources,
   selectedSourceId,
   switchingSourceId,
+  hasPreference,
+  onResetPreference,
   onSelect,
 }: PlayerSourceSheetProps) {
-  const players: PlayersProps[] = useMemo(
-    () =>
-      sources.map((source) => ({
-        title: source.label,
-        source: source.url as `https://${string}`,
-        recommended: source.capabilities.recommended,
-        fast: source.capabilities.fast,
-        ads: source.capabilities.ads,
-        resumable: source.capabilities.resumable,
-      })),
-    [sources],
-  );
-  const healthMap = useServerHealth(players, opened);
-
-  const sourceOptions = sources.map((source, index) => {
-    const health = healthMap[index] || "checking";
+  const sourceOption = (source: PlayerSource) => {
     const isSelected = source.id === selectedSourceId;
     const isSwitching = source.id === switchingSourceId;
 
@@ -87,7 +52,16 @@ export default function PlayerSourceSheet({
           "focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:outline-hidden",
         )}
       >
-        <span className={cn("size-[7px] rounded-full", HEALTH_DOT[health])} />
+        <span
+          className={cn(
+            "size-[7px] rounded-full",
+            isSelected
+              ? "bg-primary"
+              : source.providerTier === "stable"
+                ? "bg-success"
+                : "bg-warning",
+          )}
+        />
         <span className="flex min-w-0 flex-col gap-0.5">
           <span className="truncate text-[13.5px] font-medium text-white">{source.label}</span>
           <span className="truncate text-[11px] text-white/48">
@@ -95,20 +69,76 @@ export default function PlayerSourceSheet({
               source.capabilities.recommended && "Recommended",
               source.capabilities.fast && "Fast",
               source.capabilities.subtitles === "native" && "Captions",
-              source.audioVariant === "sub" && "Subbed",
-              source.audioVariant === "dub" && "Dubbed",
+              source.audioVariant === "sub" && "Sub",
+              source.audioVariant === "dub" && "Dub",
+              source.capabilities.ads && "May contain ads",
             ]
               .filter(Boolean)
-              .join(" · ") || "Available"}
+              .join(" · ") ||
+              (source.providerTier === "stable" ? "Stable provider" : "Backup provider")}
           </span>
         </span>
         <span className="flex min-w-[66px] items-center justify-end gap-2 text-[9.5px] font-medium tracking-[.08em] text-white/45 uppercase">
-          {isSwitching ? "Switching" : isSelected ? "Selected" : HEALTH_LABEL[health]}
+          {isSwitching
+            ? "Switching"
+            : isSelected
+              ? "Selected"
+              : source.providerTier === "stable"
+                ? "Stable"
+                : "Backup"}
           {isSelected && <Check aria-hidden size={12} className="text-primary" />}
         </span>
       </button>
     );
-  });
+  };
+
+  const renderSourceGroups = () => {
+    const hasAudioGroups = sources.some((source) => source.audioVariant);
+    const groups = hasAudioGroups
+      ? [
+          {
+            label: "Sub servers",
+            sources: sources.filter((source) => source.audioVariant === "sub"),
+          },
+          {
+            label: "Dub servers",
+            sources: sources.filter((source) => source.audioVariant === "dub"),
+          },
+        ]
+      : [{ label: "Video servers", sources }];
+
+    return groups
+      .filter((group) => group.sources.length > 0)
+      .map((group) => (
+        <section key={group.label} className="flex flex-col gap-2.5" aria-label={group.label}>
+          {hasAudioGroups && (
+            <h3 className="px-1 text-[11px] font-semibold tracking-[.12em] text-white/55 uppercase">
+              {group.label}
+            </h3>
+          )}
+          <div className="flex flex-col gap-2.5" role="radiogroup" aria-label={group.label}>
+            {group.sources.map(sourceOption)}
+          </div>
+        </section>
+      ));
+  };
+
+  const resetPreference = hasPreference && onResetPreference && (
+    <button
+      type="button"
+      onClick={onResetPreference}
+      className="min-h-11 rounded-xl border border-white/10 px-3 text-xs font-semibold text-white/70 transition hover:border-white/20 hover:text-white focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:outline-none"
+    >
+      Reset to recommended
+    </button>
+  );
+
+  const content = (
+    <div className="flex flex-col gap-4">
+      {renderSourceGroups()}
+      {resetPreference}
+    </div>
+  );
 
   return (
     <>
@@ -130,24 +160,15 @@ export default function PlayerSourceSheet({
             </div>
             <div className="flex items-center gap-1.5">
               <Rocket className="text-danger-500" size={14} />
-              <span>Fast Hosting</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Clock className="text-success-500" size={14} />
-              <span>Auto Progress</span>
+              <span>Fast hosting</span>
             </div>
           </div>
-
-          <div className="flex flex-col gap-2.5" role="radiogroup" aria-label="Video servers">
-            {sourceOptions}
-          </div>
+          {content}
         </div>
       </VaulDrawer>
 
       <PlayerPanel open={opened} onClose={onClose} title="Select a source">
-        <div className="flex flex-col gap-2.5" role="radiogroup" aria-label="Video servers">
-          {sourceOptions}
-        </div>
+        {content}
       </PlayerPanel>
     </>
   );

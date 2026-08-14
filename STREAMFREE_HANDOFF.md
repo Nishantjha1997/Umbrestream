@@ -586,3 +586,57 @@ passes.
 The project retains the original MIT license and attribution for the cinextma foundation by
 Wisnu Wirayuda. Do not delete or modify LICENSE. StreamFree/Nishant additions are layered on
 top of that licensed foundation.
+
+## 16. August 15, 2026 implementation addendum
+
+This addendum is the current release state and supersedes older version examples above.
+
+Implemented:
+
+- Shared playback policy in `src/lib/sources/playbackPolicy.ts` for provider ranking,
+  manual preference precedence, anime audio compatibility, trusted playback events, resume
+  positions, and consent-based recovery prompts.
+- Movies default to Filmu, followed by Cinezo, VidLink, VidLink Classic, and VidKing. TV keeps
+  its VidKing-first order. Recovery never silently replaces a manually selected source.
+- Web, phone, and TV anime flows expose separate labelled Sub and Dub episode/server choices.
+- Phone fullscreen requests landscape and restores portrait. TV starts episode playback immersive
+  landscape and shows a focusable ten-second next-episode countdown after trusted completion.
+- Continue Watching has an additive cursor RPC migration at
+  `supabase/migrations/20260815120000_continue_watching_cursor.sql`, returning the newest
+  incomplete row per title sorted by `updated_at DESC, id DESC`. The app has a bounded fallback
+  until the migration is applied to production.
+- Continue Watching and watchlist removal stop pointer/touch/keyboard propagation, update
+  optimistically, and expose Undo when the server returns removed data.
+- PWA navigation caching is narrowed. Player, search, auth, library, and account routes are
+  marked noindex; content/about/download surfaces remain indexable.
+- Android packages are now `online.streamfree.app` version 1.3.0 code 4 and
+  `online.streamfree.tv` version 1.2.0 code 3. They are non-debuggable, cleartext-disabled,
+  signed with separate release keystores, and use a registered Capacitor native plugin instead
+  of a URL-taking `addJavascriptInterface` bridge. Native installation is fixed to the official
+  StreamFree host/path and verifies APK size, SHA-256, package ID, and certificate before opening
+  Android's user-confirmed installer.
+- Release artifacts are `public/downloads/StreamFree-Android-v1.3.apk` and
+  `public/downloads/StreamFree-TV-v1.2.apk`; hashes and sizes are recorded in their manifests.
+  Keystores are outside Git in the user's OneDrive backup directory. Never commit them or the
+  password.
+
+Validation completed:
+
+- Player source checks passed (14 adapters).
+- TypeScript `--noEmit` passed.
+- Phone and TV static bundles passed with esbuild.
+- Phone and TV Gradle `assembleRelease` passed.
+- APK v2 signature, package ID, version code/name, hash, and manifest checks passed.
+
+Release limitations:
+
+- Only an Android phone can be physically connected for QA. Android TV has been build-tested and
+  should use an emulator/automated focus tests; physical TV playback, remote Back, and
+  next-episode behavior remain unverified until a TV/ADB device is available.
+- Apply the Continue Watching Supabase migration and run a signed-in account test with more than
+  100 episode rows and several active titles before declaring the production gate closed.
+- These new package IDs are side-by-side migration releases. An APK signed with the old
+  certificate cannot be an in-place update. Keep old-package instructions available until a
+  deliberate legacy-key migration helper is produced.
+- Real provider playback smoke tests and the connected-phone orientation/update test remain
+  required. Third-party provider availability is not guaranteed by StreamFree.

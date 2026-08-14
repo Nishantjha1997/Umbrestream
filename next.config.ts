@@ -6,8 +6,10 @@ const withPWA = withPWAInit({
   register: true,
   disable: process.env.NODE_ENV === "development",
   reloadOnOnline: true,
-  cacheOnFrontEndNav: true,
-  aggressiveFrontEndNavCaching: true,
+  // HTML/API navigation must revalidate so a newly deployed player or update
+  // manifest is not hidden behind an old client-side cache.
+  cacheOnFrontEndNav: false,
+  aggressiveFrontEndNavCaching: false,
   workboxOptions: {
     disableDevLogs: true,
   },
@@ -101,12 +103,12 @@ const nextConfig: NextConfig = {
     return [
       ...[
         {
-          source: "/downloads/StreamFree-Android-v1.2.apk",
-          filename: "StreamFree-Android-v1.2.apk",
+          source: "/downloads/StreamFree-Android-v1.3.apk",
+          filename: "StreamFree-Android-v1.3.apk",
         },
         {
-          source: "/downloads/StreamFree-TV-v1.1.apk",
-          filename: "StreamFree-TV-v1.1.apk",
+          source: "/downloads/StreamFree-TV-v1.2.apk",
+          filename: "StreamFree-TV-v1.2.apk",
         },
         {
           source: "/downloads/StreamFree-local-debug.apk",

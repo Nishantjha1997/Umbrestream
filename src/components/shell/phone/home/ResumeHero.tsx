@@ -119,6 +119,7 @@ export default function ResumeHero() {
             season={pick.season}
             episode={pick.episode}
             title={pick.media.title}
+            scope="title"
             className="absolute top-2 right-2 z-20 flex gap-1"
           />
         )}

@@ -93,6 +93,11 @@ export interface SourceResolutionError {
 export interface SourceResolutionResponse {
   sources: PlayerSource[];
   defaultId: string | null;
+  policy?: {
+    version: string;
+    fallbackMode: "prompt";
+    timeoutMs: number;
+  };
   errors: SourceResolutionError[];
   unsupported?: SourceResolutionError[];
   resolvedInMs?: number;

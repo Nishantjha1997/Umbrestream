@@ -93,7 +93,7 @@ const definitions: EmbedDefinition[] = [
     origin: "https://player.cinezo.live",
     tier: "stable",
     // Cinezo is the verified movie default and a stable TV fallback.
-    priorities: { movie: 1, tv: 2 },
+    priorities: { movie: 2, tv: 2 },
     requirements: movieAndTvRequirements,
     build: (request) => {
       const base = movieOrTv(
@@ -129,7 +129,7 @@ const definitions: EmbedDefinition[] = [
     tier: "stable",
     variant: "jw",
     // VidLink remains a stable fallback for both movies and TV.
-    priorities: { movie: 2, tv: 3 },
+    priorities: { movie: 3, tv: 3 },
     requirements: movieAndTvRequirements,
     build: (request) => {
       const base = movieOrTv(
@@ -166,7 +166,7 @@ const definitions: EmbedDefinition[] = [
     tier: "stable",
     variant: "native",
     // The native VidLink variant is a second stable fallback.
-    priorities: { movie: 3, tv: 4 },
+    priorities: { movie: 4, tv: 4 },
     requirements: movieAndTvRequirements,
     build: (request) => {
       const base = movieOrTv(
@@ -200,7 +200,7 @@ const definitions: EmbedDefinition[] = [
     // TV: 1st — the only checked TV fixture that reached a playable media
     // state after the Filmu-first outage (TV_PLAYER_ROLLBACK_HANDOFF.md).
     // Movies use the stable providers above before reaching experimental fallbacks.
-    priorities: { movie: 4, tv: 1 },
+    priorities: { movie: 5, tv: 1 },
     requirements: movieAndTvRequirements,
     build: (request) => {
       const base = movieOrTv(
@@ -281,12 +281,12 @@ const definitions: EmbedDefinition[] = [
     id: "filmu",
     label: "Filmu",
     origin: "https://embed.filmu.in",
-    tier: "experimental",
+    tier: "stable",
     // TV: 2nd. Filmu's outer HTML loads but its TV iframe has been observed
     // to expose no playable media on some titles — never default TV to it
     // again without VidKing checked first (TV_PLAYER_ROLLBACK_HANDOFF.md).
     // Filmu remains available for manual recovery, but is not the automatic default.
-    priorities: { movie: 90, tv: 90 },
+    priorities: { movie: 1, tv: 90 },
     requirements: movieAndTvRequirements,
     build: (request) =>
       movieOrTv(
@@ -295,6 +295,7 @@ const definitions: EmbedDefinition[] = [
         (id, season, episode) => `https://embed.filmu.in/tv/${id}/${season}/${episode}`,
       ),
     capabilities: {
+      recommended: true,
       events: true,
       eventProtocol: "filmu",
       resumable: true,

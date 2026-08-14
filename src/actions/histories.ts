@@ -179,6 +179,7 @@ export const syncHistory = async (
 
 /** Hard ceiling on any caller-supplied page size. */
 const MAX_PAGE_SIZE = 100;
+const CONTINUE_WATCHING_PAGE_SIZE = 24;
 
 const boundedLimit = (limit: unknown, fallback = 20): number => {
   const value = Math.trunc(Number(limit));
@@ -236,6 +237,117 @@ export const getUserHistories = async (limit: number = MAX_PAGE_SIZE): ActionRes
       success: false,
       message: "An unexpected error occurred",
     };
+  }
+};
+
+export interface ContinueWatchingCursor {
+  updatedAt: string;
+  id: number;
+}
+
+export interface ContinueWatchingPage {
+  items: HistoryDetail[];
+  nextCursor?: ContinueWatchingCursor;
+}
+
+/**
+ * A bounded, title-level feed for Home. The database deduplicates episode
+ * rows before cursoring, so a long-running show cannot crowd other active
+ * titles out of Continue Watching.
+ */
+export const getContinueWatchingPage = async (
+  cursor?: ContinueWatchingCursor | null,
+  limit = CONTINUE_WATCHING_PAGE_SIZE,
+): ActionResponse<ContinueWatchingPage> => {
+  const take = Math.min(boundedLimit(limit, CONTINUE_WATCHING_PAGE_SIZE), 50);
+
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return { success: false, message: "User not authenticated" };
+    }
+
+    const validCursor =
+      cursor &&
+      Number.isSafeInteger(cursor.id) &&
+      cursor.id > 0 &&
+      Number.isFinite(Date.parse(cursor.updatedAt))
+        ? cursor
+        : undefined;
+
+    const { data, error } = await supabase.rpc("get_continue_watching_page", {
+      p_limit: take,
+      p_cursor_updated_at: validCursor?.updatedAt ?? null,
+      p_cursor_id: validCursor?.id ?? null,
+    });
+
+    if (error) {
+      // Keep an older production database usable while the additive migration
+      // is being applied. The RPC remains the release path because it removes
+      // the 100-row episode crowd-out problem at the database layer.
+      if (error.code === "PGRST202" || error.code === "42883") {
+        const { data: legacyRows, error: legacyError } = await supabase
+          .from("histories")
+          .select("*")
+          .eq("user_id", user.id)
+          .eq("completed", false)
+          .order("updated_at", { ascending: false })
+          .order("id", { ascending: false })
+          .limit(MAX_PAGE_SIZE);
+
+        if (!legacyError) {
+          const deduped = (legacyRows ?? []).filter(
+            (item, index, rows) =>
+              rows.findIndex(
+                (candidate) => candidate.type === item.type && candidate.media_id === item.media_id,
+              ) === index,
+          );
+          const filtered = validCursor
+            ? deduped.filter(
+                (item) =>
+                  item.updated_at < validCursor.updatedAt ||
+                  (item.updated_at === validCursor.updatedAt && item.id < validCursor.id),
+              )
+            : deduped;
+          const items = filtered.slice(0, take);
+          const last = items.at(-1);
+          return {
+            success: true,
+            data: {
+              items,
+              nextCursor:
+                items.length === take && last
+                  ? { updatedAt: last.updated_at, id: last.id }
+                  : undefined,
+            },
+          };
+        }
+      }
+
+      console.info("Continue Watching fetch error:", error.code ?? error.message);
+      return { success: false, message: "Failed to fetch Continue Watching" };
+    }
+
+    const items = data ?? [];
+    const last = items.at(-1);
+    return {
+      success: true,
+      data: {
+        items,
+        nextCursor:
+          items.length === take && last
+            ? { updatedAt: last.updated_at, id: last.id }
+            : undefined,
+      },
+    };
+  } catch (error) {
+    console.info("Unexpected Continue Watching error:", error);
+    return { success: false, message: "An unexpected error occurred" };
   }
 };
 
@@ -318,7 +430,8 @@ export const deleteHistory = async (
   type: ContentType,
   season = 0,
   episode = 0,
-): ActionResponse => {
+  scope: "episode" | "title" = "episode",
+): ActionResponse<HistoryDetail[]> => {
   try {
     const supabase = await createClient();
 
@@ -331,23 +444,79 @@ export const deleteHistory = async (
       return { success: false, message: "You must be logged in to remove history" };
     }
 
-    const { error } = await supabase
+    let deleteQuery = supabase
       .from("histories")
       .delete()
       .eq("user_id", user.id)
       .eq("media_id", mediaId)
-      .eq("type", type)
-      .eq("season", season)
-      .eq("episode", episode);
+      .eq("type", type);
+
+    if (scope !== "title") {
+      deleteQuery = deleteQuery.eq("season", season).eq("episode", episode);
+    }
+
+    const { data, error } = await deleteQuery.select("*");
 
     if (error) {
       console.error("[history] delete failed:", error.code ?? error.message);
       return { success: false, message: "Failed to remove history" };
     }
 
-    return { success: true, message: "Removed from Continue Watching" };
+    return { success: true, data: data ?? [], message: "Removed from Continue Watching" };
   } catch (error) {
     console.error("[history] unexpected error:", error);
+    return { success: false, message: "An unexpected error occurred" };
+  }
+};
+
+/** Restores rows removed by a Continue Watching action after an Undo tap. */
+export const restoreHistories = async (rows: HistoryDetail[]): ActionResponse<HistoryDetail[]> => {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) return { success: false, message: "User not authenticated" };
+    if (!Array.isArray(rows) || rows.length === 0 || rows.length > 200) {
+      return { success: false, message: "Invalid history restore request" };
+    }
+
+    const safeRows = rows.map((row) => ({
+      user_id: user.id,
+      id: row.id,
+      media_id: row.media_id,
+      type: row.type,
+      season: row.season,
+      episode: row.episode,
+      duration: row.duration,
+      last_position: row.last_position,
+      total_watched_seconds: row.total_watched_seconds,
+      completed: row.completed,
+      adult: row.adult,
+      backdrop_path: row.backdrop_path,
+      poster_path: row.poster_path,
+      release_date: row.release_date,
+      title: row.title,
+      vote_average: row.vote_average,
+      created_at: row.created_at,
+      updated_at: row.updated_at,
+    }));
+
+    const { data, error } = await supabase
+      .from("histories")
+      .upsert(safeRows, { onConflict: "user_id,media_id,type,season,episode" })
+      .select("*");
+
+    if (error) {
+      console.error("[history] restore failed:", error.code ?? error.message);
+      return { success: false, message: "Failed to restore history" };
+    }
+
+    return { success: true, data: data ?? [], message: "History restored" };
+  } catch (error) {
+    console.error("[history] unexpected restore error:", error);
     return { success: false, message: "An unexpected error occurred" };
   }
 };
@@ -359,6 +528,7 @@ export const markHistoryComplete = async (
   type: ContentType,
   season = 0,
   episode = 0,
+  scope: "episode" | "title" = "episode",
 ): ActionResponse => {
   try {
     const supabase = await createClient();
@@ -372,14 +542,18 @@ export const markHistoryComplete = async (
       return { success: false, message: "You must be logged in to update history" };
     }
 
-    const { error } = await supabase
+    let updateQuery = supabase
       .from("histories")
       .update({ completed: true })
       .eq("user_id", user.id)
       .eq("media_id", mediaId)
-      .eq("type", type)
-      .eq("season", season)
-      .eq("episode", episode);
+      .eq("type", type);
+
+    if (scope !== "title") {
+      updateQuery = updateQuery.eq("season", season).eq("episode", episode);
+    }
+
+    const { error } = await updateQuery;
 
     if (error) {
       console.error("[history] complete failed:", error.code ?? error.message);

@@ -1,9 +1,8 @@
 "use client";
 
 import { tmdbBrowser } from "@/api/tmdb-browser";
-import { getUserHistories } from "@/actions/histories";
 import { getPersonalizedRecommendations } from "@/actions/recommendations";
-import useSupabaseUser from "@/hooks/useSupabaseUser";
+import useContinueWatching from "@/hooks/useContinueWatching";
 import type { HistoryDetail } from "@/types/movie";
 import type { MediaKind, MediaSummary } from "@/types/media";
 import { formatTimeLeft, getImageUrl } from "@/utils/movies";
@@ -102,21 +101,13 @@ function fromMediaSummary(source: HomeHeroSource, media: MediaSummary): HomeHero
 }
 
 export function useHomeHero() {
-  const { data: user, isLoading: isUserLoading } = useSupabaseUser();
-
-  // Same query key `ContinueWatching.tsx` uses — react-query shares the one
-  // fetch instead of this hook and that component each firing their own.
-  const historiesQuery = useQuery({
-    queryKey: ["continue-watching", user?.id],
-    queryFn: () => getUserHistories(),
-    enabled: !isUserLoading,
-  });
-
-  const historiesData = historiesQuery.data;
-  const histories = useMemo(
-    () => (historiesData?.success ? historiesData.data ?? [] : []),
-    [historiesData],
-  );
+  const {
+    user,
+    items: histories,
+    isUserLoading,
+    isLoading: isHistoriesLoading,
+    isSignedOut,
+  } = useContinueWatching();
 
   // Fetched unconditionally rather than only after histories comes back
   // empty — waterfalling three sequential queries would triple the time to
@@ -165,11 +156,11 @@ export function useHomeHero() {
 
   const isLoading =
     isUserLoading ||
-    historiesQuery.isPending ||
+    isHistoriesLoading ||
     // Only worth waiting on these two while they're still the only hope of a
     // pick — once histories has something, recs/trending resolving later
     // must not bounce the hero from "resume" back to a loading state.
     (histories.length === 0 && (recsQuery.isPending || trendingQuery.isPending));
 
-  return { pick, isLoading, isSignedOut: !isUserLoading && !user };
+  return { pick, isLoading, isSignedOut };
 }

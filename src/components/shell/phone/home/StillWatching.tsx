@@ -13,14 +13,14 @@
  */
 
 import Link from "next/link";
-import { getUserHistories } from "@/actions/histories";
 import EclipseRing from "@/components/media/EclipseRing";
 import HistoryItemActions from "@/components/ui/button/HistoryItemActions";
-import useSupabaseUser from "@/hooks/useSupabaseUser";
+import useContinueWatching from "@/hooks/useContinueWatching";
 import type { HistoryDetail } from "@/types/movie";
 import type { MediaKind } from "@/types/media";
 import { formatTimeLeft, getImageUrl } from "@/utils/movies";
-import { useQuery } from "@tanstack/react-query";
+import { useInViewport } from "@mantine/hooks";
+import { useEffect } from "react";
 import SectionHeader from "./SectionHeader";
 
 function playHrefFor(item: HistoryDetail): string {
@@ -31,18 +31,17 @@ function playHrefFor(item: HistoryDetail): string {
 }
 
 export default function StillWatching() {
-  const { data: user, isLoading: isUserLoading } = useSupabaseUser();
+  const { ref, inViewport } = useInViewport<HTMLDivElement>();
+  const { items, fetchNextPage, hasNextPage, isFetchingNextPage } = useContinueWatching();
 
-  const { data } = useQuery({
-    queryKey: ["continue-watching", user?.id],
-    queryFn: () => getUserHistories(),
-    enabled: !isUserLoading,
-  });
+  useEffect(() => {
+    if (inViewport && hasNextPage && !isFetchingNextPage) fetchNextPage();
+  }, [fetchNextPage, hasNextPage, inViewport, isFetchingNextPage]);
 
   // Completed titles aren't "still watching" — filtered before the slice so
   // it always skips whichever entry the hero above is showing, not just
   // positional index 0 (`useHomeHero` applies the same filter).
-  const active = (data?.success ? data.data ?? [] : []).filter((h) => !h.completed);
+  const active = items.filter((h) => !h.completed);
   // Histories are episode-level rows; the rail is title-level. Keep the most
   // recently updated episode for each title because the server already sorts
   // by updated_at descending.
@@ -94,6 +93,7 @@ export default function StillWatching() {
                   season={item.season}
                   episode={item.episode}
                   title={item.title}
+                  scope="title"
                   className="absolute top-1 right-1 flex gap-1"
                 />
               </div>
@@ -108,6 +108,7 @@ export default function StillWatching() {
             </Link>
           );
         })}
+        <div ref={ref} className="h-1 w-1 flex-none" aria-hidden="true" />
       </div>
     </div>
   );

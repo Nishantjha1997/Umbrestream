@@ -136,7 +136,7 @@ const AnimeEpisodesSelection = forwardRef<HTMLElement, AnimeEpisodesSelectionPro
             size="sm"
             radius="full"
             variant="bordered"
-            href={`/anime/${anime.id}/player/${resumeEpisode}`}
+            href={`/anime/${anime.id}/player/${resumeEpisode}?audio=sub`}
             className="border-default-300/50 font-medium"
             startContent={<PlayFilled size={12} />}
           >
@@ -176,7 +176,7 @@ const AnimeEpisodesSelection = forwardRef<HTMLElement, AnimeEpisodesSelectionPro
                   as={Link}
                   size="sm"
                   radius="full"
-                  href={`/anime/${anime.id}/player/1`}
+                  href={`/anime/${anime.id}/player/1?audio=sub`}
                   className="mt-1 bg-foreground font-semibold text-background"
                   startContent={<PlayFilled size={12} />}
                 >
@@ -340,6 +340,30 @@ interface EpisodeItemProps {
   progress?: EpisodeProgress;
 }
 
+const EpisodeAudioButtons: React.FC<{ animeId: number; episode: number; compact?: boolean }> = ({
+  animeId,
+  episode,
+  compact,
+}) => (
+  <span className={cn("flex shrink-0 gap-1", compact && "absolute inset-x-1.5 bottom-1.5")}>
+    {(["sub", "dub"] as const).map((audio) => (
+      <Link
+        key={audio}
+        href={`/anime/${animeId}/player/${episode}?audio=${audio}`}
+        aria-label={`Play episode ${episode} ${audio === "dub" ? "dubbed" : "subtitled"}`}
+        className={cn(
+          "flex min-h-11 items-center justify-center rounded-full border border-default-200/70 px-3 text-[11px] font-semibold text-foreground hover:border-foreground/40 hover:bg-default-100",
+          SURFACE_TRANSITION,
+          FOCUS_RING,
+          compact && "min-h-7 flex-1 px-1 text-[9px]",
+        )}
+      >
+        {audio === "dub" ? "Dub" : "Sub"}
+      </Link>
+    ))}
+  </span>
+);
+
 /** Thin progress underline for a partially-watched episode. Decorative — the
  *  same state is always announced as text alongside it. */
 const ProgressBar: React.FC<{ percent: number; className?: string }> = ({ percent, className }) => (
@@ -419,17 +443,15 @@ const EpisodeRow: React.FC<
   }
 
   return (
-    <Link
-      href={`/anime/${animeId}/player/${episode}`}
-      aria-label={`Play episode ${episode}${progress?.completed ? " (watched)" : ""}`}
+    <div
       className={cn(
         "group flex items-center gap-3 rounded-(--radius-card) px-3 py-2.5 hover:bg-default-100",
         SURFACE_TRANSITION,
-        FOCUS_RING,
       )}
     >
       {body}
-    </Link>
+      <EpisodeAudioButtons animeId={animeId} episode={episode} />
+    </div>
   );
 };
 
@@ -458,19 +480,17 @@ const EpisodeTile: React.FC<EpisodeItemProps> = ({ animeId, episode, isAired, pr
   }
 
   return (
-    <Link
-      href={`/anime/${animeId}/player/${episode}`}
-      aria-label={`Play episode ${episode}${progress?.completed ? " (watched)" : ""}`}
+    <div
       className={cn(
-        "relative flex h-14 flex-col items-center justify-center gap-1 rounded-(--radius-card) border text-default-500 hover:bg-default-100 hover:text-foreground",
+        "relative flex h-20 flex-col items-center justify-start gap-1 rounded-(--radius-card) border pt-2 text-default-500 hover:bg-default-100 hover:text-foreground",
         progress?.completed
           ? "border-foreground/25 bg-default-100/70 text-foreground"
           : "border-default-200/60",
         SURFACE_TRANSITION,
-        FOCUS_RING,
       )}
     >
       {inner}
-    </Link>
+      <EpisodeAudioButtons animeId={animeId} episode={episode} compact />
+    </div>
   );
 };

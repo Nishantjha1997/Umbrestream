@@ -17,11 +17,10 @@
 import Link from "next/link";
 import { useMemo } from "react";
 import { differenceInCalendarDays, format } from "date-fns";
-import { getUserHistories } from "@/actions/histories";
 import { tmdbBrowser } from "@/api/tmdb-browser";
-import useSupabaseUser from "@/hooks/useSupabaseUser";
+import useContinueWatching from "@/hooks/useContinueWatching";
 import type { HistoryDetail } from "@/types/movie";
-import { useQueries, useQuery } from "@tanstack/react-query";
+import { useQueries } from "@tanstack/react-query";
 import SectionHeader from "./SectionHeader";
 
 const MAX_TV_ROWS = 5;
@@ -50,17 +49,11 @@ interface Upcoming {
 }
 
 export default function NextEpisodeDrops() {
-  const { data: user, isLoading: isUserLoading } = useSupabaseUser();
-
-  const { data } = useQuery({
-    queryKey: ["continue-watching", user?.id],
-    queryFn: () => getUserHistories(),
-    enabled: !isUserLoading,
-  });
+  const { items: histories } = useContinueWatching();
 
   const tvRows = useMemo<HistoryDetail[]>(
-    () => (data?.success ? data.data ?? [] : []).filter((h) => h.type === "tv").slice(0, MAX_TV_ROWS),
-    [data],
+    () => histories.filter((h) => h.type === "tv").slice(0, MAX_TV_ROWS),
+    [histories],
   );
 
   const detailQueries = useQueries({

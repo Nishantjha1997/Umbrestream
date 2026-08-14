@@ -25,7 +25,7 @@ export default function AndroidAppPromo() {
             Choose your app
           </Link>
           <a
-            href="/downloads/StreamFree-Android-v1.2.apk"
+            href="/downloads/StreamFree-Android-v1.3.apk"
             download
             className="rounded-xl bg-violet-200 px-4 py-2.5 text-sm font-bold text-violet-950 shadow-lg shadow-violet-950/25 transition-transform hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-violet-300/70 focus-visible:outline-none"
           >
