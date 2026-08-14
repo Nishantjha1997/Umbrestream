@@ -99,14 +99,18 @@ const nextConfig: NextConfig = {
     ].join("; ");
 
     return [
-      {
-        source: "/downloads/:path*",
+      ...[
+        "/downloads/StreamFree-Android-v1.2.apk",
+        "/downloads/StreamFree-TV-v1.1.apk",
+        "/downloads/StreamFree-local-debug.apk",
+      ].map((source) => ({
+        source,
         headers: [
           { key: "Content-Type", value: "application/vnd.android.package-archive" },
           { key: "Content-Disposition", value: 'attachment; filename="StreamFree-Android-beta.apk"' },
           { key: "X-Content-Type-Options", value: "nosniff" },
         ],
-      },
+      })),
       {
         source: "/:path*",
         headers: [
