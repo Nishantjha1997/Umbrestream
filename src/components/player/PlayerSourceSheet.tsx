@@ -5,6 +5,7 @@ import VaulDrawer from "@/components/ui/overlay/VaulDrawer";
 import type { PlayerSource } from "@/lib/sources/types";
 import { cn } from "@/utils/helpers";
 import { Check, Rocket, Star } from "@/utils/icons";
+import { useMediaQuery } from "@mantine/hooks";
 
 export interface PlayerSourceSheetProps {
   opened: boolean;
@@ -28,6 +29,13 @@ export default function PlayerSourceSheet({
   onResetPreference,
   onSelect,
 }: PlayerSourceSheetProps) {
+  // Do not mount Vaul's modal drawer on desktop. Hiding an open drawer with
+  // CSS still leaves its focus/pointer lock active on <body>, which makes the
+  // visible desktop panel look interactive while swallowing every click.
+  const isDesktop = useMediaQuery("(min-width: 768px)", false, {
+    getInitialValueInEffect: false,
+  });
+
   const sourceOption = (source: PlayerSource) => {
     const isSelected = source.id === selectedSourceId;
     const isSwitching = source.id === switchingSourceId;
@@ -140,36 +148,37 @@ export default function PlayerSourceSheet({
     </div>
   );
 
-  return (
-    <>
-      <VaulDrawer
-        open={opened}
-        onClose={onClose}
-        backdrop="blur"
-        title="Select Video Server"
-        direction="bottom"
-        hiddenHandler
-        withCloseButton
-        classNames={{ contentWrapper: "md:hidden", overlay: "md:hidden" }}
-      >
-        <div className="flex max-h-[72dvh] flex-col gap-4 overflow-y-auto p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
-          <div className="grid grid-cols-2 gap-2 px-1 py-2 text-xs">
-            <div className="flex items-center gap-1.5">
-              <Star className="text-warning-500" size={14} />
-              <span>Recommended</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Rocket className="text-danger-500" size={14} />
-              <span>Fast hosting</span>
-            </div>
-          </div>
-          {content}
-        </div>
-      </VaulDrawer>
-
+  if (isDesktop) {
+    return (
       <PlayerPanel open={opened} onClose={onClose} title="Select a source">
         {content}
       </PlayerPanel>
-    </>
+    );
+  }
+
+  return (
+    <VaulDrawer
+      open={opened}
+      onClose={onClose}
+      backdrop="blur"
+      title="Select Video Server"
+      direction="bottom"
+      hiddenHandler
+      withCloseButton
+    >
+      <div className="flex max-h-[72dvh] flex-col gap-4 overflow-y-auto p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <div className="grid grid-cols-2 gap-2 px-1 py-2 text-xs">
+          <div className="flex items-center gap-1.5">
+            <Star className="text-warning-500" size={14} />
+            <span>Recommended</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Rocket className="text-danger-500" size={14} />
+            <span>Fast hosting</span>
+          </div>
+        </div>
+        {content}
+      </div>
+    </VaulDrawer>
   );
 }

@@ -3,9 +3,9 @@
 /**
  * Anime's episode picker (renamed from `EpisodeSelection.tsx` — Phase 6,
  * §10 — now that it renders the full sheet, not just the phone half). Same
- * "both always mounted, CSS picks which shows" split `PlayerSourceSheet.tsx`
- * established for servers: phone keeps the `VaulDrawer` bottom sheet exactly
- * as it always has, desktop adds `PlayerEpisodePanel`'s centred card
+ * responsive overlay split `PlayerSourceSheet.tsx` established for servers:
+ * phone keeps the `VaulDrawer` bottom sheet, while desktop mounts only
+ * `PlayerEpisodePanel`'s centred card
  * (`DESKTOP_SPEC.md` §I). The chunked numbered grid — AniList gives no rich
  * per-episode data the way TMDB does for TV — is genuinely different content
  * from TV's `EpisodeListCard` list, but the wrapper pattern is identical, so
@@ -17,6 +17,7 @@ import PlayerEpisodePanel from "@/components/player/PlayerEpisodePanel";
 import VaulDrawer from "@/components/ui/overlay/VaulDrawer";
 import { HandlerType } from "@/types/component";
 import { Button, Card, Chip, ScrollShadow } from "@heroui/react";
+import { useMediaQuery } from "@mantine/hooks";
 import { PlayOutline } from "@/utils/icons";
 import Link from "next/link";
 import Image from "next/image";
@@ -41,6 +42,9 @@ const AnimePlayerEpisodeSheet: React.FC<AnimePlayerEpisodeSheetProps> = ({
   selectedSourceId,
   audioVariant,
 }) => {
+  const isDesktop = useMediaQuery("(min-width: 768px)", false, {
+    getInitialValueInEffect: false,
+  });
   const totalEpisodes = anime.episodes || 12;
   const totalChunks = Math.ceil(totalEpisodes / CHUNK_SIZE);
   const [selectedChunk, setSelectedChunk] = useState<number>(() =>
@@ -131,7 +135,11 @@ const AnimePlayerEpisodeSheet: React.FC<AnimePlayerEpisodeSheetProps> = ({
                 <h4 className="text-foreground truncate text-xs font-semibold">Episode {epNum}</h4>
               </div>
               <p className="text-default-400 truncate text-[11px]">{title}</p>
-              <div className="mt-1.5 flex gap-1.5" role="group" aria-label={`Episode ${epNum} audio`}>
+              <div
+                className="mt-1.5 flex gap-1.5"
+                role="group"
+                aria-label={`Episode ${epNum} audio`}
+              >
                 {(["sub", "dub"] as const).map((variant) => (
                   <Button
                     key={variant}
@@ -156,26 +164,8 @@ const AnimePlayerEpisodeSheet: React.FC<AnimePlayerEpisodeSheetProps> = ({
     </div>
   );
 
-  return (
-    <>
-      <VaulDrawer
-        open={opened}
-        onClose={onClose}
-        backdrop="blur"
-        title={`Select Episode (${totalEpisodes})`}
-        direction="right"
-        hiddenHandler
-        withCloseButton
-        classNames={{ contentWrapper: "md:hidden", overlay: "md:hidden" }}
-      >
-        <div className="flex flex-col gap-3 p-4">
-          {chunkTabs}
-          <ScrollShadow className="h-[600px] pr-1">
-            {episodeGrid("grid grid-cols-1 gap-2.5")}
-          </ScrollShadow>
-        </div>
-      </VaulDrawer>
-
+  if (isDesktop) {
+    return (
       <PlayerEpisodePanel
         opened={opened}
         onClose={onClose}
@@ -188,7 +178,26 @@ const AnimePlayerEpisodeSheet: React.FC<AnimePlayerEpisodeSheetProps> = ({
           </ScrollShadow>
         </div>
       </PlayerEpisodePanel>
-    </>
+    );
+  }
+
+  return (
+    <VaulDrawer
+      open={opened}
+      onClose={onClose}
+      backdrop="blur"
+      title={`Select Episode (${totalEpisodes})`}
+      direction="right"
+      hiddenHandler
+      withCloseButton
+    >
+      <div className="flex flex-col gap-3 p-4">
+        {chunkTabs}
+        <ScrollShadow className="h-[600px] pr-1">
+          {episodeGrid("grid grid-cols-1 gap-2.5")}
+        </ScrollShadow>
+      </div>
+    </VaulDrawer>
   );
 };
 
