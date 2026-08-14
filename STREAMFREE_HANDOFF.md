@@ -174,6 +174,68 @@ If a provider is replaced:
 5. Do not claim an iframe is playable solely because it loaded; verify visible player controls or
    a real playback fixture when the browser permits it.
 
+## Browser playback server-switch incident and exact requirement
+
+This is an important piece of context from Nishant's browser-version playback report.
+
+### Original problem
+
+On the web player, opening the server/source picker and clicking another playback server could
+close the picker without reliably applying the new server. In some cases the old cross-origin
+iframe continued receiving the click, the URL did not retain the selected provider, or a later
+render snapped the player back to the previous source. Provider-owned region, caption, server,
+and fullscreen controls could also be covered by StreamFree's always-visible player chrome.
+
+The intended behavior is:
+
+1. A user opens the source/server picker on a movie, TV episode, or anime episode.
+2. Clicking a server immediately remounts that server's iframe and shows clear Switching to / Now
+   using feedback.
+3. The picker closes only after the selection has been committed to StreamFree state; a slow URL
+   update must never undo the click.
+4. The selected provider persists as a stable src provider ID in the URL and through episode
+   navigation.
+5. The player must never treat an opaque cross-origin iframe as failed merely because its DOM is
+   inaccessible. The user can manually choose another server when a provider is slow.
+6. StreamFree chrome fades after idle so provider-owned controls remain clickable. A visible
+   reveal affordance, keyboard interaction, or pointer/touch interaction restores StreamFree
+   controls.
+
+### Current implementation status
+
+This browser issue is implemented in the current player code:
+
+- src/components/player/PlayerShell.tsx keeps a request-scoped selected-source override so the
+  iframe changes synchronously before the asynchronous query-string update completes.
+- The source click is committed with flushSync, then the picker closes and the selected source is
+  persisted as ?src=provider-id.
+- A failed History API/query-state update has a window.history.replaceState fallback.
+- src/components/player/PlayerSourceSheet.tsx uses native button/radio-style server choices for
+  both phone and desktop layouts.
+- Source feedback and manual-switch analytics identify the old and new providers.
+- Player chrome visibility is managed by usePlayerChromeVisibility, with a left-edge reveal
+  control and pointer-events disabled while hidden.
+- Movie, TV, and anime episode links preserve the selected provider ID where appropriate.
+
+### Required regression acceptance test
+
+For each of movie, TV, and anime on desktop web and mobile web/PWA:
+
+- Open a player route and confirm exactly one player iframe is mounted.
+- Open Select a source / Video servers.
+- Click a different server once. Confirm the source label changes, the new iframe URL changes,
+  the picker closes, and the URL contains the new provider ID.
+- Reload the same URL and confirm the chosen provider remains selected.
+- Navigate to the next TV/anime episode and confirm the provider choice is retained where that
+  provider supports the episode.
+- Move the pointer/touch over the provider's own controls after StreamFree chrome fades and
+  confirm the provider controls receive the interaction.
+- Click Remove from watchlist or Remove from Continue Watching controls and confirm no detail or
+  player navigation occurs.
+
+Do not replace this with automatic provider scraping or ad blocking. A provider outage should be
+handled with an explicit, user-visible server choice and a tested fallback order.
+
 ## 6. Android phone app
 
 The phone app is a bundled static shell in mobile/, packaged by Capacitor in android/.
@@ -448,22 +510,59 @@ Then browser-test one movie, one TV episode, and one anime episode. A stale PWA 
 can make a new deployment appear old; use a hard refresh or unregister the site's old service
 worker during verification if the HTML does not match the deployed commit.
 
-## 14. Safe next tasks
+## 14. Outstanding user-requested work and plan
 
-These are reasonable follow-ups for a future agent:
+The following items were requested during the product discussion and are either still unverified,
+partially implemented, or require an explicit future QA pass. The next agent should update this
+section as each item is completed.
 
 1. Test both APKs on a physical Android phone and Android TV device, including rotation,
    fullscreen exit, remote back, update installation, and TV next-episode autoplay.
-2. Add automated browser regression coverage for movie/TV/anime player routes and the update
-   manifest MIME/filename contract.
-3. Monitor provider uptime and keep the adapter order conservative; providers can change without
-   notice.
-4. Verify Google Search Console ownership and submit the sitemap so the SEO changes are crawled.
-5. Review Vercel runtime logs and add structured error monitoring if production traffic grows.
-6. Keep the personalized recommendation row bounded and cached; do not turn it into an
-   unbounded per-history provider fan-out.
-7. Consider a durable shared rate limiter for the TMDB proxy if traffic exceeds a single
-   serverless instance.
+2. Add automated browser regression coverage for movie/TV/anime player routes, the server-switch
+   incident above, the remove-action no-navigation rule, and the update manifest MIME/filename
+   contract.
+3. Verify the Continue Watching union on a real account with many active titles. The current
+   implementation filters completed rows, deduplicates episode rows by title, and orders the
+   server response by updated_at. The first active title is promoted into the resume hero and
+   the remaining titles appear in the rail, so the acceptance test must check the hero-plus-rail
+   union rather than the rail alone. Test more than 100 history rows and multiple episodes of one
+   series before changing limits or pagination.
+4. Verify every watchlist/remove action in Library, hover previews, detail surfaces, and Continue
+   Watching. The Continue Watching HistoryItemActions component already stops pointer, touch,
+   click, and keyboard propagation; BookmarkButton still needs an explicit browser regression
+   check in every context where it could be rendered inside or beside a Link. Removing an item
+   must never open its detail page or start playback.
+5. Perform a broader Nishant signature audit. The signature is already in the website splash,
+   footer, About/app surfaces, and phone/TV splash screens. Review the homepage, detail pages,
+   auth screens, library/account screens, loading/empty/error pages, 404, and download pages for
+   consistent but tasteful creator attribution. Keep it in brand surfaces; do not clutter player
+   controls, title metadata, or accessibility labels with decorative copy.
+6. Run a product-manager/design/performance pass on the complete web and app flows. Measure route
+   transition latency, image loading, query waterfalls, bundle size, PWA cache behavior, and
+   Android WebView startup. Use Lighthouse/Core Web Vitals and a real low-end Android profile
+   before claiming that the lag complaint is fully closed.
+7. Verify region-aware feed behavior from multiple country/IP conditions, including the default
+   fallback when geolocation is unavailable. Confirm trending movies, trending series, and anime
+   remain separate rows and that the removed Bollywood/Indian TV shelves do not return.
+8. Verify personalized recommendations with signed-out, cold-start, movie-heavy, TV-heavy,
+   anime-heavy, and mixed watch histories. Keep the row bounded, cached, deduped against watched
+   titles, and resilient when titles_cache or an upstream provider is unavailable.
+9. Monitor provider uptime and keep the adapter order conservative; providers can change without
+   notice. Re-test a movie, TV episode, and anime episode before changing the default provider.
+10. **Movie default server decision:** make Filmu the primary/default movie server again, unless
+    the user explicitly changes the server in the selection menu. Preserve the explicit `src`
+    choice across reloads and navigation, update the movie adapter priority and source-registry
+    fixtures, and smoke-test both the default Filmu path and manual switching. Do not silently
+    override a user's selected server with a later automatic fallback.
+11. Verify Google Search Console ownership, submit the sitemap, and inspect canonical/indexing
+    status after Google recrawls the SEO changes. Do not promise a ranking lift from metadata alone.
+12. Review Vercel runtime logs and add structured error monitoring if production traffic grows.
+13. Keep the update installer flow safe on Android and Android TV. Test unknown-source permission,
+    download completion, cancellation, reinstall/upgrade semantics, and version-code handling.
+14. Keep the personalized recommendation row bounded and cached; do not turn it into an
+    unbounded per-history provider fan-out.
+15. Consider a durable shared rate limiter for the TMDB proxy if traffic exceeds a single
+    serverless instance.
 
 Do not reintroduce Bollywood/Indian TV shelves, direct provider scraping, ad blocking, or secret
 client-side tokens without a new explicit product/security review.
