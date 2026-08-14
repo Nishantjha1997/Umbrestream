@@ -52,7 +52,7 @@ public class MainActivity extends BridgeActivity {
     }
 
     @Override
-    protected void onDestroy() {
+    public void onDestroy() {
         if (updateReceiver != null) unregisterReceiver(updateReceiver);
         super.onDestroy();
     }
