@@ -1,9 +1,10 @@
 {
   "appId": "com.umbrestream.app",
   "appName": "StreamFree",
-  "webDir": "out",
-  "server": {
-    "url": "https://streamfree.online",
-    "cleartext": true
+  "webDir": "mobile",
+  "plugins": {
+    "CapacitorHttp": {
+      "enabled": true
+    }
   }
 }

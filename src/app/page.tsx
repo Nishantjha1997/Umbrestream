@@ -1,27 +1,31 @@
-import { NextPage } from "next";
+"use client";
+
 import DesktopHome from "@/components/shell/desktop/home/DesktopHome";
 import PhoneHome from "@/components/shell/phone/home/PhoneHome";
+import { useSyncExternalStore } from "react";
+
+const PHONE_QUERY = "(max-width: 767px)";
+
+function subscribeToViewport(onChange: () => void) {
+  const media = window.matchMedia(PHONE_QUERY);
+  media.addEventListener("change", onChange);
+  return () => media.removeEventListener("change", onChange);
+}
+
+function getPhoneSnapshot() {
+  return window.matchMedia(PHONE_QUERY).matches;
+}
+
+function getServerPhoneSnapshot() {
+  return false;
+}
 
 /**
- * Home (Phase 4, §8). Phone and desktop diverge more here than anywhere else
- * in the app, so — like the nav shell (Phase 2, §6) — this is a fork, not one
- * component branching on a breakpoint: `PhoneHome` is `md:hidden`,
- * `DesktopHome` is `hidden md:block`, both always in the DOM so the browser's
- * CSS engine resolves the choice before first paint. There is no shared
- * "Home" component to speak of; each shell owns its own composition under
- * `src/components/shell/{phone,desktop}/home/`.
+ * Keep one home tree mounted. The previous CSS-only fork rendered phone and
+ * desktop homes simultaneously, which duplicated auth/history/recommendation
+ * queries and made a cold home feel heavier than it needed to be.
  */
-const HomePage: NextPage = () => {
-  return (
-    <>
-      <div className="md:hidden">
-        <PhoneHome />
-      </div>
-      <div className="hidden md:block">
-        <DesktopHome />
-      </div>
-    </>
-  );
-};
-
-export default HomePage;
+export default function HomePage() {
+  const isPhone = useSyncExternalStore(subscribeToViewport, getPhoneSnapshot, getServerPhoneSnapshot);
+  return isPhone ? <PhoneHome /> : <DesktopHome />;
+}

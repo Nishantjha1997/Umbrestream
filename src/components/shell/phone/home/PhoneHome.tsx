@@ -21,18 +21,18 @@ import ResumeHero from "./ResumeHero";
 import RoomIsOpen from "./RoomIsOpen";
 import StillWatching from "./StillWatching";
 import Tonight from "./Tonight";
-import TrendingToday from "./TrendingToday";
 import VibeTiles from "./VibeTiles";
+import HomeDiscoveryFeed from "@/components/sections/Home/HomeDiscoveryFeed";
 
 export default function PhoneHome() {
   return (
-    <div className="-mx-3 -mt-8 flex flex-col gap-[46px] sm:-mx-5">
+    <div id="phone-home-top" className="-mx-3 flex flex-col gap-9 sm:-mx-5">
       <ResumeHero />
       <StillWatching />
+      <HomeDiscoveryFeed idPrefix="phone" variant="phone" />
       <Tonight />
       <VibeTiles />
       <NextEpisodeDrops />
-      <TrendingToday />
       <RoomIsOpen />
     </div>
   );

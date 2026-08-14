@@ -9,7 +9,12 @@ import { fromAnime, fromMovie, fromTvShow } from "@/utils/normalize-media";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
-const TITLE = "Recommended For You";
+const DEFAULT_TITLE = "Recommended For You";
+
+interface RecommendedProps {
+  id?: string;
+  title?: string;
+}
 
 /**
  * How long a computed row stays fresh on the client.
@@ -27,7 +32,10 @@ const TITLE = "Recommended For You";
  */
 const ROW_STALE_MS = 30 * 60 * 1000;
 
-const Recommended: React.FC = () => {
+const Recommended: React.FC<RecommendedProps> = ({
+  id = "recommendations",
+  title = DEFAULT_TITLE,
+}) => {
   // `isLoading`, not `isPending`: useSupabaseUser disables itself when Supabase
   // has no credentials, and a disabled query reports `pending` forever.
   const { data: user, isLoading: isUserLoading } = useSupabaseUser();
@@ -79,9 +87,9 @@ const Recommended: React.FC = () => {
   // face rather than collapsing the section.
   if (!isLoading && !isError && items.length === 0) {
     return (
-      <section id="recommendations">
+      <section id={id} className="scroll-mt-24">
         <HomeEmptyState
-          title={TITLE}
+          title={title}
           headline={user ? "Nothing to go on yet" : "Recommendations get sharper as you watch"}
           description={
             user
@@ -97,9 +105,9 @@ const Recommended: React.FC = () => {
   }
 
   return (
-    <section id="recommendations">
+    <section id={id} className="scroll-mt-24">
       <Shelf
-        title={TITLE}
+        title={title}
         items={items}
         isLoading={isLoading}
         isError={isError}

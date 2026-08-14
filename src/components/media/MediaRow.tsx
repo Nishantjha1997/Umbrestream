@@ -35,6 +35,8 @@ interface BaseRowProps {
   name: string;
   param: string;
   priority?: boolean;
+  /** Keeps in-page jump targets unique when responsive home forks coexist. */
+  idPrefix?: string;
 }
 
 type RowPayload = PagedResult<Movie> | PagedResult<TV> | AniListPage<AniListMediaSummary>;
@@ -53,8 +55,9 @@ function seeAllHref(kind: MediaKind, param: string): string {
 }
 
 const MediaRow: React.FC<MediaRowProps> = (props) => {
-  const { kind, name, param, priority } = props;
+  const { kind, name, param, priority, idPrefix } = props;
   const key = `${kebabCase(name)}-${kind}-row`;
+  const rowId = idPrefix ? `${idPrefix}-${key}` : key;
   const { ref, inViewport } = useInViewport<HTMLDivElement>();
 
   const { data, isPending, isError, refetch } = useQuery<RowPayload>({
@@ -75,7 +78,7 @@ const MediaRow: React.FC<MediaRowProps> = (props) => {
   return (
     // The min-height keeps the page from collapsing while an off-screen row is
     // still waiting for its turn to fetch.
-    <div id={key} ref={ref} className="min-h-[260px] md:min-h-[310px]">
+    <div id={rowId} ref={ref} className="min-h-[260px] scroll-mt-24 md:min-h-[310px]">
       <Shelf
         title={name}
         items={items}

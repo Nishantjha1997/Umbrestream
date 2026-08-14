@@ -1,0 +1,10 @@
+{
+  "platform": "android",
+  "versionName": "1.1.0",
+  "versionCode": 2,
+  "apkUrl": "/downloads/StreamFree-local-debug.apk",
+  "notes": [
+    "Current stable phone build",
+    "Use Check for update to receive future signed releases"
+  ]
+}

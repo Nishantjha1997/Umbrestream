@@ -1,0 +1,10 @@
+{
+  "platform": "android-tv",
+  "versionName": "1.0.0",
+  "versionCode": 1,
+  "apkUrl": "/downloads/StreamFree-TV-v1.0.apk",
+  "notes": [
+    "Current stable TV build",
+    "Use Check for update to receive future signed releases"
+  ]
+}

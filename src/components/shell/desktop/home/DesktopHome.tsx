@@ -13,18 +13,18 @@ import NextEpisodeDropsDesktop from "./NextEpisodeDropsDesktop";
 import RoomIsOpenDesktop from "./RoomIsOpenDesktop";
 import StillWatchingDesktop from "./StillWatchingDesktop";
 import TonightInset from "./TonightInset";
-import TrendingTodayDesktop from "./TrendingTodayDesktop";
 import VibeTilesDesktop from "./VibeTilesDesktop";
+import HomeDiscoveryFeed from "@/components/sections/Home/HomeDiscoveryFeed";
 
 export default function DesktopHome() {
   return (
-    <div className="relative flex flex-col gap-[52px] pb-16">
+    <div id="desktop-home-top" className="relative flex flex-col gap-[42px] pb-16">
       <DesktopHero />
       <StillWatchingDesktop />
+      <HomeDiscoveryFeed idPrefix="desktop" variant="desktop" />
       <TonightInset />
       <VibeTilesDesktop />
       <NextEpisodeDropsDesktop />
-      <TrendingTodayDesktop />
       <RoomIsOpenDesktop />
     </div>
   );

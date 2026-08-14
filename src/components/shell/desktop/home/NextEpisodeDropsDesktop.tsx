@@ -40,6 +40,12 @@ function countdownLabel(days: number): string {
   return `${days}d`;
 }
 
+// Keep TanStack's variadic `useQueries` inference from expanding the generic
+// append-to-response helper into a union too large for TypeScript to represent.
+async function getTvDetails(id: number): Promise<TvShowDetails> {
+  return tmdbBrowser.tvShows.details(id);
+}
+
 export default function NextEpisodeDropsDesktop() {
   const { data: user, isLoading: isUserLoading } = useSupabaseUser();
 
@@ -56,7 +62,7 @@ export default function NextEpisodeDropsDesktop() {
   const detailQueries = useQueries({
     queries: tvItems.map((item) => ({
       queryKey: ["next-episode", item.media_id],
-      queryFn: () => tmdbBrowser.tvShows.details(item.media_id),
+      queryFn: () => getTvDetails(item.media_id),
       staleTime: 10 * 60 * 1000,
     })),
   });

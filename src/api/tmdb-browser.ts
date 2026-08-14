@@ -47,8 +47,26 @@ export interface TrendingResult {
 
 export const tmdbBrowser = {
   discover: {
-    movie: <T>(p: { page?: number; with_genres?: string }) => proxy<T>("discover/movie", p),
-    tv: <T>(p: { page?: number; with_genres?: string }) => proxy<T>("discover/tv", p),
+    movie: <T>(p: {
+      page?: number;
+      with_genres?: string;
+      region?: string;
+      watch_region?: string;
+      with_origin_country?: string;
+      with_original_language?: string;
+      with_watch_monetization_types?: string;
+      sort_by?: string;
+    }) => proxy<T>("discover/movie", p),
+    tv: <T>(p: {
+      page?: number;
+      with_genres?: string;
+      region?: string;
+      watch_region?: string;
+      with_origin_country?: string;
+      with_original_language?: string;
+      with_watch_monetization_types?: string;
+      sort_by?: string;
+    }) => proxy<T>("discover/tv", p),
   },
   trending: {
     trending: <T>(

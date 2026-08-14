@@ -27,8 +27,6 @@ import Link from "next/link";
 import SectionHeader from "./SectionHeader";
 import ShelfArrows from "./ShelfArrows";
 
-const MAX_ITEMS = 5;
-
 /** Mirrors `ResumeCard.tsx`'s own redirect convention — resuming plays
  *  straight back in, at the saved position. */
 function playHrefFor(item: HistoryDetail): string {
@@ -51,7 +49,11 @@ export default function StillWatchingDesktop() {
   // it always skips whichever entry the hero above is showing, not just
   // positional index 0 (`useHomeHero` applies the same filter).
   const active = histories.filter((h) => !h.completed);
-  const items = active.slice(1, 1 + MAX_ITEMS);
+  const uniqueTitles = active.filter(
+    (item, index, rows) =>
+      rows.findIndex((candidate) => candidate.type === item.type && candidate.media_id === item.media_id) === index,
+  );
+  const items = uniqueTitles.slice(1);
 
   const { emblaRef, scrollPrev, scrollNext, canScrollPrev, canScrollNext } = useCustomCarousel({
     align: "start",
@@ -61,11 +63,11 @@ export default function StillWatchingDesktop() {
 
   // Fewer than two active items means the hero already shows the only one —
   // an orphan header with nothing under it is worse than no section at all.
-  if (active.length < 2) return null;
+  if (uniqueTitles.length < 2) return null;
 
   return (
     <section className="flex flex-col gap-4">
-      <SectionHeader number="01" label="Still watching" />
+      <SectionHeader number="01" label="Continue watching" />
       <div className="relative">
         <div className="overflow-hidden" ref={emblaRef}>
           <div className="flex gap-4 px-12 pb-1.5">

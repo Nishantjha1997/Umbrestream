@@ -73,6 +73,7 @@ export interface PlayerShellProps {
   renderHeader: (context: PlayerShellHeaderContext) => ReactNode;
   /** Extra sheets a specific media type owns — episode drawers/panels. */
   renderExtras?: (context: PlayerShellHeaderContext) => ReactNode;
+  onEnded?: () => void;
 }
 
 /** How long a source that claims postMessage support gets before the
@@ -99,6 +100,7 @@ export default function PlayerShell({
   historyMetadata,
   renderHeader,
   renderExtras,
+  onEnded,
 }: PlayerShellProps) {
   const [mounted, setMounted] = useState(false);
   // Standard one-tick-late mount guard for `createPortal` — see `DetailModal.tsx`.
@@ -125,6 +127,65 @@ export default function PlayerShell({
 
   const events = usePlayerEvents({ saveHistory: true, metadata: historyMetadata, identity });
   const { setAllowedOrigin } = events;
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const playerRootRef = useRef<HTMLDivElement>(null);
+
+  const setPlaybackOrientation = useCallback((fullscreen: boolean) => {
+    const nativeBridge = (
+      window as Window & {
+        StreamFreeNative?: { lockLandscape?: () => void; lockPortrait?: () => void };
+      }
+    ).StreamFreeNative;
+    const orientation = window.screen.orientation as ScreenOrientation & {
+      lock?: (orientation: string) => Promise<void>;
+      unlock?: () => void;
+    };
+    if (fullscreen) {
+      nativeBridge?.lockLandscape?.();
+      void orientation.lock?.("landscape").catch(() => undefined);
+    } else {
+      nativeBridge?.lockPortrait?.();
+      orientation.unlock?.();
+    }
+  }, []);
+
+  useEffect(() => {
+    const syncFullscreen = () => {
+      const active = document.fullscreenElement === playerRootRef.current;
+      setIsFullscreen(active);
+      document.documentElement.classList.toggle("player-fullscreen", active);
+      setPlaybackOrientation(active);
+    };
+    document.addEventListener("fullscreenchange", syncFullscreen);
+    return () => document.removeEventListener("fullscreenchange", syncFullscreen);
+  }, [setPlaybackOrientation]);
+
+  useEffect(() => {
+    return () => {
+      document.documentElement.classList.remove("player-fullscreen");
+      setPlaybackOrientation(false);
+    };
+  }, [setPlaybackOrientation]);
+
+  const toggleFullscreen = useCallback(async () => {
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else await playerRootRef.current?.requestFullscreen?.({ navigationUI: "hide" });
+    } catch {
+      // The fixed shell and native orientation bridge remain the fallback in WebView.
+    }
+    const active = !document.fullscreenElement;
+    setIsFullscreen(active);
+    document.documentElement.classList.toggle("player-fullscreen", active);
+    setPlaybackOrientation(active);
+  }, [setPlaybackOrientation]);
+
+  const endedEventVersionRef = useRef(0);
+  useEffect(() => {
+    if (!onEnded || endedEventVersionRef.current >= events.eventVersion) return;
+    endedEventVersionRef.current = events.eventVersion;
+    if (events.lastEvent === "ended") onEnded();
+  }, [events.eventVersion, events.lastEvent, onEnded]);
 
   // Non-blocking: only ever *adds* an operator-configured direct source
   // (`PLAYER_DIRECT_SOURCES_JSON`) if one resolves. The public sources below
@@ -424,7 +485,7 @@ export default function PlayerShell({
   if (!mounted) return null;
 
   return createPortal(
-    <div className="player-shell fixed inset-0 z-70 h-dvh w-full overflow-hidden bg-black">
+    <div ref={playerRootRef} className="player-shell fixed inset-0 z-70 h-dvh w-full overflow-hidden bg-black">
       {selectedSource ? (
         selectedSource.kind === "iframe" ? (
           <iframe
@@ -468,6 +529,15 @@ export default function PlayerShell({
       )}
 
       {renderHeader(headerContext)}
+
+      <button
+        type="button"
+        onClick={() => void toggleFullscreen()}
+        aria-label={isFullscreen ? "Exit full screen" : "Enter full screen"}
+        className="absolute right-4 bottom-5 z-45 rounded-full border border-white/20 bg-black/65 px-3.5 py-2 text-xs font-semibold text-white/90 shadow-lg backdrop-blur-xl transition hover:bg-black/85 focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:outline-none"
+      >
+        {isFullscreen ? "Exit full screen" : "Full screen"}
+      </button>
 
       {chromeHidden && !sourceOpened && (
         <button

@@ -4,10 +4,11 @@ import PlayerShell from "@/components/player/PlayerShell";
 import { siteConfig } from "@/config/site";
 import type { SourceRequest } from "@/lib/sources/types";
 import { useDisclosure, useDocumentTitle } from "@mantine/hooks";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import type { Episode, TvShowDetails } from "tmdb-ts";
 import TvShowPlayerEpisodeSelection from "./EpisodeSelection";
 import TvShowPlayerHeader from "./Header";
+import { useRouter } from "next/navigation";
 
 export interface TvShowPlayerProps {
   tv: TvShowDetails;
@@ -32,9 +33,11 @@ const TvShowPlayer: React.FC<TvShowPlayerProps> = ({
   id,
   episode,
   episodes,
+  nextEpisodeNumber,
   startAt,
   ...headerProps
 }) => {
+  const router = useRouter();
   const [episodeOpened, episodeHandlers] = useDisclosure(false);
   const season = episode.season_number;
   const episodeNumber = episode.episode_number;
@@ -60,11 +63,17 @@ const TvShowPlayer: React.FC<TvShowPlayerProps> = ({
     [tv.id, season, episodeNumber],
   );
 
+  const advanceToNextEpisode = useCallback(() => {
+    if (nextEpisodeNumber == null) return;
+    router.replace(`/tv/${id}/${season}/${nextEpisodeNumber}/player`);
+  }, [id, nextEpisodeNumber, router, season]);
+
   return (
     <PlayerShell
       request={request}
       identity={identity}
       historyMetadata={{ season, episode: episodeNumber }}
+      onEnded={advanceToNextEpisode}
       renderHeader={({ selectedSourceId, onOpenSource, chromeHidden }) => (
         <TvShowPlayerHeader
           id={id}
@@ -72,6 +81,7 @@ const TvShowPlayer: React.FC<TvShowPlayerProps> = ({
           selectedSource={selectedSourceId}
           onOpenSource={onOpenSource}
           onOpenEpisode={episodeHandlers.open}
+          nextEpisodeNumber={nextEpisodeNumber}
           hidden={chromeHidden}
           {...headerProps}
         />

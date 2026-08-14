@@ -193,7 +193,7 @@ const boundedLimit = (limit: unknown, fallback = 20): number => {
  * with `limit = 1_000_000` and force a full scan plus a huge serialized payload,
  * on repeat. Clamp it server-side.
  */
-export const getUserHistories = async (limit: number = 20): ActionResponse<HistoryDetail[]> => {
+export const getUserHistories = async (limit: number = MAX_PAGE_SIZE): ActionResponse<HistoryDetail[]> => {
   const take = boundedLimit(limit);
   try {
     const supabase = await createClient();

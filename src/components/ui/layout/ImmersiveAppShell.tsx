@@ -21,7 +21,9 @@
 import { AmbientLayers } from "@/components/media/AmbientProvider";
 import DesktopHeader from "@/components/shell/desktop/Header";
 import DesktopRail from "@/components/shell/desktop/Rail";
+import PhoneAppHeader from "@/components/shell/phone/PhoneAppHeader";
 import TabBar from "@/components/shell/phone/TabBar";
+import AppRouteMotion from "@/components/ui/layout/AppRouteMotion";
 import Footer from "@/components/ui/layout/Footer";
 import { cn } from "@/utils/helpers";
 import { SpacingClasses } from "@/utils/constants";
@@ -55,7 +57,9 @@ export default function ImmersiveAppShell({ children, modal }: ImmersiveAppShell
       <main
         className={cn(
           "container mx-auto min-h-dvh max-w-full transition-[padding] duration-300",
-          SpacingClasses.main,
+          chromeHidden
+            ? SpacingClasses.main
+            : "px-3 pt-[max(0.5rem,env(safe-area-inset-top))] pb-[calc(6.5rem+env(safe-area-inset-bottom))] sm:px-5 md:py-8",
           !chromeHidden && "md:pl-[calc(5rem+var(--spacing-main-x,1rem))]",
         )}
       >
@@ -63,8 +67,9 @@ export default function ImmersiveAppShell({ children, modal }: ImmersiveAppShell
             player/auth routes along with the rail and tab bar — those
             screens own the whole viewport. */}
         {!chromeHidden && <DesktopHeader />}
-        {children}
-        {!chromeHidden && <Footer />}
+        {!chromeHidden && <PhoneAppHeader pathname={pathname} />}
+        <AppRouteMotion>{children}</AppRouteMotion>
+        {!chromeHidden && <Footer className="hidden md:block" />}
       </main>
       {!chromeHidden && <TabBar pathname={pathname} />}
       {modal}

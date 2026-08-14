@@ -82,9 +82,18 @@ const HistoryItemActions: React.FC<HistoryItemActionsProps> = ({
   return (
     <div
       className={className}
+      onPointerDown={(event) => event.stopPropagation()}
+      onMouseDown={(event) => event.stopPropagation()}
+      onTouchStart={(event) => event.stopPropagation()}
       onClick={(event) => {
         event.preventDefault();
         event.stopPropagation();
+      }}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          event.stopPropagation();
+        }
       }}
     >
       {!completed && (

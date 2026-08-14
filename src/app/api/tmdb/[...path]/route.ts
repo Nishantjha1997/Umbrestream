@@ -36,6 +36,9 @@ const SAFE_PARAMS = new Set([
   "vote_count.gte",
   "vote_average.gte",
   "with_original_language",
+  "with_origin_country",
+  "watch_region",
+  "with_watch_monetization_types",
   "append_to_response",
 ]);
 

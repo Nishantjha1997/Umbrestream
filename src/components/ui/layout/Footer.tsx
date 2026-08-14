@@ -32,6 +32,8 @@ const LINK_GROUPS = [
   {
     title: "StreamFree",
     links: [
+      { label: "Android App", href: "/app" },
+      { label: "Android TV App", href: "/app/tv" },
       { label: "About StreamFree", href: "/about" },
       { label: "DMCA Notice", href: "/dmca" },
       { label: "Disclaimer", href: "/about#disclaimer" },
@@ -45,7 +47,7 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
   return (
     <footer
       className={cn(
-        "mt-16 border-t border-white/8 px-4 pb-28 pt-10 text-white/60 md:mt-24 md:px-8 md:pb-12",
+        "mt-16 border-t border-white/8 px-4 pt-10 pb-28 text-white/60 md:mt-24 md:px-8 md:pb-12",
         className,
       )}
     >

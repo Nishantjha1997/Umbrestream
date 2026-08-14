@@ -21,6 +21,7 @@ import { Suspense } from "react";
 import InstallAppPrompt from "@/components/pwa/InstallAppPrompt";
 import ImmersiveAppShell from "@/components/ui/layout/ImmersiveAppShell";
 import SiteActivityTracker from "@/components/analytics/SiteActivityTracker";
+import CinematicSplash from "@/components/ui/feedback/CinematicSplash";
 
 const UMBRA_UI_V2_ENABLED = process.env.NEXT_PUBLIC_UMBRA_UI_V2 !== "false";
 
@@ -113,6 +114,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-dvh overflow-x-hidden bg-[#0a090d] font-sans text-white antialiased select-none">
         <Suspense>
+          <CinematicSplash />
           <NuqsAdapter>
             <Providers>
               {UMBRA_UI_V2_ENABLED ? (

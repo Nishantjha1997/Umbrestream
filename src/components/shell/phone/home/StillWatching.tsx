@@ -43,13 +43,20 @@ export default function StillWatching() {
   // it always skips whichever entry the hero above is showing, not just
   // positional index 0 (`useHomeHero` applies the same filter).
   const active = (data?.success ? data.data ?? [] : []).filter((h) => !h.completed);
-  const rest = active.slice(1);
+  // Histories are episode-level rows; the rail is title-level. Keep the most
+  // recently updated episode for each title because the server already sorts
+  // by updated_at descending.
+  const uniqueTitles = active.filter(
+    (item, index, rows) =>
+      rows.findIndex((candidate) => candidate.type === item.type && candidate.media_id === item.media_id) === index,
+  );
+  const rest = uniqueTitles.slice(1);
 
   if (rest.length === 0) return null;
 
   return (
     <div className="flex flex-col gap-[15px]">
-      <SectionHeader number="01" label="Still watching" />
+      <SectionHeader number="01" label="Continue watching" />
       <div className="flex gap-[13px] overflow-x-auto px-5 pb-1">
         {rest.map((item) => {
           const percent =

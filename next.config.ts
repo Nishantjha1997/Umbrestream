@@ -100,6 +100,14 @@ const nextConfig: NextConfig = {
 
     return [
       {
+        source: "/downloads/:path*",
+        headers: [
+          { key: "Content-Type", value: "application/vnd.android.package-archive" },
+          { key: "Content-Disposition", value: 'attachment; filename="StreamFree-Android-beta.apk"' },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+        ],
+      },
+      {
         source: "/:path*",
         headers: [
           { key: "Content-Security-Policy", value: csp },

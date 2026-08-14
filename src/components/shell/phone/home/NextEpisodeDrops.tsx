@@ -66,7 +66,7 @@ export default function NextEpisodeDrops() {
   const detailQueries = useQueries({
     queries: tvRows.map((h) => ({
       queryKey: ["next-episode", h.media_id],
-      queryFn: () => tmdbBrowser.tvShows.details(h.media_id),
+      queryFn: () => tmdbBrowser.tvShows.details<undefined>(h.media_id),
       staleTime: 60 * 60 * 1000,
     })),
   });
