@@ -16,8 +16,10 @@ Last updated: 2026-08-15
 - Main branch: main
 - Production domain: https://streamfree.online
 - Vercel project: umbrestream
-- Current production commit: efdbfe7 (fix: name downloadable APK files correctly)
-- Current production status: Ready and Current on Vercel.
+- Production code baseline: efdbfe7 (fix: name downloadable APK files correctly).
+- The latest repository commit adds only this handoff documentation and the README link; it
+  does not change runtime behavior.
+- Current production status for the release: Ready and Current on Vercel.
 - Creator branding: **Nishant**. The site and app splash screens use the signature
   Created with love by Nishant.
 
@@ -471,4 +473,3 @@ client-side tokens without a new explicit product/security review.
 The project retains the original MIT license and attribution for the cinextma foundation by
 Wisnu Wirayuda. Do not delete or modify LICENSE. StreamFree/Nishant additions are layered on
 top of that licensed foundation.
-
