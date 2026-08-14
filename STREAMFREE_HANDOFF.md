@@ -612,11 +612,17 @@ Implemented:
 - Android packages are now `online.streamfree.app` version 1.3.0 code 4 and
   `online.streamfree.tv` version 1.2.0 code 3. They are non-debuggable, cleartext-disabled,
   signed with separate release keystores, and use a registered Capacitor native plugin instead
-  of a URL-taking `addJavascriptInterface` bridge. Native installation is fixed to the official
-  StreamFree host/path and verifies APK size, SHA-256, package ID, and certificate before opening
-  Android's user-confirmed installer.
+  of a URL-taking `addJavascriptInterface` bridge. Native installation now fetches the official
+  manifest over HTTPS, rejects redirects and non-StreamFree download URLs, normalizes only
+  site-relative `/downloads/*.apk` paths, and verifies the manifest's live size, SHA-256, version
+  code, package ID, and pinned certificate before opening Android's user-confirmed installer.
+  Release-specific APK size/hash values are no longer embedded in native updater code.
 - Release artifacts are `public/downloads/StreamFree-Android-v1.3.apk` and
   `public/downloads/StreamFree-TV-v1.2.apk`; hashes and sizes are recorded in their manifests.
+  Legacy migration helpers are published as `public/downloads/StreamFree-Android-Legacy-Migration.apk`
+  and `public/downloads/StreamFree-TV-Legacy-Migration.apk`. They retain the old package IDs,
+  are signed with the recovered debug certificate used by the historical v1.2/v1.1 artifacts,
+  prompt users to sign in before continuing, then install the new canonical package side by side.
   Keystores are outside Git in the user's OneDrive backup directory. Never commit them or the
   password.
 
@@ -634,9 +640,12 @@ Release limitations:
   should use an emulator/automated focus tests; physical TV playback, remote Back, and
   next-episode behavior remain unverified until a TV/ADB device is available.
 - Apply the Continue Watching Supabase migration and run a signed-in account test with more than
-  100 episode rows and several active titles before declaring the production gate closed.
-- These new package IDs are side-by-side migration releases. An APK signed with the old
-  certificate cannot be an in-place update. Keep old-package instructions available until a
-  deliberate legacy-key migration helper is produced.
+  100 episode rows and several active titles before declaring the production gate closed. The
+  migration is ready locally but was not applied by the local CLI because no Supabase
+  dashboard/CLI session is present; the production RPC returned `PGRST202` until an authorized
+  Supabase session applies it.
+- These new package IDs are side-by-side migration releases. The signed legacy helpers above are
+  the one-time bridge; they do not claim to be in-place updates and they leave the old app
+  removable only after the user confirms the new app and account data are available.
 - Real provider playback smoke tests and the connected-phone orientation/update test remain
   required. Third-party provider availability is not guaranteed by StreamFree.
