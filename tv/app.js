@@ -3,6 +3,16 @@ import { Capacitor, CapacitorHttp } from "@capacitor/core";
 import { Haptics, ImpactStyle, NotificationType } from "@capacitor/haptics";
 import { StatusBar, Style } from "@capacitor/status-bar";
 import { createClient } from "@supabase/supabase-js";
+import {
+  PLAYBACK_RECOVERY_TIMEOUT_MS,
+  clearPlaybackPreference,
+  findNextFallbackSource,
+  findPreferredSource,
+  normalizeAudioVariant,
+  parsePlaybackEventName,
+  readPlaybackPreference,
+  writePlaybackPreference,
+} from "../src/lib/sources/playbackPolicy.ts";
 
 const BACKEND_ORIGIN = "https://streamfree.online";
 const IMAGE_ORIGIN = "https://image.tmdb.org/t/p/w500";
@@ -13,10 +23,11 @@ const RECENT_SEARCH_KEY = "streamfree-tv-recent-searches";
 const SETTINGS_KEY = "streamfree-tv-settings-v1";
 const AUTH_STORAGE_KEY = "streamfree-tv-auth-v1";
 const REGION_STORAGE_KEY = "streamfree-tv-region-v1";
-const APP_VERSION = "1.1.0";
-const APP_VERSION_CODE = 2;
+const APP_VERSION = "1.2.0";
+const APP_VERSION_CODE = 3;
 const APP_UPDATE_MANIFEST = "/downloads/streamfree-android-tv.json";
 const TOUR_STORAGE_KEY = "streamfree-tv-tour-v1";
+const ANIME_AUDIO_KEY = "streamfree:anime-audio:v1";
 const TAB_ORDER = ["home", "search", "browse", "anime", "space"];
 const CACHE_TTL = 10 * 60 * 1000;
 
@@ -70,10 +81,10 @@ function writeStorage(key, value) {
 }
 
 const TOUR_STEPS = [
-  ["Welcome to StreamFree TV", "Your home screen brings local trends, your watch history, and fresh anime into one remote-first space."],
-  ["Move with your remote", "Use the arrows to browse, OK to open a title, Back to return, and Menu inside playback to change servers."],
-  ["Keep watching", "Continue watching is ordered by your latest progress, so the title you last watched is always easiest to resume."],
-  ["Ready for the big screen", "Choose a title to start in immersive landscape playback. When a TV episode ends, the next one can start automatically."],
+  ["Find something great", "Home combines regional trends, Continue watching, personal picks, and popular anime."],
+  ["Sub, Dub and servers", "Anime episodes clearly offer Sub and Dub. Press Menu during playback to choose a labelled server."],
+  ["Keep your place", "Continue watching is ordered by your latest progress and syncs when you sign in."],
+  ["Big-screen playback", "Episodes start full screen. At the end, StreamFree gives you ten seconds to play or cancel the next episode."],
 ];
 
 function finishTour() {
@@ -108,7 +119,7 @@ function nativePlatform() {
 }
 
 function nativeBridge() {
-  return window.StreamFreeNative || null;
+  return Capacitor.Plugins?.StreamFreeNative || window.StreamFreeNative || null;
 }
 
 function setPlaybackOrientation() {
@@ -140,12 +151,12 @@ async function checkForUpdate({ silent = false } = {}) {
 function installUpdate() {
   const apkUrl = state.update.manifest?.apkUrl;
   if (!apkUrl) return showToast("Check for an update first.", "warning");
-  const url = absoluteUrl(apkUrl);
-  if (nativeBridge()?.installApk) {
-    nativeBridge().installApk(url);
-    showToast("TV update downloaded. Android may ask you to allow installation.");
+  if (nativePlatform() && nativeBridge()?.installOfficialUpdate) {
+    void nativeBridge().installOfficialUpdate().catch(() => undefined);
+    showToast("Verifying and downloading the official StreamFree TV update…");
     return;
   }
+  const url = absoluteUrl(apkUrl);
   window.open(url, "_blank", "noopener,noreferrer");
   showToast("The TV update download has started.");
 }
@@ -1016,21 +1027,26 @@ async function renderAnimeDetail(id) {
     const anime = rememberMedia(fromAnime(response.data.Media), "anime");
     const art = image(anime.backdrop_path, true) || image(anime.poster_path, true);
     const count = Math.min(Number(anime.episodes || 12), 48);
-    commit(`<article class="detail-page anime-detail"><section class="detail-visual">${art ? `<img src="${escapeHtml(art)}" alt="" />` : ""}<div></div><button class="back-fab pressable" data-action="back">‹</button></section><section class="detail-content"><span class="eyebrow">StreamFree anime</span><h1>${escapeHtml(anime.title)}</h1><div class="detail-meta"><span>${escapeHtml(anime.format || "Anime")}</span><span>${anime.vote_average.toFixed(1)} ★</span><span>${escapeHtml(anime.status || "Ongoing")}</span></div><div class="genre-line">${(anime.genres || []).slice(0, 4).map((genre) => `<span>${escapeHtml(genre)}</span>`).join("")}</div><p>${escapeHtml(anime.overview || "A new story is ready to begin.")}</p><div class="hero-actions sticky-actions"><button class="primary pressable" data-action="play" data-media="anime" data-id="${id}" data-title="${escapeHtml(anime.title)}" data-episode="1">▶ Start episode 1</button><button class="glass-button pressable" data-action="save" data-media="anime" data-id="${id}">${isSaved("anime", id) ? "✓ Saved" : "+ My List"}</button></div></section><section class="episode-section"><div class="section-head"><div><span>${anime.episodes || "Ongoing"} episodes</span><h2>Episode guide</h2></div></div><div class="anime-episodes">${Array.from({ length: count }, (_, index) => `<button class="episode-chip pressable" data-action="play" data-media="anime" data-id="${id}" data-title="${escapeHtml(anime.title)}" data-episode="${index + 1}"><span>${index + 1}</span><i>▶</i></button>`).join("")}</div></section></article>`, { root: "anime" });
+    commit(`<article class="detail-page anime-detail"><section class="detail-visual">${art ? `<img src="${escapeHtml(art)}" alt="" />` : ""}<div></div><button class="back-fab pressable" data-action="back">‹</button></section><section class="detail-content"><span class="eyebrow">StreamFree anime</span><h1>${escapeHtml(anime.title)}</h1><div class="detail-meta"><span>${escapeHtml(anime.format || "Anime")}</span><span>${anime.vote_average.toFixed(1)} ★</span><span>${escapeHtml(anime.status || "Ongoing")}</span></div><div class="genre-line">${(anime.genres || []).slice(0, 4).map((genre) => `<span>${escapeHtml(genre)}</span>`).join("")}</div><p>${escapeHtml(anime.overview || "A new story is ready to begin.")}</p><div class="hero-actions sticky-actions"><button class="primary pressable" data-action="play" data-media="anime" data-id="${id}" data-title="${escapeHtml(anime.title)}" data-episode="1" data-audio="sub">▶ Episode 1 · Sub</button><button class="glass-button pressable" data-action="play" data-media="anime" data-id="${id}" data-title="${escapeHtml(anime.title)}" data-episode="1" data-audio="dub">Episode 1 · Dub</button><button class="glass-button pressable" data-action="save" data-media="anime" data-id="${id}">${isSaved("anime", id) ? "✓ Saved" : "+ My List"}</button></div></section><section class="episode-section"><div class="section-head"><div><span>${anime.episodes || "Ongoing"} episodes</span><h2>Episode guide</h2></div></div><div class="anime-episodes">${Array.from({ length: count }, (_, index) => `<article class="episode-chip"><span>${index + 1}</span><div><button class="pressable" data-action="play" data-media="anime" data-id="${id}" data-title="${escapeHtml(anime.title)}" data-episode="${index + 1}" data-audio="sub">Sub</button><button class="pressable" data-action="play" data-media="anime" data-id="${id}" data-title="${escapeHtml(anime.title)}" data-episode="${index + 1}" data-audio="dub">Dub</button></div></article>`).join("")}</div></section></article>`, { root: "anime" });
   } catch (error) {
     console.error(error);
     renderError("Anime details could not load", "Try this title again in a moment.");
   }
 }
 
-async function openPlayer(mediaTypeValue, id, title, season = 0, episode = 0) {
+async function openPlayer(mediaTypeValue, id, title, season = 0, episode = 0, options = {}) {
   renderLoading("Preparing your stream");
   const media = rememberMedia(getRemembered(mediaTypeValue, id), mediaTypeValue);
   try {
     const params = new URLSearchParams({ mediaType: mediaTypeValue });
+    const audio =
+      mediaTypeValue === "anime"
+        ? normalizeAudioVariant(options.audio || localStorage.getItem(ANIME_AUDIO_KEY))
+        : undefined;
     if (mediaTypeValue === "anime") {
       params.set("anilistId", String(id));
       params.set("episode", String(episode || 1));
+      params.set("preferredAudio", audio);
     } else {
       params.set("tmdbId", String(id));
     }
@@ -1040,13 +1056,29 @@ async function openPlayer(mediaTypeValue, id, title, season = 0, episode = 0) {
     }
     const response = await requestJson(`/api/player/sources?${params}`);
     if (!response.sources?.length) throw new Error("No playback source available");
+    const sources = response.sources.map((source) => ({
+      ...source,
+      url: autoplaySourceUrl(source.url),
+    }));
+    const rememberedId = readPlaybackPreference(localStorage, mediaTypeValue, audio);
+    const preferred = findPreferredSource(sources, {
+      explicitId: options.preferredSourceId,
+      rememberedId,
+      audioVariant: audio,
+    });
     state.player = {
-      sources: response.sources.map((source) => ({ ...source, url: autoplaySourceUrl(source.url) })),
-      index: Math.max(0, response.sources.findIndex((source) => source.id === response.defaultId)),
+      sources,
+      index: Math.max(0, sources.findIndex((source) => source.id === preferred?.id)),
       fullscreen: true,
       media: { ...media, title: title || media.title, season, episode },
+      audio,
+      confirmed: false,
+      historyStarted: false,
+      attemptedSourceIds: new Set(),
+      recovery: null,
+      recoveryTimer: null,
+      nextEpisodeCountdown: null,
     };
-    void recordHistory({ ...media, title: title || media.title, season, episode });
     renderPlayer();
   } catch (error) {
     console.error(error);
@@ -1054,11 +1086,156 @@ async function openPlayer(mediaTypeValue, id, title, season = 0, episode = 0) {
   }
 }
 
-function playbackMessageEnded(event) {
-  if (!state.player || state.player.media.media_type !== "tv") return false;
-  if (event.source && event.source !== document.querySelector("#player-frame")?.contentWindow) return false;
-  const payload = typeof event.data === "string" ? event.data : JSON.stringify(event.data || "");
-  return /(^|[\s:_-])(ended|videoEnded|mediaEnded|episodeEnded|playbackEnded)([\s:_-]|$)/i.test(payload) || /playback.*ended|episode.*ended/i.test(payload);
+function trustedPlaybackEvent(event) {
+  const player = state.player;
+  const source = player?.sources[player.index];
+  const frame = document.querySelector("#player-frame");
+  if (!player || !source || !frame || event.source !== frame.contentWindow) return null;
+  if (event.origin !== source.providerOrigin) return null;
+  return parsePlaybackEventName(event.data);
+}
+
+function clearPlaybackRecoveryTimer() {
+  if (state.player?.recoveryTimer) window.clearTimeout(state.player.recoveryTimer);
+  if (state.player) state.player.recoveryTimer = null;
+}
+
+function updatePlaybackRecoveryPanel() {
+  const player = state.player;
+  const root = document.querySelector("#playback-recovery");
+  if (!player || !root) return;
+  const source = player.sources[player.index];
+  const fallback = player.recovery?.fallback;
+  if (!player.recovery) {
+    root.innerHTML = "";
+    root.hidden = true;
+    return;
+  }
+  root.hidden = false;
+  root.innerHTML = `<section class="player-recovery" role="status" aria-live="polite"><p>${
+    fallback
+      ? source.capabilities?.events
+        ? `${escapeHtml(source.label)} hasn’t started yet. Try ${escapeHtml(fallback.label)}?`
+        : `Having trouble with ${escapeHtml(source.label)}? Try another server.`
+      : "No other stable server remains in this session."
+  }</p><div>${
+    fallback
+      ? `<button class="primary pressable" data-action="recovery-try">Try ${escapeHtml(fallback.label)}</button>`
+      : `<button class="primary pressable" data-action="recovery-report">Report issue</button>`
+  }<button class="glass-button pressable" data-action="server-sheet">Choose server</button><button class="text-button pressable" data-action="recovery-keep">Keep current</button></div></section>`;
+  requestAnimationFrame(() => root.querySelector("button")?.focus({ preventScroll: true }));
+}
+
+function showPlaybackRecovery(reason = "timeout") {
+  const player = state.player;
+  if (!player || player.confirmed) return;
+  const source = player.sources[player.index];
+  player.recovery = {
+    reason,
+    fallback: findNextFallbackSource(
+      player.sources,
+      source.id,
+      player.attemptedSourceIds,
+      player.audio,
+    ),
+  };
+  updatePlaybackRecoveryPanel();
+}
+
+function armPlaybackRecovery() {
+  const player = state.player;
+  if (!player) return;
+  clearPlaybackRecoveryTimer();
+  player.recoveryTimer = window.setTimeout(
+    () => showPlaybackRecovery("timeout"),
+    PLAYBACK_RECOVERY_TIMEOUT_MS,
+  );
+}
+
+function confirmPlaybackStarted() {
+  const player = state.player;
+  if (!player || player.confirmed) return;
+  player.confirmed = true;
+  player.recovery = null;
+  clearPlaybackRecoveryTimer();
+  updatePlaybackRecoveryPanel();
+  if (!player.historyStarted) {
+    player.historyStarted = true;
+    void recordHistory(player.media);
+  }
+}
+
+function selectPlayerSource(index, reason = "manual") {
+  const player = state.player;
+  const next = player?.sources[Number(index)];
+  if (!player || !next) return;
+  const current = player.sources[player.index];
+  if (reason === "manual") {
+    writePlaybackPreference(localStorage, player.media.media_type, next.id, next.audioVariant || player.audio);
+    player.attemptedSourceIds = new Set();
+    if (next.audioVariant) {
+      player.audio = next.audioVariant;
+      localStorage.setItem(ANIME_AUDIO_KEY, next.audioVariant);
+    }
+  } else if (reason === "recovery") {
+    player.attemptedSourceIds.add(current.id);
+  }
+  player.index = Number(index);
+  player.confirmed = false;
+  player.recovery = null;
+  closeSheet();
+  renderPlayer();
+}
+
+function renderNextEpisodeCountdown() {
+  const countdown = state.player?.nextEpisodeCountdown;
+  const root = document.querySelector("#next-episode-countdown");
+  if (!root) return;
+  if (!countdown) {
+    root.hidden = true;
+    root.innerHTML = "";
+    return;
+  }
+  root.hidden = false;
+  root.innerHTML = `<section class="next-episode-card" role="status" aria-live="polite"><span>Up next</span><h2>Episode ${countdown.episode}</h2><p>Playing in ${countdown.remaining} second${countdown.remaining === 1 ? "" : "s"}</p><div><button class="primary pressable" data-action="next-now">Play now</button><button class="glass-button pressable" data-action="next-cancel">Cancel</button></div></section>`;
+  requestAnimationFrame(() => root.querySelector("[data-action='next-now']")?.focus({ preventScroll: true }));
+}
+
+function cancelNextEpisodeCountdown() {
+  const player = state.player;
+  if (!player?.nextEpisodeCountdown) return;
+  window.clearInterval(player.nextEpisodeCountdown.timer);
+  player.nextEpisodeCountdown = null;
+  player.nextEpisodeBusy = false;
+  renderNextEpisodeCountdown();
+}
+
+async function playPreparedNextEpisode() {
+  const player = state.player;
+  const countdown = player?.nextEpisodeCountdown;
+  if (!player || !countdown) return;
+  window.clearInterval(countdown.timer);
+  const preferredSourceId = player.sources[player.index]?.id;
+  const audio = player.audio;
+  await openPlayer("tv", player.media.id, player.media.title, countdown.season, countdown.episode, {
+    preferredSourceId,
+    audio,
+    fullscreen: true,
+  });
+}
+
+function startNextEpisodeCountdown(season, episode) {
+  const player = state.player;
+  if (!player) return;
+  const countdown = { season, episode, remaining: 10, timer: 0 };
+  player.nextEpisodeCountdown = countdown;
+  countdown.timer = window.setInterval(() => {
+    if (!state.player?.nextEpisodeCountdown) return;
+    state.player.nextEpisodeCountdown.remaining -= 1;
+    if (state.player.nextEpisodeCountdown.remaining <= 0) void playPreparedNextEpisode();
+    else renderNextEpisodeCountdown();
+  }, 1000);
+  renderNextEpisodeCountdown();
 }
 
 async function advanceToNextEpisode() {
@@ -1077,7 +1254,7 @@ async function advanceToNextEpisode() {
       showToast("That was the last episode.");
       return;
     }
-    await openPlayer("tv", player.media.id, player.media.title, season, Number(next.episode_number));
+    startNextEpisodeCountdown(season, Number(next.episode_number));
   } catch (error) {
     player.nextEpisodeBusy = false;
     console.error("[tv-next-episode]", error);
@@ -1086,18 +1263,34 @@ async function advanceToNextEpisode() {
 }
 
 window.addEventListener("message", (event) => {
-  if (playbackMessageEnded(event)) void advanceToNextEpisode();
+  const playbackEvent = trustedPlaybackEvent(event);
+  if (playbackEvent === "play" || playbackEvent === "timeupdate") confirmPlaybackStarted();
+  if (playbackEvent === "error") showPlaybackRecovery("error");
+  if (playbackEvent === "ended") void advanceToNextEpisode();
+});
+
+document.addEventListener("visibilitychange", () => {
+  if (!state.player || state.player.confirmed) return;
+  if (document.hidden) clearPlaybackRecoveryTimer();
+  else armPlaybackRecovery();
 });
 
 function renderPlayer() {
   const player = state.player;
   if (!player) return renderError("Player closed", "Choose a title to start watching.", false);
   const source = player.sources[player.index];
-  const label = player.media.media_type === "tv" ? `S${player.media.season || 1} · E${player.media.episode || 1}` : player.media.media_type === "anime" ? `Episode ${player.media.episode || 1}` : "Movie";
-  commit(`<section class="player-page tv-player-page"><div class="player-header"><button class="player-back pressable" data-action="back-detail" data-media="${player.media.media_type}" data-id="${player.media.id}">‹</button><div><span>${escapeHtml(label)}</span><strong>${escapeHtml(player.media.title)}</strong></div><button class="player-more pressable" data-action="server-sheet" aria-label="Choose playback server">•••</button></div><div class="player-stage"><div class="player-loader"><span></span><p>Connecting to ${escapeHtml(source.name || source.id || `Server ${player.index + 1}`)}</p></div><iframe id="player-frame" tabindex="-1" src="${escapeHtml(source.url)}" title="${escapeHtml(player.media.title)} player" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="origin-when-cross-origin"></iframe><button class="player-enter pressable" data-action="enter-player"><span>OK</span> Control player</button></div><section class="server-row"><div><span>Playback server</span><strong>${escapeHtml(source.name || source.id || `Server ${player.index + 1}`)}</strong></div><div>${player.sources.map((entry, index) => `<button class="server-dot pressable ${index === player.index ? "active" : ""}" data-action="server" data-index="${index}" aria-label="Use server ${index + 1}">${index + 1}</button>`).join("")}</div></section><section class="player-tip"><span>Remote tip</span><p>Playback starts full screen. Press Back to return, or Menu to choose another server.</p></section></section>`, { root: state.previousRoot });
+  const label = player.media.media_type === "tv"
+    ? `S${player.media.season || 1} · E${player.media.episode || 1}`
+    : player.media.media_type === "anime"
+      ? `Episode ${player.media.episode || 1} · ${player.audio === "dub" ? "Dub" : "Sub"}`
+      : "Movie";
+  commit(`<section class="player-page tv-player-page"><div class="player-header"><button class="player-back pressable" data-action="back-detail" data-media="${player.media.media_type}" data-id="${player.media.id}">‹</button><div><span>${escapeHtml(label)}</span><strong>${escapeHtml(player.media.title)}</strong></div><button class="player-more pressable" data-action="server-sheet" aria-label="Choose playback server">•••</button></div><div class="player-stage"><div class="player-loader"><span></span><p>Connecting to ${escapeHtml(source.label || source.id)}</p></div><iframe id="player-frame" tabindex="-1" src="${escapeHtml(source.url)}" title="${escapeHtml(player.media.title)} player" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="origin-when-cross-origin"></iframe><button class="player-enter pressable" data-action="enter-player"><span>OK</span> Control player</button></div><div id="playback-recovery" hidden></div><div id="next-episode-countdown" hidden></div><section class="server-row"><div><span>Playback server</span><strong>${escapeHtml(source.label || source.id)}</strong></div></section><section class="player-tip"><span>Remote tip</span><p>Playback starts full screen. Press Back to return, or Menu to choose another server.</p></section></section>`, { root: state.previousRoot });
   setPlaybackOrientation();
   requestAnimationFrame(() => document.querySelector("#player-frame")?.focus({ preventScroll: true }));
   document.querySelector("#player-frame")?.addEventListener("load", () => document.querySelector(".player-loader")?.classList.add("done"), { once: true });
+  updatePlaybackRecoveryPanel();
+  renderNextEpisodeCountdown();
+  armPlaybackRecovery();
 }
 
 let focusBeforeSheet = null;
@@ -1105,7 +1298,18 @@ let focusBeforeSheet = null;
 function showServerSheet() {
   if (!state.player) return;
   focusBeforeSheet = document.activeElement;
-  sheetRoot.innerHTML = `<div class="sheet-backdrop" data-action="close-sheet"></div><section class="bottom-sheet" role="dialog" aria-modal="true" aria-label="Choose playback server"><i class="sheet-handle"></i><span class="eyebrow">Playback options</span><h2>Choose a server</h2><p>If one provider is slow or unavailable, switch instantly.</p><div class="sheet-servers">${state.player.sources.map((source, index) => `<button class="sheet-server pressable ${index === state.player.index ? "active" : ""}" data-action="server" data-index="${index}"><span>${index + 1}</span><div><strong>${escapeHtml(source.name || source.id || `Server ${index + 1}`)}</strong><small>${index === state.player.index ? "Currently playing" : "Tap to switch"}</small></div><b>${index === state.player.index ? "✓" : "›"}</b></button>`).join("")}</div><button class="sheet-close pressable" data-action="close-sheet">Done</button></section>`;
+  const groups = state.player.media.media_type === "anime"
+    ? [
+        ["Sub servers", state.player.sources.filter((source) => source.audioVariant === "sub")],
+        ["Dub servers", state.player.sources.filter((source) => source.audioVariant === "dub")],
+      ]
+    : [["Video servers", state.player.sources]];
+  const serverMarkup = groups.map(([groupLabel, sources]) => `<div class="server-group"><h3>${groupLabel}</h3>${sources.map((source) => {
+    const index = state.player.sources.findIndex((entry) => entry.id === source.id);
+    return `<button class="sheet-server pressable ${index === state.player.index ? "active" : ""}" data-action="server" data-index="${index}"><span>${source.audioVariant === "dub" ? "D" : source.audioVariant === "sub" ? "S" : index + 1}</span><div><strong>${escapeHtml(source.label || source.id)}</strong><small>${index === state.player.index ? "Currently playing" : source.providerTier === "stable" ? "Stable provider" : "Backup provider"}</small></div><b>${index === state.player.index ? "✓" : "›"}</b></button>`;
+  }).join("")}</div>`).join("");
+  const hasPreference = Boolean(readPlaybackPreference(localStorage, state.player.media.media_type, state.player.audio));
+  sheetRoot.innerHTML = `<div class="sheet-backdrop" data-action="close-sheet"></div><section class="bottom-sheet" role="dialog" aria-modal="true" aria-label="Choose playback server"><i class="sheet-handle"></i><span class="eyebrow">Playback options</span><h2>Choose a server</h2><p>StreamFree will never switch a server you chose without asking.</p><div class="sheet-servers">${serverMarkup}</div>${hasPreference ? '<button class="glass-button pressable" data-action="server-reset">Reset to recommended</button>' : ""}<button class="sheet-close pressable" data-action="close-sheet">Done</button></section>`;
   requestAnimationFrame(() => {
     sheetRoot.classList.add("open");
     window.setTimeout(() => focusTvElement(sheetRoot.querySelector(".sheet-server.active, .sheet-server, .sheet-close"), { smooth: false }), 80);
@@ -1398,7 +1602,7 @@ document.addEventListener("click", (event) => {
 
   const button = event.target.closest("[data-action]");
   if (!button) return;
-  const { action, media, id, title, type, genre, filter, sort, season, episode, index, query, setting } = button.dataset;
+  const { action, media, id, title, type, genre, filter, sort, season, episode, index, query, setting, audio } = button.dataset;
   void impact(action === "play" ? ImpactStyle.Medium : ImpactStyle.Light);
 
   if (action === "detail") setRoute(`detail/${media}/${id}`);
@@ -1409,15 +1613,28 @@ document.addEventListener("click", (event) => {
   if (action === "anime-sort") { state.animeSort = sort; void renderAnime(); }
   if (action === "season") { state.detailSeason = Number(season); void renderDetail(media, id); }
   if (action === "save") void toggleLibrary(getRemembered(media, id));
-  if (action === "play") void openPlayer(media, Number(id), title, Number(season || 0), Number(episode || 0));
-  if (action === "back-detail") setRoute(`detail/${media}/${id}`);
+  if (action === "play") void openPlayer(media, Number(id), title, Number(season || 0), Number(episode || 0), { audio });
+  if (action === "back-detail") { clearPlaybackRecoveryTimer(); cancelNextEpisodeCountdown(); setRoute(`detail/${media}/${id}`); }
   if (action === "back") window.history.back();
   if (action === "retry") void render();
   if (action === "scroll-top") window.scrollTo({ top: 0, behavior: state.settings.reduceMotion ? "instant" : "smooth" });
   if (action === "open-history") setRoute("space/history");
   if (action === "clear-searches") { writeStorage(RECENT_SEARCH_KEY, []); void renderSearch(); }
   if (action === "search-query") { const input = document.querySelector("#search-input"); if (input) input.value = query; void performSearch(query); }
-  if (action === "server") { state.player.index = Number(index); closeSheet(); renderPlayer(); }
+  if (action === "server") selectPlayerSource(Number(index), "manual");
+  if (action === "server-reset" && state.player) {
+    clearPlaybackPreference(localStorage, state.player.media.media_type, state.player.audio);
+    const recommended = findPreferredSource(state.player.sources, { audioVariant: state.player.audio });
+    if (recommended) selectPlayerSource(state.player.sources.findIndex((source) => source.id === recommended.id), "reset");
+  }
+  if (action === "recovery-try" && state.player?.recovery?.fallback) {
+    const fallbackIndex = state.player.sources.findIndex((source) => source.id === state.player.recovery.fallback.id);
+    selectPlayerSource(fallbackIndex, "recovery");
+  }
+  if (action === "recovery-keep" && state.player) { state.player.recovery = null; updatePlaybackRecoveryPanel(); }
+  if (action === "recovery-report" && state.player) { state.player.recovery = null; updatePlaybackRecoveryPanel(); showToast("Playback issue reported. Try another server."); }
+  if (action === "next-now") void playPreparedNextEpisode();
+  if (action === "next-cancel") cancelNextEpisodeCountdown();
   if (action === "server-sheet") showServerSheet();
   if (action === "close-sheet") closeSheet();
   if (action === "enter-player") {
@@ -1441,6 +1658,8 @@ function remoteBack() {
     return true;
   }
   if (document.querySelector(".player-page") && state.player) {
+    clearPlaybackRecoveryTimer();
+    cancelNextEpisodeCountdown();
     setPlaybackOrientation();
     setRoute(`detail/${state.player.media.media_type}/${state.player.media.id}`);
     return true;
