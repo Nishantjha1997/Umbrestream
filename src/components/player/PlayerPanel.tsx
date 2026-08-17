@@ -52,6 +52,11 @@ export default function PlayerPanel({
         className="fixed inset-0 z-0 bg-[rgba(4,4,7,.68)] backdrop-blur-[8px]"
       />
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        onPointerDown={(event) => event.stopPropagation()}
+        onClick={(event) => event.stopPropagation()}
         className={`relative z-10 max-h-full w-full overflow-y-auto rounded-[18px] border border-white/10 bg-[rgba(19,18,23,.96)] p-7 shadow-[0_40px_100px_-20px_rgba(0,0,0,.9)] ${maxWidthClassName}`}
       >
         <div className="mb-5 flex items-center justify-between gap-4">

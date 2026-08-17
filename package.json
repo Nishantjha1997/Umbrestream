@@ -10,6 +10,7 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test:player-sources": "node --experimental-strip-types scripts/check-player-sources.mjs",
+    "test:episode-resolver": "node --experimental-strip-types scripts/check-episode-resolver.mjs",
     "check:release-artifacts": "node scripts/check-release-artifacts.mjs",
     "check:leak": "node scripts/check-leak.mjs",
     "mobile:build": "esbuild mobile/app.js --bundle --format=iife --platform=browser --target=chrome120 --minify --outfile=mobile/app.bundle.js",

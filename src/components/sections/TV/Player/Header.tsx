@@ -2,11 +2,14 @@ import { ArrowLeft, List, Next, Prev, Server } from "@/utils/icons";
 import PlayerActionButton from "@/components/ui/button/PlayerActionButton";
 import { cn } from "@/utils/helpers";
 import { TvShowPlayerProps } from "./Player";
+import type { AdjacentEpisode } from "@/lib/tv/adjacentEpisode";
 
-interface TvShowPlayerHeaderProps extends Omit<TvShowPlayerProps, "episodes" | "tv" | "startAt"> {
+interface TvShowPlayerHeaderProps extends Omit<TvShowPlayerProps, "episodes" | "tv" | "startAt" | "nextEpisode" | "prevEpisode"> {
   selectedSource: string;
   onOpenSource: () => void;
   onOpenEpisode: () => void;
+  nextEpisode: AdjacentEpisode | null;
+  prevEpisode: AdjacentEpisode | null;
   hidden?: boolean;
 }
 
@@ -22,8 +25,8 @@ const TvShowPlayerHeader: React.FC<TvShowPlayerHeaderProps> = ({
   seasonName,
   episode,
   selectedSource,
-  nextEpisodeNumber,
-  prevEpisodeNumber,
+  nextEpisode,
+  prevEpisode,
   onOpenSource,
   onOpenEpisode,
   hidden,
@@ -54,19 +57,27 @@ const TvShowPlayerHeader: React.FC<TvShowPlayerHeaderProps> = ({
       </div>
       <div className="flex items-center gap-1 sm:gap-4">
         <PlayerActionButton
-          disabled={!prevEpisodeNumber}
+          disabled={!prevEpisode}
           label="Previous Episode"
           tooltip="Previous Episode"
-          href={`/tv/${id}/${episode.season_number}/${prevEpisodeNumber}/player${sourceQuery}`}
+          href={
+            prevEpisode
+              ? `/tv/${id}/${prevEpisode.season}/${prevEpisode.episode}/player${sourceQuery}`
+              : undefined
+          }
           color="primary"
         >
           <Prev className="size-8 sm:size-10" />
         </PlayerActionButton>
         <PlayerActionButton
-          disabled={!nextEpisodeNumber}
+          disabled={!nextEpisode}
           label="Next Episode"
           tooltip="Next Episode"
-          href={`/tv/${id}/${episode.season_number}/${nextEpisodeNumber}/player${sourceQuery}`}
+          href={
+            nextEpisode
+              ? `/tv/${id}/${nextEpisode.season}/${nextEpisode.episode}/player${sourceQuery}`
+              : undefined
+          }
           color="primary"
         >
           <Next className="size-8 sm:size-10" />

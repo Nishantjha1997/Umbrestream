@@ -9,6 +9,7 @@ import { use } from "react";
 import dynamic from "next/dynamic";
 import { NextPage } from "next";
 import { getTvShowLastPosition } from "@/actions/histories";
+import { resolveAdjacentEpisode } from "@/lib/tv/adjacentEpisode";
 const TvShowPlayer = dynamic(() => import("@/components/sections/TV/Player/Player"));
 
 const TvShowPlayerPage: NextPage<Params<{ id: number; season: number; episode: number }>> = ({
@@ -49,17 +50,20 @@ const TvShowPlayerPage: NextPage<Params<{ id: number; season: number; episode: n
 
   if (!EPISODE || errorTv || errorSeason) notFound();
 
-  const currentEpisodeIndex = seasonDetail.episodes.findIndex(
-    (e) => e.episode_number === EPISODE.episode_number,
+  const nextEpisode = resolveAdjacentEpisode(
+    tv.seasons,
+    season,
+    EPISODE.episode_number,
+    seasonDetail.episodes,
+    "next",
   );
-
-  const nextEpisodeNumber =
-    currentEpisodeIndex < seasonDetail.episodes.length - 1
-      ? seasonDetail.episodes[currentEpisodeIndex + 1].episode_number
-      : null;
-
-  const prevEpisodeNumber =
-    currentEpisodeIndex > 0 ? seasonDetail.episodes[currentEpisodeIndex - 1].episode_number : null;
+  const prevEpisode = resolveAdjacentEpisode(
+    tv.seasons,
+    season,
+    EPISODE.episode_number,
+    seasonDetail.episodes,
+    "previous",
+  );
 
   return (
     <TvShowPlayer
@@ -69,8 +73,8 @@ const TvShowPlayerPage: NextPage<Params<{ id: number; season: number; episode: n
       seasonName={seasonDetail.name}
       episode={EPISODE}
       episodes={seasonDetail.episodes}
-      nextEpisodeNumber={nextEpisodeNumber}
-      prevEpisodeNumber={prevEpisodeNumber}
+      nextEpisode={nextEpisode}
+      prevEpisode={prevEpisode}
       startAt={startAt}
     />
   );

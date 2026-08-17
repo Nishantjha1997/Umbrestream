@@ -180,13 +180,13 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: —
   - Next action: add effective-region preference
 
-- [ ] SF-036 — Implement shared adjacent-episode resolver
-  - Status: not started
+- [x] SF-036 — Implement shared adjacent-episode resolver
+  - Status: completed
   - Priority: P0
   - Depends on: SF-030
-  - Evidence: —
-  - Commit: —
-  - Next action: define pure resolver contract
+  - Evidence: pure `src/lib/tv/adjacentEpisode.ts` resolver skips season/episode zero and crosses valid season boundaries; `test:episode-resolver` covers forward, backward, and final-stop cases
+  - Commit: pending playback checkpoint
+  - Completed: 2026-08-17
 
 - [ ] SF-037 — Route all clients through episode resolver
   - Status: not started
@@ -482,29 +482,29 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: —
   - Next action: build deterministic source-picker coverage
 
-- [ ] SF-101 — Make source rows fully interactive
-  - Status: not started
+- [x] SF-101 — Make source rows fully interactive
+  - Status: completed
   - Priority: P0
   - Depends on: SF-100
-  - Evidence: —
-  - Commit: —
-  - Next action: audit web/native/TV event handling
+  - Evidence: desktop panel and mobile drawer now mount only after the client viewport is known; source rows consume pointer/click events, are touch-manipulation buttons, and preserve the visible panel above the provider frame
+  - Commit: pending playback checkpoint
+  - Completed: 2026-08-17
 
-- [ ] SF-102 — Ensure source selection changes once
-  - Status: not started
+- [x] SF-102 — Ensure source selection changes once
+  - Status: completed
   - Priority: P0
   - Depends on: SF-101
-  - Evidence: —
-  - Commit: —
-  - Next action: assert URL and iframe transitions
+  - Evidence: source-sheet activation is guarded against duplicate selection while a switch is in flight; parent swaps the iframe synchronously and persists the provider id once
+  - Commit: pending playback checkpoint
+  - Completed: 2026-08-17
 
-- [ ] SF-103 — Restore source-picker focus
-  - Status: not started
+- [x] SF-103 — Restore source-picker focus
+  - Status: completed
   - Priority: P1
   - Depends on: SF-101
-  - Evidence: —
-  - Commit: —
-  - Next action: add focus restoration behavior
+  - Evidence: PlayerShell remembers the invoking control and restores focus after close, selection, and reset; desktop panel is an explicit modal dialog
+  - Commit: pending playback checkpoint
+  - Completed: 2026-08-17
 
 - [ ] SF-104 — Preserve source preferences by media/audio
   - Status: not started
@@ -602,13 +602,13 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: —
   - Next action: verify trusted ended event and remote actions
 
-- [ ] SF-116 — Fix cross-season TV progression
-  - Status: not started
+- [x] SF-116 — Fix cross-season TV progression
+  - Status: completed
   - Priority: P0
   - Depends on: SF-037
-  - Evidence: —
-  - Commit: —
-  - Next action: add season-boundary fixtures
+  - Evidence: web TV player uses the shared resolver for previous/next navigation and a trusted 10-second Up Next countdown; final valid episode stops without looping
+  - Commit: pending playback checkpoint
+  - Completed: 2026-08-17
 
 - [ ] SF-117 — Preserve source/audio on next episode
   - Status: not started

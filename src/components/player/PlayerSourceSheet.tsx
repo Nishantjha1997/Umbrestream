@@ -5,7 +5,7 @@ import VaulDrawer from "@/components/ui/overlay/VaulDrawer";
 import type { PlayerSource } from "@/lib/sources/types";
 import { cn } from "@/utils/helpers";
 import { Check, Rocket, Star } from "@/utils/icons";
-import { useMediaQuery } from "@mantine/hooks";
+import { useEffect, useRef, useState } from "react";
 
 export interface PlayerSourceSheetProps {
   opened: boolean;
@@ -31,10 +31,19 @@ export default function PlayerSourceSheet({
 }: PlayerSourceSheetProps) {
   // Do not mount Vaul's modal drawer on desktop. Hiding an open drawer with
   // CSS still leaves its focus/pointer lock active on <body>, which makes the
-  // visible desktop panel look interactive while swallowing every click.
-  const isDesktop = useMediaQuery("(min-width: 768px)", false, {
-    getInitialValueInEffect: false,
-  });
+  // visible desktop panel look interactive while swallowing every click. We
+  // also wait for the first client media-query result so a desktop refresh
+  // never briefly mounts the mobile drawer before the panel branch wins.
+  const [isDesktop, setIsDesktop] = useState<boolean | null>(null);
+  const selectionInFlightRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    const media = window.matchMedia("(min-width: 768px)");
+    const update = () => setIsDesktop(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
 
   const sourceOption = (source: PlayerSource) => {
     const isSelected = source.id === selectedSourceId;
@@ -46,11 +55,17 @@ export default function PlayerSourceSheet({
         type="button"
         role="radio"
         aria-checked={isSelected}
+        aria-busy={isSwitching || undefined}
+        disabled={Boolean(switchingSourceId) && !isSwitching}
         onPointerDown={(event) => event.stopPropagation()}
         onClick={(event) => {
           event.preventDefault();
           event.stopPropagation();
-          void onSelect(source.id);
+          if (selectionInFlightRef.current) return;
+          selectionInFlightRef.current = source.id;
+          Promise.resolve(onSelect(source.id)).finally(() => {
+            if (selectionInFlightRef.current === source.id) selectionInFlightRef.current = null;
+          });
         }}
         className={cn(
           "grid min-h-14 w-full touch-manipulation grid-cols-[auto_1fr_auto] items-center gap-3 rounded-[13px] border p-3.5 text-left transition-[background-color,border-color,transform] duration-200 active:scale-[.985]",
@@ -147,6 +162,8 @@ export default function PlayerSourceSheet({
       {resetPreference}
     </div>
   );
+
+  if (isDesktop === null) return null;
 
   if (isDesktop) {
     return (

@@ -127,6 +127,7 @@ export default function PlayerShell({
   }, []);
 
   const [sourceOpened, setSourceOpened] = useState(false);
+  const sourceOpenerRef = useRef<HTMLElement | null>(null);
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
   const { hidden: chromeHidden, reveal: revealChrome } = usePlayerChromeVisibility(sourceOpened);
 
@@ -490,7 +491,15 @@ export default function PlayerShell({
     return () => window.clearTimeout(timeout);
   }, [sourceFeedback]);
 
+  const closeSource = useCallback(() => {
+    setSourceOpened(false);
+    window.requestAnimationFrame(() => sourceOpenerRef.current?.focus());
+  }, []);
+
   const openSource = useCallback(() => {
+    sourceOpenerRef.current = document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null;
     revealChrome();
     setSourceOpened(true);
   }, [revealChrome]);
@@ -505,7 +514,7 @@ export default function PlayerShell({
           clearPlaybackPreference(window.localStorage, request.mediaType, preferredAudio);
           setRememberedSourceId(null);
         }
-        setSourceOpened(false);
+        closeSource();
         revealChrome();
         return;
       }
@@ -527,7 +536,7 @@ export default function PlayerShell({
         }
         setSourceFeedback({ sourceId: id, label: nextSource.label, phase: "switching" });
       });
-      setSourceOpened(false);
+      closeSource();
       setRecoveryPrompt(null);
       revealChrome();
 
@@ -580,6 +589,7 @@ export default function PlayerShell({
     [
       directRequestKey,
       events.currentTime,
+      closeSource,
       onAudioVariantChange,
       preferredAudio,
       request.mediaType,
@@ -800,7 +810,7 @@ export default function PlayerShell({
 
       <PlayerSourceSheet
         opened={sourceOpened}
-        onClose={() => setSourceOpened(false)}
+        onClose={closeSource}
         sources={sources}
         selectedSourceId={selectedSource?.id ?? ""}
         switchingSourceId={switchingSourceId}
