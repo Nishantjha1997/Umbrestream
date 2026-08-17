@@ -502,7 +502,8 @@ export default function PlayerShell({
       : null;
     revealChrome();
     setSourceOpened(true);
-  }, [revealChrome]);
+    trackUmbraEvent("source_sheet_opened", { mediaType: request.mediaType });
+  }, [request.mediaType, revealChrome]);
 
   const switchSource = useCallback(
     (id: string, reason: "manual" | "recovery" | "reset" = "manual") => {
@@ -575,6 +576,12 @@ export default function PlayerShell({
         clearPlaybackPreference(window.localStorage, request.mediaType, preferredAudio);
         setRememberedSourceId(null);
       }
+
+      trackUmbraEvent("source_sheet_selection_completed", {
+        mediaType: request.mediaType,
+        provider: nextSource.providerId,
+        audio: nextSource.audioVariant ?? "none",
+      });
 
       // The selected iframe already changed above; URL persistence is
       // intentionally non-blocking. A failed History API update must never

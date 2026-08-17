@@ -1,6 +1,7 @@
 "use client";
 
 import { getSearchSuggestions } from "@/actions/search";
+import { trackUmbraEvent } from "@/lib/analytics/client";
 import SearchInput from "@/components/ui/input/SearchInput";
 import ContentTypeSelection from "@/components/ui/other/ContentTypeSelection";
 import Highlight from "@/components/ui/other/Highlight";
@@ -70,6 +71,14 @@ const SearchFilter: React.FC<SearchFilterProps> = ({ isLoading, onSearchSubmit, 
     onSearchSubmit?.("");
   }, [onSearchSubmit, setSearchQuery]);
 
+  const openSuggestion = useCallback(
+    (suggestion: { id: number; type: "movie" | "tv"; title: string }) => {
+      trackUmbraEvent("search_suggestion_selected", { mediaType: suggestion.type });
+      router.push(`/${suggestion.type}/${suggestion.id}`);
+    },
+    [router],
+  );
+
   const handleSearchKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLInputElement>) => {
       const suggestions = data?.data ?? [];
@@ -90,10 +99,10 @@ const SearchFilter: React.FC<SearchFilterProps> = ({ isLoading, onSearchSubmit, 
       } else if (event.key === "Enter" && activeSuggestion >= 0) {
         event.preventDefault();
         const suggestion = suggestions[activeSuggestion];
-        if (suggestion) router.push(`/${suggestion.type}/${suggestion.id}`);
+        if (suggestion) openSuggestion(suggestion);
       }
     },
-    [activeSuggestion, data?.data, router, showSuggestions],
+    [activeSuggestion, data?.data, openSuggestion, showSuggestions],
   );
 
   return (
@@ -245,7 +254,7 @@ const SearchFilter: React.FC<SearchFilterProps> = ({ isLoading, onSearchSubmit, 
                             <ArrowUpLeft size={20} />
                           </Button>
                         }
-                        onPress={() => router.push(`/${type}/${id}`)}
+                        onPress={() => openSuggestion({ id, type, title })}
                       >
                         <Highlight markType="bold" highlight={debouncedSearchQuery}>
                           {title}
