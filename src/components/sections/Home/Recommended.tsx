@@ -76,6 +76,7 @@ const Recommended: React.FC<RecommendedProps> = ({
   );
 
   const isLoading = isUserLoading || (isPending && !isError);
+  const displayTitle = user ? title : "Trending now";
 
   // <Shelf> renders nothing at all when it has no items, which left this
   // section as a silent hole for anyone the engine has nothing to go on for
@@ -89,7 +90,7 @@ const Recommended: React.FC<RecommendedProps> = ({
     return (
       <section id={id} className="scroll-mt-24">
         <HomeEmptyState
-          title={title}
+          title={displayTitle}
           headline={user ? "Nothing to go on yet" : "Recommendations get sharper as you watch"}
           description={
             user
@@ -107,7 +108,7 @@ const Recommended: React.FC<RecommendedProps> = ({
   return (
     <section id={id} className="scroll-mt-24">
       <Shelf
-        title={title}
+        title={displayTitle}
         items={items}
         isLoading={isLoading}
         isError={isError}

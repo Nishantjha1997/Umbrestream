@@ -101,10 +101,16 @@ export default function DesktopHero() {
     pick.media.posterUrl;
   const caption = captionFor(pick);
   const showRing = pick.source === "resume" && pick.progressPercent !== undefined;
+  const heroLabel =
+    pick.source === "resume"
+      ? "Continue where you left off"
+      : pick.source === "trending"
+        ? "Trending today"
+        : "Recommended for you";
 
   return (
     <section
-      aria-label="Continue where you left off"
+      aria-label={heroLabel}
       className="relative h-[560px] flex-none overflow-hidden bg-black"
     >
       <div className="absolute inset-0" style={{ backgroundImage: FALLBACK_ART }}>

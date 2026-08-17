@@ -86,7 +86,7 @@ export default function HomeDiscoveryFeed({ idPrefix, variant }: HomeDiscoveryFe
 
       <nav aria-label="Jump to a home section" className="-mt-3 flex gap-2 overflow-x-auto pb-1">
         {[
-          ["Picked for you", `#${idPrefix}-recommendations`],
+          ["For you / trending", `#${idPrefix}-recommendations`],
           ["Trending", `#${idPrefix}-trending-now-movie-row`],
           ["Movies", `#${idPrefix}-popular-on-streamfree-movie-row`],
           ["Series", `#${idPrefix}-binge-worthy-series-tv-row`],
