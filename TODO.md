@@ -197,12 +197,12 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Next action: replace client season-boundary logic
 
 - [ ] SF-038 — Extract shared native modules
-  - Status: not started
+  - Status: in progress
   - Priority: P1
   - Depends on: SF-032, SF-036
-  - Evidence: —
-  - Commit: —
-  - Next action: extract pure modules before rendering changes
+  - Evidence: shared `src/lib/homeFeed/nativeAdapter.ts` now feeds both phone and TV presentation shells from `/api/mobile/home`; API/cache/history/playback module extraction remains
+  - Commit: pending `feat(native): consume shared home feed`
+  - Next action: route shared cache, history, and playback helpers without changing touch/remote presentation
 
 - [ ] SF-039 — Keep phone/TV presentation layers separate
   - Status: not started

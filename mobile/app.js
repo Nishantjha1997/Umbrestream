@@ -13,6 +13,7 @@ import {
   readPlaybackPreference,
   writePlaybackPreference,
 } from "../src/lib/sources/playbackPolicy.ts";
+import { toNativeHomeFeed } from "../src/lib/homeFeed/nativeAdapter.ts";
 
 const BACKEND_ORIGIN = "https://streamfree.online";
 const IMAGE_ORIGIN = "https://image.tmdb.org/t/p/w500";
@@ -801,6 +802,38 @@ function heroMarkup(hero, resume = false) {
   </section>`;
 }
 
+async function loadSharedHomeFeed() {
+  let headers = {};
+  if (state.supabase) {
+    const { data } = await state.supabase.auth.getSession();
+    if (data.session?.access_token) headers = { Authorization: "Bearer " + data.session.access_token };
+  }
+  const feed = await requestJson("/api/mobile/home", { headers });
+  if (feed?.schemaVersion !== 1 || !Array.isArray(feed.rows)) throw new Error("Invalid home feed");
+  return feed;
+}
+
+function renderSharedHomeFeed(feed) {
+  const mapped = toNativeHomeFeed(feed);
+  const history = mapped.history.filter((item) => !item.completed);
+  const hero = mapped.hero || history[0] || mapped.trending[0] || mapped.regionalMovies[0] || mapped.anime[0];
+  if (!hero) throw new Error("Shared home feed is empty");
+  const countryLabel = feed.region.source === "default" && feed.region.effectiveCountry === "US" ? "Global" : feed.region.countryName;
+  const displayName = state.user ? state.profile?.username || state.user.email?.split("@")[0] : "Guest";
+  const markup = [
+    heroMarkup(hero, mapped.heroIsResume),
+    '<section class="welcome-strip"><div><span>' + (state.user ? "Synced across devices" : "Private guest session") + '</span><strong>' + escapeHtml(displayName) + '</strong></div><button class="avatar-chip pressable" data-route="space">' + escapeHtml(accountInitials()) + '</button></section>',
+    section("Continue watching", history.slice(1), "movie", { kicker: "Most recently watched", progress: true, action: "open-history", actionLabel: "History" }),
+    mapped.personalized.length ? section("Picked for you", mapped.personalized, "movie", { kicker: "Based on your watches" }) : "",
+    section(countryLabel + " trending movies", mapped.regionalMovies, "movie", { kicker: "What people are watching nearby", ranked: true }),
+    section(countryLabel + " trending series", mapped.regionalSeries, "tv", { kicker: "Series popular in your region" }),
+    section("Trending anime", mapped.anime, "anime", { kicker: "Fresh picks from AniList" }),
+    section("Trending now", mapped.trending, "movie", { kicker: "Everyone is watching", ranked: true }),
+    '<section class="home-end"><span>SF</span><p>You reached the credits.</p><button class="text-action" data-action="scroll-top">Back to top</button></section>',
+  ].join("");
+  commit(markup, { root: "home" });
+}
+
 async function renderHome() {
   if (!navigator.onLine) {
     renderOfflineHome();
@@ -808,6 +841,13 @@ async function renderHome() {
   }
   renderLoading(state.user ? `Welcome back, ${state.profile?.username || "movie lover"}` : "Building your home");
   try {
+    try {
+      const sharedFeed = await loadSharedHomeFeed();
+      renderSharedHomeFeed(sharedFeed);
+      return;
+    } catch (sharedError) {
+      console.warn("[mobile-home] shared feed unavailable; using legacy fallback", sharedError);
+    }
     const region = await getRegion();
     const localParams = regionalParams(region);
     const [trending, movies, shows, regionalMovies, regionalSeries, animeData] = await Promise.all([
@@ -837,7 +877,7 @@ async function renderHome() {
     commit(`${heroMarkup(hero, Boolean(history[0]))}
       <section class="welcome-strip"><div><span>${state.user ? "Synced across devices" : "Private guest session"}</span><strong>${escapeHtml(displayName)}</strong></div><button class="avatar-chip pressable" data-route="space">${escapeHtml(accountInitials())}</button></section>
       ${section("Continue watching", history.slice(1), "movie", { kicker: "Most recently watched", progress: true, action: "open-history", actionLabel: "History" })}
-      ${section("Picked for you", picked.slice(0, 12), "movie", { kicker: state.user ? "Based on your watches" : `Popular in ${countryLabel}` })}
+      ${section(state.user ? "Picked for you" : "Trending now", picked.slice(0, 12), "movie", { kicker: state.user ? "Based on your watches" : `Popular in ${countryLabel}` })}
       ${section(`${countryLabel} trending movies`, regionalMovies.results?.slice(0, 14), "movie", { kicker: "What people are watching nearby", ranked: true })}
       ${section(`${countryLabel} trending series`, regionalSeries.results?.slice(0, 14), "tv", { kicker: "Series popular in your region" })}
       ${section("Trending anime", anime.slice(0, 14), "anime", { kicker: "Fresh picks from AniList" })}
