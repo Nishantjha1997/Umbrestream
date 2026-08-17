@@ -18,6 +18,7 @@ import { fetchSharedHomeFeed } from "../src/lib/homeFeed/nativeClient.ts";
 import { resolveAdjacentEpisode } from "../src/lib/tv/adjacentEpisode.ts";
 import { REGION_OPTIONS, normalizeRegionOverride, regionName } from "../src/lib/native/region.ts";
 import { createNativeCache } from "../src/lib/native/cache.ts";
+import { historyDate, historyProgress, latestHistoryTitles, onlyLocalAnime, sortHistoryItems } from "../src/lib/native/history.ts";
 
 const BACKEND_ORIGIN = "https://streamfree.online";
 const IMAGE_ORIGIN = "https://image.tmdb.org/t/p/w500";
@@ -421,28 +422,7 @@ function currentLibrary() {
 
 function currentHistory() {
   if (!state.user) return guestHistory();
-  return [...state.histories, ...guestHistory().filter((item) => mediaType(item, item.type) === "anime")]
-    .sort((a, b) => new Date(b.updated_at || b.watchedAt || 0) - new Date(a.updated_at || a.watchedAt || 0));
-}
-
-function latestHistoryTitles(items) {
-  return [...items]
-    .sort((a, b) => new Date(b.updated_at || b.watchedAt || 0) - new Date(a.updated_at || a.watchedAt || 0))
-    .filter((item, index, rows) => rows.findIndex((candidate) => mediaType(candidate, candidate.type) === mediaType(item, item.type) && mediaId(candidate) === mediaId(item)) === index);
-}
-
-function historyProgress(item) {
-  const duration = Number(item.duration || 0);
-  const position = Number(item.last_position || 0);
-  if (!duration) return item.completed ? 100 : 8;
-  return Math.round((position / duration) * 100);
-}
-
-function historyDate(item) {
-  const value = item.updated_at || item.watchedAt || item.created_at;
-  if (!value) return "Recently watched";
-  const date = new Date(value);
-  return `Watched ${new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" }).format(date)}`;
+  return sortHistoryItems([...state.histories, ...onlyLocalAnime(guestHistory())]);
 }
 
 function accountInitials() {

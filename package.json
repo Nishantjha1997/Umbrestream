@@ -14,6 +14,7 @@
     "test:continue-watching": "node --experimental-strip-types scripts/check-continue-watching.mjs",
     "test:home-feed": "node --experimental-strip-types scripts/check-home-feed.mjs",
     "test:native-cache": "node --experimental-strip-types scripts/check-native-cache.mjs",
+    "test:native-history": "node --experimental-strip-types scripts/check-native-history.mjs",
     "check:release-artifacts": "node scripts/check-release-artifacts.mjs",
     "test:update-manifests": "node scripts/check-update-manifests.mjs",
     "check:leak": "node scripts/check-leak.mjs",
