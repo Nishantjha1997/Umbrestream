@@ -24,6 +24,7 @@ import android.webkit.WebSettings;
 import android.widget.Toast;
 
 import androidx.core.content.FileProvider;
+import androidx.core.splashscreen.SplashScreen;
 
 import com.getcapacitor.BridgeActivity;
 import com.getcapacitor.PluginCall;
@@ -50,6 +51,7 @@ public class MainActivity extends BridgeActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        SplashScreen.installSplashScreen(this);
         registerPlugin(StreamFreeNativePlugin.class);
         super.onCreate(savedInstanceState);
 

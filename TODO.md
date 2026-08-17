@@ -8,7 +8,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
 
 ## Phase 0 — Baseline
 
-- [ ] SF-001 — Create controlled branch, plan.md, and TODO.md
+- [x] SF-001 — Create controlled branch, plan.md, and TODO.md
   - Status: completed
   - Priority: P0
   - Depends on: none
@@ -16,7 +16,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `45f6ef6`
   - Completed: 2026-08-17
 
-- [ ] SF-002 — Record baseline deployment, manifests, APK hashes, package IDs, and signing fingerprints
+- [x] SF-002 — Record baseline deployment, manifests, APK hashes, package IDs, and signing fingerprints
   - Status: completed
   - Priority: P0
   - Depends on: SF-001
@@ -24,7 +24,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `45f6ef6`
   - Completed: 2026-08-17
 
-- [ ] SF-003 — Record known release limitations and existing evidence
+- [x] SF-003 — Record known release limitations and existing evidence
   - Status: completed
   - Priority: P0
   - Depends on: SF-001
@@ -32,7 +32,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `45f6ef6`
   - Completed: 2026-08-17
 
-- [ ] SF-004 — Capture baseline performance, bundle, startup, accessibility, and production UI evidence
+- [x] SF-004 — Capture baseline performance, bundle, startup, accessibility, and production UI evidence
   - Status: completed
   - Priority: P1
   - Depends on: SF-002, SF-003
@@ -42,7 +42,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
 
 ## Phase 1 — Release hygiene
 
-- [ ] SF-010 — Narrow ESLint to authored source
+- [x] SF-010 — Narrow ESLint to authored source
   - Status: completed
   - Priority: P0
   - Depends on: SF-001
@@ -50,7 +50,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `d98e2b7`
   - Completed: 2026-08-17
 
-- [ ] SF-011 — Fix authored lint errors and unexpected warnings
+- [x] SF-011 — Fix authored lint errors and unexpected warnings
   - Status: completed
   - Priority: P0
   - Depends on: SF-010
@@ -58,7 +58,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `d98e2b7`
   - Completed: 2026-08-17
 
-- [ ] SF-012 — Add lint to verification
+- [x] SF-012 — Add lint to verification
   - Status: completed
   - Priority: P0
   - Depends on: SF-011
@@ -66,7 +66,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `d98e2b7`
   - Completed: 2026-08-17
 
-- [ ] SF-013 — Enforce type validation in CI/Vercel
+- [x] SF-013 — Enforce type validation in CI/Vercel
   - Status: completed
   - Priority: P0
   - Depends on: SF-012
@@ -230,21 +230,21 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `ec51633`
   - Completed: 2026-08-17
 
-- [ ] SF-052 — Remove long native splash overlay
-  - Status: not started
+- [x] SF-052 — Remove long native splash overlay
+  - Status: completed
   - Priority: P0
   - Depends on: SF-004
-  - Evidence: —
-  - Commit: —
-  - Next action: update phone and TV CSS/native startup
+  - Evidence: phone and TV use the platform SplashScreen API with a short static theme instead of a custom full-screen drawable hold
+  - Commit: pending `perf(native): use platform splash screen`
+  - Completed: 2026-08-17
 
-- [ ] SF-053 — Use Android SplashScreen for cold starts
-  - Status: not started
+- [x] SF-053 — Use Android SplashScreen for cold starts
+  - Status: completed
   - Priority: P1
   - Depends on: SF-052
-  - Evidence: —
-  - Commit: —
-  - Next action: verify existing dependency and theme
+  - Evidence: both MainActivity classes call `SplashScreen.installSplashScreen(this)` before Activity initialization and use `postSplashScreenTheme`
+  - Commit: pending `perf(native): use platform splash screen`
+  - Completed: 2026-08-17
 
 - [ ] SF-054 — Stabilize native auth hydration
   - Status: not started
