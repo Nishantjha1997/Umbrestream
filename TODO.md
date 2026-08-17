@@ -137,7 +137,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P1
   - Depends on: SF-011
   - Evidence: `src/lib/homeFeed/types.ts` defines the versioned schema, provenance, region, hero, rows, and Continue Watching progress contract
-  - Commit: pending `feat(home): add shared mobile feed contract`
+  - Commit: `be9a73c`
   - Completed: 2026-08-17
 
 - [x] SF-031 — Implement shared home-feed builder
@@ -145,7 +145,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P1
   - Depends on: SF-030
   - Evidence: `buildHomeFeed` composes region-aware TMDB rows, AniList anime, authenticated title-level Continue Watching, honest provenance, hero selection, and deduplication
-  - Commit: pending `feat(home): add shared mobile feed contract`
+  - Commit: `be9a73c`
   - Completed: 2026-08-17
 
 - [x] SF-032 — Add /api/mobile/home
@@ -153,7 +153,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P1
   - Depends on: SF-031
   - Evidence: GET/OPTIONS route exposes the versioned feed with CORS and cache headers for native clients
-  - Commit: pending `feat(home): add shared mobile feed contract`
+  - Commit: `be9a73c`
   - Completed: 2026-08-17
 
 - [x] SF-033 — Validate optional Supabase bearer tokens
@@ -161,7 +161,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-032
   - Evidence: server Supabase client accepts a bearer token, calls `auth.getUser`, and only includes Continue Watching for a validated user
-  - Commit: pending `feat(home): add shared mobile feed contract`
+  - Commit: `be9a73c`
   - Completed: 2026-08-17
 
 - [x] SF-034 — Separate public and private feed caching
@@ -169,7 +169,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P1
   - Depends on: SF-033
   - Evidence: signed-out route responses use short shared edge caching; bearer-authenticated responses are `private, no-store`
-  - Commit: pending `feat(home): add shared mobile feed contract`
+  - Commit: `be9a73c`
   - Completed: 2026-08-17
 
 - [ ] SF-035 — Add region override and reset
