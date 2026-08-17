@@ -275,7 +275,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P2
   - Depends on: SF-056
   - Evidence: the heavy lightbox/plugin graph is now client-only and dynamically loaded from Photos; player-only HLS/DASH dependencies remain route-level and Home does not import them; typecheck and authored lint pass
-  - Commit: pending
+  - Commit: `0c31720`
   - Completed: 2026-08-17
 
 - [ ] SF-058 — Lazy-load artwork and distant rails
