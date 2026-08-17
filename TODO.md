@@ -851,7 +851,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-155
   - Evidence: Vercel production deployment `dpl_Dt2ZUKLhXj27M6KgNeieMxQ61k48` returned `readyState: READY` and was aliased to `https://streamfree.online`; live phone/TV app pages contain the new Verified updates copy and no longer expose the old APK digest values
-  - Commit: `b6d7c9f`
+  - Commit: `2abc4ba`
   - Completed: 2026-08-17
 
 - [ ] SF-158 — Publish manifests/APKs and deploy production
@@ -868,5 +868,5 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-158
   - Evidence: `STREAMFREE_HANDOFF.md` now records Supabase verification, Android build tooling, production movie/TV/anime source-picker smoke results, signing metadata, Vercel deployment ID, and the APK publication blocker; final release hashes and rollback evidence remain open
-  - Commit: `b6d7c9f`
+  - Commit: `2abc4ba`
   - Next action: append new signed APK metadata, final Vercel verification, and rollback details after keystore recovery
