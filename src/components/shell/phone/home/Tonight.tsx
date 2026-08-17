@@ -26,7 +26,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { addToast } from "@heroui/react";
 import { addToWatchlist, removeFromWatchlist } from "@/actions/library";
-import { getPersonalizedRecommendations } from "@/actions/recommendations";
+import { getPersonalizedRecommendationFeed } from "@/actions/recommendations";
 import { useHomeHero } from "@/hooks/useHomeHero";
 import useSupabaseUser from "@/hooks/useSupabaseUser";
 import type { MediaSummary } from "@/types/media";
@@ -54,13 +54,13 @@ export default function Tonight() {
 
   const { data: recommendations } = useQuery({
     queryKey: ["personalized-recommendations", user?.id],
-    queryFn: () => getPersonalizedRecommendations(),
+    queryFn: () => getPersonalizedRecommendationFeed(),
     enabled: !isUserLoading,
     staleTime: 30 * 60 * 1000,
   });
 
   const media = useMemo<MediaSummary | undefined>(() => {
-    for (const item of recommendations ?? []) {
+    for (const item of recommendations?.items ?? []) {
       const candidate =
         item.type === "movie"
           ? fromMovie(item.media as Movie)
@@ -79,7 +79,7 @@ export default function Tonight() {
       return candidate;
     }
     return undefined;
-  }, [recommendations, heroPick]);
+  }, [recommendations?.items, heroPick]);
 
   const [saved, setSaved] = useState(false);
   const [pending, setPending] = useState(false);

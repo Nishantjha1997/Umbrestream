@@ -316,8 +316,8 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Status: completed
   - Priority: P0
   - Depends on: SF-031
-  - Evidence: desktop hero aria label now follows resume/recommended/trending source; signed-out recommendation shelf is labelled `Trending now` instead of `Picked for you`
-  - Commit: `6feb2b5`
+  - Evidence: hero and recommendation feed now carry explicit `personalized` vs `trending` provenance; cold-start and signed-out shelves are labelled `Trending now`
+  - Commit: `pending fix(home): expose recommendation provenance`
   - Completed: 2026-08-17
   - Next action: return explicit source semantics from hero hook/feed
 
