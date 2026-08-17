@@ -235,7 +235,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-004
   - Evidence: phone and TV use the platform SplashScreen API with a short static theme instead of a custom full-screen drawable hold
-  - Commit: pending `perf(native): use platform splash screen`
+  - Commit: `656d87e`
   - Completed: 2026-08-17
 
 - [x] SF-053 — Use Android SplashScreen for cold starts
@@ -243,7 +243,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P1
   - Depends on: SF-052
   - Evidence: both MainActivity classes call `SplashScreen.installSplashScreen(this)` before Activity initialization and use `postSplashScreenTheme`
-  - Commit: pending `perf(native): use platform splash screen`
+  - Commit: `656d87e`
   - Completed: 2026-08-17
 
 - [ ] SF-054 — Stabilize native auth hydration
