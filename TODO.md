@@ -193,7 +193,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-036
   - Evidence: web, phone, and TV now import the same pure resolver; native TV progression fetches series summaries plus the current season and crosses valid season boundaries without specials
-  - Commit: pending `fix(tv): unify cross-season progression`
+  - Commit: `a8cb8f6`
   - Completed: 2026-08-17
 
 - [ ] SF-038 — Extract shared native modules
