@@ -398,7 +398,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-011
   - Evidence: Arrow Up/Down, Escape, Enter, pointer selection, and suggestion highlighting share one navigation callback
-  - Commit: pending `fix(search): stabilize suggestion selection and semantics`
+  - Commit: `a0eaed3`
   - Completed: 2026-08-17
 
 - [x] SF-081 — Add Search ARIA relationships
@@ -406,7 +406,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-080
   - Evidence: SearchInput receives `aria-controls`, `aria-expanded`, and `aria-activedescendant`; the listbox and option ids are stable and active state is exposed
-  - Commit: pending `fix(search): stabilize suggestion selection and semantics`
+  - Commit: `a0eaed3`
   - Completed: 2026-08-17
 
 - [ ] SF-082 — Verify Search pointer/touch/keyboard paths
