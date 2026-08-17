@@ -16,7 +16,7 @@ import DiscoverFilters from "@/components/sections/Discover/Filters";
 import useDiscoverFilters from "@/hooks/useDiscoverFilters";
 import { Tabs, Tab } from "@heroui/react";
 import { parseAsStringLiteral, useQueryState } from "nuqs";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 const MovieDiscoverList = dynamic(() => import("@/components/sections/Discover/MovieList"));
 const TvShowDiscoverList = dynamic(() => import("@/components/sections/Discover/TvShowList"));
@@ -26,7 +26,8 @@ type BrowseTab = (typeof TABS)[number];
 
 export default function BrowseTabs() {
   const [tab, setTab] = useQueryState("tab", parseAsStringLiteral(TABS).withDefault("films"));
-  const { setContent } = useDiscoverFilters();
+  const { setContent, resetFilters } = useDiscoverFilters();
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   // Keep the shared `content` state in sync so `DiscoverFilters` (genre
   // select, etc.) and the grids stay correct when Browse itself changes tab
@@ -35,6 +36,15 @@ export default function BrowseTabs() {
     if (tab === "films") setContent("movie");
     if (tab === "series") setContent("tv");
   }, [tab, setContent]);
+
+  const handleTabChange = (nextTab: BrowseTab) => {
+    // Filters have different valid type sets for movies and series. Resetting
+    // here avoids a stale movie query being sent to the TV endpoint and keeps
+    // the URL an honest, shareable representation of the visible segment.
+    if (nextTab !== "categories" && nextTab !== tab) resetFilters();
+    void setTab(nextTab);
+    requestAnimationFrame(() => resultsRef.current?.focus());
+  };
 
   return (
     <div className="mx-auto flex max-w-7xl flex-col gap-8 pt-6 pb-28 md:pt-10 md:pb-12">
@@ -45,21 +55,29 @@ export default function BrowseTabs() {
         aria-label="Browse"
         color="primary"
         classNames={{ tabList: "mx-auto", cursor: "h-1 rounded-full" }}
-        onSelectionChange={(key) => setTab(key as BrowseTab)}
+        onSelectionChange={(key) => handleTabChange(key as BrowseTab)}
       >
         <Tab key="films" title="Films" />
         <Tab key="series" title="Series" />
         <Tab key="categories" title="Categories" />
       </Tabs>
 
-      {tab === "categories" ? (
-        <CategoriesSection />
-      ) : (
-        <div className="flex flex-col gap-8">
-          <DiscoverFilters hideContentTypeTabs />
-          {tab === "films" ? <MovieDiscoverList /> : <TvShowDiscoverList />}
-        </div>
-      )}
+      <div
+        ref={resultsRef}
+        tabIndex={-1}
+        aria-live="polite"
+        className="scroll-mt-24 outline-none focus-visible:ring-2 focus-visible:ring-violet-300/70 focus-visible:ring-offset-4 focus-visible:ring-offset-[#0a090d]"
+        aria-label={`${tab === "films" ? "Films" : tab === "series" ? "Series" : "Categories"} browse results`}
+      >
+        {tab === "categories" ? (
+          <CategoriesSection />
+        ) : (
+          <div className="flex flex-col gap-8">
+            <DiscoverFilters hideContentTypeTabs />
+            {tab === "films" ? <MovieDiscoverList /> : <TvShowDiscoverList />}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

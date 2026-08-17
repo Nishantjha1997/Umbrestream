@@ -49,6 +49,16 @@ const useDiscoverFilters = () => {
     setQueryType(DEFAULT_QUERY_TYPE);
   }, [setGenres, setQueryType]);
 
+  // A movie-only query type must never leak into the TV grid (or vice versa)
+  // when the content segment changes. Keeping this normalization here means
+  // direct links and tab clicks follow the same URL contract.
+  useEffect(() => {
+    if (queryType !== DEFAULT_QUERY_TYPE && !types.some((type) => type.key === queryType)) {
+      setQueryType(DEFAULT_QUERY_TYPE);
+      setGenres(null);
+    }
+  }, [queryType, setGenres, setQueryType, types]);
+
   const clearQueries = useCallback(() => {
     const queryKeys = ["discover-movies", "discover-tv-shows"];
     queryKeys.forEach((key) => {

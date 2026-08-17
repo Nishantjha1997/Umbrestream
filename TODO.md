@@ -417,13 +417,13 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: —
   - Next action: add deterministic browser tests
 
-- [ ] SF-083 — Improve Browse filters and focus restoration
-  - Status: not started
+- [x] SF-083 — Improve Browse filters and focus restoration
+  - Status: completed
   - Priority: P1
   - Depends on: SF-011
-  - Evidence: —
-  - Commit: —
-  - Next action: label controls and preserve URL state
+  - Evidence: Browse normalizes stale movie/series query types, resets incompatible filters on segment changes, labels filter controls, disables an unnecessary reset action, and restores focus to the results region
+  - Commit: pending
+  - Completed: 2026-08-17
 
 - [ ] SF-084 — Add complete loading/offline/empty/retry states
   - Status: not started

@@ -15,16 +15,23 @@ interface DiscoverFiltersProps {
 const DiscoverFilters = ({ hideContentTypeTabs }: DiscoverFiltersProps = {}) => {
   const { types, content, genres, queryType, setQueryType, setGenres, resetFilters } =
     useDiscoverFilters();
+  const hasActiveFilters = queryType !== "discover" || genres.size > 0;
 
   return (
-    <div className="flex w-full flex-wrap justify-center gap-3">
+    <div
+      className="flex w-full flex-wrap justify-center gap-3"
+      aria-label="Browse filters"
+      data-browse-filters
+    >
       {!hideContentTypeTabs && <ContentTypeSelection className="mb-5 justify-center" />}
-      <div className="flex w-full flex-wrap justify-center gap-3">
+      <div className="flex w-full flex-wrap justify-center gap-3" role="group" aria-label="Filter catalogue">
         <Select
+          id="discover-type"
           disallowEmptySelection
           selectionMode="single"
           size="sm"
           label="Type"
+          aria-label="Catalogue type"
           placeholder="Select type"
           className="max-w-xs"
           selectedKeys={[queryType]}
@@ -39,7 +46,9 @@ const DiscoverFilters = ({ hideContentTypeTabs }: DiscoverFiltersProps = {}) => 
           })}
         </Select>
         <GenresSelect
+          id="discover-genres"
           type={content}
+          aria-label={`${content === "tv" ? "Series" : "Movie"} genres`}
           selectedKeys={genres}
           onGenreChange={(genres) => {
             setGenres(genres);
@@ -47,7 +56,13 @@ const DiscoverFilters = ({ hideContentTypeTabs }: DiscoverFiltersProps = {}) => 
           }}
         />
       </div>
-      <Button size="sm" onPress={resetFilters}>
+      <Button
+        size="sm"
+        variant={hasActiveFilters ? "solid" : "flat"}
+        isDisabled={!hasActiveFilters}
+        onPress={resetFilters}
+        aria-label={hasActiveFilters ? "Reset active browse filters" : "No active browse filters"}
+      >
         Reset Filters
       </Button>
     </div>
