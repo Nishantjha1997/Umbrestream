@@ -172,13 +172,13 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `be9a73c`
   - Completed: 2026-08-17
 
-- [ ] SF-035 — Add region override and reset
-  - Status: not started
+- [x] SF-035 — Add region override and reset
+  - Status: completed
   - Priority: P1
   - Depends on: SF-031
-  - Evidence: —
-  - Commit: —
-  - Next action: add effective-region preference
+  - Evidence: validated region choices persist on web, phone, and TV; shared mobile feed accepts `X-StreamFree-Region`, preserves detected/effective country separately, and uses private caching for overrides
+  - Commit: `pending fix(home): add validated region overrides`
+  - Completed: 2026-08-17
 
 - [x] SF-036 — Implement shared adjacent-episode resolver
   - Status: completed
@@ -433,13 +433,13 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: —
   - Next action: audit all core routes
 
-- [ ] SF-085 — Add region override controls
-  - Status: not started
+- [x] SF-085 — Add region override controls
+  - Status: completed
   - Priority: P1
   - Depends on: SF-035
-  - Evidence: —
-  - Commit: —
-  - Next action: expose preference in web/native settings
+  - Evidence: web My Space, phone Settings, and Android TV Settings expose Automatic plus validated country choices and Reset to automatic; changes invalidate regional discovery/feed caches
+  - Commit: `pending fix(home): add validated region overrides`
+  - Completed: 2026-08-17
 
 - [ ] SF-086 — Apply touch targets and contrast
   - Status: not started

@@ -12,6 +12,7 @@ import {
 } from "react-icons/fi";
 import { FiBarChart2 } from "react-icons/fi";
 import { getAdminAccess } from "@/lib/admin";
+import RegionPreference from "@/components/sections/Settings/RegionPreference";
 
 export const metadata: Metadata = { title: `My Space | ${siteConfig.name}` };
 
@@ -99,6 +100,7 @@ export default async function MySpacePage() {
           StreamFree remembers the last provider that played successfully during your session, keeps
           manual server choices pinned, and stops after one complete fallback pass.
         </p>
+        <RegionPreference />
       </section>
     </div>
   );

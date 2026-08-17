@@ -25,6 +25,7 @@ const RECENT_SEARCH_KEY = "streamfree-tv-recent-searches";
 const SETTINGS_KEY = "streamfree-tv-settings-v1";
 const AUTH_STORAGE_KEY = "streamfree-tv-auth-v1";
 const REGION_STORAGE_KEY = "streamfree-tv-region-v1";
+const REGION_OVERRIDE_KEY = "streamfree-region-override-v1";
 const APP_VERSION = "1.2.0";
 const APP_VERSION_CODE = 3;
 const APP_UPDATE_MANIFEST = "/downloads/streamfree-android-tv.json";
@@ -80,6 +81,23 @@ function readStorage(key, fallback) {
 
 function writeStorage(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
+}
+
+const REGION_OPTIONS = [
+  ["", "Automatic"], ["US", "United States"], ["IN", "India"], ["GB", "United Kingdom"],
+  ["CA", "Canada"], ["AU", "Australia"], ["DE", "Germany"], ["FR", "France"],
+  ["JP", "Japan"], ["KR", "South Korea"], ["BR", "Brazil"], ["MX", "Mexico"],
+  ["SG", "Singapore"], ["AE", "United Arab Emirates"],
+];
+
+function normalizeRegionOverride(value) {
+  const code = String(value || "").trim().toUpperCase();
+  return REGION_OPTIONS.some(([option]) => option === code) && code ? code : "";
+}
+
+function regionName(code) {
+  try { return new Intl.DisplayNames(["en"], { type: "region" }).of(code) || code; }
+  catch { return code; }
 }
 
 const TOUR_STEPS = [
@@ -259,18 +277,19 @@ async function cached(key, loader, ttl = CACHE_TTL) {
 
 async function getRegion() {
   if (state.region) return state.region;
+  const override = normalizeRegionOverride(readStorage(REGION_OVERRIDE_KEY, ""));
   const stored = readStorage(REGION_STORAGE_KEY, null);
-  if (stored?.country && Date.now() - Number(stored.at || 0) < 24 * 60 * 60 * 1000) {
+  if (!override && stored?.country && Date.now() - Number(stored.at || 0) < 24 * 60 * 60 * 1000) {
     state.region = stored;
     return state.region;
   }
   try {
     const region = await requestJson("/api/geo");
-    state.region = { ...region, at: Date.now() };
+    state.region = override ? { ...region, detectedCountry: region.country, country: override, countryName: regionName(override), source: "override", at: Date.now() } : { ...region, at: Date.now() };
   } catch {
-    state.region = { country: "US", countryName: "Global", source: "default", at: Date.now() };
+    state.region = override ? { country: override, countryName: regionName(override), source: "override", at: Date.now() } : { country: "US", countryName: "Global", source: "default", at: Date.now() };
   }
-  writeStorage(REGION_STORAGE_KEY, state.region);
+  if (!override) writeStorage(REGION_STORAGE_KEY, state.region);
   return state.region;
 }
 
@@ -808,7 +827,8 @@ function heroMarkup(hero, resume = false) {
 }
 
 async function loadSharedHomeFeed() {
-  let headers = {};
+  const override = normalizeRegionOverride(readStorage(REGION_OVERRIDE_KEY, ""));
+  let headers = override ? { "X-StreamFree-Region": override } : {};
   if (state.supabase) {
     const { data } = await state.supabase.auth.getSession();
     if (data.session?.access_token) headers = { Authorization: "Bearer " + data.session.access_token };
@@ -1427,7 +1447,9 @@ function settingToggle(key, title, copy) {
 }
 
 function renderSettings() {
-  commit(`<section class="subpage-head"><button class="back-fab pressable" data-action="back">‹</button><span class="eyebrow">Make it yours</span><h1>TV settings</h1><p>Stored privately on this Android TV device.</p></section><section class="settings-card">${settingToggle("dataSaver", "Data saver", "Prefer lighter artwork while browsing")}${settingToggle("autoplayNext", "Autoplay next episode", "Keep a series moving when supported")}${settingToggle("reduceMotion", "Reduce motion", "Use simpler screen transitions")}</section><section class="settings-note"><span>Provider protection · Disabled</span><p>Provider and playback requests are left untouched while StreamFree completes its safety and compatibility review.</p></section><section class="settings-note"><span>Native Android TV</span><p>The interface lives on your TV. Internet is used for account sync, title information, artwork and playback providers.</p></section>`, { root: "space" });
+  const selectedRegion = normalizeRegionOverride(readStorage(REGION_OVERRIDE_KEY, ""));
+  const regionOptions = REGION_OPTIONS.map(([code, name]) => `<option value="${code}" ${code === selectedRegion ? "selected" : ""}>${name}</option>`).join("");
+  commit(`<section class="subpage-head"><button class="back-fab pressable" data-action="back">‹</button><span class="eyebrow">Make it yours</span><h1>TV settings</h1><p>Stored privately on this Android TV device.</p></section><section class="settings-card">${settingToggle("dataSaver", "Data saver", "Prefer lighter artwork while browsing")}${settingToggle("autoplayNext", "Autoplay next episode", "Keep a series moving when supported")}${settingToggle("reduceMotion", "Reduce motion", "Use simpler screen transitions")}</section><section class="settings-note region-note"><span>Home region</span><p>Automatic uses your connection region. Choose another region when travelling, then reset it anytime.</p><select id="region-preference" aria-label="Home region">${regionOptions}</select>${selectedRegion ? '<button class="glass-button pressable" data-action="reset-region">Reset to automatic</button>' : ""}</section><section class="settings-note"><span>Provider protection · Disabled</span><p>Provider and playback requests are left untouched while StreamFree completes its safety and compatibility review.</p></section><section class="settings-note"><span>Native Android TV</span><p>The interface lives on your TV. Internet is used for account sync, title information, artwork and playback providers.</p></section>`, { root: "space" });
   const updateCopy = state.update.status === "available" ? `Version ${state.update.manifest?.versionName || "new"} is ready to install.` : state.update.status === "checking" ? "Checking StreamFree for a newer build…" : state.update.status === "error" ? state.update.error : `Current version ${APP_VERSION}`;
   const updateAction = state.update.status === "available" ? `<button class="primary pressable settings-update-button" data-action="install-update">Install update</button>` : `<button class="glass-button pressable settings-update-button" data-action="check-update">${state.update.status === "checking" ? "Checking…" : "Check for update"}</button>`;
   const note = document.createElement("section");
@@ -1637,6 +1659,17 @@ document.addEventListener("submit", (event) => {
   if (form.id === "profile-form") void submitProfile(form);
 });
 
+document.addEventListener("change", (event) => {
+  if (event.target?.id !== "region-preference") return;
+  const value = normalizeRegionOverride(event.target.value);
+  if (value) writeStorage(REGION_OVERRIDE_KEY, value);
+  else localStorage.removeItem(REGION_OVERRIDE_KEY);
+  state.region = null;
+  state.cache.clear();
+  showToast(value ? `Home region set to ${regionName(value)}.` : "Home region reset to automatic.");
+  void render();
+});
+
 document.addEventListener("click", (event) => {
   const tourAction = event.target.closest("[data-tour-action]")?.dataset.tourAction;
   if (tourAction) {
@@ -1700,6 +1733,7 @@ document.addEventListener("click", (event) => {
     showToast("Player controls active · press Back to return");
   }
   if (action === "setting") { state.settings[setting] = !state.settings[setting]; writeStorage(SETTINGS_KEY, state.settings); document.documentElement.classList.toggle("reduce-motion", state.settings.reduceMotion); renderSettings(); }
+  if (action === "reset-region") { localStorage.removeItem(REGION_OVERRIDE_KEY); state.region = null; state.cache.clear(); showToast("Home region reset to automatic."); renderSettings(); }
   if (action === "check-update") void checkForUpdate();
   if (action === "install-update") installUpdate();
   if (action === "trailer") {

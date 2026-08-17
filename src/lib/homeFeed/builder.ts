@@ -15,6 +15,8 @@ const PAGE_SIZE = 24;
 interface FeedOptions {
   accessToken?: string;
   country?: string | null;
+  detectedCountry?: string | null;
+  countryOverride?: string | null;
   countrySource?: "edge" | "override" | "default";
 }
 
@@ -31,15 +33,19 @@ function safeCountry(country?: string | null): string {
 }
 
 function getRegion(options: FeedOptions): Region {
-  const detectedCountry = safeCountry(options.country);
-  const source = options.countrySource ?? (detectedCountry === DEFAULT_COUNTRY ? "default" : "edge");
-  let countryName = detectedCountry;
+  const detectedCountry = safeCountry(options.detectedCountry ?? options.country);
+  const override = options.countryOverride?.trim().toUpperCase();
+  const effectiveCountry = override && /^[A-Z]{2}$/.test(override)
+    ? override
+    : safeCountry(options.country ?? detectedCountry);
+  const source = options.countrySource ?? (override ? "override" : detectedCountry === DEFAULT_COUNTRY ? "default" : "edge");
+  let countryName = effectiveCountry;
   try {
-    countryName = new Intl.DisplayNames(["en"], { type: "region" }).of(detectedCountry) ?? detectedCountry;
+    countryName = new Intl.DisplayNames(["en"], { type: "region" }).of(effectiveCountry) ?? effectiveCountry;
   } catch {
     // An invalid runtime locale must never stop a catalogue response.
   }
-  return { detectedCountry, effectiveCountry: detectedCountry, countryName, source };
+  return { detectedCountry, effectiveCountry, countryName, source };
 }
 
 function unique(items: MediaSummary[], limit = 24): MediaSummary[] {
