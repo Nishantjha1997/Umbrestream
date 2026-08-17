@@ -7,6 +7,7 @@ import { ActionResponse, ContentType } from "@/types";
 import { HistoryDetail } from "@/types/movie";
 import { mutateMovieTitle, mutateTvShowTitle } from "@/utils/movies";
 import { createClient } from "@/utils/supabase/server";
+import { pageContinueWatching } from "@/lib/history/continueWatching";
 
 export const syncHistory = async (
   data: UnifiedPlayerEventData,
@@ -301,29 +302,12 @@ export const getContinueWatchingPage = async (
           .limit(MAX_PAGE_SIZE);
 
         if (!legacyError) {
-          const deduped = (legacyRows ?? []).filter(
-            (item, index, rows) =>
-              rows.findIndex(
-                (candidate) => candidate.type === item.type && candidate.media_id === item.media_id,
-              ) === index,
-          );
-          const filtered = validCursor
-            ? deduped.filter(
-                (item) =>
-                  item.updated_at < validCursor.updatedAt ||
-                  (item.updated_at === validCursor.updatedAt && item.id < validCursor.id),
-              )
-            : deduped;
-          const items = filtered.slice(0, take);
-          const last = items.at(-1);
+          const page = pageContinueWatching((legacyRows ?? []) as HistoryDetail[], validCursor, take);
           return {
             success: true,
             data: {
-              items,
-              nextCursor:
-                items.length === take && last
-                  ? { updatedAt: last.updated_at, id: last.id }
-                  : undefined,
+              items: page.items,
+              nextCursor: page.nextCursor,
             },
           };
         }

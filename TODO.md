@@ -345,13 +345,13 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `6e3083b`
   - Next action: apply the Supabase RPC migration and verify an authenticated account with more than 100 active episode rows
 
-- [ ] SF-074 — Verify Continue Watching ordering/completion rules
-  - Status: not started
+- [x] SF-074 — Verify Continue Watching ordering/completion rules
+  - Status: completed
   - Priority: P0
   - Depends on: SF-073
-  - Evidence: —
-  - Commit: —
-  - Next action: add ordering and completion tests
+  - Evidence: shared `latestIncompleteByTitle`/`pageContinueWatching` helper enforces latest incomplete row per title, newest-first ordering, cursor boundaries, and deterministic regression coverage
+  - Commit: `pending fix(history): make continue watching ordering deterministic`
+  - Completed: 2026-08-17
 
 - [ ] SF-075 — Stop removal actions from navigation
   - Status: not started

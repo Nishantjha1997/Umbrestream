@@ -8,6 +8,7 @@ import { getImageUrl } from "@/utils/movies";
 import { createClient } from "@/utils/supabase/server";
 import { isSupabaseConfigured } from "@/utils/supabase/config";
 import type { ContinueWatchingSummary, HomeFeedResponseV1, HomeFeedRowKind } from "./types";
+import { latestIncompleteByTitle } from "@/lib/history/continueWatching";
 
 const DEFAULT_COUNTRY = "US";
 const PAGE_SIZE = 24;
@@ -117,13 +118,7 @@ async function loadContinueWatching(accessToken?: string): Promise<ContinueWatch
       .order("updated_at", { ascending: false })
       .order("id", { ascending: false })
       .limit(100);
-    const seen = new Set<string>();
-    const items = ((rows ?? []) as HistoryDetail[]).filter((row) => {
-      const key = `${row.type}:${row.media_id}`;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    }).slice(0, PAGE_SIZE);
+    const items = latestIncompleteByTitle((rows ?? []) as HistoryDetail[]).slice(0, PAGE_SIZE);
     return { items, authenticated: true };
   } catch {
     return { items: [], authenticated: false };
