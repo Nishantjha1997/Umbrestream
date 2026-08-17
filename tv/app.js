@@ -16,6 +16,7 @@ import {
 import { toNativeHomeFeed } from "../src/lib/homeFeed/nativeAdapter.ts";
 import { fetchSharedHomeFeed } from "../src/lib/homeFeed/nativeClient.ts";
 import { resolveAdjacentEpisode } from "../src/lib/tv/adjacentEpisode.ts";
+import { REGION_OPTIONS, normalizeRegionOverride, regionName } from "../src/lib/native/region.ts";
 
 const BACKEND_ORIGIN = "https://streamfree.online";
 const IMAGE_ORIGIN = "https://image.tmdb.org/t/p/w500";
@@ -82,23 +83,6 @@ function readStorage(key, fallback) {
 
 function writeStorage(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
-}
-
-const REGION_OPTIONS = [
-  ["", "Automatic"], ["US", "United States"], ["IN", "India"], ["GB", "United Kingdom"],
-  ["CA", "Canada"], ["AU", "Australia"], ["DE", "Germany"], ["FR", "France"],
-  ["JP", "Japan"], ["KR", "South Korea"], ["BR", "Brazil"], ["MX", "Mexico"],
-  ["SG", "Singapore"], ["AE", "United Arab Emirates"],
-];
-
-function normalizeRegionOverride(value) {
-  const code = String(value || "").trim().toUpperCase();
-  return REGION_OPTIONS.some(([option]) => option === code) && code ? code : "";
-}
-
-function regionName(code) {
-  try { return new Intl.DisplayNames(["en"], { type: "region" }).of(code) || code; }
-  catch { return code; }
 }
 
 const TOUR_STEPS = [
