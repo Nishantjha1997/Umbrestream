@@ -779,7 +779,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-075
   - Evidence: phone rail, desktop rail, and phone resume hero now render removal controls as siblings of the resume links; this prevents Remove/Mark complete from activating playback through invalid nested interactive elements; TypeScript, authored ESLint, and `git diff --check` passed
-  - Commit: pending deployment commit
+  - Commit: `a8197a1`
   - Completed: 2026-08-17
 
 - [ ] SF-139 — Validate TV release on emulator
