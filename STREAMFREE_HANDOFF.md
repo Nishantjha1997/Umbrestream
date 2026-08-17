@@ -649,3 +649,38 @@ Release limitations:
   removable only after the user confirms the new app and account data are available.
 - Real provider playback smoke tests and the connected-phone orientation/update test remain
   required. Third-party provider availability is not guaranteed by StreamFree.
+
+## 17. August 17, 2026 world-class hardening checkpoint
+
+Implementation is being continued on the Git branch
+`codex/streamfree-worldclass-hardening`. The durable implementation contract is in
+`plan.md`; `TODO.md` is the live task board and must be updated and committed with every
+completed task so another agent can resume safely.
+
+Baseline recorded before code changes:
+
+- Git baseline: `2f234a6 Fix blocked desktop player menus`.
+- Vercel project: `umbrestream`; production domain: `streamfree.online`.
+- Phone manifest: `online.streamfree.app`, version `1.3.0`, code `4`, certificate
+  `577D4F3C9BBE0A87C3F2CDFC087BD1A6D26EF1A613F392091DF0A26F10677DB9`.
+- TV manifest: `online.streamfree.tv`, version `1.2.0`, code `3`, certificate
+  `3899CD4ABFB7DC439680CE0BE05BEB455B32CA2A4B012D15FCEFF1E0D4D2CE2B`.
+- TypeScript, production build, player-source contracts, and leak scan passed at baseline.
+- Production desktop source picker opens and switches providers successfully. Mobile web,
+  phone, and TV source-picker regression testing remains outstanding.
+- The web splash is fixed-duration and blocks the shell for approximately 3.25 seconds;
+  phone and TV retain a roughly 2.9-second custom splash overlay.
+- Search suggestions do not currently activate through Arrow Down followed by Enter from the
+  search field.
+- Authored-source lint fails and the broad lint command also scans generated Android/build
+  assets.
+- `public/downloads/StreamFree-local-debug.apk` is publicly present and has the same SHA-256
+  as `StreamFree-Android-v1.2.apk`; it must be removed before release.
+- Android unit/instrumentation tests are still Capacitor placeholders with obsolete package
+  assertions.
+- Android TV ad filtering is currently hardcoded on and must be disabled until a safe,
+  remotely disableable policy is proven.
+- TV and web episode navigation currently need a shared cross-season resolver.
+
+Resume protocol: read `plan.md`, then `TODO.md`, then this handoff, inspect the latest Git
+commit, and continue only the task marked `in progress` or the next unstarted dependency.
