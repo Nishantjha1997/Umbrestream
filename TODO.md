@@ -671,7 +671,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P1
   - Depends on: SF-084
   - Evidence: local browser observed retryable “Couldn’t reach TMDB” state on movie detail and actionable “Movies are taking a break” state on Browse; `/api/mobile/home` now returns HTTP 200 with a schema-valid fallback feed when TMDB is unavailable, including validated region override behavior; full offline/reconnect matrix remains open
-  - Commit: pending
+  - Commit: `223ba6f`
   - Next action: complete offline/reconnect and retry matrix across Home, Browse, Search, details, player, and native shells
   - Blocker: catalog-backed player/native fixtures are unavailable; only local retry states were observed
 
@@ -789,7 +789,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-082, SF-100, SF-125
   - Evidence: local production browser verified Home/About shells at default and 820×1180, Home at 390×844, Browse filter selection/reset at desktop and mobile, Search keyboard submit, and retryable catalog states; `/api/mobile/home` returns HTTP 200 with `schemaVersion: 1` fallback data and accepts an `IN` region override; source-picker, authenticated library, PWA update, and real-title flows remain blocked by missing catalog/auth fixtures
-  - Commit: pending
+  - Commit: `223ba6f`
   - Next action: run source picker, removal/Undo, authenticated Continue Watching, PWA update, and mocked provider flows with deterministic fixtures
 
 - [ ] SF-152 — Run accessibility and reduced-motion matrix

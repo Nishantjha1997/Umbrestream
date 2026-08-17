@@ -779,7 +779,7 @@ Current environment blockers confirmed during this checkpoint:
 - Vercel production must remain unchanged until the device, migration, provider, APK, and rollback
   gates are available and pass.
 
-The latest task-board evidence is commit `874dfc1`. Resume by reading `plan.md`, `TODO.md`, and this
+The latest task-board evidence is commit `223ba6f`. Resume by reading `plan.md`, `TODO.md`, and this
 section, then satisfy the blockers in dependency order. Keep `SF-073`, `SF-100`, `SF-111`, `SF-112`,
 `SF-125`, `SF-126`, and `SF-151` in progress until their stated evidence exists; do not mark
 `SF-155` through `SF-159` complete early.
