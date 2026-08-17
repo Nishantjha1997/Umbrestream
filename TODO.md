@@ -350,7 +350,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-073
   - Evidence: shared `latestIncompleteByTitle`/`pageContinueWatching` helper enforces latest incomplete row per title, newest-first ordering, cursor boundaries, and deterministic regression coverage
-  - Commit: `pending fix(history): make continue watching ordering deterministic`
+  - Commit: `974c738`
   - Completed: 2026-08-17
 
 - [ ] SF-075 — Stop removal actions from navigation
