@@ -430,7 +430,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P1
   - Depends on: SF-072
   - Evidence: Home shelves, recommendations, Browse, Search, movie detail, TV detail, and anime discovery now expose bounded loading plus explicit retryable failure states; player recovery, native offline banners, auth errors, and empty library/Home states remain actionable; final cross-surface verification is SF-125/SF-151
-  - Commit: pending
+  - Commit: `a349a7f`
   - Completed: 2026-08-17
 
 - [x] SF-085 — Add region override controls
