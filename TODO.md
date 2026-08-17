@@ -201,7 +201,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P1
   - Depends on: SF-032, SF-036
   - Evidence: shared `nativeAdapter.ts`, `nativeClient.ts`, adjacent-episode resolver, playback policy, and new `src/lib/native/region.ts` are consumed by both shells; cache/history/update-state extraction remains
-  - Commit: pending
+  - Commit: `daf8565`
   - Next action: route shared cache, history, and update-state helpers without changing touch/remote presentation
 
 - [ ] SF-039 — Keep phone/TV presentation layers separate
