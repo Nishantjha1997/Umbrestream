@@ -32,7 +32,7 @@ export default function PhoneAppHeader({ pathname }: PhoneAppHeaderProps) {
           aria-label="Search StreamFree"
           aria-current={searchActive ? "page" : undefined}
           className={cn(
-            "glass-control flex size-9 items-center justify-center rounded-full transition-transform duration-(--duration-fast) ease-(--ease-out-quint) focus-visible:ring-2 focus-visible:ring-violet-300/70 focus-visible:outline-none active:scale-90 motion-reduce:transition-none",
+            "glass-control flex size-11 items-center justify-center rounded-full transition-transform duration-(--duration-fast) ease-(--ease-out-quint) focus-visible:ring-2 focus-visible:ring-violet-300/70 focus-visible:outline-none active:scale-90 motion-reduce:transition-none",
             searchActive && "border-violet-200/35 bg-violet-300/16 text-violet-100",
           )}
         >
@@ -44,7 +44,7 @@ export default function PhoneAppHeader({ pathname }: PhoneAppHeaderProps) {
           aria-label="Open your StreamFree space"
           aria-current={profileActive ? "page" : undefined}
           className={cn(
-            "flex size-9 items-center justify-center rounded-full border text-[11px] font-semibold tracking-[0.04em] text-violet-50 transition-transform duration-(--duration-fast) ease-(--ease-out-quint) focus-visible:ring-2 focus-visible:ring-violet-300/70 focus-visible:outline-none active:scale-90 motion-reduce:transition-none",
+            "flex size-11 items-center justify-center rounded-full border text-[11px] font-semibold tracking-[0.04em] text-violet-50 transition-transform duration-(--duration-fast) ease-(--ease-out-quint) focus-visible:ring-2 focus-visible:ring-violet-300/70 focus-visible:outline-none active:scale-90 motion-reduce:transition-none",
             profileActive
               ? "border-violet-100/55 bg-linear-to-br from-violet-200 to-violet-600 shadow-[0_0_0_4px_rgba(196,181,253,.1)]"
               : "border-violet-200/30 bg-linear-to-br from-violet-200/35 to-violet-700/45",

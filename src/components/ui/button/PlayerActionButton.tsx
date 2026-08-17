@@ -36,7 +36,7 @@ const PlayerActionButton: React.FC<PlayerActionButtonProps> = ({
         onClick={onClick}
         disabled={disabled}
         className={cn(
-          "group pointer-events-auto flex size-10 touch-manipulation items-center justify-center rounded-full drop-shadow-md sm:size-12 [&>svg]:transition-all motion-reduce:[&>svg]:transition-none",
+          "group pointer-events-auto flex size-11 touch-manipulation items-center justify-center rounded-full drop-shadow-md sm:size-12 [&>svg]:transition-all motion-reduce:[&>svg]:transition-none",
           {
             [`hover:[&>svg]:scale-125 ${hoverColors[color]}`]: !disabled,
             "cursor-not-allowed opacity-50": disabled,

@@ -65,7 +65,7 @@ export default function DesktopHeader({ className }: DesktopHeaderProps) {
       <Link
         href="/search"
         aria-label="Search StreamFree. Keyboard shortcut Command K or Control K."
-        className="group inline-flex h-[38px] items-center gap-[9px] rounded-full border border-white/14 bg-black/36 px-4 text-white outline-none transition-colors duration-(--duration-fast) ease-(--ease-out-quint) hover:border-white/22 hover:bg-black/45 focus-visible:ring-2 focus-visible:ring-violet-400/60 motion-reduce:transition-none"
+        className="group inline-flex min-h-11 items-center gap-[9px] rounded-full border border-white/14 bg-black/36 px-4 text-white outline-none transition-colors duration-(--duration-fast) ease-(--ease-out-quint) hover:border-white/22 hover:bg-black/45 focus-visible:ring-2 focus-visible:ring-violet-400/60 motion-reduce:transition-none"
         style={{
           backdropFilter: "blur(16px) saturate(var(--glass-saturate))",
           WebkitBackdropFilter: "blur(16px) saturate(var(--glass-saturate))",
