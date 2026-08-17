@@ -270,13 +270,13 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `a10e2b1`
   - Completed: 2026-08-17
 
-- [ ] SF-057 — Audit UI dependency imports
-  - Status: not started
+- [x] SF-057 — Audit UI dependency imports
+  - Status: completed
   - Priority: P2
   - Depends on: SF-056
-  - Evidence: —
-  - Commit: —
-  - Next action: measure route bundles
+  - Evidence: the heavy lightbox/plugin graph is now client-only and dynamically loaded from Photos; player-only HLS/DASH dependencies remain route-level and Home does not import them; typecheck and authored lint pass
+  - Commit: pending
+  - Completed: 2026-08-17
 
 - [ ] SF-058 — Lazy-load artwork and distant rails
   - Status: completed
