@@ -454,7 +454,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P1
   - Depends on: SF-075, SF-100
   - Evidence: player source/recovery notifications announce politely and atomically, audio variant is included in source-change feedback, TV Up Next countdown is announced assertively, PWA update readiness is announceable, and native toast/network surfaces already use live regions; final accessibility scan remains SF-152
-  - Commit: pending
+  - Commit: `4698146`
   - Completed: 2026-08-17
 
 - [ ] SF-088 — Keep Nishant branding tasteful
