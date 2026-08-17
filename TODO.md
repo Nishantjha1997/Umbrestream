@@ -317,7 +317,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-031
   - Evidence: hero and recommendation feed now carry explicit `personalized` vs `trending` provenance; cold-start and signed-out shelves are labelled `Trending now`
-  - Commit: pending
+  - Commit: `8611231`
   - Completed: 2026-08-17
   - Next action: return explicit source semantics from hero hook/feed
 
