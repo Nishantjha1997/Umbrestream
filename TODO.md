@@ -480,7 +480,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-011
   - Evidence: source picker interaction/focus fixes are implemented; shared web-player fullscreen entry now keeps successful entry in landscape intent instead of inverting the browser fullscreen state
-  - Commit: pending
+  - Commit: `b6dbcbb`
   - Next action: run deterministic desktop/mobile/PWA source-picker regression before final real-provider smoke tests
 
 - [x] SF-101 — Make source rows fully interactive
