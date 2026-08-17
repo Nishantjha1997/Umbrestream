@@ -4,7 +4,7 @@ import Link from "next/link";
 import { brand } from "@/config/brand";
 
 const APK_PATH = "/downloads/StreamFree-Android-v1.3.apk";
-const APK_SHA256 = "6031CBED6380012E5AEE791E9EFF14FF75716B189F2940916EDF79012D17A1AA";
+const APK_SHA256 = "427FCA603B8DE1D743A5D32A80D03FA0EC4FD06201AB72E7A92A67306007B497";
 
 export const metadata: Metadata = {
   title: `Get the Android app | ${brand.name}`,
@@ -68,8 +68,8 @@ export default function AndroidAppPage() {
           <div className="mt-5 flex flex-wrap gap-2 text-[11px] font-medium text-white/62">
             {[
               "Android 7.0+",
-              "Beta 1.2",
-              "4.07 MB",
+              "Version 1.3.0",
+              "3.12 MB",
               "Shared account sync",
               "Internet required for catalogue and streaming",
             ].map((label) => (
@@ -159,11 +159,11 @@ export default function AndroidAppPage() {
             Also on the big screen
           </p>
           <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-white sm:text-3xl">
-            StreamFree TV is ready for Mi TV remotes.
+            StreamFree TV is ready for Android TV remotes.
           </h2>
           <p className="mt-3 text-sm leading-6 text-white/58">
             Get a separate Android TV build with D-pad navigation, the same account credentials, and
-            always-on TV ad protection.
+            remote-first browsing and immersive playback.
           </p>
         </div>
         <div className="relative mt-5 flex shrink-0 flex-wrap gap-3 lg:mt-0">
@@ -240,9 +240,10 @@ export default function AndroidAppPage() {
         <article className="rounded-2xl border border-white/8 bg-white/[0.025] p-5 text-sm leading-6 text-white/58 sm:p-6">
           <h2 className="text-lg font-semibold text-white">Signed beta details</h2>
           <p className="mt-3">
-            Version 1.2 is APK Signature Scheme v2 debug-signed for direct installation. It is not a
-            Play Store release, so Android can still show its normal install-from-this-source or
-            Play Protect confirmation.
+            Version 1.3.0 is a release APK signed for direct installation. The in-app updater
+            fetches the official manifest, checks the package identity, version, certificate,
+            size, and SHA-256 before Android is asked to install anything. Android can still show
+            its normal install-from-this-source or Play Protect confirmation.
           </p>
           <p className="mt-3 text-xs text-white/42">SHA-256</p>
           <code className="mt-1 block text-xs leading-5 break-all text-violet-200">

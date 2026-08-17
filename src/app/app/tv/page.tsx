@@ -4,12 +4,12 @@ import Link from "next/link";
 import { brand } from "@/config/brand";
 
 const TV_APK_PATH = "/downloads/StreamFree-TV-v1.2.apk";
-const TV_APK_SHA256 = "7407020DD6087A8C0E0649ED62608E974363BFDFF213306AAF32E0D8A05526C9";
+const TV_APK_SHA256 = "D40AE8717FDA6E9D5B90F607782A1BD4EC019349C54D94F43447DEC086832B0E";
 
 export const metadata: Metadata = {
   title: `Get the Android TV app | ${brand.name}`,
   description:
-    "Download the signed StreamFree Android TV beta for Mi TV and other Android TV devices, built for a D-pad remote.",
+    "Download the signed StreamFree Android TV beta for Android TV devices, built for a D-pad remote.",
   alternates: { canonical: "/app/tv" },
 };
 
@@ -26,8 +26,8 @@ const features = [
   },
   {
     eyebrow: "Built in",
-    title: "TV ad protection is always on",
-    copy: "The app blocks known advertising and tracking hosts and disables pop-up windows before requests reach the player. Same-domain or in-video promotions may still appear.",
+    title: "Playback compatibility first",
+    copy: "Provider protection is disabled by default while compatibility is validated. External providers may still show their own promotions or pop-ups.",
   },
   {
     eyebrow: "Independent shell",
@@ -74,7 +74,7 @@ export default function AndroidTVAppPage() {
                 <p className="text-[11px] font-semibold tracking-[0.22em] text-violet-200 uppercase">
                   StreamFree for Android TV
                 </p>
-                <p className="mt-0.5 text-xs text-white/40">Mi TV remote ready</p>
+                <p className="mt-0.5 text-xs text-white/40">Android TV remote ready</p>
               </div>
             </div>
 
@@ -83,15 +83,15 @@ export default function AndroidTVAppPage() {
             </h1>
             <p className="mt-6 max-w-xl text-base leading-7 text-white/64 sm:text-lg">
               A dedicated 10-foot interface with cinematic discovery, remote-first navigation, the
-              same StreamFree account, and TV-only ad protection enabled from launch.
+              same StreamFree account, and a release-safe provider compatibility mode.
             </p>
 
             <div className="mt-6 flex flex-wrap gap-2 text-[11px] font-medium text-white/60">
               {[
                 "Android TV 7.0+",
-                "Mi TV compatible",
-                "Version 1.1 beta",
-                "4.14 MB",
+                "Android TV compatible",
+                "Version 1.2.0",
+                "3.15 MB",
                 "Signed APK",
               ].map((label) => (
                 <span
@@ -214,7 +214,7 @@ export default function AndroidTVAppPage() {
       <section className="mt-12 grid gap-5 lg:grid-cols-[1.12fr_.88fr]">
         <div className="rounded-3xl border border-white/8 bg-white/[0.025] p-6 sm:p-8">
           <p className="text-xs font-semibold tracking-[0.18em] text-violet-200 uppercase">
-            Install on Mi TV
+            Install on Android TV
           </p>
           <h2 className="mt-2 text-3xl font-semibold tracking-[-0.045em] text-white">
             Three steps to the Apps row.
@@ -270,9 +270,10 @@ export default function AndroidTVAppPage() {
         <article className="rounded-2xl border border-white/8 bg-white/[0.025] p-5 text-sm leading-6 text-white/58 sm:p-6">
           <h2 className="text-lg font-semibold text-white">Signed beta details</h2>
           <p className="mt-3">
-            Version 1.1 is APK Signature Scheme v2 signed for direct installation. It is not a Play
-            Store release, so Android TV can still show the standard unknown-source or Play Protect
-            confirmation.
+            Version 1.2.0 is a release APK signed for direct installation. The in-app updater
+            fetches and validates the official manifest, package identity, version, certificate,
+            size, and SHA-256 before installation. Android TV can still show its standard
+            unknown-source or Play Protect confirmation.
           </p>
           <p className="mt-3 text-xs text-white/42">SHA-256</p>
           <code className="mt-1 block text-xs leading-5 break-all text-violet-200">
