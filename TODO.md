@@ -446,7 +446,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P1
   - Depends on: SF-072
   - Evidence: high-frequency player actions, phone header controls, desktop search, and standalone fullscreen controls now expose at least 44px interaction surfaces; contrast/focus tokens remain intact; final WCAG scan is SF-152
-  - Commit: pending
+  - Commit: `8814f3e`
   - Completed: 2026-08-17
 
 - [x] SF-087 — Add accessibility announcements
