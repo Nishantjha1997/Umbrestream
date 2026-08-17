@@ -200,8 +200,8 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Status: in progress
   - Priority: P1
   - Depends on: SF-032, SF-036
-  - Evidence: shared `src/lib/homeFeed/nativeAdapter.ts` now feeds both phone and TV presentation shells from `/api/mobile/home`; API/cache/history/playback module extraction remains
-  - Commit: `74352ea`
+  - Evidence: shared `src/lib/homeFeed/nativeAdapter.ts` feeds both shells and new `nativeClient.ts` owns shared home-feed request headers and runtime contract validation; cache/history/playback module extraction remains
+  - Commit: `pending refactor(native): share home feed client boundary`
   - Next action: route shared cache, history, and playback helpers without changing touch/remote presentation
 
 - [ ] SF-039 — Keep phone/TV presentation layers separate

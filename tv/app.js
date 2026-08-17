@@ -14,6 +14,7 @@ import {
   writePlaybackPreference,
 } from "../src/lib/sources/playbackPolicy.ts";
 import { toNativeHomeFeed } from "../src/lib/homeFeed/nativeAdapter.ts";
+import { fetchSharedHomeFeed } from "../src/lib/homeFeed/nativeClient.ts";
 import { resolveAdjacentEpisode } from "../src/lib/tv/adjacentEpisode.ts";
 
 const BACKEND_ORIGIN = "https://streamfree.online";
@@ -828,14 +829,12 @@ function heroMarkup(hero, resume = false) {
 
 async function loadSharedHomeFeed() {
   const override = normalizeRegionOverride(readStorage(REGION_OVERRIDE_KEY, ""));
-  let headers = override ? { "X-StreamFree-Region": override } : {};
+  let accessToken;
   if (state.supabase) {
     const { data } = await state.supabase.auth.getSession();
-    if (data.session?.access_token) headers = { Authorization: "Bearer " + data.session.access_token };
+    accessToken = data.session?.access_token;
   }
-  const feed = await requestJson("/api/mobile/home", { headers });
-  if (feed?.schemaVersion !== 1 || !Array.isArray(feed.rows)) throw new Error("Invalid home feed");
-  return feed;
+  return fetchSharedHomeFeed(requestJson, { accessToken, regionOverride: override || undefined });
 }
 
 function renderSharedHomeFeed(feed) {
