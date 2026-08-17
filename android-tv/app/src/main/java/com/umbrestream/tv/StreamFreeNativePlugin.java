@@ -26,4 +26,9 @@ public class StreamFreeNativePlugin extends Plugin {
         getActivity().runOnUiThread(() -> ((MainActivity) getActivity()).downloadOfficialUpdate());
         call.resolve();
     }
+
+    @PluginMethod
+    public void checkOfficialUpdate(PluginCall call) {
+        ((MainActivity) getActivity()).checkOfficialUpdate(call);
+    }
 }

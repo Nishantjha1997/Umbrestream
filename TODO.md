@@ -703,29 +703,29 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: —
   - Next action: finalize only after TV emulator validation
 
-- [ ] SF-132 — Make updater fetch and validate manifest itself
-  - Status: not started
+- [x] SF-132 — Make updater fetch and validate manifest itself
+  - Status: completed
   - Priority: P0
   - Depends on: SF-017
-  - Evidence: —
-  - Commit: —
-  - Next action: inspect existing native bridge and validator
+  - Evidence: native `checkOfficialUpdate` and `installOfficialUpdate` now fetch the hardcoded official manifest directly; the WebView only requests the native status/install operation
+  - Commit: pending `fix(updater): validate official manifest natively`
+  - Completed: 2026-08-17
 
-- [ ] SF-133 — Validate manifest identity/hash/signature/origin
-  - Status: not started
+- [x] SF-133 — Validate manifest identity/hash/signature/origin
+  - Status: completed
   - Priority: P0
   - Depends on: SF-132
-  - Evidence: —
-  - Commit: —
-  - Next action: add rejection tests
+  - Evidence: native validation checks schema/platform, package, version, official HTTPS origin, size, SHA-256, certificate fingerprint, APK parseability, and release metadata; `test:update-manifests` validates checked-in artifacts
+  - Commit: pending `fix(updater): validate official manifest natively`
+  - Completed: 2026-08-17
 
-- [ ] SF-134 — Delete invalid APKs before install
-  - Status: not started
+- [x] SF-134 — Delete invalid APKs before install
+  - Status: completed
   - Priority: P0
   - Depends on: SF-133
-  - Evidence: —
-  - Commit: —
-  - Next action: test failure cleanup
+  - Evidence: native installer deletes the downloaded file on failed size/hash/package/signature/parse validation and never invokes the installer
+  - Commit: pending `fix(updater): validate official manifest natively`
+  - Completed: 2026-08-17
 
 - [ ] SF-135 — Verify phone upgrade on physical device
   - Status: not started

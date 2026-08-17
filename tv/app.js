@@ -135,6 +135,14 @@ function setPlaybackOrientation() {
 async function checkForUpdate({ silent = false } = {}) {
   state.update = { ...state.update, status: "checking", error: "" };
   try {
+    if (nativePlatform() && nativeBridge()?.checkOfficialUpdate) {
+      const result = await nativeBridge().checkOfficialUpdate();
+      const available = result?.status === "available";
+      state.update = { status: available ? "available" : "current", manifest: result, error: "" };
+      if (!silent) showToast(available ? `StreamFree TV ${result.versionName || "update"} is ready.` : "You are on the latest version.");
+      if (state.route === "space/settings") renderSettings();
+      return state.update;
+    }
     const manifest = await requestJson(`${APP_UPDATE_MANIFEST}?t=${Date.now()}`);
     const available = Number(manifest.versionCode || 0) > APP_VERSION_CODE;
     state.update = { status: available ? "available" : "current", manifest, error: "" };
@@ -150,13 +158,13 @@ async function checkForUpdate({ silent = false } = {}) {
 }
 
 function installUpdate() {
-  const apkUrl = state.update.manifest?.apkUrl;
-  if (!apkUrl) return showToast("Check for an update first.", "warning");
   if (nativePlatform() && nativeBridge()?.installOfficialUpdate) {
     void nativeBridge().installOfficialUpdate().catch(() => undefined);
     showToast("Verifying and downloading the official StreamFree TV update…");
     return;
   }
+  const apkUrl = state.update.manifest?.apkUrl;
+  if (!apkUrl) return showToast("Check for an update first.", "warning");
   const url = absoluteUrl(apkUrl);
   window.open(url, "_blank", "noopener,noreferrer");
   showToast("The TV update download has started.");

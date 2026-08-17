@@ -26,6 +26,8 @@ import android.widget.Toast;
 import androidx.core.content.FileProvider;
 
 import com.getcapacitor.BridgeActivity;
+import com.getcapacitor.PluginCall;
+import com.getcapacitor.JSObject;
 
 import java.io.File;
 import java.io.ByteArrayOutputStream;
@@ -108,6 +110,25 @@ public class MainActivity extends BridgeActivity {
             return;
         }
         checkAndQueueUpdate();
+    }
+
+    void checkOfficialUpdate(PluginCall call) {
+        new Thread(() -> {
+            try {
+                UpdateMetadata update = fetchOfficialUpdateManifest();
+                JSObject result = new JSObject();
+                result.put("status", update == null ? "current" : "available");
+                if (update != null) {
+                    result.put("versionName", update.versionName);
+                    result.put("versionCode", update.versionCode);
+                    result.put("mandatory", update.mandatory);
+                    result.put("releaseNotes", update.releaseNotes);
+                }
+                call.resolve(result);
+            } catch (Exception error) {
+                call.reject("Official update manifest validation failed");
+            }
+        }, "streamfree-update-status").start();
     }
 
     private void checkAndQueueUpdate() {
@@ -193,7 +214,8 @@ public class MainActivity extends BridgeActivity {
                     output.write(buffer, 0, count);
                 }
                 JSONObject json = new JSONObject(output.toString("UTF-8"));
-                if (json.optInt("schemaVersion", -1) != 1) throw new IllegalStateException("Unsupported manifest");
+                if (json.optInt("schemaVersion", -1) != 1 ||
+                    !"android".equals(json.optString("platform", ""))) throw new IllegalStateException("Unsupported manifest");
                 String packageId = json.optString("packageId", "");
                 long versionCode = json.optLong("versionCode", -1L);
                 String versionName = json.optString("versionName", "");
@@ -201,18 +223,23 @@ public class MainActivity extends BridgeActivity {
                 String sha256 = json.optString("sha256", "").toUpperCase(java.util.Locale.US);
                 long sizeBytes = json.optLong("sizeBytes", -1L);
                 String certificate = json.optString("signingCertificateSha256", "").toUpperCase(java.util.Locale.US);
+                long minimumSupportedVersion = json.optLong("minimumSupportedVersion", -1L);
+                boolean mandatory = json.optBoolean("mandatory", false);
+                String publishedAt = json.optString("publishedAt", "");
+                org.json.JSONArray releaseNotes = json.optJSONArray("releaseNotes");
                 Uri apkUri = apkUrl.startsWith("/")
                     ? Uri.parse("https://streamfree.online" + apkUrl)
                     : Uri.parse(apkUrl);
                 if (!EXPECTED_UPDATE_PACKAGE.equals(packageId) || versionName.trim().isEmpty() ||
                     !sha256.matches("[A-F0-9]{64}") || sizeBytes <= 0 ||
+                    minimumSupportedVersion < 1L || publishedAt.trim().isEmpty() ||
                     !EXPECTED_UPDATE_CERTIFICATE.equals(certificate) || !isOfficialDownloadUrl(apkUri)) {
                     throw new IllegalStateException("Manifest validation failed");
                 }
                 long currentVersionCode = currentVersionCode();
                 if ((!isLegacyPackage() && versionCode <= currentVersionCode) ||
                     (isLegacyPackage() && versionCode < currentVersionCode)) return null;
-                return new UpdateMetadata(packageId, versionCode, apkUri.toString(), sha256, sizeBytes, certificate);
+                return new UpdateMetadata(packageId, versionCode, versionName, apkUri.toString(), sha256, sizeBytes, certificate, mandatory, releaseNotes == null ? "" : releaseNotes.toString());
             }
         } finally {
             connection.disconnect();
@@ -277,18 +304,24 @@ public class MainActivity extends BridgeActivity {
     private static final class UpdateMetadata {
         final String packageId;
         final long versionCode;
+        final String versionName;
         final String apkUrl;
         final String sha256;
         final long sizeBytes;
         final String certificate;
+        final boolean mandatory;
+        final String releaseNotes;
 
-        UpdateMetadata(String packageId, long versionCode, String apkUrl, String sha256, long sizeBytes, String certificate) {
+        UpdateMetadata(String packageId, long versionCode, String versionName, String apkUrl, String sha256, long sizeBytes, String certificate, boolean mandatory, String releaseNotes) {
             this.packageId = packageId;
             this.versionCode = versionCode;
+            this.versionName = versionName;
             this.apkUrl = apkUrl;
             this.sha256 = sha256;
             this.sizeBytes = sizeBytes;
             this.certificate = certificate;
+            this.mandatory = mandatory;
+            this.releaseNotes = releaseNotes;
         }
     }
 
