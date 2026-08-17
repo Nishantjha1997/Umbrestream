@@ -422,7 +422,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P1
   - Depends on: SF-011
   - Evidence: Browse normalizes stale movie/series query types, resets incompatible filters on segment changes, labels filter controls, disables an unnecessary reset action, and restores focus to the results region
-  - Commit: pending
+  - Commit: `cd99c9e`
   - Completed: 2026-08-17
 
 - [ ] SF-084 — Add complete loading/offline/empty/retry states
