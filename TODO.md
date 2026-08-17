@@ -185,7 +185,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-030
   - Evidence: pure `src/lib/tv/adjacentEpisode.ts` resolver skips season/episode zero and crosses valid season boundaries; `test:episode-resolver` covers forward, backward, and final-stop cases
-  - Commit: pending playback checkpoint
+  - Commit: `c56b8f2`
   - Completed: 2026-08-17
 
 - [ ] SF-037 — Route all clients through episode resolver
@@ -487,7 +487,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-100
   - Evidence: desktop panel and mobile drawer now mount only after the client viewport is known; source rows consume pointer/click events, are touch-manipulation buttons, and preserve the visible panel above the provider frame
-  - Commit: pending playback checkpoint
+  - Commit: `c56b8f2`
   - Completed: 2026-08-17
 
 - [x] SF-102 — Ensure source selection changes once
@@ -495,7 +495,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-101
   - Evidence: source-sheet activation is guarded against duplicate selection while a switch is in flight; parent swaps the iframe synchronously and persists the provider id once
-  - Commit: pending playback checkpoint
+  - Commit: `c56b8f2`
   - Completed: 2026-08-17
 
 - [x] SF-103 — Restore source-picker focus
@@ -503,7 +503,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P1
   - Depends on: SF-101
   - Evidence: PlayerShell remembers the invoking control and restores focus after close, selection, and reset; desktop panel is an explicit modal dialog
-  - Commit: pending playback checkpoint
+  - Commit: `c56b8f2`
   - Completed: 2026-08-17
 
 - [ ] SF-104 — Preserve source preferences by media/audio
@@ -607,7 +607,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-037
   - Evidence: web TV player uses the shared resolver for previous/next navigation and a trusted 10-second Up Next countdown; final valid episode stops without looping
-  - Commit: pending playback checkpoint
+  - Commit: `c56b8f2`
   - Completed: 2026-08-17
 
 - [ ] SF-117 — Preserve source/audio on next episode
