@@ -781,7 +781,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: all implementation tasks
   - Evidence: authored ESLint, TypeScript, player-source, episode-resolver, Continue Watching, Home feed, native cache/history/update-state, update-manifest, release-artifact, leak scan, production webpack build, and `git diff --check` all passed
-  - Commit: pending
+  - Commit: `491f42d`
   - Completed: 2026-08-17
 
 - [ ] SF-151 — Run Playwright web/PWA matrix
