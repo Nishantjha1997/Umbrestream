@@ -251,7 +251,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P1
   - Depends on: SF-038
   - Evidence: authenticated account refresh updates the shared Home feed without entering the full loading renderer; a full render is now only the recovery path
-  - Commit: `pending perf(native): refresh home without auth flash`
+  - Commit: `04518c6`
   - Completed: 2026-08-17
 
 - [x] SF-055 — Load React Query Devtools only in development
