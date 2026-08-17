@@ -74,61 +74,61 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `d98e2b7`
   - Completed: 2026-08-17
 
-- [ ] SF-014 — Remove public debug APK and header
-  - Status: not started
+- [x] SF-014 — Remove public debug APK and header
+  - Status: completed
   - Priority: P0
   - Depends on: SF-001
-  - Evidence: —
-  - Commit: —
-  - Next action: verify exact artifact and references
+  - Evidence: `public/downloads/StreamFree-local-debug.apk` removed; matching Next header removed; quarantined copy retained outside the repository for recovery
+  - Commit: pending release-hygiene checkpoint
+  - Completed: 2026-08-17
 
-- [ ] SF-015 — Reject debug/unsigned/development APKs
-  - Status: not started
+- [x] SF-015 — Reject debug/unsigned/development APKs
+  - Status: completed
   - Priority: P0
   - Depends on: SF-014
-  - Evidence: —
-  - Commit: —
-  - Next action: add release artifact check
+  - Evidence: `scripts/check-release-artifacts.mjs`; `npm run check:release-artifacts` validates APK names, manifest paths, sizes, and SHA-256 values
+  - Commit: pending release-hygiene checkpoint
+  - Completed: 2026-08-17
 
-- [ ] SF-016 — Add explicit debug/release Android scripts
-  - Status: not started
+- [x] SF-016 — Add explicit debug/release Android scripts
+  - Status: completed
   - Priority: P1
   - Depends on: SF-015
-  - Evidence: —
-  - Commit: —
-  - Next action: update package scripts
+  - Evidence: package scripts expose `android:apk:debug`, `android:apk:release`, `android-tv:apk:debug`, and `android-tv:apk:release`; default APK aliases now build release variants
+  - Commit: pending release-hygiene checkpoint
+  - Completed: 2026-08-17
 
-- [ ] SF-017 — Replace placeholder Android tests
-  - Status: not started
+- [x] SF-017 — Replace placeholder Android tests
+  - Status: completed
   - Priority: P0
   - Depends on: SF-016
-  - Evidence: —
-  - Commit: —
-  - Next action: add canonical package and updater tests
+  - Evidence: phone and TV unit/instrumentation tests now target `online.streamfree.app` and `online.streamfree.tv`; Gradle execution remains environment-blocked because `JAVA_HOME`/Java is unavailable
+  - Commit: pending release-hygiene checkpoint
+  - Completed: 2026-08-17
 
-- [ ] SF-018 — Disable Android TV ad filtering by default
-  - Status: not started
+- [x] SF-018 — Disable Android TV ad filtering by default
+  - Status: completed
   - Priority: P0
   - Depends on: SF-001
-  - Evidence: —
-  - Commit: —
-  - Next action: inspect native filter and settings copy
+  - Evidence: `AD_PROTECTION_ENABLED` is false; TV Settings and Help copy no longer claim filtering is active
+  - Commit: pending release-hygiene checkpoint
+  - Completed: 2026-08-17
 
-- [ ] SF-019 — Add strict official-host configuration validation
-  - Status: not started
+- [x] SF-019 — Add strict official-host configuration validation
+  - Status: completed
   - Priority: P1
   - Depends on: SF-018
-  - Evidence: —
-  - Commit: —
-  - Next action: define config schema and fail-closed behavior
+  - Evidence: `/api/mobile/config` now exposes schema-versioned, disabled-by-default ad-protection policy with an empty host list; native TV filtering remains fail-closed until a validated policy exists
+  - Commit: pending release-hygiene checkpoint
+  - Completed: 2026-08-17
 
-- [ ] SF-020 — Remove obsolete updater comments
-  - Status: not started
+- [x] SF-020 — Remove obsolete updater comments
+  - Status: completed
   - Priority: P2
   - Depends on: SF-017
-  - Evidence: —
-  - Commit: —
-  - Next action: clean native source without changing behavior
+  - Evidence: obsolete commented updater implementations removed from both native MainActivity files; active updater behavior unchanged
+  - Commit: pending release-hygiene checkpoint
+  - Completed: 2026-08-17
 
 ## Phase 2 — Shared contracts
 

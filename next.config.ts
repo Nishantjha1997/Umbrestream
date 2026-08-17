@@ -110,10 +110,6 @@ const nextConfig: NextConfig = {
           source: "/downloads/StreamFree-TV-v1.2.apk",
           filename: "StreamFree-TV-v1.2.apk",
         },
-        {
-          source: "/downloads/StreamFree-local-debug.apk",
-          filename: "StreamFree-local-debug.apk",
-        },
       ].map(({ source, filename }) => ({
         source,
         headers: [

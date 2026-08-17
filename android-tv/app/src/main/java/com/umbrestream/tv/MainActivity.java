@@ -53,6 +53,10 @@ public class MainActivity extends BridgeActivity {
     private File expectedUpdateFile;
     private UpdateMetadata pendingUpdate;
 
+    // Keep provider filtering disabled until an official, validated policy and
+    // the complete TV playback matrix both prove it cannot break streams.
+    private static final boolean AD_PROTECTION_ENABLED = false;
+
     private static final Set<String> BLOCKED_HOSTS = new HashSet<>(Arrays.asList(
         "2mdn.net",
         "adform.net",
@@ -170,80 +174,6 @@ public class MainActivity extends BridgeActivity {
             }
         }, "streamfree-tv-update-check").start();
     }
-    /*
-            expectedUpdateFile = new File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "streamfree-update.apk");
-            if (expectedUpdateFile.exists()) expectedUpdateFile.delete();
-            DownloadManager.Request request = new DownloadManager.Request(source)
-                .setTitle("StreamFree TV update")
-                .setDescription("Downloading the latest StreamFree TV app")
-                .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-                .setMimeType("application/vnd.android.package-archive")
-                .setDestinationInExternalFilesDir(this, Environment.DIRECTORY_DOWNLOADS, "streamfree-tv-update.apk");
-            updateDownloadId = ((DownloadManager) getSystemService(DOWNLOAD_SERVICE)).enqueue(request);
-            Toast.makeText(this, "Downloading StreamFree TV update…", Toast.LENGTH_SHORT).show();
-        } catch (Exception error) {
-            Toast.makeText(this, "Could not download the TV update", Toast.LENGTH_LONG).show();
-        }
-    }
-
-    private void installDownloadedApk(long id) {
-        DownloadManager manager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
-        DownloadManager.Query query = new DownloadManager.Query().setFilterById(id);
-        try (Cursor cursor = manager.query(query)) {
-            if (cursor == null || !cursor.moveToFirst()) return;
-            int status = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS));
-            if (status != DownloadManager.STATUS_SUCCESSFUL) {
-                Toast.makeText(this, "TV update download failed", Toast.LENGTH_LONG).show();
-                return;
-            }
-            if (expectedUpdateFile == null || !verifyOfficialApk(expectedUpdateFile)) {
-                if (expectedUpdateFile != null) expectedUpdateFile.delete();
-                Toast.makeText(this, "TV update verification failed", Toast.LENGTH_LONG).show();
-                return;
-            }
-            Uri packageUri = FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", expectedUpdateFile);
-            Intent install = new Intent(Intent.ACTION_VIEW)
-                .setDataAndType(packageUri, "application/vnd.android.package-archive")
-                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
-            try {
-                startActivity(install);
-            } catch (SecurityException error) {
-                Intent settings = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:" + getPackageName()));
-                startActivity(settings);
-                Toast.makeText(this, "Allow installs, then tap Check for update again", Toast.LENGTH_LONG).show();
-            }
-        } catch (Exception error) {
-            Toast.makeText(this, "Could not open the TV update installer", Toast.LENGTH_LONG).show();
-        }
-    }
-
-    private boolean verifyOfficialApk(File apk) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            try (FileInputStream input = new FileInputStream(apk)) {
-                byte[] buffer = new byte[8192];
-                int count;
-                while ((count = input.read(buffer)) >= 0) if (count > 0) digest.update(buffer, 0, count);
-            }
-            int flags = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
-                ? PackageManager.GET_SIGNING_CERTIFICATES
-                : PackageManager.GET_SIGNATURES;
-            PackageInfo info = getPackageManager().getPackageArchiveInfo(apk.getAbsolutePath(), flags);
-            if (info == null || !EXPECTED_UPDATE_PACKAGE.equals(info.packageName)) return false;
-            Signature[] signatures = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
-                ? info.signingInfo.getApkContentsSigners()
-                : info.signatures;
-            if (signatures == null || signatures.length == 0) return false;
-            return EXPECTED_UPDATE_CERTIFICATE.equalsIgnoreCase(
-                toHex(MessageDigest.getInstance("SHA-256").digest(signatures[0].toByteArray()))
-            );
-        } catch (Exception error) {
-            return false;
-        }
-    }
-
-    */
-
     private void enqueueOfficialUpdate(UpdateMetadata update) {
         try {
             Uri source = Uri.parse(update.apkUrl);
@@ -418,6 +348,7 @@ public class MainActivity extends BridgeActivity {
     }
 
     private static boolean shouldBlock(Uri uri) {
+        if (!AD_PROTECTION_ENABLED) return false;
         String host = uri == null ? null : uri.getHost();
         if (host == null || host.trim().isEmpty()) return false;
         String normalized = host.toLowerCase(Locale.US);

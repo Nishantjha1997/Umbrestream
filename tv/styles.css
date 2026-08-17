@@ -173,7 +173,7 @@ svg { display: block; }
 .reduce-motion *, .reduce-motion *::before, .reduce-motion *::after { scroll-behavior:auto!important; animation-duration:.001ms!important; animation-delay:0ms!important; transition-duration:.001ms!important; }
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.001ms!important;animation-delay:0ms!important;transition-duration:.001ms!important}}
 
-/* Android TV / Mi TV 10-foot interface */
+/* Android TV 10-foot interface */
 html, body { width:100%; min-width:960px; min-height:100%; cursor:none; }
 body { font-size:18px; background:radial-gradient(circle at 80% -20%,rgba(124,58,237,.18),transparent 36%),#070609; }
 #app {
