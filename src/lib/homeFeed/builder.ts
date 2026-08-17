@@ -156,19 +156,20 @@ export async function buildHomeFeed(options: FeedOptions = {}): Promise<HomeFeed
   const regionalMovieItems = unique(regionalMovies.results.map(fromMovie));
   const regionalTvItems = unique(regionalTv.results.map(fromTvShow));
   const animeItems = unique(anime.media.map(fromAnime));
-  const personalizedItems = unique([
-    ...regionalMovieItems,
-    ...regionalTvItems,
-    ...animeItems,
-  ]);
   const signedIn = historyResult.authenticated;
+  const hasHistory = histories.length > 0;
+  const personalizedItems = hasHistory
+    ? unique([...regionalMovieItems, ...regionalTvItems, ...animeItems])
+    : [];
   const provenance: HomeFeedResponseV1["provenance"] =
     continueItems.length > 0
       ? "history"
       : signedIn
-        ? personalizedItems.length > 0
-          ? "personalized"
-          : "fallback"
+        ? hasHistory
+          ? personalizedItems.length > 0
+            ? "personalized"
+            : "fallback"
+          : "cold_start"
         : trendingItems.length > 0
           ? "signed_out"
           : "fallback";
@@ -187,7 +188,7 @@ export async function buildHomeFeed(options: FeedOptions = {}): Promise<HomeFeed
     : region.countryName;
   const rows = [
     ...(continueItems.length > 0 ? [row("continue", "Continue Watching", "continue", continueItems)] : []),
-    ...(personalizedItems.length > 0 && signedIn
+    ...(personalizedItems.length > 0 && signedIn && hasHistory
       ? [row("personalized", "Picked for you", "personalized", personalizedItems)]
       : []),
     row("regional-movies", `${displayCountry} trending movies`, "regional_movie", regionalMovieItems),

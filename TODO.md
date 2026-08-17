@@ -144,8 +144,8 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Status: completed
   - Priority: P1
   - Depends on: SF-030
-  - Evidence: `buildHomeFeed` composes region-aware TMDB rows, AniList anime, authenticated title-level Continue Watching, honest provenance, hero selection, and deduplication
-  - Commit: `be9a73c`
+  - Evidence: `buildHomeFeed` composes region-aware TMDB rows, AniList anime, authenticated title-level Continue Watching, history-aware/cold-start provenance, hero selection, and deduplication
+  - Commit: `pending fix(home): correct cold-start provenance`
   - Completed: 2026-08-17
 
 - [x] SF-032 — Add /api/mobile/home
