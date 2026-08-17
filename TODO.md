@@ -177,7 +177,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P1
   - Depends on: SF-031
   - Evidence: validated region choices persist on web, phone, and TV; shared mobile feed accepts `X-StreamFree-Region`, preserves detected/effective country separately, and uses private caching for overrides
-  - Commit: `pending fix(home): add validated region overrides`
+  - Commit: `728550c`
   - Completed: 2026-08-17
 
 - [x] SF-036 — Implement shared adjacent-episode resolver
@@ -438,7 +438,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P1
   - Depends on: SF-035
   - Evidence: web My Space, phone Settings, and Android TV Settings expose Automatic plus validated country choices and Reset to automatic; changes invalidate regional discovery/feed caches
-  - Commit: `pending fix(home): add validated region overrides`
+  - Commit: `728550c`
   - Completed: 2026-08-17
 
 - [ ] SF-086 — Apply touch targets and contrast
