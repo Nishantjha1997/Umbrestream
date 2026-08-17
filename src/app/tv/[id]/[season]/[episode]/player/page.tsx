@@ -34,7 +34,7 @@ const TvShowPlayerPage: NextPage<Params<{ id: number; season: number; episode: n
     queryKey: ["tv-show-season", id, season],
   });
 
-  const { data: startAt, isPending: isPendingStartAt } = useQuery({
+  const { data: startAt } = useQuery({
     queryFn: () => getTvShowLastPosition(id, season, episode),
     queryKey: ["tv-show-player-start-at", id, season, episode],
   });

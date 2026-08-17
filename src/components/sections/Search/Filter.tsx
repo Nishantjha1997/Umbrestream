@@ -29,6 +29,7 @@ const SearchFilter: React.FC<SearchFilterProps> = ({ isLoading, onSearchSubmit, 
   const { content } = useDiscoverFilters();
   const reduceMotion = useReducedMotionSafe();
   const [triggered, setTriggered] = useState(false);
+  const [activeSuggestion, setActiveSuggestion] = useState(-1);
   const [searchQuery, setSearchQuery] = useQueryState("q", parseAsString.withDefault(""));
   const [debouncedSearchQuery] = useDebouncedValue(searchQuery, 300);
   const [searchHistories, setSearchHistories] = useLocalStorage<string[]>({
@@ -59,14 +60,41 @@ const SearchFilter: React.FC<SearchFilterProps> = ({ isLoading, onSearchSubmit, 
         setSearchHistories(newHistories);
       }
     },
-    [searchQuery, searchHistories],
+    [onSearchSubmit, searchHistories, searchQuery, setSearchHistories],
   );
 
   const handleClear = useCallback(() => {
     setSearchQuery("");
     setTriggered(false);
+    setActiveSuggestion(-1);
     onSearchSubmit?.("");
-  }, []);
+  }, [onSearchSubmit, setSearchQuery]);
+
+  const handleSearchKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLInputElement>) => {
+      const suggestions = data?.data ?? [];
+      if (!showSuggestions || suggestions.length === 0) {
+        if (event.key === "Escape") setActiveSuggestion(-1);
+        return;
+      }
+
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        setActiveSuggestion((current) => (current + 1) % suggestions.length);
+      } else if (event.key === "ArrowUp") {
+        event.preventDefault();
+        setActiveSuggestion((current) => (current <= 0 ? suggestions.length - 1 : current - 1));
+      } else if (event.key === "Escape") {
+        event.preventDefault();
+        setActiveSuggestion(-1);
+      } else if (event.key === "Enter" && activeSuggestion >= 0) {
+        event.preventDefault();
+        const suggestion = suggestions[activeSuggestion];
+        if (suggestion) router.push(`/${suggestion.type}/${suggestion.id}`);
+      }
+    },
+    [activeSuggestion, data?.data, router, showSuggestions],
+  );
 
   return (
     <form
@@ -84,8 +112,15 @@ const SearchFilter: React.FC<SearchFilterProps> = ({ isLoading, onSearchSubmit, 
             placeholder={`Search your favorite ${content === "movie" ? "movies" : content === "tv" ? "TV shows" : "anime"}...`}
             isLoading={isLoading}
             value={searchQuery}
+            onKeyDown={handleSearchKeyDown}
+            aria-controls={showSuggestions ? "search-suggestions" : undefined}
+            aria-expanded={showSuggestions}
+            aria-activedescendant={
+              activeSuggestion >= 0 ? `search-suggestion-${activeSuggestion}` : undefined
+            }
             onValueChange={(val) => {
               setSearchQuery(val);
+              setActiveSuggestion(-1);
               if (isEmpty(val)) setTriggered(false);
             }}
             onClear={!isEmpty(searchQuery) ? handleClear : undefined}
@@ -147,6 +182,7 @@ const SearchFilter: React.FC<SearchFilterProps> = ({ isLoading, onSearchSubmit, 
                 variant="flat"
                 emptyContent={<p className="text-center">No search suggestions</p>}
                 aria-label="Search Suggestions"
+                id="search-suggestions"
                 className="bg-content1 rounded-medium w-full shadow-2xl"
                 classNames={{
                   list: "max-h-[10rem] md:max-h-[15rem] overflow-y-auto",
@@ -185,7 +221,10 @@ const SearchFilter: React.FC<SearchFilterProps> = ({ isLoading, onSearchSubmit, 
                     (data?.data || []).map(({ id, title, type }, index) => (
                       <ListboxItem
                         key={`suggestion-${index}`}
+                        id={`search-suggestion-${index}`}
                         className="text-start"
+                        aria-selected={activeSuggestion === index}
+                        onMouseEnter={() => setActiveSuggestion(index)}
                         startContent={
                           type === "movie" ? (
                             <Movie className="text-primary" />

@@ -3,7 +3,7 @@ import useBreakpoints from "@/hooks/useBreakpoints";
 import useSupabaseUser from "@/hooks/useSupabaseUser";
 import { DropdownItemProps } from "@/types/component";
 import { env } from "@/utils/env";
-import { Gear, Logout, User } from "@/utils/icons";
+import { Logout, User } from "@/utils/icons";
 import { useRouter } from "@bprogress/next/app";
 import {
   addToast,
@@ -49,7 +49,7 @@ const UserProfileButton: React.FC = () => {
         className: "text-danger",
       },
     ],
-    [logout],
+    [logout, router],
   );
 
   if (isLoading) return null;

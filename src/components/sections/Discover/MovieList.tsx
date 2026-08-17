@@ -34,10 +34,10 @@ const MovieDiscoverList = () => {
     });
 
   useEffect(() => {
-    if (inViewport && !isPending) {
-      fetchNextPage();
+    if (inViewport && !isPending && hasNextPage && !isFetchingNextPage) {
+      void fetchNextPage();
     }
-  }, [inViewport]);
+  }, [fetchNextPage, hasNextPage, inViewport, isFetchingNextPage, isPending]);
 
   if (status === "error") return notFound();
 

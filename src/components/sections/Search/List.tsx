@@ -7,13 +7,14 @@ import { fromAnime, fromMovie, fromTvShow } from "@/utils/normalize-media";
 import BackToTopButton from "@/components/ui/button/BackToTopButton";
 import useDiscoverFilters from "@/hooks/useDiscoverFilters";
 import { ContentType } from "@/types";
+import type { AniListMediaSummary, AniListPage } from "@/types/anilist";
 import { cn, isEmpty } from "@/utils/helpers";
 import { getLoadingLabel } from "@/utils/movies";
 import { Spinner } from "@heroui/react";
 import { useInViewport } from "@mantine/hooks";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
-import { Movie, TV } from "tmdb-ts/dist/types";
+import { useEffect, useState } from "react";
+import type { Movie, TV } from "tmdb-ts/dist/types";
 import SearchFilter from "./Filter";
 import { anilistApi } from "@/api/anilist";
 
@@ -23,13 +24,25 @@ type FetchType = {
   query: string;
 };
 
+type TmdbSearchPage<T> = {
+  page: number;
+  total_pages: number;
+  total_results: number;
+  results: T[];
+};
+
+type SearchResponse =
+  | TmdbSearchPage<Movie>
+  | TmdbSearchPage<TV>
+  | AniListPage<AniListMediaSummary>;
+
 const fetchData = async ({
   page,
   type = "movie",
   query,
-}: FetchType): Promise<any> => {
-  if (type === "movie") return tmdbBrowser.search.movies({ query, page });
-  if (type === "tv") return tmdbBrowser.search.tvShows({ query, page });
+}: FetchType): Promise<SearchResponse> => {
+  if (type === "movie") return tmdbBrowser.search.movies<TmdbSearchPage<Movie>>({ query, page });
+  if (type === "tv") return tmdbBrowser.search.tvShows<TmdbSearchPage<TV>>({ query, page });
   return anilistApi.search(query, page);
 };
 
@@ -46,89 +59,85 @@ const SearchList = () => {
       queryFn: ({ pageParam: page }) =>
         fetchData({ page, type: content, query: submittedSearchQuery }),
       initialPageParam: 1,
-      getNextPageParam: (lastPage: any) => {
+      getNextPageParam: (lastPage: SearchResponse) => {
         if (content === "anime") {
-          return lastPage.pageInfo.hasNextPage ? lastPage.pageInfo.currentPage + 1 : undefined;
+          const page = lastPage as AniListPage<AniListMediaSummary>;
+          return page.pageInfo.hasNextPage ? page.pageInfo.currentPage + 1 : undefined;
         }
-        return lastPage.page < lastPage.total_pages ? lastPage.page + 1 : undefined;
+        const page = lastPage as TmdbSearchPage<Movie | TV>;
+        return page.page < page.total_pages ? page.page + 1 : undefined;
       },
     });
 
   useEffect(() => {
-    if (inViewport) {
-      fetchNextPage();
+    if (inViewport && hasNextPage && !isFetchingNextPage && !isPending) {
+      void fetchNextPage();
     }
-  }, [inViewport]);
+  }, [fetchNextPage, hasNextPage, inViewport, isFetchingNextPage, isPending]);
 
   useEffect(() => {
     q.removeQueries({ queryKey: ["search-list"] });
   }, [content, q]);
 
-  // Hoisted to component scope: the "reached the end of the list" branch in the
-  // JSX below also needs this, and reading it only inside the useMemo callback
-  // put it out of scope there (ReferenceError at runtime, not just a type error
-  // — and ignoreBuildErrors means the build won't catch it).
-  const results = useMemo(
-    () => (content === "anime" ? data?.pages[0]?.media : data?.pages[0]?.results),
-    [content, data?.pages],
-  );
+  const firstPage = data?.pages[0];
+  const results =
+    content === "anime"
+      ? (firstPage as AniListPage<AniListMediaSummary> | undefined)?.media
+      : (firstPage as TmdbSearchPage<Movie | TV> | undefined)?.results;
 
-  const renderSearchResults = useMemo(() => {
-    return () => {
-      const totalCount = content === "anime" ? data?.pages[0]?.pageInfo?.total : data?.pages[0]?.total_results;
+  const renderSearchResults = () => {
+    const totalCount =
+      content === "anime"
+        ? (firstPage as AniListPage<AniListMediaSummary> | undefined)?.pageInfo.total
+        : (firstPage as TmdbSearchPage<Movie | TV> | undefined)?.total_results;
 
-      if (isEmpty(results)) {
-        let label = "movies";
-        if (content === "tv") label = "TV series";
-        if (content === "anime") label = "anime";
-        return (
-          <h5 className="mt-56 text-center text-xl">
-            No {label} found with query{" "}
-            <span className="text-warning font-semibold">"{submittedSearchQuery}"</span>
-          </h5>
-        );
-      }
-
-      let label = "movies";
-      if (content === "tv") label = "TV series";
-      if (content === "anime") label = "anime";
-
-      const color = content === "movie" ? "text-success" : content === "tv" ? "text-warning" : "text-secondary";
-
+    if (isEmpty(results)) {
+      const label = content === "tv" ? "TV series" : content === "anime" ? "anime" : "movies";
       return (
-        <>
-          <h5 className="text-center text-xl">
-            <span className="motion-preset-focus">
-              Found{" "}
-              <span className={cn("font-semibold", color)}>{totalCount}</span>{" "}
-              {label} with query{" "}
-              <span className="text-warning font-semibold">"{submittedSearchQuery}"</span>
-            </span>
-          </h5>
-          <div className="movie-grid">
-            {content === "movie" &&
-              data?.pages.map((page) =>
-                (page as any).results.map((movie: any) => (
-                  <PosterCard key={movie.id} media={fromMovie(movie as Movie)} variant="grid" />
-                ))
-              )}
-            {content === "tv" &&
-              data?.pages.map((page) =>
-                (page as any).results.map((tv: any) => (
-                  <PosterCard key={tv.id} media={fromTvShow(tv as TV)} variant="grid" />
-                ))
-              )}
-            {content === "anime" &&
-              data?.pages.map((page) =>
-                (page as any).media.map((anime: any) => (
-                  <PosterCard key={anime.id} media={fromAnime(anime)} variant="grid" />
-                ))
-              )}
-          </div>
-        </>
+        <h5 className="mt-56 text-center text-xl">
+          No {label} found with query{" "}
+          <span className="text-warning font-semibold">&quot;{submittedSearchQuery}&quot;</span>
+        </h5>
       );
-    };
-  }, [content, data?.pages, results, submittedSearchQuery]);
+    }
+
+    const label = content === "tv" ? "TV series" : content === "anime" ? "anime" : "movies";
+    const color = content === "movie" ? "text-success" : content === "tv" ? "text-warning" : "text-secondary";
+    const moviePages = (data?.pages ?? []) as TmdbSearchPage<Movie>[];
+    const tvPages = (data?.pages ?? []) as TmdbSearchPage<TV>[];
+    const animePages = (data?.pages ?? []) as AniListPage<AniListMediaSummary>[];
+
+    return (
+      <>
+        <h5 className="text-center text-xl">
+          <span className="motion-preset-focus">
+            Found <span className={cn("font-semibold", color)}>{totalCount}</span> {label} with query{" "}
+            <span className="text-warning font-semibold">&quot;{submittedSearchQuery}&quot;</span>
+          </span>
+        </h5>
+        <div className="movie-grid">
+          {content === "movie" &&
+            moviePages.flatMap((page) =>
+              page.results.map((movie) => (
+                <PosterCard key={movie.id} media={fromMovie(movie)} variant="grid" />
+              )),
+            )}
+          {content === "tv" &&
+            tvPages.flatMap((page) =>
+              page.results.map((tv) => (
+                <PosterCard key={tv.id} media={fromTvShow(tv)} variant="grid" />
+              )),
+            )}
+          {content === "anime" &&
+            animePages.flatMap((page) =>
+              page.media.map((anime) => (
+                <PosterCard key={anime.id} media={fromAnime(anime)} variant="grid" />
+              )),
+            )}
+        </div>
+      </>
+    );
+  };
 
   const getColor = () => {
     if (content === "movie") return "primary";

@@ -106,7 +106,7 @@ const AuthForms: React.FC = () => {
             <CardBody className="flex flex-col gap-4">
               {error && (
                 <FormAlert onDismiss={() => setError(null)}>
-                  We couldn't complete that request. The link may have expired — try again below.
+                  We couldn&apos;t complete that request. The link may have expired — try again below.
                 </FormAlert>
               )}
               {/*

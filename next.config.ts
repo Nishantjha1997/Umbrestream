@@ -28,7 +28,7 @@ const nextConfig: NextConfig = {
     // types are still enforced, just outside the build.
     // A green build is NOT a green typecheck here. Run typecheck explicitly.
     // Remove this once the local Node install is repaired.
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: process.env.STREAMFREE_SKIP_NEXT_TYPECHECK === "1",
   },
   experimental: {
     cpus: 1,

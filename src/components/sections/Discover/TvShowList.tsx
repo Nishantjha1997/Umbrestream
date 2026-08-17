@@ -33,10 +33,10 @@ const TvShowDiscoverList = () => {
     });
 
   useEffect(() => {
-    if (inViewport) {
-      fetchNextPage();
+    if (inViewport && hasNextPage && !isFetchingNextPage && !isPending) {
+      void fetchNextPage();
     }
-  }, [inViewport]);
+  }, [fetchNextPage, hasNextPage, inViewport, isFetchingNextPage, isPending]);
 
   if (status === "error") return notFound();
 

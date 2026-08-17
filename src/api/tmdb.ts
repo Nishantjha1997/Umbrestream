@@ -15,12 +15,12 @@ const getDummyClient = (): TMDB => {
     );
   };
   
-  const dummy: any = new Proxy(throwError, {
-    get(target, prop) {
+  const dummy = new Proxy(throwError as unknown as object, {
+    get(_target, prop: PropertyKey) {
       if (prop === "then" || typeof prop === "symbol") return undefined;
       return dummy;
     },
-  });
+  }) as unknown as TMDB;
   
   return dummy as TMDB;
 };

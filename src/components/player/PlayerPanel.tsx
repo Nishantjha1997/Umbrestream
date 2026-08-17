@@ -39,7 +39,6 @@ export default function PlayerPanel({
   // The portal target doesn't exist during SSR/the first render — standard
   // one-tick-late mount guard for `createPortal`, same as `DetailModal.tsx`.
   const [mounted, setMounted] = useState(false);
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setMounted(true), []);
 
   if (!mounted || !open) return null;

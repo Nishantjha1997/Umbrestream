@@ -116,7 +116,6 @@ export default function PlayerShell({
 }: PlayerShellProps) {
   const [mounted, setMounted] = useState(false);
   // Standard one-tick-late mount guard for `createPortal` — see `DetailModal.tsx`.
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setMounted(true), []);
 
   useEffect(() => {
@@ -357,7 +356,6 @@ export default function PlayerShell({
       selectedSourceOverride?.requestKey === directRequestKey &&
       sourceParam === selectedSourceOverride.id
     ) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedSourceOverride(null);
     }
   }, [directRequestKey, selectedSourceOverride, sourceParam]);
@@ -382,8 +380,11 @@ export default function PlayerShell({
     requestKey: string;
     ids: Set<string>;
   }>({ requestKey: directRequestKey, ids: new Set() });
-  const attemptedSourceIds =
-    attemptedState.requestKey === directRequestKey ? attemptedState.ids : new Set<string>();
+  const attemptedSourceIds = useMemo(
+    () =>
+      attemptedState.requestKey === directRequestKey ? attemptedState.ids : new Set<string>(),
+    [attemptedState, directRequestKey],
+  );
   useEffect(() => {
     confirmedReadyRef.current = confirmedReady;
   }, [confirmedReady]);
@@ -397,7 +398,6 @@ export default function PlayerShell({
       // Syncing from `usePlayerEvents`' postMessage-derived state, which is
       // exactly the "external system" case an effect is for — this isn't
       // derivable from props/state already available at render time.
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setConfirmedReadySourceId(selectedSource.id);
       setRecoveryPrompt((current) =>
         current?.sourceId === selectedSource.id ? null : current,

@@ -51,7 +51,6 @@ export default function DetailModal({ children }: PropsWithChildren) {
   // `createPortal`; there is no external system to synchronize with here,
   // so the usual "don't setState in an effect" advice doesn't apply.
   const [mounted, setMounted] = useState(false);
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setMounted(true), []);
 
   // Closing the underlying route (browser back, or a client navigation away)
