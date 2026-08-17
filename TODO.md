@@ -778,7 +778,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Status: completed
   - Priority: P0
   - Depends on: SF-075
-  - Evidence: phone rail, desktop rail, and phone resume hero now render removal controls as siblings of the resume links; this prevents Remove/Mark complete from activating playback through invalid nested interactive elements; TypeScript, authored ESLint, and `git diff --check` passed
+  - Evidence: phone rail, desktop rail, and phone resume hero now render removal controls as siblings of the resume links; this prevents Remove/Mark complete from activating playback through invalid nested interactive elements; TypeScript, authored ESLint, `git diff --check`, and the Vercel production build passed; deployment `umbrestream-ga17rhrt4-nishants-projects-7d9628b2.vercel.app` returned Ready and was aliased to `https://streamfree.online`; authenticated click/Undo remains a follow-up because the available QA browser session is signed out
   - Commit: `a8197a1`
   - Completed: 2026-08-17
 

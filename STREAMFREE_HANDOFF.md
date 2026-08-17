@@ -888,3 +888,9 @@ in browsers. The action controls now render as siblings of the playback link, wi
 metadata remaining the only resume target. This makes Remove and Mark complete safe for pointer,
 touch, and keyboard activation. Re-run the authenticated removal/Undo browser flow after the next
 Vercel deployment and confirm the URL never changes when the action is used.
+
+The fix is deployed in Vercel production deployment
+`umbrestream-ga17rhrt4-nishants-projects-7d9628b2.vercel.app`, which returned `Ready` and was aliased
+to `https://streamfree.online`. The available QA browser session was signed out during verification,
+so authenticated mutation and Undo behavior remain explicitly unclaimed until a signed-in session is
+available.
