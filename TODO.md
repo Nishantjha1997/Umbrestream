@@ -341,10 +341,10 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Status: blocked
   - Priority: P0
   - Depends on: SF-031
-  - Evidence: web phone/desktop rails now remove only the actual resume hero by identity; cursor pagination remains active and the Supabase RPC still needs production application/high-volume verification
+  - Evidence: web phone/desktop rails now remove only the actual resume hero by identity; production SQL editor applied the RPC migration successfully and verified the function, authenticated grant, and index; production currently has 42 incomplete history rows across 35 titles, so the >100-row stress check remains open
   - Commit: `6e3083b`
-  - Next action: obtain an authorized Supabase session, apply the RPC migration, and verify an authenticated account with more than 100 active episode rows
-  - Blocker: no production Supabase CLI/dashboard session or environment credentials are available
+  - Next action: verify the RPC through the app with an authenticated account containing more than 100 active episode rows
+  - Blocker: production data has only 42 incomplete rows across 35 titles; do not fabricate test history
 
 - [x] SF-074 — Verify Continue Watching ordering/completion rules
   - Status: completed
@@ -751,20 +751,22 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Next action: test side-by-side migration path
 
 - [ ] SF-137 — Build signed release APKs only
-  - Status: not started
+  - Status: blocked
   - Priority: P0
   - Depends on: SF-130, SF-131, SF-135, SF-139
-  - Evidence: —
+  - Evidence: portable JDK 21 and Android SDK 36 were installed without ADB; Gradle reached `:app:packageRelease` for the phone but correctly stopped because the canonical release keystore is unavailable; existing public phone/TV APKs remain v2-signed with the pinned certificates
   - Commit: —
-  - Next action: build after final QA
+  - Next action: recover the existing phone and TV release keystores and rerun both release builds
+  - Blocker: generating a replacement key would invalidate upgrades for existing installs
 
 - [ ] SF-138 — Verify release APK metadata and signatures
-  - Status: not started
+  - Status: blocked
   - Priority: P0
   - Depends on: SF-137
-  - Evidence: —
+  - Evidence: existing `StreamFree-Android-v1.3.apk` and `StreamFree-TV-v1.2.apk` pass v2 signature verification with the pinned manifest certificates; newly rebuilt APK metadata cannot be verified until the canonical keys are recovered
   - Commit: —
-  - Next action: run package/signature/hash checks
+  - Next action: verify v2/v3 signatures, package IDs, version codes, certificates, hashes, MIME types, filenames, and headers after rebuilding with the recovered keys
+  - Blocker: canonical release keystores are unavailable
 
 - [ ] SF-139 — Validate TV release on emulator
   - Status: not started
@@ -831,10 +833,10 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Status: blocked
   - Priority: P0
   - Depends on: SF-155
-  - Evidence: —
+  - Evidence: Gradle tooling is now available through portable JDK 21 and Android SDK 36, but the phone release build stopped at signing because the canonical keystore is missing
   - Commit: —
-  - Next action: install a supported JDK, then build and verify release artifacts
-  - Blocker: no usable Java/JDK is available in this workspace
+  - Next action: recover canonical signing keys, then build and verify private release artifacts with portable JDK 21/SDK 36
+  - Blocker: canonical signing keystores are unavailable; JDK/SDK tooling is now present
 
 - [ ] SF-157 — Deploy Vercel preview and verify readiness
   - Status: not started
