@@ -73,7 +73,8 @@ export default function HomeDiscoveryFeed({ idPrefix, variant }: HomeDiscoveryFe
             Find something worth pressing play on.
           </h2>
           <p className="mt-2 text-sm leading-6 text-white/52">
-            Fresh lists for movies and series, with personal picks that improve as you watch.
+            Fresh regional lists for movies and series, with personal picks that improve as you
+            watch when you sign in.
           </p>
         </div>
         <Link
