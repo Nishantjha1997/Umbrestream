@@ -317,7 +317,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-031
   - Evidence: desktop hero aria label now follows resume/recommended/trending source; signed-out recommendation shelf is labelled `Trending now` instead of `Picked for you`
-  - Commit: pending `fix(home): keep recommendation provenance honest`
+  - Commit: `6feb2b5`
   - Completed: 2026-08-17
   - Next action: return explicit source semantics from hero hook/feed
 
@@ -413,7 +413,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Status: not started
   - Priority: P0
   - Depends on: SF-080, SF-081
-  - Evidence: —
+  - Evidence: implementation is complete; final desktop/mobile browser verification remains in the final testing phase
   - Commit: —
   - Next action: add deterministic browser tests
 
