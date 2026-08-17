@@ -17,6 +17,7 @@ import { toNativeHomeFeed } from "../src/lib/homeFeed/nativeAdapter.ts";
 import { fetchSharedHomeFeed } from "../src/lib/homeFeed/nativeClient.ts";
 import { resolveAdjacentEpisode } from "../src/lib/tv/adjacentEpisode.ts";
 import { REGION_OPTIONS, normalizeRegionOverride, regionName } from "../src/lib/native/region.ts";
+import { createNativeCache } from "../src/lib/native/cache.ts";
 
 const BACKEND_ORIGIN = "https://streamfree.online";
 const IMAGE_ORIGIN = "https://image.tmdb.org/t/p/w500";
@@ -52,7 +53,7 @@ const state = {
   browsePage: 1,
   animeSort: "TRENDING_DESC",
   detailSeason: 1,
-  cache: new Map(),
+  cache: createNativeCache(),
   media: new Map(),
   supabase: null,
   authReady: false,
@@ -248,24 +249,6 @@ async function requestJson(path, { method = "GET", body, headers: extraHeaders =
   return response.json();
 }
 
-async function cached(key, loader, ttl = CACHE_TTL) {
-  const found = state.cache.get(key);
-  if (found?.data && Date.now() - found.at < ttl) return found.data;
-  if (found?.promise) return found.promise;
-
-  const promise = loader()
-    .then((data) => {
-      state.cache.set(key, { data, at: Date.now() });
-      return data;
-    })
-    .catch((error) => {
-      state.cache.delete(key);
-      throw error;
-    });
-  state.cache.set(key, { promise, at: Date.now() });
-  return promise;
-}
-
 async function getRegion() {
   if (state.region) return state.region;
   const override = normalizeRegionOverride(readStorage(REGION_OVERRIDE_KEY, ""));
@@ -337,7 +320,7 @@ function tmdb(endpoint, params = {}) {
     if (value !== undefined && value !== "") query.set(key, String(value));
   });
   const path = `/api/tmdb/${endpoint}${query.size ? `?${query}` : ""}`;
-  return cached(`tmdb:${path}`, () => requestJson(path));
+  return state.cache.get(`tmdb:${path}`, () => requestJson(path), CACHE_TTL);
 }
 
 function anilist(query, variables = {}) {
