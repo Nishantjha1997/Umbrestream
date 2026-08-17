@@ -564,20 +564,20 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Next action: audit event source/origin checks
 
 - [ ] SF-111 — Fix phone fullscreen orientation and Back
-  - Status: not started
+  - Status: in progress
   - Priority: P0
   - Depends on: SF-038
-  - Evidence: —
-  - Commit: —
-  - Next action: inspect native bridge and player flow
+  - Evidence: phone shell locks landscape on fullscreen entry, restores portrait on exit/back/unmount, and now re-applies the lock when a fullscreen player is rebuilt for a source switch or next episode
+  - Commit: pending
+  - Next action: verify orientation and first/second Back behavior on the connected physical phone
 
 - [ ] SF-112 — Restore phone portrait after playback
-  - Status: not started
+  - Status: in progress
   - Priority: P0
   - Depends on: SF-111
-  - Evidence: —
-  - Commit: —
-  - Next action: verify route/background/resume paths
+  - Evidence: exit/fullscreenchange, player route cleanup, and the normal player render all call the portrait restore path when fullscreen is false
+  - Commit: pending
+  - Next action: verify route/background/resume paths on the connected physical phone
 
 - [ ] SF-113 — Verify TV immersive landscape playback
   - Status: not started

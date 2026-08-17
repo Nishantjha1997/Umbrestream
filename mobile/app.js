@@ -1293,6 +1293,10 @@ document.addEventListener("visibilitychange", () => {
 function renderPlayer() {
   const player = state.player;
   if (!player) return renderError("Player closed", "Choose a title to start watching.", false);
+  // Re-assert the state after a source switch or next-episode navigation.
+  // Android may recreate the WebView surface while the JS player state
+  // survives; orientation calls are intentionally idempotent.
+  setPlayerFullscreen(Boolean(player.fullscreen));
   const source = player.sources[player.index];
   const label = player.media.media_type === "tv"
     ? `S${player.media.season || 1} · E${player.media.episode || 1}`
