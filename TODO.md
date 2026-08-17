@@ -430,7 +430,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P1
   - Depends on: SF-072
   - Evidence: Browse movie/series and Search now show explicit retryable service-error panels instead of routing transient upstream failures to `notFound()`; Home/player/auth/offline surfaces still need the final audit
-  - Commit: pending
+  - Commit: `802cf55`
   - Next action: audit Home, player, auth, library, and PWA offline states
 
 - [x] SF-085 — Add region override controls
