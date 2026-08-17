@@ -196,13 +196,13 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `a8cb8f6`
   - Completed: 2026-08-17
 
-- [ ] SF-038 — Extract shared native modules
-  - Status: in progress
+- [x] SF-038 — Extract shared native modules
+  - Status: completed
   - Priority: P1
   - Depends on: SF-032, SF-036
-  - Evidence: shared `nativeAdapter.ts`, `nativeClient.ts`, adjacent-episode resolver, playback policy, `region.ts`, `cache.ts`, `history.ts`, and `update.ts` are consumed by both shells; touch and remote presentation remain separate
+  - Evidence: shared `nativeAdapter.ts`, `nativeClient.ts`, adjacent-episode resolver, playback policy, `region.ts`, `cache.ts`, `history.ts`, and `update.ts` are consumed by both shells; `test:native-cache`, `test:native-history`, `test:native-update-state`, `test:episode-resolver`, and `test:home-feed` pass; touch and remote presentation remain separate
   - Commit: `90a6f57`
-  - Next action: run the complete native module contract checks, then close the shared-module task
+  - Completed: 2026-08-17
 
 - [x] SF-039 — Keep phone/TV presentation layers separate
   - Status: completed
