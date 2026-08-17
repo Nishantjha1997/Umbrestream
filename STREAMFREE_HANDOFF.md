@@ -730,3 +730,28 @@ Open release blockers:
 
 The next agent should read `TODO.md` for the single active task, keep task evidence and commit hashes
 current, and never replace the canonical release artifacts with debug builds.
+
+## 19. Latest implementation checkpoint — 2026-08-17
+
+Since the previous checkpoint, the branch also includes:
+
+- Shared native cache, history, and update-state modules consumed by both phone and TV shells,
+  with deterministic checks for concurrent cache requests, history ordering/deduplication, and
+  strict higher-version update availability. Phone and TV still own separate touch/remote
+  presentation code.
+- Retryable service states for movie details, TV details, and anime discovery. Transient TMDB or
+  AniList failures no longer masquerade as missing titles or leave an indefinite spinner.
+- The photo lightbox and plugin graph are client-only and dynamically loaded from Photos; its type
+  import is erased from the detail route's initial module graph.
+- Core web interaction targets now meet the 44px minimum on player actions, phone header controls,
+  desktop search, and the standalone fullscreen control. Playback/source/update/next-episode
+  notifications are explicit live regions and include the anime audio variant when relevant.
+- Home copy now says personal picks improve after sign-in, while signed-out rows remain labelled
+  as trending. The unavailable Watch Parties teaser remains inert and honestly marked Coming soon.
+
+Latest commits are recorded in `TODO.md`; the worktree is expected to remain clean after each
+checkpoint. Before release, rerun the complete automated checks rather than relying only on the
+targeted checks recorded above. The remaining gates are Supabase migration application and
+high-volume verification, browser/source-picker/accessibility QA, physical-phone QA, Android TV
+emulator QA, real-provider smoke tests, signed release APK production, Vercel readiness, and
+production rollback verification. Do not claim production readiness until those gates pass.
