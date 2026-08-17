@@ -20,8 +20,7 @@ export function resolveUpdateState(
   payload: NativeUpdatePayload,
   currentVersionCode: number,
 ): NativeUpdateState<NativeUpdatePayload> {
-  const available =
-    payload.status === "available" || Number(payload.versionCode || 0) > currentVersionCode;
+  const available = Number(payload.versionCode || 0) > currentVersionCode;
   return {
     status: available ? "available" : "current",
     manifest: payload,
