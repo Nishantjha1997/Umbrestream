@@ -47,7 +47,9 @@ export default function StillWatching() {
   // by updated_at descending.
   const uniqueTitles = active.filter(
     (item, index, rows) =>
-      rows.findIndex((candidate) => candidate.type === item.type && candidate.media_id === item.media_id) === index,
+      rows.findIndex(
+        (candidate) => candidate.type === item.type && candidate.media_id === item.media_id,
+      ) === index,
   );
   const resumeKey = pick?.source === "resume" ? `${pick.media.kind}:${pick.media.id}` : null;
   const rest = uniqueTitles.filter((item) => `${item.type}:${item.media_id}` !== resumeKey);
@@ -63,50 +65,55 @@ export default function StillWatching() {
             item.duration > 0 ? Math.min(100, (item.last_position / item.duration) * 100) : 0;
 
           return (
-            <Link
+            <div
               key={`${item.type}-${item.media_id}-${item.season}-${item.episode}`}
-              href={playHrefFor(item)}
-              className="group flex w-[94px] flex-none flex-col gap-[9px] rounded-[10px] focus-visible:outline-none"
+              className="group relative flex w-[94px] flex-none flex-col gap-[9px] rounded-[10px] focus-visible:outline-none"
             >
-              <div className="relative aspect-2/3 w-[94px] overflow-hidden rounded-[10px] shadow-[0_12px_28px_-14px_rgba(0,0,0,.9)] ring-1 ring-white/0 transition-shadow group-focus-visible:ring-2 group-focus-visible:ring-white/70">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={getImageUrl(item.poster_path || item.backdrop_path || "", "poster")}
-                  alt=""
-                  aria-hidden="true"
-                  loading="lazy"
-                  decoding="async"
-                  className="absolute inset-0 size-full object-cover"
-                />
-                <span
-                  aria-hidden="true"
-                  className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/55 to-transparent to-[60%]"
-                />
-                <EclipseRing
-                  size={26}
-                  percent={percent}
-                  withBacking
-                  className="absolute right-[6px] bottom-[6px]"
-                />
-                <HistoryItemActions
-                  mediaId={item.media_id}
-                  type={item.type as MediaKind}
-                  season={item.season}
-                  episode={item.episode}
-                  title={item.title}
-                  scope="title"
-                  className="absolute top-1 right-1 flex gap-1"
-                />
-              </div>
-              <div className="flex flex-col gap-0.5">
-                <p className="m-0 line-clamp-2 text-[11.5px] leading-[1.25] font-medium text-white">
-                  {item.title}
-                </p>
-                <p className="m-0 text-[10px] text-white/38">
-                  {formatTimeLeft(item.last_position, item.duration)}
-                </p>
-              </div>
-            </Link>
+              <Link
+                href={playHrefFor(item)}
+                aria-label={`Resume ${item.title}`}
+                className="block rounded-[10px] focus-visible:outline-none"
+              >
+                <div className="relative aspect-2/3 w-[94px] overflow-hidden rounded-[10px] shadow-[0_12px_28px_-14px_rgba(0,0,0,.9)] ring-1 ring-white/0 transition-shadow group-focus-visible:ring-2 group-focus-visible:ring-white/70">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={getImageUrl(item.poster_path || item.backdrop_path || "", "poster")}
+                    alt=""
+                    aria-hidden="true"
+                    loading="lazy"
+                    decoding="async"
+                    className="absolute inset-0 size-full object-cover"
+                  />
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/55 to-transparent to-[60%]"
+                  />
+                  <EclipseRing
+                    size={26}
+                    percent={percent}
+                    withBacking
+                    className="absolute right-[6px] bottom-[6px]"
+                  />
+                </div>
+                <div className="flex flex-col gap-0.5 pt-[9px]">
+                  <p className="m-0 line-clamp-2 text-[11.5px] leading-[1.25] font-medium text-white">
+                    {item.title}
+                  </p>
+                  <p className="m-0 text-[10px] text-white/38">
+                    {formatTimeLeft(item.last_position, item.duration)}
+                  </p>
+                </div>
+              </Link>
+              <HistoryItemActions
+                mediaId={item.media_id}
+                type={item.type as MediaKind}
+                season={item.season}
+                episode={item.episode}
+                title={item.title}
+                scope="title"
+                className="absolute top-1 right-1 z-30 flex gap-1"
+              />
+            </div>
           );
         })}
         <div ref={ref} className="h-1 w-1 flex-none" aria-hidden="true" />

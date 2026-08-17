@@ -774,6 +774,14 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `b6d7c9f`
   - Completed: 2026-08-17
 
+- [x] SF-161 — Remove nested playback links from Continue Watching actions
+  - Status: completed
+  - Priority: P0
+  - Depends on: SF-075
+  - Evidence: phone rail, desktop rail, and phone resume hero now render removal controls as siblings of the resume links; this prevents Remove/Mark complete from activating playback through invalid nested interactive elements; TypeScript, authored ESLint, and `git diff --check` passed
+  - Commit: pending deployment commit
+  - Completed: 2026-08-17
+
 - [ ] SF-139 — Validate TV release on emulator
   - Status: not started
   - Priority: P0

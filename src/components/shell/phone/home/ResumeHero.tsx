@@ -83,35 +83,37 @@ export default function ResumeHero() {
 
   return (
     <div className="flex items-end gap-[18px] px-5 pt-3">
-      <Link
-        href={pick.media.href}
-        aria-label={pick.media.title}
-        className="group relative block w-[146px] flex-none rounded-[13px] focus-visible:outline-none"
-      >
-        {/* Decorative bloom: the crisp plate below carries the real art. */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={heroPosterUrl}
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-x-2 top-[22px] -bottom-3.5 rounded-[18px] object-cover opacity-90 blur-[30px]"
-        />
-        <div className="relative z-10 aspect-2/3 w-[146px] overflow-hidden rounded-[13px] shadow-[0_28px_62px_-20px_rgba(0,0,0,.98),0_0_0_1px_rgba(255,255,255,.11)] transition-transform duration-(--duration-base) ease-(--ease-out-quint) group-focus-visible:scale-[1.02] motion-reduce:transition-none">
+      <div className="group relative w-[146px] flex-none rounded-[13px]">
+        <Link
+          href={pick.media.href}
+          aria-label={pick.media.title}
+          className="block rounded-[13px] focus-visible:outline-none"
+        >
+          {/* Decorative bloom: the crisp plate below carries the real art. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={heroPosterUrl}
             alt=""
             aria-hidden="true"
-            loading="eager"
-            fetchPriority="high"
-            decoding="async"
-            className="absolute inset-0 size-full object-cover"
+            className="absolute inset-x-2 top-[22px] -bottom-3.5 rounded-[18px] object-cover opacity-90 blur-[30px]"
           />
-          <span
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/42 to-transparent to-[58%]"
-          />
-        </div>
+          <div className="relative z-10 aspect-2/3 w-[146px] overflow-hidden rounded-[13px] shadow-[0_28px_62px_-20px_rgba(0,0,0,.98),0_0_0_1px_rgba(255,255,255,.11)] transition-transform duration-(--duration-base) ease-(--ease-out-quint) group-focus-visible:scale-[1.02] motion-reduce:transition-none">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={heroPosterUrl}
+              alt=""
+              aria-hidden="true"
+              loading="eager"
+              fetchPriority="high"
+              decoding="async"
+              className="absolute inset-0 size-full object-cover"
+            />
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/42 to-transparent to-[58%]"
+            />
+          </div>
+        </Link>
         {isResume && (
           <HistoryItemActions
             mediaId={pick.media.id}
@@ -123,7 +125,7 @@ export default function ResumeHero() {
             className="absolute top-2 right-2 z-20 flex gap-1"
           />
         )}
-      </Link>
+      </div>
 
       <div className="flex min-w-0 flex-1 flex-col gap-[13px] pb-0.5">
         <div className="flex items-center gap-[11px]">
@@ -131,7 +133,9 @@ export default function ResumeHero() {
             <EclipseRing
               size={50}
               percent={pick.progressPercent ?? 0}
-              label={<span className="text-[10.5px] font-semibold tracking-[-0.03em]">{pctLabel}</span>}
+              label={
+                <span className="text-[10.5px] font-semibold tracking-[-0.03em]">{pctLabel}</span>
+              }
             />
           )}
           <div className="flex min-w-0 flex-col gap-px">
@@ -146,7 +150,7 @@ export default function ResumeHero() {
 
         <Link
           href={pick.playHref}
-          className="flex h-[42px] w-full items-center justify-center gap-2 rounded-full bg-white text-[13.5px] font-semibold text-[#0a090d] transition-opacity duration-(--duration-fast) ease-(--ease-out-quint) hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 motion-reduce:transition-none"
+          className="flex h-[42px] w-full items-center justify-center gap-2 rounded-full bg-white text-[13.5px] font-semibold text-[#0a090d] transition-opacity duration-(--duration-fast) ease-(--ease-out-quint) hover:opacity-90 focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:outline-none motion-reduce:transition-none"
         >
           <svg width="11" height="12" viewBox="0 0 12 14" aria-hidden="true">
             <path d="M1 1.4v11.2L11 7 1 1.4Z" fill="#0a090d" />

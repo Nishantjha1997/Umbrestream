@@ -878,3 +878,13 @@ verification confirmed both manifest hashes/sizes, `application/vnd.android.pack
 types, and the expected filenames. Remaining QA is physical-device validation: connect the Android
 phone for orientation, Back, playback, and updater checks. Physical TV testing remains deferred;
 an Android TV emulator is the substitute when provisioned.
+
+## 24. Continue Watching removal navigation fix — 2026-08-17
+
+The Continue Watching removal regression was caused by `HistoryItemActions` being rendered inside
+the resume `<Link>` on the phone rail, desktop rail, and phone resume hero. Although the action
+component stopped bubbling events, nested interactive elements can still activate the ancestor link
+in browsers. The action controls now render as siblings of the playback link, with the card art and
+metadata remaining the only resume target. This makes Remove and Mark complete safe for pointer,
+touch, and keyboard activation. Re-run the authenticated removal/Undo browser flow after the next
+Vercel deployment and confirm the URL never changes when the action is used.
