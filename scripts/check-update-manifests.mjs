@@ -4,16 +4,21 @@ import { basename, resolve } from "node:path";
 
 const root = process.cwd();
 const downloads = resolve(root, "public", "downloads");
+const releaseMetadata = JSON.parse(
+  await readFile(resolve(root, "release", "signing-certificates.json"), "utf8"),
+);
 const expected = [
   {
     file: "streamfree-android.json",
     platform: "android",
     packageId: "online.streamfree.app",
+    certificate: releaseMetadata.phone,
   },
   {
     file: "streamfree-android-tv.json",
     platform: "android-tv",
     packageId: "online.streamfree.tv",
+    certificate: releaseMetadata.tv,
   },
 ];
 
@@ -64,6 +69,10 @@ for (const item of expected) {
   for (const field of required) if (!(field in manifest)) fail(`${item.file} is missing ${field}`);
   if (manifest.schemaVersion !== 1 || manifest.platform !== item.platform) fail(`${item.file} schema/platform mismatch`);
   if (manifest.packageId !== item.packageId) fail(`${item.file} packageId mismatch`);
+  if (item.certificate.packageId !== manifest.packageId) fail(`${item.file} release certificate package mismatch`);
+  if (String(manifest.signingCertificateSha256).toUpperCase() !== String(item.certificate.certificateSha256).toUpperCase()) {
+    fail(`${item.file} certificate does not match release/signing-certificates.json`);
+  }
   if (!Number.isSafeInteger(manifest.versionCode) || manifest.versionCode < 1) fail(`${item.file} has invalid versionCode`);
   if (!Number.isSafeInteger(manifest.minimumSupportedVersion) || manifest.minimumSupportedVersion < 1) fail(`${item.file} has invalid minimumSupportedVersion`);
   if (!/^[A-F0-9]{64}$/i.test(manifest.sha256)) fail(`${item.file} has invalid sha256`);

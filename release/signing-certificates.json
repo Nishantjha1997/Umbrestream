@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "phone": {
+    "packageId": "online.streamfree.app",
+    "certificateSha256": "577D4F3C9BBE0A87C3F2CDFC087BD1A6D26EF1A613F392091DF0A26F10677DB9"
+  },
+  "tv": {
+    "packageId": "online.streamfree.tv",
+    "certificateSha256": "3899CD4ABFB7DC439680CE0BE05BEB455B32CA2A4B012D15FCEFF1E0D4D2CE2B"
+  }
+}

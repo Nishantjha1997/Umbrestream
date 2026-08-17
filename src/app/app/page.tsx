@@ -4,7 +4,6 @@ import Link from "next/link";
 import { brand } from "@/config/brand";
 
 const APK_PATH = "/downloads/StreamFree-Android-v1.3.apk";
-const APK_SHA256 = "427FCA603B8DE1D743A5D32A80D03FA0EC4FD06201AB72E7A92A67306007B497";
 
 export const metadata: Metadata = {
   title: `Get the Android app | ${brand.name}`,
@@ -238,17 +237,14 @@ export default function AndroidAppPage() {
           </p>
         </article>
         <article className="rounded-2xl border border-white/8 bg-white/[0.025] p-5 text-sm leading-6 text-white/58 sm:p-6">
-          <h2 className="text-lg font-semibold text-white">Signed beta details</h2>
+          <h2 className="text-lg font-semibold text-white">Verified updates</h2>
           <p className="mt-3">
             Version 1.3.0 is a release APK signed for direct installation. The in-app updater
             fetches the official manifest, checks the package identity, version, certificate,
             size, and SHA-256 before Android is asked to install anything. Android can still show
-            its normal install-from-this-source or Play Protect confirmation.
+            its normal install-from-this-source or Play Protect confirmation. Release fingerprints
+            are kept in the project release metadata and are not shown on the download page.
           </p>
-          <p className="mt-3 text-xs text-white/42">SHA-256</p>
-          <code className="mt-1 block text-xs leading-5 break-all text-violet-200">
-            {APK_SHA256}
-          </code>
         </article>
       </section>
 

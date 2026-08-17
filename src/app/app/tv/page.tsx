@@ -4,7 +4,6 @@ import Link from "next/link";
 import { brand } from "@/config/brand";
 
 const TV_APK_PATH = "/downloads/StreamFree-TV-v1.2.apk";
-const TV_APK_SHA256 = "D40AE8717FDA6E9D5B90F607782A1BD4EC019349C54D94F43447DEC086832B0E";
 
 export const metadata: Metadata = {
   title: `Get the Android TV app | ${brand.name}`,
@@ -268,17 +267,14 @@ export default function AndroidTVAppPage() {
           </p>
         </article>
         <article className="rounded-2xl border border-white/8 bg-white/[0.025] p-5 text-sm leading-6 text-white/58 sm:p-6">
-          <h2 className="text-lg font-semibold text-white">Signed beta details</h2>
+          <h2 className="text-lg font-semibold text-white">Verified updates</h2>
           <p className="mt-3">
             Version 1.2.0 is a release APK signed for direct installation. The in-app updater
             fetches and validates the official manifest, package identity, version, certificate,
             size, and SHA-256 before installation. Android TV can still show its standard
-            unknown-source or Play Protect confirmation.
+            unknown-source or Play Protect confirmation. Release fingerprints are kept in the
+            project release metadata and are not shown on the download page.
           </p>
-          <p className="mt-3 text-xs text-white/42">SHA-256</p>
-          <code className="mt-1 block text-xs leading-5 break-all text-violet-200">
-            {TV_APK_SHA256}
-          </code>
         </article>
       </section>
 

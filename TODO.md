@@ -478,13 +478,13 @@ Rule: complete one task at a time, update this file with evidence and commit has
 ## Phase 5 — Playback/native behavior
 
 - [ ] SF-100 — Regression-test source picker across surfaces
-  - Status: blocked
+  - Status: in progress
   - Priority: P0
   - Depends on: SF-011
-  - Evidence: source picker interaction/focus fixes are implemented; source-dependent browser exercise is blocked because the local TMDB proxy returned 503 for the known movie fixture; shared web-player fullscreen entry keeps successful entry in landscape intent
-  - Commit: `b6dbcbb`
-  - Next action: run desktop/mobile/PWA source-picker regression with a playable title or deterministic player fixture
-  - Blocker: local TMDB proxy returned 503 for the known playable movie fixture
+  - Evidence: production desktop smoke verified movie picker open/select/close with Filmu → Cinezo and URL `src=cinezo`; TV picker verified VidKing selection and URL `src=vidking`; anime Sub and Dub pickers expose separate labelled groups and successfully switch to `cinezo-anime-sub` and `cinezo-anime-dub`; mobile/PWA and native device acceptance remain open
+  - Commit: pending
+  - Next action: repeat source-sheet click/tap/keyboard checks at mobile/PWA viewport and complete phone/TV acceptance when devices are available
+  - Blocker: physical phone and TV-emulator acceptance is still pending; desktop production provider smoke is complete
 
 - [x] SF-101 — Make source rows fully interactive
   - Status: completed
@@ -763,10 +763,18 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Status: blocked
   - Priority: P0
   - Depends on: SF-137
-  - Evidence: existing `StreamFree-Android-v1.3.apk` and `StreamFree-TV-v1.2.apk` pass v2 signature verification with the pinned manifest certificates; newly rebuilt APK metadata cannot be verified until the canonical keys are recovered
+  - Evidence: existing `StreamFree-Android-v1.3.apk` and `StreamFree-TV-v1.2.apk` pass v2 signature verification with the pinned manifest certificates; `release/signing-certificates.json` is now the checked-in source of truth and update-manifest validation enforces that manifests match it; newly rebuilt APK metadata cannot be verified until the canonical keys are recovered
   - Commit: —
   - Next action: verify v2/v3 signatures, package IDs, version codes, certificates, hashes, MIME types, filenames, and headers after rebuilding with the recovered keys
   - Blocker: canonical release keystores are unavailable
+
+- [x] SF-160 — Centralize signing certificate fingerprints and remove them from download pages
+  - Status: completed
+  - Priority: P0
+  - Depends on: SF-138
+  - Evidence: `release/signing-certificates.json` stores the verified phone/TV certificate SHA-256 pins; `scripts/check-update-manifests.mjs` rejects manifest drift; APK download pages no longer display certificate or APK SHA digests
+  - Commit: pending
+  - Completed: 2026-08-17
 
 - [ ] SF-139 — Validate TV release on emulator
   - Status: not started
@@ -790,9 +798,9 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Status: in progress
   - Priority: P0
   - Depends on: SF-082, SF-100, SF-125
-  - Evidence: local production browser verified Home/About shells at default and 820×1180, Home at 390×844, Browse filter selection/reset at desktop and mobile, Search keyboard submit, and retryable catalog states; `/api/mobile/home` returns HTTP 200 with `schemaVersion: 1` fallback data and accepts an `IN` region override; source-picker, authenticated library, PWA update, and real-title flows remain blocked by missing catalog/auth fixtures
-  - Commit: `223ba6f`
-  - Next action: run source picker, removal/Undo, authenticated Continue Watching, PWA update, and mocked provider flows with deterministic fixtures
+  - Evidence: local production browser verified Home/About shells at default and 820×1180, Home at 390×844, Browse filter selection/reset at desktop and mobile, Search keyboard submit, and retryable catalog states; `/api/mobile/home` returns HTTP 200 with `schemaVersion: 1` fallback data and accepts an `IN` region override; production real-title smoke verified movie, TV, anime Sub, and anime Dub source selection and URL persistence; authenticated library, PWA update, and mobile/native flows remain open
+  - Commit: pending
+  - Next action: run removal/Undo, authenticated Continue Watching, PWA update, mobile/PWA source-sheet checks, and mocked provider flows with deterministic fixtures
 
 - [ ] SF-152 — Run accessibility and reduced-motion matrix
   - Status: in progress
@@ -824,10 +832,10 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Status: blocked
   - Priority: P0
   - Depends on: SF-150, SF-151, SF-153, SF-154
-  - Evidence: —
-  - Commit: —
-  - Next action: execute movie/TV/anime matrix after SF-150, SF-151, SF-153, and SF-154 pass
-  - Blocker: source-picker and device prerequisites are not available; HTTP reachability is not playback evidence
+  - Evidence: production desktop real-title smoke completed for Spider-Man: Brand New Day (Filmu/Cinezo), Lanterns S1E1 (Cinezo/VidKing), and ONE PIECE E1 (Sub and Dub, VidNest/Cinezo); provider iframe outcomes are recorded as runtime states and not treated as guaranteed playback; phone and TV-emulator runs remain pending
+  - Commit: pending
+  - Next action: complete the same category matrix on the connected Android phone and Android TV emulator, then record provider success/timeout/error outcomes
+  - Blocker: physical phone and TV-emulator prerequisites are not available in this workspace; desktop provider smoke is complete
 
 - [ ] SF-156 — Build private signed APK candidates
   - Status: blocked
