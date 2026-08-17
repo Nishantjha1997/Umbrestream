@@ -19,6 +19,7 @@ import { resolveAdjacentEpisode } from "../src/lib/tv/adjacentEpisode.ts";
 import { REGION_OPTIONS, normalizeRegionOverride, regionName } from "../src/lib/native/region.ts";
 import { createNativeCache } from "../src/lib/native/cache.ts";
 import { historyDate, historyProgress, latestHistoryTitles, onlyLocalAnime, sortHistoryItems } from "../src/lib/native/history.ts";
+import { beginUpdateCheck, resolveUpdateState, updateError } from "../src/lib/native/update.ts";
 
 const BACKEND_ORIGIN = "https://streamfree.online";
 const IMAGE_ORIGIN = "https://image.tmdb.org/t/p/w500";
@@ -139,24 +140,22 @@ function setPlaybackOrientation() {
 }
 
 async function checkForUpdate({ silent = false } = {}) {
-  state.update = { ...state.update, status: "checking", error: "" };
+  state.update = beginUpdateCheck(state.update);
   try {
     if (nativePlatform() && nativeBridge()?.checkOfficialUpdate) {
       const result = await nativeBridge().checkOfficialUpdate();
-      const available = result?.status === "available";
-      state.update = { status: available ? "available" : "current", manifest: result, error: "" };
-      if (!silent) showToast(available ? `StreamFree TV ${result.versionName || "update"} is ready.` : "You are on the latest version.");
+      state.update = resolveUpdateState(result || {}, APP_VERSION_CODE);
+      if (!silent) showToast(state.update.status === "available" ? `StreamFree TV ${result.versionName || "update"} is ready.` : "You are on the latest version.");
       if (state.route === "space/settings") renderSettings();
       return state.update;
     }
     const manifest = await requestJson(`${APP_UPDATE_MANIFEST}?t=${Date.now()}`);
-    const available = Number(manifest.versionCode || 0) > APP_VERSION_CODE;
-    state.update = { status: available ? "available" : "current", manifest, error: "" };
-    if (!silent) showToast(available ? `StreamFree TV ${manifest.versionName || "update"} is ready.` : "You are on the latest TV version.");
+    state.update = resolveUpdateState(manifest, APP_VERSION_CODE);
+    if (!silent) showToast(state.update.status === "available" ? `StreamFree TV ${manifest.versionName || "update"} is ready.` : "You are on the latest TV version.");
     if (state.route === "space/settings") renderSettings();
     return state.update;
   } catch (error) {
-    state.update = { ...state.update, status: "error", error: error.message || "Update check failed" };
+    state.update = updateError(state.update, error);
     if (!silent) showToast("Could not check for updates.", "error");
     if (state.route === "space/settings") renderSettings();
     return state.update;
