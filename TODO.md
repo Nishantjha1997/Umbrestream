@@ -708,7 +708,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-017
   - Evidence: native `checkOfficialUpdate` and `installOfficialUpdate` now fetch the hardcoded official manifest directly; the WebView only requests the native status/install operation
-  - Commit: pending `fix(updater): validate official manifest natively`
+  - Commit: `a407b69`
   - Completed: 2026-08-17
 
 - [x] SF-133 — Validate manifest identity/hash/signature/origin
@@ -716,7 +716,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-132
   - Evidence: native validation checks schema/platform, package, version, official HTTPS origin, size, SHA-256, certificate fingerprint, APK parseability, and release metadata; `test:update-manifests` validates checked-in artifacts
-  - Commit: pending `fix(updater): validate official manifest natively`
+  - Commit: `a407b69`
   - Completed: 2026-08-17
 
 - [x] SF-134 — Delete invalid APKs before install
@@ -724,7 +724,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-133
   - Evidence: native installer deletes the downloaded file on failed size/hash/package/signature/parse validation and never invokes the installer
-  - Commit: pending `fix(updater): validate official manifest natively`
+  - Commit: `a407b69`
   - Completed: 2026-08-17
 
 - [ ] SF-135 — Verify phone upgrade on physical device
