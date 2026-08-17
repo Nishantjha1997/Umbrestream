@@ -5,7 +5,7 @@ This is the current handoff document for another developer or AI agent taking ov
 StreamFree project. Read this file before changing production, playback, Android builds, or
 the Vercel deployment.
 
-Last updated: 2026-08-15
+Last updated: 2026-08-17
 
 ## 1. Product identity and live state
 
@@ -13,13 +13,13 @@ Last updated: 2026-08-15
 - Historical code/package names: **Umbra** and **Umbrestream**. Do not rename packages or the
   Vercel project casually; the public brand is already StreamFree.
 - Git repository: https://github.com/Nishantjha1997/Umbrestream
-- Main branch: main
+- Baseline branch: main
+- Active implementation branch: `codex/streamfree-worldclass-hardening`
 - Production domain: https://streamfree.online
 - Vercel project: umbrestream
-- Production code baseline: efdbfe7 (fix: name downloadable APK files correctly).
-- The latest repository commit adds only this handoff documentation and the README link; it
-  does not change runtime behavior.
-- Current production status for the release: Ready and Current on Vercel.
+- Production baseline commit recorded before this hardening branch: `2f234a6`.
+- This branch has not been deployed or published as production. Vercel status must be rechecked
+  after the final test gate; do not infer production status from the dashboard's last deployment.
 - Creator branding: **Nishant**. The site and app splash screens use the signature
   Created with love by Nishant.
 
@@ -239,7 +239,8 @@ handled with an explicit, user-visible server choice and a tested fallback order
 ## 6. Android phone app
 
 The phone app is a bundled static shell in mobile/, packaged by Capacitor in android/.
-It uses package ID com.umbrestream.app.
+It uses canonical package ID `online.streamfree.app`. Historical `com.umbrestream.app` artifacts
+are legacy packages and cannot be upgraded in place with a different signing certificate.
 
 ### Implemented phone features
 
@@ -269,23 +270,25 @@ The command performs:
 
 Build output:
 
-    android/app/build/outputs/apk/debug/app-debug.apk
+    android/app/build/outputs/apk/release/app-release.apk
 
-The current production copy is:
+The current checked-in release copy is:
 
-    public/downloads/StreamFree-Android-v1.2.apk
+public/downloads/StreamFree-Android-v1.3.apk
 
 Current phone release metadata:
 
-- Version name: 1.2.0
-- Version code: 3
-- APK size: 4,272,365 bytes
-- SHA-256: 6031CBED6380012E5AEE791E9EFF14FF75716B189F2940916EDF79012D17A1AA
+- Package: online.streamfree.app
+- Version name: 1.3.0
+- Version code: 4
+- APK size: 3,271,575 bytes
+- SHA-256: 427FCA603B8DE1D743A5D32A80D03FA0EC4FD06201AB72E7A92A67306007B497
 
 ## 7. Android TV app
 
 The TV app is a large-screen static shell in tv/, packaged by Capacitor in android-tv/.
-It uses package ID com.umbrestream.tv.
+It uses canonical package ID `online.streamfree.tv`. Historical `com.umbrestream.tv` artifacts
+are legacy packages and cannot be upgraded in place with a different signing certificate.
 
 ### Implemented TV features
 
@@ -315,18 +318,19 @@ The command performs:
 
 Build output:
 
-    android-tv/app/build/outputs/apk/debug/app-debug.apk
+    android-tv/app/build/outputs/apk/release/app-release.apk
 
-The current production copy is:
+The current checked-in release copy is:
 
-    public/downloads/StreamFree-TV-v1.1.apk
+public/downloads/StreamFree-TV-v1.2.apk
 
 Current TV release metadata:
 
-- Version name: 1.1.0
-- Version code: 2
-- APK size: 4,346,221 bytes
-- SHA-256: 7407020DD6087A8C0E0649ED62608E974363BFDFF213306AAF32E0D8A05526C9
+- Package: online.streamfree.tv
+- Version name: 1.2.0
+- Version code: 3
+- APK size: 3,302,587 bytes
+- SHA-256: D40AE8717FDA6E9D5B90F607782A1BD4EC019349C54D94F43447DEC086832B0E
 
 ## 8. Publishing APKs and the update flow
 
@@ -352,8 +356,8 @@ When releasing a new APK:
 
 Current live download URLs:
 
-- Phone: https://streamfree.online/downloads/StreamFree-Android-v1.2.apk
-- TV: https://streamfree.online/downloads/StreamFree-TV-v1.1.apk
+- Phone: https://streamfree.online/downloads/StreamFree-Android-v1.3.apk
+- TV: https://streamfree.online/downloads/StreamFree-TV-v1.2.apk
 - Phone manifest: https://streamfree.online/downloads/streamfree-android.json
 - TV manifest: https://streamfree.online/downloads/streamfree-android-tv.json
 
@@ -419,14 +423,13 @@ client requests should go through the guarded /api/tmdb proxy.
 
 ## 11. Verification completed for the current release
 
-### Source/build validation
+### Historical source/build validation
 
 - npm run test:player-sources passed; expected movie, TV, and anime adapter orders passed.
 - npm run typecheck passed with the bundled Node runtime.
 - git diff --check passed before the final release commits.
-- APK package metadata was verified:
-  - phone com.umbrestream.app, version code 3, version 1.2.0;
-  - TV com.umbrestream.tv, version code 2, version 1.1.0.
+- Historical APK package metadata was verified before the current hardening branch; the current
+  release artifacts are the canonical packages recorded in Sections 6 and 7.
 - APK assets were checked for the creator signature and playback/autoplay code.
 - A full Next production webpack build passed before the final header filename polish; Vercel then
   built the final efdbfe7 deployment successfully.
@@ -465,8 +468,9 @@ The bundled Node runtime used successfully in this workspace was:
 
     C:/Users/HP_5C/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe
 
-The local Android toolchain included JDK 21 and Android SDK build tools. If node is not on
-PATH, use the bundled runtime path above or run from a machine with Node 20+ and Java 21.
+The current workspace has the Android SDK/Gradle project but no usable `java`/`JAVA_HOME`, so
+Gradle APK compilation is blocked until a JDK is made available. Do not claim a new APK was
+built from this workspace until the release command succeeds.
 
 This Windows/OneDrive workspace has previously shown intermittent 0xC0000005 and EPERM process
 failures. The project intentionally uses webpack for Next builds and runs TypeScript separately.
@@ -494,7 +498,10 @@ Normal release path:
     git diff --check
     git add <intended-files>
     git commit -m "<focused release message>"
-    git push origin main
+    git push origin codex/streamfree-worldclass-hardening
+
+Do not publish this branch directly until the final testing tasks pass and the intended merge or
+Vercel production promotion is explicitly performed.
 
 Vercel is connected to GitHub and automatically builds main. In the Vercel dashboard, check
 the umbrestream project's Deployments page and wait for the new commit to show Ready and
@@ -684,3 +691,42 @@ Baseline recorded before code changes:
 
 Resume protocol: read `plan.md`, then `TODO.md`, then this handoff, inspect the latest Git
 commit, and continue only the task marked `in progress` or the next unstarted dependency.
+
+## 18. Current hardening branch checkpoint — 2026-08-17
+
+This section supersedes stale version/build statements in older sections above.
+
+Implemented on `codex/streamfree-worldclass-hardening` since the baseline:
+
+- Authored-source lint is clean; generated/build assets are excluded from the authored lint scope.
+- The public debug APK was removed from `public/downloads/` and retained outside the repository as
+  a recoverable local file. Release checks reject debug/unsigned APK names and invalid manifests.
+- The shared playback policy, trusted-event recovery, source picker, anime Sub/Dub grouping,
+  cross-season episode resolver, region-aware Home API, Continue Watching helper, PWA update prompt,
+  native official-manifest updater, native SplashScreen integration, onboarding replay, and app/About
+  trust copy are implemented. See the corresponding completed tasks in `TODO.md`.
+- Home-feed rows now remove repeated `kind:id` titles across ordered rows, with deterministic
+  regression coverage in `scripts/check-home-feed.mjs`.
+- Browse segment switching now resets incompatible filter state, normalizes direct-link query values,
+  labels controls, and restores focus to the results region.
+- Phone and TV shells consume a shared native region policy in `src/lib/native/region.ts`; their
+  touch and remote presentation layers remain separate.
+
+Current verified checks on this branch include TypeScript, targeted authored lint, player-source
+contracts, episode resolver, Continue Watching, Home-feed dedupe, update-manifest validation, and
+static phone/TV esbuild bundles. Full release testing is intentionally still pending.
+
+Open release blockers:
+
+- Supabase Continue Watching RPC migration is ready locally but has not been applied to production;
+  an authorized Supabase dashboard/CLI session is required for application and high-volume account
+  verification.
+- Android Gradle release builds are blocked in this workspace because no usable JDK is available.
+- Physical Android phone QA is still required. Android TV physical QA is unavailable by decision;
+  use an Android TV emulator and document the deferral.
+- Final browser/source-picker, real-provider playback, accessibility, performance, APK, Vercel
+  production, and rollback checks remain in the final testing phase. Do not publish new manifests or
+  claim Vercel Ready for this branch before those gates pass.
+
+The next agent should read `TODO.md` for the single active task, keep task evidence and commit hashes
+current, and never replace the canonical release artifacts with debug builds.
