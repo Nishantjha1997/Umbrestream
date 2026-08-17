@@ -154,7 +154,7 @@ export default function PlayerShell({
     };
     if (fullscreen) {
       nativeBridge?.lockLandscape?.();
-      void orientation.lock?.("landscape").catch(() => undefined);
+      void Promise.resolve(orientation.lock?.("landscape")).catch(() => undefined);
     } else {
       nativeBridge?.lockPortrait?.();
       orientation.unlock?.();
@@ -180,13 +180,18 @@ export default function PlayerShell({
   }, [setPlaybackOrientation]);
 
   const toggleFullscreen = useCallback(async () => {
+    const entering = !document.fullscreenElement;
     try {
-      if (document.fullscreenElement) await document.exitFullscreen();
-      else await playerRootRef.current?.requestFullscreen?.({ navigationUI: "hide" });
+      if (entering) await playerRootRef.current?.requestFullscreen?.({ navigationUI: "hide" });
+      else await document.exitFullscreen();
     } catch {
       // The fixed shell and native orientation bridge remain the fallback in WebView.
     }
-    const active = !document.fullscreenElement;
+    // `requestFullscreen()` updates `document.fullscreenElement` asynchronously
+    // and some WebViews reject it even though the fixed player shell remains a
+    // usable full-bleed fallback. Treat the user's intent as authoritative for
+    // entry, while an exit only becomes portrait once the browser confirms it.
+    const active = entering ? true : Boolean(document.fullscreenElement);
     setIsFullscreen(active);
     document.documentElement.classList.toggle("player-fullscreen", active);
     setPlaybackOrientation(active);

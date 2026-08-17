@@ -476,12 +476,12 @@ Rule: complete one task at a time, update this file with evidence and commit has
 ## Phase 5 — Playback/native behavior
 
 - [ ] SF-100 — Regression-test source picker across surfaces
-  - Status: not started
+  - Status: in progress
   - Priority: P0
   - Depends on: SF-011
-  - Evidence: —
-  - Commit: —
-  - Next action: build deterministic source-picker coverage
+  - Evidence: source picker interaction/focus fixes are implemented; shared web-player fullscreen entry now keeps successful entry in landscape intent instead of inverting the browser fullscreen state
+  - Commit: pending
+  - Next action: run deterministic desktop/mobile/PWA source-picker regression before final real-provider smoke tests
 
 - [x] SF-101 — Make source rows fully interactive
   - Status: completed
