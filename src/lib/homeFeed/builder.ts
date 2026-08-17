@@ -14,6 +14,18 @@ import { dedupeHomeRows } from "./dedupe";
 const DEFAULT_COUNTRY = "US";
 const PAGE_SIZE = 24;
 
+async function safeQuery<T>(query: () => Promise<T>, fallback: Partial<T>): Promise<T> {
+  // The API clients intentionally expose lazy proxies. A missing token can
+  // therefore throw while resolving a nested method, before a promise exists
+  // for a call-site `.catch()` to observe. Keep every upstream lookup behind
+  // one synchronous-and-async boundary so the feed contract remains valid.
+  try {
+    return await query();
+  } catch {
+    return fallback as T;
+  }
+}
+
 interface FeedOptions {
   accessToken?: string;
   country?: string | null;
@@ -140,11 +152,11 @@ export async function buildHomeFeed(options: FeedOptions = {}): Promise<HomeFeed
   };
 
   const [trendingMovies, trendingTv, regionalMovies, regionalTv, anime, historyResult] = await Promise.all([
-    tmdb.trending.trending("movie", "day").catch(() => ({ results: [] })),
-    tmdb.trending.trending("tv", "day").catch(() => ({ results: [] })),
-    tmdb.discover.movie(params).catch(() => ({ results: [] })),
-    tmdb.discover.tvShow(params).catch(() => ({ results: [] })),
-    anilistApi.trending().catch(() => ({ media: [] })),
+    safeQuery(() => tmdb.trending.trending("movie", "day"), { results: [] }),
+    safeQuery(() => tmdb.trending.trending("tv", "day"), { results: [] }),
+    safeQuery(() => tmdb.discover.movie(params), { results: [] }),
+    safeQuery(() => tmdb.discover.tvShow(params), { results: [] }),
+    safeQuery(() => anilistApi.trending(), { media: [] }),
     loadContinueWatching(options.accessToken),
   ]);
 
