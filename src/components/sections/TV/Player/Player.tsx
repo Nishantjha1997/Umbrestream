@@ -129,6 +129,7 @@ const TvShowPlayer: React.FC<TvShowPlayerProps> = ({
               className="pointer-events-auto fixed inset-x-4 bottom-6 z-95 mx-auto flex max-w-md flex-col gap-3 rounded-2xl border border-white/15 bg-black/85 p-4 text-white shadow-2xl backdrop-blur-xl"
               role="dialog"
               aria-live="assertive"
+              aria-atomic="true"
               aria-label="Next episode"
             >
               <div>

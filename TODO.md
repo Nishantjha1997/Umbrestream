@@ -449,13 +449,13 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: —
   - Next action: run accessibility audit
 
-- [ ] SF-087 — Add accessibility announcements
-  - Status: not started
+- [x] SF-087 — Add accessibility announcements
+  - Status: completed
   - Priority: P1
   - Depends on: SF-075, SF-100
-  - Evidence: —
-  - Commit: —
-  - Next action: add live regions/native announcements
+  - Evidence: player source/recovery notifications announce politely and atomically, audio variant is included in source-change feedback, TV Up Next countdown is announced assertively, PWA update readiness is announceable, and native toast/network surfaces already use live regions; final accessibility scan remains SF-152
+  - Commit: pending
+  - Completed: 2026-08-17
 
 - [ ] SF-088 — Keep Nishant branding tasteful
   - Status: completed

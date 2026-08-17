@@ -298,6 +298,7 @@ export default function PlayerShell({
   const [sourceFeedback, setSourceFeedback] = useState<{
     sourceId: string;
     label: string;
+    audioVariant?: AudioVariant;
     phase: "switching" | "selected";
   } | null>(null);
   const selectionVersionRef = useRef(0);
@@ -540,7 +541,12 @@ export default function PlayerShell({
             seconds: events.currentTime,
           });
         }
-        setSourceFeedback({ sourceId: id, label: nextSource.label, phase: "switching" });
+        setSourceFeedback({
+          sourceId: id,
+          label: nextSource.label,
+          audioVariant: nextSource.audioVariant,
+          phase: "switching",
+        });
       });
       closeSource();
       setRecoveryPrompt(null);
@@ -619,10 +625,12 @@ export default function PlayerShell({
     if (recommended) switchSource(recommended.id, "reset");
   }, [preferredAudio, sources, switchSource]);
 
-  const handleIframeLoad = useCallback((sourceId: string, label: string) => {
-    setSwitchingSourceId((current) => (current === sourceId ? null : current));
+  const handleIframeLoad = useCallback((source: PlayerSource) => {
+    setSwitchingSourceId((current) => (current === source.id ? null : current));
     setSourceFeedback((current) =>
-      current?.sourceId === sourceId ? { sourceId, label, phase: "selected" } : current,
+      current?.sourceId === source.id
+        ? { sourceId: source.id, label: source.label, audioVariant: source.audioVariant, phase: "selected" }
+        : current,
     );
   }, []);
 
@@ -734,7 +742,7 @@ export default function PlayerShell({
             allow={selectedSource.capabilities.iframe?.allow}
             referrerPolicy={selectedSource.capabilities.iframe?.referrerPolicy}
             title={`${selectedSource.label} player`}
-            onLoad={() => handleIframeLoad(selectedSource.id, selectedSource.label)}
+            onLoad={() => handleIframeLoad(selectedSource)}
             className="absolute inset-0 h-full w-full border-0"
           />
         ) : (
@@ -802,10 +810,14 @@ export default function PlayerShell({
           <div
             role="status"
             aria-live="polite"
+            aria-atomic="true"
             className="rounded-full border border-white/12 bg-black/72 px-3.5 py-2 text-[11.5px] font-medium text-white/90 shadow-xl backdrop-blur-xl"
           >
             {sourceFeedback.phase === "switching" ? "Switching to" : "Now using"}{" "}
             {sourceFeedback.label}
+            {sourceFeedback.audioVariant
+              ? ` · ${sourceFeedback.audioVariant === "dub" ? "Dub" : "Sub"}`
+              : ""}
           </div>
         </div>
       )}

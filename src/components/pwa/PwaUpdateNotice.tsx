@@ -60,6 +60,8 @@ export default function PwaUpdateNotice() {
   return (
     <Card
       role="status"
+      aria-live="polite"
+      aria-atomic="true"
       className="fixed right-3 bottom-3 z-[75] w-[min(370px,calc(100vw-24px))] gap-3 border border-violet-200/20 bg-[#15121d]/95 p-4 shadow-2xl backdrop-blur-xl"
     >
       <div>
