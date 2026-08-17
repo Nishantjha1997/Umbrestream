@@ -47,7 +47,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-001
   - Evidence: generated Android/build assets and design mockups are ignored by the authored-source lint command
-  - Commit: `bbc903b` + following task-board commit
+  - Commit: `d98e2b7`
   - Completed: 2026-08-17
 
 - [ ] SF-011 — Fix authored lint errors and unexpected warnings
@@ -55,7 +55,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-010
   - Evidence: ESLint passes with zero errors and zero warnings; typed Search results, corrected hook dependencies, and repaired authored diagnostics
-  - Commit: `bbc903b` + following task-board commit
+  - Commit: `d98e2b7`
   - Completed: 2026-08-17
 
 - [ ] SF-012 — Add lint to verification
@@ -63,7 +63,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-011
   - Evidence: `verify` now runs `npm run lint` before source contracts/typecheck/build/leak scan
-  - Commit: `bbc903b` + following task-board commit
+  - Commit: `d98e2b7`
   - Completed: 2026-08-17
 
 - [ ] SF-013 — Enforce type validation in CI/Vercel
@@ -71,7 +71,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-012
   - Evidence: Next build type suppression is now opt-in through `STREAMFREE_SKIP_NEXT_TYPECHECK=1`; default builds enforce validation
-  - Commit: `bbc903b` + following task-board commit
+  - Commit: `d98e2b7`
   - Completed: 2026-08-17
 
 - [ ] SF-014 — Remove public debug APK and header
