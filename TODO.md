@@ -43,36 +43,36 @@ Rule: complete one task at a time, update this file with evidence and commit has
 ## Phase 1 — Release hygiene
 
 - [ ] SF-010 — Narrow ESLint to authored source
-  - Status: not started
+  - Status: completed
   - Priority: P0
   - Depends on: SF-001
-  - Evidence: —
-  - Commit: —
-  - Next action: update ESLint ignores and scripts
+  - Evidence: generated Android/build assets and design mockups are ignored by the authored-source lint command
+  - Commit: `bbc903b` + following task-board commit
+  - Completed: 2026-08-17
 
 - [ ] SF-011 — Fix authored lint errors and unexpected warnings
-  - Status: not started
+  - Status: completed
   - Priority: P0
   - Depends on: SF-010
-  - Evidence: —
-  - Commit: —
-  - Next action: repair source diagnostics
+  - Evidence: ESLint passes with zero errors and zero warnings; typed Search results, corrected hook dependencies, and repaired authored diagnostics
+  - Commit: `bbc903b` + following task-board commit
+  - Completed: 2026-08-17
 
 - [ ] SF-012 — Add lint to verification
-  - Status: not started
+  - Status: completed
   - Priority: P0
   - Depends on: SF-011
-  - Evidence: —
-  - Commit: —
-  - Next action: update package scripts
+  - Evidence: `verify` now runs `npm run lint` before source contracts/typecheck/build/leak scan
+  - Commit: `bbc903b` + following task-board commit
+  - Completed: 2026-08-17
 
 - [ ] SF-013 — Enforce type validation in CI/Vercel
-  - Status: not started
+  - Status: completed
   - Priority: P0
   - Depends on: SF-012
-  - Evidence: —
-  - Commit: —
-  - Next action: update Next configuration and verification
+  - Evidence: Next build type suppression is now opt-in through `STREAMFREE_SKIP_NEXT_TYPECHECK=1`; default builds enforce validation
+  - Commit: `bbc903b` + following task-board commit
+  - Completed: 2026-08-17
 
 - [ ] SF-014 — Remove public debug APK and header
   - Status: not started
