@@ -321,13 +321,13 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Completed: 2026-08-17
   - Next action: return explicit source semantics from hero hook/feed
 
-- [ ] SF-071 — Deduplicate Home titles
-  - Status: not started
+- [x] SF-071 — Deduplicate Home titles
+  - Status: completed
   - Priority: P1
   - Depends on: SF-031
-  - Evidence: —
-  - Commit: —
-  - Next action: apply cross-row seen-set
+  - Evidence: shared Home feed now removes repeated `kind:id` entries across ordered Continue Watching, personalized, regional, anime, and trending rows; empty rows are removed and deterministic regression coverage passes
+  - Commit: pending
+  - Completed: 2026-08-17
 
 - [ ] SF-072 — Define Home ordering
   - Status: not started

@@ -9,6 +9,7 @@ import { createClient } from "@/utils/supabase/server";
 import { isSupabaseConfigured } from "@/utils/supabase/config";
 import type { ContinueWatchingSummary, HomeFeedResponseV1, HomeFeedRowKind } from "./types";
 import { latestIncompleteByTitle } from "@/lib/history/continueWatching";
+import { dedupeHomeRows } from "./dedupe";
 
 const DEFAULT_COUNTRY = "US";
 const PAGE_SIZE = 24;
@@ -186,7 +187,7 @@ export async function buildHomeFeed(options: FeedOptions = {}): Promise<HomeFeed
   const displayCountry = region.source === "default" && region.effectiveCountry === DEFAULT_COUNTRY
     ? "Global"
     : region.countryName;
-  const rows = [
+  const rows = dedupeHomeRows([
     ...(continueItems.length > 0 ? [row("continue", "Continue Watching", "continue", continueItems)] : []),
     ...(personalizedItems.length > 0 && signedIn && hasHistory
       ? [row("personalized", "Picked for you", "personalized", personalizedItems)]
@@ -195,7 +196,7 @@ export async function buildHomeFeed(options: FeedOptions = {}): Promise<HomeFeed
     row("regional-tv", `${displayCountry} trending series`, "regional_tv", regionalTvItems),
     row("anime", "Trending anime", "anime", animeItems),
     row("trending", "Trending now", "trending", trendingItems),
-  ].filter((item) => item.items.length > 0);
+  ]);
 
   return {
     schemaVersion: 1,

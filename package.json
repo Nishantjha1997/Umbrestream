@@ -12,6 +12,7 @@
     "test:player-sources": "node --experimental-strip-types scripts/check-player-sources.mjs",
     "test:episode-resolver": "node --experimental-strip-types scripts/check-episode-resolver.mjs",
     "test:continue-watching": "node --experimental-strip-types scripts/check-continue-watching.mjs",
+    "test:home-feed": "node --experimental-strip-types scripts/check-home-feed.mjs",
     "check:release-artifacts": "node scripts/check-release-artifacts.mjs",
     "test:update-manifests": "node scripts/check-update-manifests.mjs",
     "check:leak": "node scripts/check-leak.mjs",
