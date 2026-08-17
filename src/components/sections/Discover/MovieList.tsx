@@ -4,7 +4,6 @@ import BackToTopButton from "@/components/ui/button/BackToTopButton";
 import { Spinner } from "@heroui/react";
 import { useInViewport } from "@mantine/hooks";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { notFound } from "next/navigation";
 import { memo, useEffect } from "react";
 import PosterCard from "@/components/media/PosterCard";
 import { fromMovie } from "@/utils/normalize-media";
@@ -14,12 +13,13 @@ import { DiscoverMoviesFetchQueryType } from "@/types/movie";
 import Loop from "@/components/ui/other/Loop";
 import PosterCardSkeleton from "@/components/ui/other/PosterCardSkeleton";
 import { getLoadingLabel } from "@/utils/movies";
+import DiscoverLoadState from "./LoadState";
 
 const MovieDiscoverList = () => {
   const { ref, inViewport } = useInViewport();
   const { genresString, queryType } = useDiscoverFilters();
 
-  const { data, isPending, status, fetchNextPage, isFetchingNextPage, hasNextPage } =
+  const { data, isPending, isError, refetch, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
       queryKey: ["discover-movies", queryType, genresString],
       queryFn: ({ pageParam }) =>
@@ -39,7 +39,15 @@ const MovieDiscoverList = () => {
     }
   }, [fetchNextPage, hasNextPage, inViewport, isFetchingNextPage, isPending]);
 
-  if (status === "error") return notFound();
+  if (isError) {
+    return (
+      <DiscoverLoadState
+        title="Movies are taking a break"
+        description="The catalogue service did not respond. Your filters are still here; try again when you are ready."
+        onRetry={() => void refetch()}
+      />
+    );
+  }
 
   if (isPending) {
     return (

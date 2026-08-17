@@ -17,6 +17,7 @@ import { useEffect, useState } from "react";
 import type { Movie, TV } from "tmdb-ts/dist/types";
 import SearchFilter from "./Filter";
 import { anilistApi } from "@/api/anilist";
+import DiscoverLoadState from "@/components/sections/Discover/LoadState";
 
 type FetchType = {
   page: number;
@@ -52,7 +53,7 @@ const SearchList = () => {
   const { ref, inViewport } = useInViewport();
   const [submittedSearchQuery, setSubmittedSearchQuery] = useState("");
   const triggered = !isEmpty(submittedSearchQuery);
-  const { data, isFetching, isPending, fetchNextPage, isFetchingNextPage, hasNextPage } =
+  const { data, isFetching, isPending, isError, refetch, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
       enabled: triggered,
       queryKey: ["search-list", content, submittedSearchQuery],
@@ -154,7 +155,14 @@ const SearchList = () => {
       {triggered && (
         <>
           <div className="relative flex flex-col items-center gap-8">
-            {isPending ? (
+            {isError ? (
+              <DiscoverLoadState
+                title="Search is unavailable"
+                description="The catalogue service did not respond. Keep your search and try again in a moment."
+                onRetry={() => void refetch()}
+                isRetrying={isFetching}
+              />
+            ) : isPending ? (
               <Spinner
                 size="lg"
                 className="absolute-center mt-56"

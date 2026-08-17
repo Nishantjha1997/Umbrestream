@@ -426,12 +426,12 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Completed: 2026-08-17
 
 - [ ] SF-084 — Add complete loading/offline/empty/retry states
-  - Status: not started
+  - Status: in progress
   - Priority: P1
   - Depends on: SF-072
-  - Evidence: —
-  - Commit: —
-  - Next action: audit all core routes
+  - Evidence: Browse movie/series and Search now show explicit retryable service-error panels instead of routing transient upstream failures to `notFound()`; Home/player/auth/offline surfaces still need the final audit
+  - Commit: pending
+  - Next action: audit Home, player, auth, library, and PWA offline states
 
 - [x] SF-085 — Add region override controls
   - Status: completed

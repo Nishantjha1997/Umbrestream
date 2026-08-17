@@ -10,15 +10,15 @@ import { getLoadingLabel } from "@/utils/movies";
 import { Spinner } from "@heroui/react";
 import { useInViewport } from "@mantine/hooks";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { notFound } from "next/navigation";
 import { useEffect } from "react";
 import PosterCard from "@/components/media/PosterCard";
 import { fromTvShow } from "@/utils/normalize-media";
+import DiscoverLoadState from "./LoadState";
 
 const TvShowDiscoverList = () => {
   const { ref, inViewport } = useInViewport();
   const { genresString, queryType } = useDiscoverFilters();
-  const { data, isPending, status, fetchNextPage, isFetchingNextPage, hasNextPage } =
+  const { data, isPending, isError, refetch, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
       queryKey: ["discover-tv-shows", queryType, genresString],
       queryFn: ({ pageParam }) =>
@@ -38,7 +38,15 @@ const TvShowDiscoverList = () => {
     }
   }, [fetchNextPage, hasNextPage, inViewport, isFetchingNextPage, isPending]);
 
-  if (status === "error") return notFound();
+  if (isError) {
+    return (
+      <DiscoverLoadState
+        title="Series are taking a break"
+        description="The catalogue service did not respond. Your filters are still here; try again when you are ready."
+        onRetry={() => void refetch()}
+      />
+    );
+  }
 
   if (isPending) {
     return (
