@@ -833,3 +833,8 @@ missing original phone and TV private keystores. The public APKs are the older v
 v1.2.0/code 3 artifacts; do not relabel or republish them as the new source checkpoint. Once the
 canonical keystores are recovered, build phone 1.3.1/code 5 and TV 1.2.1/code 4, verify signatures
 and hashes, then publish manifests/APKs and deploy the matching Vercel production commit.
+
+The verified website-only production deployment is `dpl_Dt2ZUKLhXj27M6KgNeieMxQ61k48`; Vercel
+returned `readyState: READY` and aliased it to `https://streamfree.online`. This deployment includes
+the download-page digest removal and current web fixes, but intentionally does not claim new APK
+publication. Recheck the deployment and APK routes after the signed artifacts are available.

@@ -847,25 +847,26 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Blocker: canonical signing keystores are unavailable; JDK/SDK tooling is now present
 
 - [ ] SF-157 — Deploy Vercel preview and verify readiness
-  - Status: not started
+  - Status: completed
   - Priority: P0
   - Depends on: SF-155
-  - Evidence: —
-  - Commit: —
-  - Next action: deploy preview and run production smoke checks
+  - Evidence: Vercel production deployment `dpl_Dt2ZUKLhXj27M6KgNeieMxQ61k48` returned `readyState: READY` and was aliased to `https://streamfree.online`; live phone/TV app pages contain the new Verified updates copy and no longer expose the old APK digest values
+  - Commit: `b6d7c9f`
+  - Completed: 2026-08-17
 
 - [ ] SF-158 — Publish manifests/APKs and deploy production
-  - Status: not started
+  - Status: blocked
   - Priority: P0
   - Depends on: SF-156, SF-157
-  - Evidence: —
+  - Evidence: website deployment is Ready and existing manifests pass structural/hash validation, but no new phone 1.3.1/code 5 or TV 1.2.1/code 4 APK can be published until the original private keystores are recovered; current public APKs remain v1.3.0/code 4 and v1.2.0/code 3
   - Commit: —
-  - Next action: publish only after all gates pass
+  - Next action: recover canonical phone/TV keystores, build signed releases, update manifest APK hashes/sizes, then publish and reverify Vercel production
+  - Blocker: missing original private signing keystores; replacement keys would break upgrades for existing installs
 
 - [ ] SF-159 — Update handoff and release evidence
-  - Status: not started
+  - Status: in progress
   - Priority: P0
   - Depends on: SF-158
-  - Evidence: —
-  - Commit: —
-  - Next action: document deployment, hashes, tests, limitations, and rollback
+  - Evidence: `STREAMFREE_HANDOFF.md` now records Supabase verification, Android build tooling, production movie/TV/anime source-picker smoke results, signing metadata, Vercel deployment ID, and the APK publication blocker; final release hashes and rollback evidence remain open
+  - Commit: `b6d7c9f`
+  - Next action: append new signed APK metadata, final Vercel verification, and rollback details after keystore recovery
