@@ -650,7 +650,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P2
   - Depends on: SF-132
   - Evidence: phone and Android TV download pages explain native manifest fetching, package/version/certificate/hash validation, and normal sideload prompts
-  - Commit: `pending docs(product): refresh app trust copy`
+  - Commit: `e565137`
   - Completed: 2026-08-17
 
 - [x] SF-124 — Complete About/app pages
@@ -658,7 +658,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P2
   - Depends on: SF-123
   - Evidence: About and both app pages identify the web, phone, and Android TV products, creator Nishant, provider transparency, current release details, and support/install guidance; stale Mi TV/ad-protection claims removed
-  - Commit: `pending docs(product): refresh app trust copy`
+  - Commit: `e565137`
   - Completed: 2026-08-17
 
 - [ ] SF-125 — Verify core offline/error/retry states
