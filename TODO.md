@@ -626,7 +626,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P1
   - Depends on: SF-054
   - Evidence: phone and TV tours contain exactly four focused steps covering discovery, Sub/Dub and servers, library/resume, and verified updates
-  - Commit: `pending feat(onboarding): make app tour replayable and accessible`
+  - Commit: `7c9116c`
   - Completed: 2026-08-17
 
 - [x] SF-121 — Make onboarding skippable/replayable/accessibility-ready
@@ -634,7 +634,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P1
   - Depends on: SF-120
   - Evidence: Skip remains available, Help & about can replay the tour, Escape/Android Back/TV Back dismiss it, and the focused Next action is remote/keyboard reachable
-  - Commit: `pending feat(onboarding): make app tour replayable and accessible`
+  - Commit: `7c9116c`
   - Completed: 2026-08-17
 
 - [x] SF-122 — Respect reduced motion
@@ -642,7 +642,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P1
   - Depends on: SF-120
   - Evidence: tour transitions are disabled for the app Reduce motion setting and `prefers-reduced-motion`; existing shell transitions use the same preference
-  - Commit: `pending feat(onboarding): make app tour replayable and accessible`
+  - Commit: `7c9116c`
   - Completed: 2026-08-17
 
 - [ ] SF-123 — Add update-security explanation
