@@ -132,45 +132,45 @@ Rule: complete one task at a time, update this file with evidence and commit has
 
 ## Phase 2 — Shared contracts
 
-- [ ] SF-030 — Define HomeFeedResponseV1
-  - Status: not started
+- [x] SF-030 — Define HomeFeedResponseV1
+  - Status: completed
   - Priority: P1
   - Depends on: SF-011
-  - Evidence: —
-  - Commit: —
-  - Next action: inspect existing media/recommendation types
+  - Evidence: `src/lib/homeFeed/types.ts` defines the versioned schema, provenance, region, hero, rows, and Continue Watching progress contract
+  - Commit: pending `feat(home): add shared mobile feed contract`
+  - Completed: 2026-08-17
 
-- [ ] SF-031 — Implement shared home-feed builder
-  - Status: not started
+- [x] SF-031 — Implement shared home-feed builder
+  - Status: completed
   - Priority: P1
   - Depends on: SF-030
-  - Evidence: —
-  - Commit: —
-  - Next action: unify region, recommendation, anime, and history inputs
+  - Evidence: `buildHomeFeed` composes region-aware TMDB rows, AniList anime, authenticated title-level Continue Watching, honest provenance, hero selection, and deduplication
+  - Commit: pending `feat(home): add shared mobile feed contract`
+  - Completed: 2026-08-17
 
-- [ ] SF-032 — Add /api/mobile/home
-  - Status: not started
+- [x] SF-032 — Add /api/mobile/home
+  - Status: completed
   - Priority: P1
   - Depends on: SF-031
-  - Evidence: —
-  - Commit: —
-  - Next action: add API route and native client contract
+  - Evidence: GET/OPTIONS route exposes the versioned feed with CORS and cache headers for native clients
+  - Commit: pending `feat(home): add shared mobile feed contract`
+  - Completed: 2026-08-17
 
-- [ ] SF-033 — Validate optional Supabase bearer tokens
-  - Status: not started
+- [x] SF-033 — Validate optional Supabase bearer tokens
+  - Status: completed
   - Priority: P0
   - Depends on: SF-032
-  - Evidence: —
-  - Commit: —
-  - Next action: use authenticated Supabase user lookup
+  - Evidence: server Supabase client accepts a bearer token, calls `auth.getUser`, and only includes Continue Watching for a validated user
+  - Commit: pending `feat(home): add shared mobile feed contract`
+  - Completed: 2026-08-17
 
-- [ ] SF-034 — Separate public and private feed caching
-  - Status: not started
+- [x] SF-034 — Separate public and private feed caching
+  - Status: completed
   - Priority: P1
   - Depends on: SF-033
-  - Evidence: —
-  - Commit: —
-  - Next action: define cache headers and keys
+  - Evidence: signed-out route responses use short shared edge caching; bearer-authenticated responses are `private, no-store`
+  - Commit: pending `feat(home): add shared mobile feed contract`
+  - Completed: 2026-08-17
 
 - [ ] SF-035 — Add region override and reset
   - Status: not started
