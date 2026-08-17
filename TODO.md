@@ -263,12 +263,12 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Completed: 2026-08-17
 
 - [ ] SF-056 — Move player-only dependencies behind dynamic loading
-  - Status: not started
+  - Status: completed
   - Priority: P1
   - Depends on: SF-004
-  - Evidence: —
-  - Commit: —
-  - Next action: inspect Home route dependency graph
+  - Evidence: Native HLS/DASH dependencies are imported only inside the player load effect; Home does not eagerly load them
+  - Commit: `a10e2b1`
+  - Completed: 2026-08-17
 
 - [ ] SF-057 — Audit UI dependency imports
   - Status: not started
@@ -279,20 +279,20 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Next action: measure route bundles
 
 - [ ] SF-058 — Lazy-load artwork and distant rails
-  - Status: not started
+  - Status: completed
   - Priority: P1
   - Depends on: SF-031
-  - Evidence: —
-  - Commit: —
-  - Next action: add visibility-driven rendering
+  - Evidence: Media rows fetch only when their sentinel enters the viewport, while poster artwork uses lazy loading and above-fold priority hints
+  - Commit: `a10e2b1`
+  - Completed: 2026-08-17
 
 - [ ] SF-059 — Reduce native full-view replacements
-  - Status: not started
+  - Status: completed
   - Priority: P1
   - Depends on: SF-038
-  - Evidence: —
-  - Commit: —
-  - Next action: preserve shell and update rails in place
+  - Evidence: authenticated native Home refresh updates the shared feed in place and reserves full render for recovery; phone/TV bundles were rebuilt
+  - Commit: `04518c6`
+  - Completed: 2026-08-17
 
 - [x] SF-060 — Add PWA update-ready prompt
   - Status: completed
@@ -330,12 +330,12 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Completed: 2026-08-17
 
 - [ ] SF-072 — Define Home ordering
-  - Status: not started
+  - Status: completed
   - Priority: P1
   - Depends on: SF-070
-  - Evidence: —
-  - Commit: —
-  - Next action: implement state-specific row ordering
+  - Evidence: shared Home builder orders Continue Watching, history-aware recommendations, regional movies/series, anime, and generic trending according to signed-in/cold-start/signed-out state
+  - Commit: `db6ad27`
+  - Completed: 2026-08-17
 
 - [ ] SF-073 — Verify complete Continue Watching pagination
   - Status: in progress
@@ -354,20 +354,20 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Completed: 2026-08-17
 
 - [ ] SF-075 — Stop removal actions from navigation
-  - Status: not started
+  - Status: completed
   - Priority: P0
   - Depends on: SF-073
-  - Evidence: —
-  - Commit: —
-  - Next action: test event propagation in all card surfaces
+  - Evidence: HistoryItemActions and BookmarkButton consume pointer, touch, click, and keyboard activation events before parent-card navigation; final browser regression remains SF-151
+  - Commit: `a10e2b1`
+  - Completed: 2026-08-17
 
 - [ ] SF-076 — Add optimistic removal Undo/rollback
-  - Status: not started
+  - Status: completed
   - Priority: P1
   - Depends on: SF-075
-  - Evidence: —
-  - Commit: —
-  - Next action: verify failed deletion restoration
+  - Evidence: Continue Watching and watchlist removals update query caches optimistically, expose Undo restoration, and roll back when the server mutation fails; final browser regression remains SF-151
+  - Commit: `a10e2b1`
+  - Completed: 2026-08-17
 
 - [ ] SF-077 — Remove or feature-flag Watch Parties teaser
   - Status: not started
@@ -386,12 +386,12 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Next action: derive numbers from rendered sections
 
 - [ ] SF-079 — Add account destinations
-  - Status: not started
+  - Status: completed
   - Priority: P1
   - Depends on: SF-011
-  - Evidence: —
-  - Commit: —
-  - Next action: connect existing Space routes
+  - Evidence: authenticated and guest account menus expose Library, Watch History, Playback Settings, Help/About, Profile where available, and Sign out
+  - Commit: `a10e2b1`
+  - Completed: 2026-08-17
 
 - [x] SF-080 — Repair Search combobox keyboard behavior
   - Status: completed
@@ -458,20 +458,20 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Next action: add live regions/native announcements
 
 - [ ] SF-088 — Keep Nishant branding tasteful
-  - Status: not started
+  - Status: completed
   - Priority: P2
   - Depends on: SF-072
-  - Evidence: —
-  - Commit: —
-  - Next action: audit brand placements
+  - Evidence: Nishant attribution is confined to splash, footer, About/app trust surfaces, and native branding; player controls/title metadata remain unbranded
+  - Commit: `c6579bc`
+  - Completed: 2026-08-17
 
 - [ ] SF-089 — Replace vendor-specific TV copy
-  - Status: not started
+  - Status: completed
   - Priority: P1
   - Depends on: SF-011
-  - Evidence: —
-  - Commit: —
-  - Next action: update TV copy and help content
+  - Evidence: Android TV app/About/help copy uses device-neutral Android TV language and accurately states provider protection is disabled
+  - Commit: `e565137`
+  - Completed: 2026-08-17
 
 ## Phase 5 — Playback/native behavior
 
@@ -508,60 +508,60 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Completed: 2026-08-17
 
 - [ ] SF-104 — Preserve source preferences by media/audio
-  - Status: not started
+  - Status: completed
   - Priority: P0
   - Depends on: SF-101
-  - Evidence: —
-  - Commit: —
-  - Next action: verify local preference keys and precedence
+  - Evidence: playback policy stores preferences by media type and anime audio variant, with explicit URL choice taking precedence over device preference and product default
+  - Commit: `a10e2b1`
+  - Completed: 2026-08-17
 
 - [ ] SF-105 — Label anime Sub/Dub groups
-  - Status: not started
+  - Status: completed
   - Priority: P0
   - Depends on: SF-104
-  - Evidence: —
-  - Commit: —
-  - Next action: audit web, phone, and TV source UI
+  - Evidence: web source sheets and phone/TV server sheets render separate labelled Sub servers and Dub servers, with episode actions carrying the audio query
+  - Commit: `a10e2b1`
+  - Completed: 2026-08-17
 
 - [ ] SF-106 — Preserve audio/episode/progress context
-  - Status: not started
+  - Status: completed
   - Priority: P1
   - Depends on: SF-105
-  - Evidence: —
-  - Commit: —
-  - Next action: test audio changes and navigation
+  - Evidence: anime audio changes clear incompatible source identity while retaining episode/progress context; compatible source and audio are carried through episode links
+  - Commit: `a10e2b1`
+  - Completed: 2026-08-17
 
 - [ ] SF-107 — Preserve consent-based fallback
-  - Status: not started
+  - Status: completed
   - Priority: P0
   - Depends on: SF-100
-  - Evidence: —
-  - Commit: —
-  - Next action: verify timer and user-choice behavior
+  - Evidence: trusted-event sources receive the 20-second recovery timer, recovery is presented as a user-choice panel, and no provider is switched silently
+  - Commit: `a10e2b1`
+  - Completed: 2026-08-17
 
 - [ ] SF-108 — Prevent silent manual-source replacement
-  - Status: not started
+  - Status: completed
   - Priority: P0
   - Depends on: SF-107
-  - Evidence: —
-  - Commit: —
-  - Next action: test preference precedence
+  - Evidence: manual source selection is persisted separately and recovery/reset paths do not overwrite it without an explicit menu action
+  - Commit: `a10e2b1`
+  - Completed: 2026-08-17
 
 - [ ] SF-109 — Keep eventless providers neutral
-  - Status: not started
+  - Status: completed
   - Priority: P1
   - Depends on: SF-107
-  - Evidence: —
-  - Commit: —
-  - Next action: test no-CORS/eventless behavior
+  - Evidence: eventless providers receive neutral “Having trouble? Choose another server” messaging and are never declared offline from cross-origin inspection limits
+  - Commit: `a10e2b1`
+  - Completed: 2026-08-17
 
 - [ ] SF-110 — Verify trusted playback events before history
-  - Status: not started
+  - Status: completed
   - Priority: P0
   - Depends on: SF-107
-  - Evidence: —
-  - Commit: —
-  - Next action: audit event source/origin checks
+  - Evidence: history begins only after origin-validated play/timeupdate events or meaningful native-player progress; player-page open alone does not write history
+  - Commit: `a10e2b1`
+  - Completed: 2026-08-17
 
 - [ ] SF-111 — Fix phone fullscreen orientation and Back
   - Status: in progress
@@ -588,20 +588,20 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Next action: add emulator flow
 
 - [ ] SF-114 — Add TV D-pad focus behavior
-  - Status: not started
+  - Status: completed
   - Priority: P1
   - Depends on: SF-113
-  - Evidence: —
-  - Commit: —
-  - Next action: audit focus graph
+  - Evidence: TV shell provides deterministic directional focus, Enter/OK activation, strong focus rings, and focus restoration after the server sheet closes; emulator acceptance remains SF-154
+  - Commit: `a10e2b1`
+  - Completed: 2026-08-17
 
 - [ ] SF-115 — Add TV next-episode countdown
-  - Status: not started
+  - Status: completed
   - Priority: P0
   - Depends on: SF-037
-  - Evidence: —
-  - Commit: —
-  - Next action: verify trusted ended event and remote actions
+  - Evidence: trusted ended events resolve the next valid episode, present a focusable ten-second Play now/Cancel countdown, and preserve compatible source/audio choices; emulator acceptance remains SF-154
+  - Commit: `a10e2b1`
+  - Completed: 2026-08-17
 
 - [x] SF-116 — Fix cross-season TV progression
   - Status: completed
@@ -612,12 +612,12 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Completed: 2026-08-17
 
 - [ ] SF-117 — Preserve source/audio on next episode
-  - Status: not started
+  - Status: completed
   - Priority: P1
   - Depends on: SF-116
-  - Evidence: —
-  - Commit: —
-  - Next action: verify compatible preference transfer
+  - Evidence: TV next-episode preparation carries the current provider and audio preference into the resolver/open-player path when compatible
+  - Commit: `a10e2b1`
+  - Completed: 2026-08-17
 
 ## Phase 6 — Onboarding and polish
 
