@@ -13,7 +13,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: none
   - Evidence: branch `codex/streamfree-worldclass-hardening`; `plan.md`; `TODO.md`
-  - Commit: pending baseline checkpoint
+  - Commit: `45f6ef6`
   - Completed: 2026-08-17
 
 - [ ] SF-002 — Record baseline deployment, manifests, APK hashes, package IDs, and signing fingerprints
@@ -21,7 +21,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-001
   - Evidence: Vercel project `umbrestream`; phone `online.streamfree.app` 1.3.0/code 4; TV `online.streamfree.tv` 1.2.0/code 3; manifest certificate fingerprints and APK hashes recorded in `STREAMFREE_HANDOFF.md`
-  - Commit: pending baseline checkpoint
+  - Commit: `45f6ef6`
   - Completed: 2026-08-17
 
 - [ ] SF-003 — Record known release limitations and existing evidence
@@ -29,7 +29,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-001
   - Evidence: authored lint failures; slow web/native splash; Search keyboard-selection bug; debug APK exposure; placeholder Android tests; always-on TV filter; season-boundary progression gap; physical phone only
-  - Commit: pending baseline checkpoint
+  - Commit: `45f6ef6`
   - Completed: 2026-08-17
 
 - [ ] SF-004 — Capture baseline performance, bundle, startup, accessibility, and production UI evidence
@@ -37,7 +37,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P1
   - Depends on: SF-002, SF-003
   - Evidence: typecheck/build/player-source/leak checks passed; Home bundle baseline approximately 174 JS chunks/4.97MB uncompressed and 383KB global CSS; production source picker opens and switches providers; web splash remains visible for approximately 3.25s
-  - Commit: pending baseline checkpoint
+  - Commit: `45f6ef6`
   - Completed: 2026-08-17
 
 ## Phase 1 — Release hygiene
