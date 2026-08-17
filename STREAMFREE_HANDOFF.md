@@ -755,3 +755,31 @@ targeted checks recorded above. The remaining gates are Supabase migration appli
 high-volume verification, browser/source-picker/accessibility QA, physical-phone QA, Android TV
 emulator QA, real-provider smoke tests, signed release APK production, Vercel readiness, and
 production rollback verification. Do not claim production readiness until those gates pass.
+
+## 20. Final validation checkpoint — 2026-08-17
+
+The local production server was started from the current branch and exercised through the in-app
+browser at the default viewport, 390×844, and 820×1180. Home and About rendered with the expected
+navigation, trust copy, app links, and Nishant attribution. Browse filter selection changed the
+URL, exposed an enabled Reset Filters action, and reset back to the unfiltered route on desktop and
+mobile. Search accepted typed input and keyboard submission on desktop and mobile. Movie detail and
+Browse displayed the new retryable catalog-service states when the local TMDB proxy returned 503.
+
+These checks are evidence for the browser gate but are not a release pass. A playable source-picker
+exercise, authenticated Continue Watching/removal flow, PWA update flow, mocked provider recovery,
+and real-title source selection still require catalog/auth fixtures or a configured environment.
+
+Current environment blockers confirmed during this checkpoint:
+
+- No `adb`, Android SDK/emulator, or usable Java/JDK is available in the workspace, so physical-phone
+  orientation/update QA, TV-emulator QA, and new signed APK production cannot be claimed.
+- No Supabase CLI session, production environment variables, or dashboard session is available, so
+  the Continue Watching cursor migration cannot be applied or verified against an authenticated
+  account with more than 100 active rows.
+- Vercel production must remain unchanged until the device, migration, provider, APK, and rollback
+  gates are available and pass.
+
+The latest task-board evidence is commit `491f42d`. Resume by reading `plan.md`, `TODO.md`, and this
+section, then satisfy the blockers in dependency order. Keep `SF-073`, `SF-100`, `SF-111`, `SF-112`,
+`SF-125`, `SF-126`, and `SF-151` in progress until their stated evidence exists; do not mark
+`SF-155` through `SF-159` complete early.

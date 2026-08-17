@@ -338,12 +338,13 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Completed: 2026-08-17
 
 - [ ] SF-073 — Verify complete Continue Watching pagination
-  - Status: in progress
+  - Status: blocked
   - Priority: P0
   - Depends on: SF-031
   - Evidence: web phone/desktop rails now remove only the actual resume hero by identity; cursor pagination remains active and the Supabase RPC still needs production application/high-volume verification
   - Commit: `6e3083b`
-  - Next action: apply the Supabase RPC migration and verify an authenticated account with more than 100 active episode rows
+  - Next action: obtain an authorized Supabase session, apply the RPC migration, and verify an authenticated account with more than 100 active episode rows
+  - Blocker: no production Supabase CLI/dashboard session or environment credentials are available
 
 - [x] SF-074 — Verify Continue Watching ordering/completion rules
   - Status: completed
@@ -410,12 +411,13 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Completed: 2026-08-17
 
 - [ ] SF-082 — Verify Search pointer/touch/keyboard paths
-  - Status: in progress
+  - Status: blocked
   - Priority: P0
   - Depends on: SF-080, SF-081
   - Evidence: local production browser run verified Search input and keyboard submission at desktop and 390×844 mobile; suggestion selection remains blocked because the local TMDB proxy returned 503
   - Commit: —
   - Next action: rerun pointer/touch/suggestion selection with TMDB or deterministic catalog fixtures available
+  - Blocker: local TMDB proxy returned 503, so no suggestions were rendered for pointer/touch selection
 
 - [x] SF-083 — Improve Browse filters and focus restoration
   - Status: completed
@@ -476,12 +478,13 @@ Rule: complete one task at a time, update this file with evidence and commit has
 ## Phase 5 — Playback/native behavior
 
 - [ ] SF-100 — Regression-test source picker across surfaces
-  - Status: in progress
+  - Status: blocked
   - Priority: P0
   - Depends on: SF-011
   - Evidence: source picker interaction/focus fixes are implemented; source-dependent browser exercise is blocked because the local TMDB proxy returned 503 for the known movie fixture; shared web-player fullscreen entry keeps successful entry in landscape intent
   - Commit: `b6dbcbb`
   - Next action: run desktop/mobile/PWA source-picker regression with a playable title or deterministic player fixture
+  - Blocker: local TMDB proxy returned 503 for the known playable movie fixture
 
 - [x] SF-101 — Make source rows fully interactive
   - Status: completed
@@ -564,20 +567,22 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Completed: 2026-08-17
 
 - [ ] SF-111 — Fix phone fullscreen orientation and Back
-  - Status: in progress
+  - Status: blocked
   - Priority: P0
   - Depends on: SF-038
   - Evidence: phone shell locks landscape on fullscreen entry, restores portrait on exit/back/unmount, and now re-applies the lock when a fullscreen player is rebuilt for a source switch or next episode
   - Commit: `84fa01d`
-  - Next action: verify orientation and first/second Back behavior on the connected physical phone
+  - Next action: connect a physical phone with ADB and verify orientation and first/second Back behavior
+  - Blocker: `adb` and an Android SDK are unavailable in this workspace
 
 - [ ] SF-112 — Restore phone portrait after playback
-  - Status: in progress
+  - Status: blocked
   - Priority: P0
   - Depends on: SF-111
   - Evidence: exit/fullscreenchange, player route cleanup, and the normal player render all call the portrait restore path when fullscreen is false
   - Commit: `84fa01d`
-  - Next action: verify route/background/resume paths on the connected physical phone
+  - Next action: connect a physical phone with ADB and verify route/background/resume paths
+  - Blocker: `adb` and an Android SDK are unavailable in this workspace
 
 - [ ] SF-113 — Verify TV immersive landscape playback
   - Status: not started
@@ -662,20 +667,22 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Completed: 2026-08-17
 
 - [ ] SF-125 — Verify core offline/error/retry states
-  - Status: in progress
+  - Status: blocked
   - Priority: P1
   - Depends on: SF-084
   - Evidence: local browser observed retryable “Couldn’t reach TMDB” state on movie detail and actionable “Movies are taking a break” state on Browse; full offline/reconnect matrix remains open
   - Commit: —
   - Next action: complete offline/reconnect and retry matrix across Home, Browse, Search, details, player, and native shells
+  - Blocker: catalog-backed player/native fixtures are unavailable; only local retry states were observed
 
 - [ ] SF-126 — Verify focus restoration
-  - Status: in progress
+  - Status: blocked
   - Priority: P1
   - Depends on: SF-103, SF-121
   - Evidence: Browse filter selection returned focus to the active filter control in the local browser snapshot; modal/source-sheet, route, and Android Back focus paths remain open
   - Commit: —
   - Next action: test source sheet, onboarding, modal, route, and Back focus flows when a playable fixture and device bridge are available
+  - Blocker: source sheet needs a playable title and Android Back needs an ADB-connected device
 
 - [x] SF-127 — Remove decorative signatures from player semantics
   - Status: completed
@@ -794,36 +801,40 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Next action: run automated accessibility scan and reduced-motion screenshots across core routes
 
 - [ ] SF-153 — Run physical Android phone matrix
-  - Status: not started
+  - Status: blocked
   - Priority: P0
   - Depends on: SF-135
   - Evidence: —
   - Commit: —
-  - Next action: request/connect phone at final gate
+  - Next action: connect the physical Android phone with ADB, then run cold/warm, playback, orientation, Back, and updater checks
+  - Blocker: no `adb` or Android SDK is available in this workspace
 
 - [ ] SF-154 — Run Android TV emulator matrix
-  - Status: not started
+  - Status: blocked
   - Priority: P0
   - Depends on: SF-139
   - Evidence: —
   - Commit: —
-  - Next action: run D-pad/player/update flows
+  - Next action: provision or connect an Android TV emulator, then run D-pad/player/update flows
+  - Blocker: no Android emulator or SDK is available; physical TV testing is intentionally deferred
 
 - [ ] SF-155 — Run real-provider smoke tests last
-  - Status: not started
+  - Status: blocked
   - Priority: P0
   - Depends on: SF-150, SF-151, SF-153, SF-154
   - Evidence: —
   - Commit: —
-  - Next action: execute movie/TV/anime matrix
+  - Next action: execute movie/TV/anime matrix after SF-150, SF-151, SF-153, and SF-154 pass
+  - Blocker: source-picker and device prerequisites are not available; HTTP reachability is not playback evidence
 
 - [ ] SF-156 — Build private signed APK candidates
-  - Status: not started
+  - Status: blocked
   - Priority: P0
   - Depends on: SF-155
   - Evidence: —
   - Commit: —
-  - Next action: build and verify release artifacts
+  - Next action: install a supported JDK, then build and verify release artifacts
+  - Blocker: no usable Java/JDK is available in this workspace
 
 - [ ] SF-157 — Deploy Vercel preview and verify readiness
   - Status: not started
