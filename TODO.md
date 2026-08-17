@@ -621,29 +621,29 @@ Rule: complete one task at a time, update this file with evidence and commit has
 
 ## Phase 6 — Onboarding and polish
 
-- [ ] SF-120 — Reduce onboarding to four steps
-  - Status: not started
+- [x] SF-120 — Reduce onboarding to four steps
+  - Status: completed
   - Priority: P1
   - Depends on: SF-054
-  - Evidence: —
-  - Commit: —
-  - Next action: unify tour copy and state
+  - Evidence: phone and TV tours contain exactly four focused steps covering discovery, Sub/Dub and servers, library/resume, and verified updates
+  - Commit: `pending feat(onboarding): make app tour replayable and accessible`
+  - Completed: 2026-08-17
 
-- [ ] SF-121 — Make onboarding skippable/replayable/accessibility-ready
-  - Status: not started
+- [x] SF-121 — Make onboarding skippable/replayable/accessibility-ready
+  - Status: completed
   - Priority: P1
   - Depends on: SF-120
-  - Evidence: —
-  - Commit: —
-  - Next action: add Help replay and remote/keyboard handling
+  - Evidence: Skip remains available, Help & about can replay the tour, Escape/Android Back/TV Back dismiss it, and the focused Next action is remote/keyboard reachable
+  - Commit: `pending feat(onboarding): make app tour replayable and accessible`
+  - Completed: 2026-08-17
 
-- [ ] SF-122 — Respect reduced motion
-  - Status: not started
+- [x] SF-122 — Respect reduced motion
+  - Status: completed
   - Priority: P1
   - Depends on: SF-120
-  - Evidence: —
-  - Commit: —
-  - Next action: verify web/phone/TV transitions
+  - Evidence: tour transitions are disabled for the app Reduce motion setting and `prefers-reduced-motion`; existing shell transitions use the same preference
+  - Commit: `pending feat(onboarding): make app tour replayable and accessible`
+  - Completed: 2026-08-17
 
 - [ ] SF-123 — Add update-security explanation
   - Status: not started

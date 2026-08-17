@@ -1389,7 +1389,7 @@ function renderSettings() {
 }
 
 function renderHelp() {
-  commit(`<section class="subpage-head"><button class="back-fab pressable" data-action="back">‹</button><span class="eyebrow">StreamFree Android</span><h1>Help & about</h1><p>A local app experience powered by StreamFree's online catalogue and account services.</p></section><section class="faq-list"><details open><summary>Can I use my website account?</summary><p>Yes. Sign in with the exact same email and password. Movies, series, library items and history use the same Supabase account.</p></details><details><summary>Why does a stream take time to start?</summary><p>Playback providers operate independently. Try another numbered server from the player if the first one is busy.</p></details><details><summary>Does the app work offline?</summary><p>The interface and guest library live on your device. Posters, catalogue updates, account sync and streaming require internet.</p></details><details><summary>Is this a website wrapper?</summary><p>No. The navigation, screens, animations and account state are bundled in the APK. Only data and streams are requested online.</p></details></section><section class="about-card"><div class="about-logo">SF</div><div><strong>StreamFree for Android</strong><span>Version 1.1 · Account Sync Beta</span></div></section>`, { root: "space" });
+  commit(`<section class="subpage-head"><button class="back-fab pressable" data-action="back">‹</button><span class="eyebrow">StreamFree Android</span><h1>Help & about</h1><p>A local app experience powered by StreamFree's online catalogue and account services.</p></section><section class="faq-list"><details open><summary>Can I use my website account?</summary><p>Yes. Sign in with the exact same email and password. Movies, series, library items and history use the same Supabase account.</p></details><details><summary>Why does a stream take time to start?</summary><p>Playback providers operate independently. Try another labelled server from the player if the first one is busy.</p></details><details><summary>Does the app work offline?</summary><p>The interface and guest library live on your device. Posters, catalogue updates, account sync and streaming require internet.</p></details><details><summary>Is this a website wrapper?</summary><p>No. The navigation, screens, animations and account state are bundled in the APK. Only data and streams are requested online.</p></details></section><section class="about-card"><div class="about-logo">SF</div><div><strong>StreamFree for Android</strong><span>Version 1.1 · Account Sync Beta</span></div></section><button class="primary pressable tour-replay" data-action="replay-tour">Show the app tour again</button>`, { root: "space" });
 }
 
 function authShell(kind, body) {
@@ -1600,6 +1600,13 @@ document.addEventListener("change", (event) => {
   void render();
 });
 
+document.addEventListener("keydown", (event) => {
+  if (state.tour.open && event.key === "Escape") {
+    event.preventDefault();
+    finishTour();
+  }
+});
+
 document.addEventListener("click", (event) => {
   const tourAction = event.target.closest("[data-tour-action]")?.dataset.tourAction;
   if (tourAction) {
@@ -1657,6 +1664,7 @@ document.addEventListener("click", (event) => {
   if (action === "close-sheet") closeSheet();
   if (action === "setting") { state.settings[setting] = !state.settings[setting]; writeStorage(SETTINGS_KEY, state.settings); document.documentElement.classList.toggle("reduce-motion", state.settings.reduceMotion); renderSettings(); }
   if (action === "reset-region") { localStorage.removeItem(REGION_OVERRIDE_KEY); state.region = null; state.cache.clear(); showToast("Home region reset to automatic."); renderSettings(); }
+  if (action === "replay-tour") { state.tour = { open: true, step: 0 }; renderTour(); }
   if (action === "check-update") void checkForUpdate();
   if (action === "install-update") installUpdate();
   if (action === "trailer") {
@@ -1722,7 +1730,8 @@ async function initializeNativeShell() {
   }
 
   await NativeApp.addListener("backButton", () => {
-    if (sheetRoot.classList.contains("open")) closeSheet();
+    if (state.tour.open) finishTour();
+    else if (sheetRoot.classList.contains("open")) closeSheet();
     else if (playerIsFullscreen()) void exitPlayerFullscreen();
     else if (routeFromHash() !== "home") window.history.back();
     else NativeApp.exitApp();

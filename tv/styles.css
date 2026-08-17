@@ -279,3 +279,4 @@ a, button, input, summary { outline:none; }
 
 @media (max-height:760px){.app-header{height:76px}.tab-bar{top:92px;bottom:52px;gap:6px}.tab-bar a{min-height:64px}.remote-guide{bottom:10px}.network-banner{top:76px}#view{padding-top:76px;padding-bottom:76px}.hero{min-height:530px}.hero-copy h1{font-size:58px}.poster-card{flex-basis:160px}.detail-visual{height:520px}.player-stage{height:calc(100vh - 270px)}}
 select#region-preference{min-height:48px;margin-top:12px;border:1px solid rgba(255,255,255,.14);border-radius:12px;background:#17141d;color:#fff;padding:0 12px;font:inherit} .region-note .glass-button{min-height:48px;margin-top:10px;padding:0 14px}
+html.reduce-motion .tour-card,html.reduce-motion .tour-backdrop{animation:none!important;transition:none!important}@media (prefers-reduced-motion:reduce){.tour-card,.tour-backdrop{animation:none!important;transition:none!important}}
