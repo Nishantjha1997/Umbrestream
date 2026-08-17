@@ -650,12 +650,24 @@ async function loadAccountData({ mergeGuest = false } = {}) {
       if (!historyRefresh.error) state.histories = historyRefresh.data || [];
     }
     updateAccountChrome();
-    if (state.route === "home" || state.route.startsWith("space")) render();
+    if (state.route === "home") void refreshHomeAfterAuth();
+    else if (state.route.startsWith("space")) render();
   } catch (error) {
     console.error("[mobile-sync] refresh failed", error);
     showToast("Your account is connected, but sync needs another try.", "warning");
   } finally {
     state.syncBusy = false;
+  }
+}
+
+async function refreshHomeAfterAuth() {
+  if (state.route !== "home" || !navigator.onLine) return;
+  try {
+    const feed = await loadSharedHomeFeed();
+    renderSharedHomeFeed(feed);
+  } catch {
+    // A failed personalized refresh must not leave the existing Home blank.
+    void renderHome();
   }
 }
 

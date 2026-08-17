@@ -246,13 +246,13 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `656d87e`
   - Completed: 2026-08-17
 
-- [ ] SF-054 — Stabilize native auth hydration
-  - Status: not started
+- [x] SF-054 — Stabilize native auth hydration
+  - Status: completed
   - Priority: P1
   - Depends on: SF-038
-  - Evidence: —
-  - Commit: —
-  - Next action: render cached shell before auth refresh
+  - Evidence: authenticated account refresh updates the shared Home feed without entering the full loading renderer; a full render is now only the recovery path
+  - Commit: `pending perf(native): refresh home without auth flash`
+  - Completed: 2026-08-17
 
 - [x] SF-055 — Load React Query Devtools only in development
   - Status: completed
