@@ -677,13 +677,13 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: —
   - Next action: test modal/sheet/route/Back flows
 
-- [ ] SF-127 — Remove decorative signatures from player semantics
-  - Status: not started
+- [x] SF-127 — Remove decorative signatures from player semantics
+  - Status: completed
   - Priority: P2
   - Depends on: SF-088
-  - Evidence: —
-  - Commit: —
-  - Next action: accessibility audit
+  - Evidence: source audit found no Nishant/signature branding in web player controls, player notification text, or Movie/TV/Anime player semantics; branding remains outside playback controls; final accessibility scan is SF-152
+  - Commit: `c751aef`
+  - Completed: 2026-08-17
 
 ## Phase 7 — Android release
 
