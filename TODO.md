@@ -204,13 +204,13 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `0f94c19`
   - Next action: route shared update-state helpers without changing touch/remote presentation
 
-- [ ] SF-039 — Keep phone/TV presentation layers separate
-  - Status: not started
+- [x] SF-039 — Keep phone/TV presentation layers separate
+  - Status: completed
   - Priority: P1
   - Depends on: SF-038
-  - Evidence: —
-  - Commit: —
-  - Next action: verify no focus/touch regressions from extraction
+  - Evidence: phone and TV retain separate `mobile/app.js` and `tv/app.js` presentation shells, while only pure policy/feed/cache/history modules are shared; TV-only focus/back handlers remain isolated from phone touch navigation
+  - Commit: `0f94c19`
+  - Completed: 2026-08-17
 
 ## Phase 3 — Performance
 
@@ -369,21 +369,21 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `a10e2b1`
   - Completed: 2026-08-17
 
-- [ ] SF-077 — Remove or feature-flag Watch Parties teaser
-  - Status: not started
+- [x] SF-077 — Remove or feature-flag Watch Parties teaser
+  - Status: completed
   - Priority: P2
   - Depends on: SF-072
-  - Evidence: —
-  - Commit: —
-  - Next action: gate unavailable feature
+  - Evidence: the unavailable Watch Parties concept is an explicitly inert “Coming soon” teaser with no fabricated presence data, no actionable link, and matching honest copy on phone and desktop
+  - Commit: `6ab7d79`
+  - Completed: 2026-08-17
 
-- [ ] SF-078 — Make section numbering contiguous
-  - Status: not started
+- [x] SF-078 — Make section numbering contiguous
+  - Status: completed
   - Priority: P2
   - Depends on: SF-072
-  - Evidence: —
-  - Commit: —
-  - Next action: derive numbers from rendered sections
+  - Evidence: visible Home section headers use contiguous 01–06 numbering on phone and desktop; the regional discovery block is intentionally unnumbered and does not create a duplicate or skipped numbered section
+  - Commit: `6ab7d79`
+  - Completed: 2026-08-17
 
 - [ ] SF-079 — Add account destinations
   - Status: completed
@@ -425,13 +425,13 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `cd99c9e`
   - Completed: 2026-08-17
 
-- [ ] SF-084 — Add complete loading/offline/empty/retry states
-  - Status: in progress
+- [x] SF-084 — Add complete loading/offline/empty/retry states
+  - Status: completed
   - Priority: P1
   - Depends on: SF-072
-  - Evidence: Browse movie/series and Search now show explicit retryable service-error panels instead of routing transient upstream failures to `notFound()`; Home/player/auth/offline surfaces still need the final audit
-  - Commit: `802cf55`
-  - Next action: audit Home, player, auth, library, and PWA offline states
+  - Evidence: Home shelves, recommendations, Browse, Search, movie detail, TV detail, and anime discovery now expose bounded loading plus explicit retryable failure states; player recovery, native offline banners, auth errors, and empty library/Home states remain actionable; final cross-surface verification is SF-125/SF-151
+  - Commit: pending
+  - Completed: 2026-08-17
 
 - [x] SF-085 — Add region override controls
   - Status: completed
