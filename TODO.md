@@ -79,7 +79,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-001
   - Evidence: `public/downloads/StreamFree-local-debug.apk` removed; matching Next header removed; quarantined copy retained outside the repository for recovery
-  - Commit: pending release-hygiene checkpoint
+  - Commit: `d4bd2fa`
   - Completed: 2026-08-17
 
 - [x] SF-015 — Reject debug/unsigned/development APKs
@@ -87,7 +87,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-014
   - Evidence: `scripts/check-release-artifacts.mjs`; `npm run check:release-artifacts` validates APK names, manifest paths, sizes, and SHA-256 values
-  - Commit: pending release-hygiene checkpoint
+  - Commit: `d4bd2fa`
   - Completed: 2026-08-17
 
 - [x] SF-016 — Add explicit debug/release Android scripts
@@ -95,7 +95,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P1
   - Depends on: SF-015
   - Evidence: package scripts expose `android:apk:debug`, `android:apk:release`, `android-tv:apk:debug`, and `android-tv:apk:release`; default APK aliases now build release variants
-  - Commit: pending release-hygiene checkpoint
+  - Commit: `d4bd2fa`
   - Completed: 2026-08-17
 
 - [x] SF-017 — Replace placeholder Android tests
@@ -103,7 +103,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-016
   - Evidence: phone and TV unit/instrumentation tests now target `online.streamfree.app` and `online.streamfree.tv`; Gradle execution remains environment-blocked because `JAVA_HOME`/Java is unavailable
-  - Commit: pending release-hygiene checkpoint
+  - Commit: `d4bd2fa`
   - Completed: 2026-08-17
 
 - [x] SF-018 — Disable Android TV ad filtering by default
@@ -111,7 +111,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-001
   - Evidence: `AD_PROTECTION_ENABLED` is false; TV Settings and Help copy no longer claim filtering is active
-  - Commit: pending release-hygiene checkpoint
+  - Commit: `d4bd2fa`
   - Completed: 2026-08-17
 
 - [x] SF-019 — Add strict official-host configuration validation
@@ -119,7 +119,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P1
   - Depends on: SF-018
   - Evidence: `/api/mobile/config` now exposes schema-versioned, disabled-by-default ad-protection policy with an empty host list; native TV filtering remains fail-closed until a validated policy exists
-  - Commit: pending release-hygiene checkpoint
+  - Commit: `d4bd2fa`
   - Completed: 2026-08-17
 
 - [x] SF-020 — Remove obsolete updater comments
@@ -127,7 +127,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P2
   - Depends on: SF-017
   - Evidence: obsolete commented updater implementations removed from both native MainActivity files; active updater behavior unchanged
-  - Commit: pending release-hygiene checkpoint
+  - Commit: `d4bd2fa`
   - Completed: 2026-08-17
 
 ## Phase 2 — Shared contracts
