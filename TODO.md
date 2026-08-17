@@ -214,21 +214,21 @@ Rule: complete one task at a time, update this file with evidence and commit has
 
 ## Phase 3 — Performance
 
-- [ ] SF-050 — Replace web splash
-  - Status: not started
+- [x] SF-050 — Replace web splash
+  - Status: completed
   - Priority: P0
   - Depends on: SF-004
-  - Evidence: —
-  - Commit: —
-  - Next action: implement session/readiness policy
+  - Evidence: session-limited readiness splash hides after two ready frames or the 700ms cap and is shown once per browser session
+  - Commit: pending `perf(startup): bound splash and surface PWA updates`
+  - Completed: 2026-08-17
 
-- [ ] SF-051 — Cap web splash at 700ms
-  - Status: not started
+- [x] SF-051 — Cap web splash at 700ms
+  - Status: completed
   - Priority: P0
   - Depends on: SF-050
-  - Evidence: —
-  - Commit: —
-  - Next action: add timing and reduced-motion checks
+  - Evidence: splash timers and exit animation are bounded to 700ms and respect reduced motion
+  - Commit: pending `perf(startup): bound splash and surface PWA updates`
+  - Completed: 2026-08-17
 
 - [ ] SF-052 — Remove long native splash overlay
   - Status: not started
@@ -254,13 +254,13 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: —
   - Next action: render cached shell before auth refresh
 
-- [ ] SF-055 — Load React Query Devtools only in development
-  - Status: not started
+- [x] SF-055 — Load React Query Devtools only in development
+  - Status: completed
   - Priority: P1
   - Depends on: SF-011
-  - Evidence: —
-  - Commit: —
-  - Next action: dynamic development-only import
+  - Evidence: devtools are dynamically imported with `ssr:false` and rendered only when `NODE_ENV` is development
+  - Commit: pending `perf(startup): bound splash and surface PWA updates`
+  - Completed: 2026-08-17
 
 - [ ] SF-056 — Move player-only dependencies behind dynamic loading
   - Status: not started
@@ -294,30 +294,31 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: —
   - Next action: preserve shell and update rails in place
 
-- [ ] SF-060 — Add PWA update-ready prompt
-  - Status: not started
+- [x] SF-060 — Add PWA update-ready prompt
+  - Status: completed
   - Priority: P1
   - Depends on: SF-004
-  - Evidence: —
-  - Commit: —
-  - Next action: inspect generated service-worker registration
+  - Evidence: `PwaUpdateNotice` presents one Later/Reload prompt, posts `SKIP_WAITING`, reloads on controller change, and tracks ready/accepted events
+  - Commit: pending `perf(startup): bound splash and surface PWA updates`
+  - Completed: 2026-08-17
 
-- [ ] SF-061 — Verify service-worker caching policy
-  - Status: not started
+- [x] SF-061 — Verify service-worker caching policy
+  - Status: completed
   - Priority: P1
   - Depends on: SF-060
-  - Evidence: —
-  - Commit: —
-  - Next action: add stale-deployment regression
+  - Evidence: `next.config.ts` disables aggressive front-end navigation caching and configures NetworkFirst for API/page/RSC requests; generated precache no longer contains the removed debug APK
+  - Commit: pending `perf(startup): bound splash and surface PWA updates`
+  - Completed: 2026-08-17
 
 ## Phase 4 — Product UX
 
-- [ ] SF-070 — Correct hero provenance
-  - Status: not started
+- [x] SF-070 — Correct hero provenance
+  - Status: completed
   - Priority: P0
   - Depends on: SF-031
-  - Evidence: —
-  - Commit: —
+  - Evidence: desktop hero aria label now follows resume/recommended/trending source; signed-out recommendation shelf is labelled `Trending now` instead of `Picked for you`
+  - Commit: pending `fix(home): keep recommendation provenance honest`
+  - Completed: 2026-08-17
   - Next action: return explicit source semantics from hero hook/feed
 
 - [ ] SF-071 — Deduplicate Home titles
@@ -392,21 +393,21 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: —
   - Next action: connect existing Space routes
 
-- [ ] SF-080 — Repair Search combobox keyboard behavior
-  - Status: not started
+- [x] SF-080 — Repair Search combobox keyboard behavior
+  - Status: completed
   - Priority: P0
   - Depends on: SF-011
-  - Evidence: —
-  - Commit: —
-  - Next action: add active suggestion state
+  - Evidence: Arrow Up/Down, Escape, Enter, pointer selection, and suggestion highlighting share one navigation callback
+  - Commit: pending `fix(search): stabilize suggestion selection and semantics`
+  - Completed: 2026-08-17
 
-- [ ] SF-081 — Add Search ARIA relationships
-  - Status: not started
+- [x] SF-081 — Add Search ARIA relationships
+  - Status: completed
   - Priority: P0
   - Depends on: SF-080
-  - Evidence: —
-  - Commit: —
-  - Next action: connect input/listbox/option IDs
+  - Evidence: SearchInput receives `aria-controls`, `aria-expanded`, and `aria-activedescendant`; the listbox and option ids are stable and active state is exposed
+  - Commit: pending `fix(search): stabilize suggestion selection and semantics`
+  - Completed: 2026-08-17
 
 - [ ] SF-082 — Verify Search pointer/touch/keyboard paths
   - Status: not started

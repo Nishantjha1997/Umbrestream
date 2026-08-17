@@ -7,12 +7,42 @@ const WORDMARK = "STREAMFREE".split("");
 
 export default function CinematicSplash() {
   const pathname = usePathname();
-  const [visible, setVisible] = useState(true);
+  const [visible, setVisible] = useState(() => {
+    if (typeof window === "undefined") return true;
+    try {
+      return sessionStorage.getItem("streamfree:splash-shown:v2") !== "1";
+    } catch {
+      return true;
+    }
+  });
 
   useEffect(() => {
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const timer = window.setTimeout(() => setVisible(false), reducedMotion ? 900 : 3_250);
-    return () => window.clearTimeout(timer);
+    try {
+      if (sessionStorage.getItem("streamfree:splash-shown:v2") === "1") {
+        setVisible(false);
+        return;
+      }
+      sessionStorage.setItem("streamfree:splash-shown:v2", "1");
+    } catch {
+      // A locked-down browser should still receive the bounded splash.
+    }
+
+    let hidden = false;
+    const hide = () => {
+      if (hidden) return;
+      hidden = true;
+      setVisible(false);
+    };
+    const maxTimer = window.setTimeout(hide, 700);
+    const readiness = window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => window.setTimeout(hide, 140));
+    });
+    window.addEventListener("load", hide, { once: true });
+    return () => {
+      window.clearTimeout(maxTimer);
+      window.cancelAnimationFrame(readiness);
+      window.removeEventListener("load", hide);
+    };
   }, []);
 
   if (!visible || pathname.includes("/player") || pathname.startsWith("/auth")) return null;

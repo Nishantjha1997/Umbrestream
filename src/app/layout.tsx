@@ -22,6 +22,7 @@ import InstallAppPrompt from "@/components/pwa/InstallAppPrompt";
 import ImmersiveAppShell from "@/components/ui/layout/ImmersiveAppShell";
 import SiteActivityTracker from "@/components/analytics/SiteActivityTracker";
 import CinematicSplash from "@/components/ui/feedback/CinematicSplash";
+import PwaUpdateNotice from "@/components/pwa/PwaUpdateNotice";
 
 const UMBRA_UI_V2_ENABLED = process.env.NEXT_PUBLIC_UMBRA_UI_V2 !== "false";
 
@@ -136,6 +137,7 @@ export default function RootLayout({
                 </>
               )}
               <InstallAppPrompt />
+              <PwaUpdateNotice />
               <SiteActivityTracker />
               {!UMBRA_UI_V2_ENABLED && <BottomNavbar />}
             </Providers>
