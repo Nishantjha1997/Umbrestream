@@ -188,13 +188,13 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `c56b8f2`
   - Completed: 2026-08-17
 
-- [ ] SF-037 — Route all clients through episode resolver
-  - Status: not started
+- [x] SF-037 — Route all clients through episode resolver
+  - Status: completed
   - Priority: P0
   - Depends on: SF-036
-  - Evidence: —
-  - Commit: —
-  - Next action: replace client season-boundary logic
+  - Evidence: web, phone, and TV now import the same pure resolver; native TV progression fetches series summaries plus the current season and crosses valid season boundaries without specials
+  - Commit: pending `fix(tv): unify cross-season progression`
+  - Completed: 2026-08-17
 
 - [ ] SF-038 — Extract shared native modules
   - Status: in progress

@@ -14,6 +14,7 @@ import {
   writePlaybackPreference,
 } from "../src/lib/sources/playbackPolicy.ts";
 import { toNativeHomeFeed } from "../src/lib/homeFeed/nativeAdapter.ts";
+import { resolveAdjacentEpisode } from "../src/lib/tv/adjacentEpisode.ts";
 
 const BACKEND_ORIGIN = "https://streamfree.online";
 const IMAGE_ORIGIN = "https://image.tmdb.org/t/p/w500";
@@ -1293,16 +1294,23 @@ async function advanceToNextEpisode() {
   const season = Number(player.media.season || 1);
   const episode = Number(player.media.episode || 1);
   try {
-    const seasonData = await tmdb(`tv/${player.media.id}/season/${season}`);
-    const next = (seasonData.episodes || [])
-      .filter((entry) => Number(entry.episode_number) > episode)
-      .sort((a, b) => Number(a.episode_number) - Number(b.episode_number))[0];
+    const [details, seasonData] = await Promise.all([
+      tmdb("tv/" + player.media.id),
+      tmdb("tv/" + player.media.id + "/season/" + season),
+    ]);
+    const next = resolveAdjacentEpisode(
+      details.seasons || [],
+      season,
+      episode,
+      seasonData.episodes || [],
+      "next",
+    );
     if (!next) {
       player.nextEpisodeBusy = false;
       showToast("That was the last episode.");
       return;
     }
-    startNextEpisodeCountdown(season, Number(next.episode_number));
+    startNextEpisodeCountdown(next.season, next.episode);
   } catch (error) {
     player.nextEpisodeBusy = false;
     console.error("[tv-next-episode]", error);
