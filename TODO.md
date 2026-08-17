@@ -326,7 +326,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P1
   - Depends on: SF-031
   - Evidence: shared Home feed now removes repeated `kind:id` entries across ordered Continue Watching, personalized, regional, anime, and trending rows; empty rows are removed and deterministic regression coverage passes
-  - Commit: pending
+  - Commit: `85feff8`
   - Completed: 2026-08-17
 
 - [ ] SF-072 — Define Home ordering
