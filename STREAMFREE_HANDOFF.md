@@ -872,6 +872,9 @@ verifies the downloaded APK's package, version, certificate, size, and SHA-256. 
 certificate pins out of Java release constants while retaining the official-host and APK identity
 checks.
 
-Remaining release gate: deploy these exact APKs/manifests to Vercel, confirm `Ready`, verify live
-download MIME types/headers/hashes, and complete the available physical-phone test. Physical TV
-testing remains deferred; Android TV emulator testing is the substitute.
+The exact APKs/manifests are now deployed to Vercel deployment
+`dpl_CrsmiM7s1iwXY5SpfoUjGukswvRM`, which returned `READY` and aliases `streamfree.online`. Live
+verification confirmed both manifest hashes/sizes, `application/vnd.android.package-archive` MIME
+types, and the expected filenames. Remaining QA is physical-device validation: connect the Android
+phone for orientation, Back, playback, and updater checks. Physical TV testing remains deferred;
+an Android TV emulator is the substitute when provisioned.

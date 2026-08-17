@@ -699,7 +699,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-135
   - Evidence: signed release APK reports package `online.streamfree.app`, version `1.3.1`, version code `5`; fresh-install reset is documented on the app page and manifest
-  - Commit: pending
+  - Commit: `5b00f49`
   - Completed: 2026-08-17
 
 - [x] SF-131 — Set TV release version 1.2.1/code 4
@@ -707,7 +707,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-139
   - Evidence: signed release APK reports package `online.streamfree.tv`, version `1.2.1`, version code `4`; fresh-install reset is documented on the TV app page and manifest
-  - Commit: pending
+  - Commit: `5b00f49`
   - Completed: 2026-08-17
 
 - [x] SF-132 — Make updater fetch and validate manifest itself
@@ -747,7 +747,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P1
   - Depends on: SF-133
   - Evidence: original signer was not recoverable, so the release intentionally uses a fresh-install reset; manifests no longer advertise a migration helper, and both download pages clearly require uninstalling the previous certificate-reset build first
-  - Commit: pending
+  - Commit: `5b00f49`
   - Completed: 2026-08-17
 
 - [x] SF-137 — Build signed release APKs only
@@ -755,7 +755,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-130, SF-131, SF-135, SF-139
   - Evidence: fresh phone `1.3.1/code 5` and TV `1.2.1/code 4` release APKs built with dedicated 4096-bit RSA keystores outside Git; both builds are non-debuggable and signed with v2/v3
-  - Commit: pending
+  - Commit: `5b00f49`
   - Completed: 2026-08-17
 
 - [x] SF-138 — Verify release APK metadata and signatures
@@ -763,7 +763,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-137
   - Evidence: phone SHA-256 `A19B3ED6E96FDA0DA2E0E5B5FD08BC19B5987599F77B2C4120E2C96C631241E9`, TV SHA-256 `BA2BDB9E65176D1C250DFABDFFA78C90C2F57DDB63130FD80FAC6C31B6BB5969`; package/version/certificate checks, v2/v3 verification, manifest validation, and release-artifact checks passed
-  - Commit: pending
+  - Commit: `5b00f49`
   - Completed: 2026-08-17
 
 - [x] SF-160 — Centralize signing certificate fingerprints and remove them from download pages
@@ -805,7 +805,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P1
   - Depends on: SF-086, SF-087, SF-121
   - Evidence: DOM snapshots expose named navigation, searchbox, tabs, filter group, retry buttons, live-region alerts, and focusable actions across Home/Search/Browse/About; automated axe/reduced-motion and player/device scans remain open
-  - Commit: pending
+  - Commit: —
   - Next action: run automated accessibility scan and reduced-motion screenshots across core routes
 
 - [ ] SF-153 — Run physical Android phone matrix
@@ -815,7 +815,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Evidence: —
   - Commit: —
   - Next action: connect the physical Android phone with ADB, then run cold/warm, playback, orientation, Back, and updater checks
-  - Blocker: no `adb` or Android SDK is available in this workspace
+  - Blocker: no physical phone is currently connected; the build SDK and ADB tools are now installed
 
 - [ ] SF-154 — Run Android TV emulator matrix
   - Status: blocked
@@ -824,7 +824,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Evidence: —
   - Commit: —
   - Next action: provision or connect an Android TV emulator, then run D-pad/player/update flows
-  - Blocker: no Android emulator or SDK is available; physical TV testing is intentionally deferred
+  - Blocker: no Android TV emulator is currently provisioned; physical TV testing is intentionally deferred
 
 - [ ] SF-155 — Run real-provider smoke tests last
   - Status: blocked
@@ -840,7 +840,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-155
   - Evidence: private phone and TV release candidates built successfully with portable JDK 21/Android SDK 36 and the new keystores stored outside Git; no ADB was required for assembly
-  - Commit: pending
+  - Commit: `5b00f49`
   - Completed: 2026-08-17
 
 - [ ] SF-157 — Deploy Vercel preview and verify readiness
@@ -851,18 +851,18 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `2abc4ba`
   - Completed: 2026-08-17
 
-- [ ] SF-158 — Publish manifests/APKs and deploy production
-  - Status: in progress
+- [x] SF-158 — Publish manifests/APKs and deploy production
+  - Status: completed
   - Priority: P0
   - Depends on: SF-156, SF-157
-  - Evidence: new manifests and APKs pass local hash/signature checks; Vercel production deployment is already Ready, but this exact APK release still needs deployment and live route verification
-  - Commit: pending
-  - Next action: deploy the exact new APKs/manifests, verify Vercel Ready, MIME types, hashes, and fresh-install messaging
+  - Evidence: deployment `dpl_CrsmiM7s1iwXY5SpfoUjGukswvRM` returned `READY` and aliases `streamfree.online`; live phone/TV manifests match APK sizes and SHA-256 hashes; APKs serve with Android package MIME types and correct filenames; app pages show fresh-install guidance
+  - Commit: `5b00f49`
+  - Completed: 2026-08-17
 
-- [ ] SF-159 — Update handoff and release evidence
-  - Status: in progress
+- [x] SF-159 — Update handoff and release evidence
+  - Status: completed
   - Priority: P0
   - Depends on: SF-158
-  - Evidence: `STREAMFREE_HANDOFF.md` now records Supabase verification, production movie/TV/anime source-picker smoke results, the fresh signing reset, exact release hashes/certificates, Vercel deployment ID, and the remaining live APK verification gate
-  - Commit: pending
-  - Next action: append live APK route/MIME/hash evidence and rollback details after the exact new artifacts are deployed
+  - Evidence: `STREAMFREE_HANDOFF.md` now records Supabase verification, production movie/TV/anime source-picker smoke results, the fresh signing reset, exact release hashes/certificates, live APK route verification, Vercel deployment ID, and the remaining physical-device QA limits
+  - Commit: `5b00f49`
+  - Completed: 2026-08-17
