@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { brand } from "@/config/brand";
 
-const TV_APK_PATH = "/downloads/StreamFree-TV-v1.2.apk";
+const TV_APK_PATH = "/downloads/StreamFree-TV-v1.2.1.apk";
 
 export const metadata: Metadata = {
   title: `Get the Android TV app | ${brand.name}`,
@@ -89,7 +89,7 @@ export default function AndroidTVAppPage() {
               {[
                 "Android TV 7.0+",
                 "Android TV compatible",
-                "Version 1.2.0",
+                "Version 1.2.1",
                 "3.15 MB",
                 "Signed APK",
               ].map((label) => (
@@ -269,7 +269,9 @@ export default function AndroidTVAppPage() {
         <article className="rounded-2xl border border-white/8 bg-white/[0.025] p-5 text-sm leading-6 text-white/58 sm:p-6">
           <h2 className="text-lg font-semibold text-white">Verified updates</h2>
           <p className="mt-3">
-            Version 1.2.0 is a release APK signed for direct installation. The in-app updater
+            Version 1.2.1 is a fresh-install release signed for direct installation. Uninstall the
+            previous StreamFree TV APK before installing this certificate-reset release. Future
+            builds will update in place. The in-app updater
             fetches and validates the official manifest, package identity, version, certificate,
             size, and SHA-256 before installation. Android TV can still show its standard
             unknown-source or Play Protect confirmation. Release fingerprints are kept in the

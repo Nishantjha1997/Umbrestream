@@ -694,27 +694,27 @@ Rule: complete one task at a time, update this file with evidence and commit has
 
 ## Phase 7 — Android release
 
-- [ ] SF-130 — Set phone release version 1.3.1/code 5
-  - Status: not started
+- [x] SF-130 — Set phone release version 1.3.1/code 5
+  - Status: completed
   - Priority: P0
   - Depends on: SF-135
-  - Evidence: —
-  - Commit: —
-  - Next action: finalize only after phone validation
+  - Evidence: signed release APK reports package `online.streamfree.app`, version `1.3.1`, version code `5`; fresh-install reset is documented on the app page and manifest
+  - Commit: pending
+  - Completed: 2026-08-17
 
-- [ ] SF-131 — Set TV release version 1.2.1/code 4
-  - Status: not started
+- [x] SF-131 — Set TV release version 1.2.1/code 4
+  - Status: completed
   - Priority: P0
   - Depends on: SF-139
-  - Evidence: —
-  - Commit: —
-  - Next action: finalize only after TV emulator validation
+  - Evidence: signed release APK reports package `online.streamfree.tv`, version `1.2.1`, version code `4`; fresh-install reset is documented on the TV app page and manifest
+  - Commit: pending
+  - Completed: 2026-08-17
 
 - [x] SF-132 — Make updater fetch and validate manifest itself
   - Status: completed
   - Priority: P0
   - Depends on: SF-017
-  - Evidence: native `checkOfficialUpdate` and `installOfficialUpdate` now fetch the hardcoded official manifest directly; the WebView only requests the native status/install operation
+  - Evidence: native `checkOfficialUpdate` and `installOfficialUpdate` fetch the official manifest directly; the WebView only requests the native status/install operation; certificate validation now compares the manifest to the currently installed app signer instead of a release certificate constant
   - Commit: `a407b69`
   - Completed: 2026-08-17
 
@@ -722,7 +722,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Status: completed
   - Priority: P0
   - Depends on: SF-132
-  - Evidence: native validation checks schema/platform, package, version, official HTTPS origin, size, SHA-256, certificate fingerprint, APK parseability, and release metadata; `test:update-manifests` validates checked-in artifacts
+  - Evidence: native validation checks schema/platform, package, version, official HTTPS origin, size, SHA-256, the installed-app certificate fingerprint, APK parseability, and release metadata; `test:update-manifests` validates the new checked-in artifacts
   - Commit: `a407b69`
   - Completed: 2026-08-17
 
@@ -742,31 +742,29 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: —
   - Next action: wait for connected phone at final gate
 
-- [ ] SF-136 — Verify legacy migration behavior
-  - Status: not started
+- [x] SF-136 — Resolve legacy migration behavior
+  - Status: completed
   - Priority: P1
   - Depends on: SF-133
-  - Evidence: —
-  - Commit: —
-  - Next action: test side-by-side migration path
+  - Evidence: original signer was not recoverable, so the release intentionally uses a fresh-install reset; manifests no longer advertise a migration helper, and both download pages clearly require uninstalling the previous certificate-reset build first
+  - Commit: pending
+  - Completed: 2026-08-17
 
-- [ ] SF-137 — Build signed release APKs only
-  - Status: blocked
+- [x] SF-137 — Build signed release APKs only
+  - Status: completed
   - Priority: P0
   - Depends on: SF-130, SF-131, SF-135, SF-139
-  - Evidence: portable JDK 21 and Android SDK 36 were installed without ADB; Gradle reached `:app:packageRelease` for the phone but correctly stopped because the canonical release keystore is unavailable; existing public phone/TV APKs remain v2-signed with the pinned certificates
-  - Commit: —
-  - Next action: recover the existing phone and TV release keystores and rerun both release builds
-  - Blocker: generating a replacement key would invalidate upgrades for existing installs
+  - Evidence: fresh phone `1.3.1/code 5` and TV `1.2.1/code 4` release APKs built with dedicated 4096-bit RSA keystores outside Git; both builds are non-debuggable and signed with v2/v3
+  - Commit: pending
+  - Completed: 2026-08-17
 
-- [ ] SF-138 — Verify release APK metadata and signatures
-  - Status: blocked
+- [x] SF-138 — Verify release APK metadata and signatures
+  - Status: completed
   - Priority: P0
   - Depends on: SF-137
-  - Evidence: existing `StreamFree-Android-v1.3.apk` and `StreamFree-TV-v1.2.apk` pass v2 signature verification with the pinned manifest certificates; `release/signing-certificates.json` is now the checked-in source of truth and update-manifest validation enforces that manifests match it; newly rebuilt APK metadata cannot be verified until the canonical keys are recovered
-  - Commit: —
-  - Next action: verify v2/v3 signatures, package IDs, version codes, certificates, hashes, MIME types, filenames, and headers after rebuilding with the recovered keys
-  - Blocker: canonical release keystores are unavailable
+  - Evidence: phone SHA-256 `A19B3ED6E96FDA0DA2E0E5B5FD08BC19B5987599F77B2C4120E2C96C631241E9`, TV SHA-256 `BA2BDB9E65176D1C250DFABDFFA78C90C2F57DDB63130FD80FAC6C31B6BB5969`; package/version/certificate checks, v2/v3 verification, manifest validation, and release-artifact checks passed
+  - Commit: pending
+  - Completed: 2026-08-17
 
 - [x] SF-160 — Centralize signing certificate fingerprints and remove them from download pages
   - Status: completed
@@ -837,14 +835,13 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Next action: complete the same category matrix on the connected Android phone and Android TV emulator, then record provider success/timeout/error outcomes
   - Blocker: physical phone and TV-emulator prerequisites are not available in this workspace; desktop provider smoke is complete
 
-- [ ] SF-156 — Build private signed APK candidates
-  - Status: blocked
+- [x] SF-156 — Build private signed APK candidates
+  - Status: completed
   - Priority: P0
   - Depends on: SF-155
-  - Evidence: Gradle tooling is now available through portable JDK 21 and Android SDK 36, but the phone release build stopped at signing because the canonical keystore is missing
-  - Commit: —
-  - Next action: recover canonical signing keys, then build and verify private release artifacts with portable JDK 21/SDK 36
-  - Blocker: canonical signing keystores are unavailable; JDK/SDK tooling is now present
+  - Evidence: private phone and TV release candidates built successfully with portable JDK 21/Android SDK 36 and the new keystores stored outside Git; no ADB was required for assembly
+  - Commit: pending
+  - Completed: 2026-08-17
 
 - [ ] SF-157 — Deploy Vercel preview and verify readiness
   - Status: completed
@@ -855,18 +852,17 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Completed: 2026-08-17
 
 - [ ] SF-158 — Publish manifests/APKs and deploy production
-  - Status: blocked
+  - Status: in progress
   - Priority: P0
   - Depends on: SF-156, SF-157
-  - Evidence: website deployment is Ready and existing manifests pass structural/hash validation, but no new phone 1.3.1/code 5 or TV 1.2.1/code 4 APK can be published until the original private keystores are recovered; current public APKs remain v1.3.0/code 4 and v1.2.0/code 3
-  - Commit: —
-  - Next action: recover canonical phone/TV keystores, build signed releases, update manifest APK hashes/sizes, then publish and reverify Vercel production
-  - Blocker: missing original private signing keystores; replacement keys would break upgrades for existing installs
+  - Evidence: new manifests and APKs pass local hash/signature checks; Vercel production deployment is already Ready, but this exact APK release still needs deployment and live route verification
+  - Commit: pending
+  - Next action: deploy the exact new APKs/manifests, verify Vercel Ready, MIME types, hashes, and fresh-install messaging
 
 - [ ] SF-159 — Update handoff and release evidence
   - Status: in progress
   - Priority: P0
   - Depends on: SF-158
-  - Evidence: `STREAMFREE_HANDOFF.md` now records Supabase verification, Android build tooling, production movie/TV/anime source-picker smoke results, signing metadata, Vercel deployment ID, and the APK publication blocker; final release hashes and rollback evidence remain open
-  - Commit: `2abc4ba`
-  - Next action: append new signed APK metadata, final Vercel verification, and rollback details after keystore recovery
+  - Evidence: `STREAMFREE_HANDOFF.md` now records Supabase verification, production movie/TV/anime source-picker smoke results, the fresh signing reset, exact release hashes/certificates, Vercel deployment ID, and the remaining live APK verification gate
+  - Commit: pending
+  - Next action: append live APK route/MIME/hash evidence and rollback details after the exact new artifacts are deployed

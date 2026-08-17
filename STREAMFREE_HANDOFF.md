@@ -838,3 +838,40 @@ The verified website-only production deployment is `dpl_Dt2ZUKLhXj27M6KgNeieMxQ6
 returned `readyState: READY` and aliased it to `https://streamfree.online`. This deployment includes
 the download-page digest removal and current web fixes, but intentionally does not claim new APK
 publication. Recheck the deployment and APK routes after the signed artifacts are available.
+
+## 23. Fresh signing reset and release candidates — 2026-08-17
+
+The original private keystores were not found in the repository, Stream project, desktop search
+scope, or Git history. Per the user's decision, a fresh signing reset was created. Private material
+is outside Git at:
+
+- `C:\Users\HP_5C\.cache\codex-runtimes\streamfree-signing-20260817\streamfree-phone-release.jks`
+  alias `streamfree-phone`.
+- `C:\Users\HP_5C\.cache\codex-runtimes\streamfree-signing-20260817\streamfree-tv-release.jks`
+  alias `streamfree-tv`.
+
+The folder is ACL-restricted to the current Windows user and contains `KEEP-PRIVATE.txt` with the
+local build credentials. Never commit or upload that folder. Future releases must reuse these exact
+keystores. Because the package IDs remain `online.streamfree.app` and `online.streamfree.tv` but the
+certificates changed, users must uninstall the old APK before installing this release. Future
+updates from these new APKs can install in place.
+
+New release artifacts:
+
+- Phone: `StreamFree-Android-v1.3.1.apk`, package `online.streamfree.app`, code `5`, size `3344756`,
+  SHA-256 `A19B3ED6E96FDA0DA2E0E5B5FD08BC19B5987599F77B2C4120E2C96C631241E9`, certificate
+  `4218B5F726FD4D61703B2112D7A41C77B93F215F1C1DC85560BAB86A6FB38EF4`.
+- TV: `StreamFree-TV-v1.2.1.apk`, package `online.streamfree.tv`, code `4`, size `3373310`,
+  SHA-256 `BA2BDB9E65176D1C250DFABDFFA78C90C2F57DDB63130FD80FAC6C31B6BB5969`, certificate
+  `7D5C1BB46BA3CE888C56E9CF1F39F86F65BC502BCD5480B0F8CF4663C80779D7`.
+
+Both APKs are non-debuggable and pass APK Signature Scheme v2 and v3 verification. The checked-in
+manifests point to these filenames and pass `test:update-manifests` and `check:release-artifacts`.
+The updater now compares the manifest certificate to the currently installed app signer, then
+verifies the downloaded APK's package, version, certificate, size, and SHA-256. This keeps future
+certificate pins out of Java release constants while retaining the official-host and APK identity
+checks.
+
+Remaining release gate: deploy these exact APKs/manifests to Vercel, confirm `Ready`, verify live
+download MIME types/headers/hashes, and complete the available physical-phone test. Physical TV
+testing remains deferred; Android TV emulator testing is the substitute.

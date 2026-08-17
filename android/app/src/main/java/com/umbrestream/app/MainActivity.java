@@ -43,7 +43,6 @@ import org.json.JSONObject;
 public class MainActivity extends BridgeActivity {
     private static final String UPDATE_MANIFEST_URL = "https://streamfree.online/downloads/streamfree-android.json";
     private static final String EXPECTED_UPDATE_PACKAGE = "online.streamfree.app";
-    private static final String EXPECTED_UPDATE_CERTIFICATE = "577D4F3C9BBE0A87C3F2CDFC087BD1A6D26EF1A613F392091DF0A26F10677DB9";
     private long updateDownloadId = -1L;
     private BroadcastReceiver updateReceiver;
     private File expectedUpdateFile;
@@ -235,7 +234,7 @@ public class MainActivity extends BridgeActivity {
                 if (!EXPECTED_UPDATE_PACKAGE.equals(packageId) || versionName.trim().isEmpty() ||
                     !sha256.matches("[A-F0-9]{64}") || sizeBytes <= 0 ||
                     minimumSupportedVersion < 1L || publishedAt.trim().isEmpty() ||
-                    !EXPECTED_UPDATE_CERTIFICATE.equals(certificate) || !isOfficialDownloadUrl(apkUri)) {
+                    !currentSigningCertificate().equalsIgnoreCase(certificate) || !isOfficialDownloadUrl(apkUri)) {
                     throw new IllegalStateException("Manifest validation failed");
                 }
                 long currentVersionCode = currentVersionCode();
@@ -260,7 +259,7 @@ public class MainActivity extends BridgeActivity {
         try {
             if (update == null || !apk.isFile() || apk.length() != update.sizeBytes ||
                 !EXPECTED_UPDATE_PACKAGE.equals(update.packageId) ||
-                !EXPECTED_UPDATE_CERTIFICATE.equals(update.certificate)) return false;
+                !currentSigningCertificate().equalsIgnoreCase(update.certificate)) return false;
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             try (FileInputStream input = new FileInputStream(apk)) {
                 byte[] buffer = new byte[8192];
@@ -301,6 +300,18 @@ public class MainActivity extends BridgeActivity {
     private long currentVersionCode() throws PackageManager.NameNotFoundException {
         PackageInfo current = getPackageManager().getPackageInfo(getPackageName(), 0);
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.P ? current.getLongVersionCode() : current.versionCode;
+    }
+
+    private String currentSigningCertificate() throws Exception {
+        int flags = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
+            ? PackageManager.GET_SIGNING_CERTIFICATES
+            : PackageManager.GET_SIGNATURES;
+        PackageInfo current = getPackageManager().getPackageInfo(getPackageName(), flags);
+        Signature[] signatures = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
+            ? current.signingInfo.getApkContentsSigners()
+            : current.signatures;
+        if (signatures == null || signatures.length == 0) throw new IllegalStateException("No app signer");
+        return toHex(MessageDigest.getInstance("SHA-256").digest(signatures[0].toByteArray()));
     }
 
     private static final class UpdateMetadata {
