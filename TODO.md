@@ -262,7 +262,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `ec51633`
   - Completed: 2026-08-17
 
-- [ ] SF-056 — Move player-only dependencies behind dynamic loading
+- [x] SF-056 — Move player-only dependencies behind dynamic loading
   - Status: completed
   - Priority: P1
   - Depends on: SF-004
@@ -278,7 +278,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `0c31720`
   - Completed: 2026-08-17
 
-- [ ] SF-058 — Lazy-load artwork and distant rails
+- [x] SF-058 — Lazy-load artwork and distant rails
   - Status: completed
   - Priority: P1
   - Depends on: SF-031
@@ -286,7 +286,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `a10e2b1`
   - Completed: 2026-08-17
 
-- [ ] SF-059 — Reduce native full-view replacements
+- [x] SF-059 — Reduce native full-view replacements
   - Status: completed
   - Priority: P1
   - Depends on: SF-038
@@ -329,7 +329,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `85feff8`
   - Completed: 2026-08-17
 
-- [ ] SF-072 — Define Home ordering
+- [x] SF-072 — Define Home ordering
   - Status: completed
   - Priority: P1
   - Depends on: SF-070
@@ -353,7 +353,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `974c738`
   - Completed: 2026-08-17
 
-- [ ] SF-075 — Stop removal actions from navigation
+- [x] SF-075 — Stop removal actions from navigation
   - Status: completed
   - Priority: P0
   - Depends on: SF-073
@@ -361,7 +361,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `a10e2b1`
   - Completed: 2026-08-17
 
-- [ ] SF-076 — Add optimistic removal Undo/rollback
+- [x] SF-076 — Add optimistic removal Undo/rollback
   - Status: completed
   - Priority: P1
   - Depends on: SF-075
@@ -385,7 +385,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `6ab7d79`
   - Completed: 2026-08-17
 
-- [ ] SF-079 — Add account destinations
+- [x] SF-079 — Add account destinations
   - Status: completed
   - Priority: P1
   - Depends on: SF-011
@@ -410,12 +410,12 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Completed: 2026-08-17
 
 - [ ] SF-082 — Verify Search pointer/touch/keyboard paths
-  - Status: not started
+  - Status: in progress
   - Priority: P0
   - Depends on: SF-080, SF-081
-  - Evidence: implementation is complete; final desktop/mobile browser verification remains in the final testing phase
+  - Evidence: local production browser run verified Search input and keyboard submission at desktop and 390×844 mobile; suggestion selection remains blocked because the local TMDB proxy returned 503
   - Commit: —
-  - Next action: add deterministic browser tests
+  - Next action: rerun pointer/touch/suggestion selection with TMDB or deterministic catalog fixtures available
 
 - [x] SF-083 — Improve Browse filters and focus restoration
   - Status: completed
@@ -457,7 +457,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `4698146`
   - Completed: 2026-08-17
 
-- [ ] SF-088 — Keep Nishant branding tasteful
+- [x] SF-088 — Keep Nishant branding tasteful
   - Status: completed
   - Priority: P2
   - Depends on: SF-072
@@ -465,7 +465,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `c6579bc`
   - Completed: 2026-08-17
 
-- [ ] SF-089 — Replace vendor-specific TV copy
+- [x] SF-089 — Replace vendor-specific TV copy
   - Status: completed
   - Priority: P1
   - Depends on: SF-011
@@ -479,9 +479,9 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Status: in progress
   - Priority: P0
   - Depends on: SF-011
-  - Evidence: source picker interaction/focus fixes are implemented; shared web-player fullscreen entry now keeps successful entry in landscape intent instead of inverting the browser fullscreen state
+  - Evidence: source picker interaction/focus fixes are implemented; source-dependent browser exercise is blocked because the local TMDB proxy returned 503 for the known movie fixture; shared web-player fullscreen entry keeps successful entry in landscape intent
   - Commit: `b6dbcbb`
-  - Next action: run deterministic desktop/mobile/PWA source-picker regression before final real-provider smoke tests
+  - Next action: run desktop/mobile/PWA source-picker regression with a playable title or deterministic player fixture
 
 - [x] SF-101 — Make source rows fully interactive
   - Status: completed
@@ -507,7 +507,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `c56b8f2`
   - Completed: 2026-08-17
 
-- [ ] SF-104 — Preserve source preferences by media/audio
+- [x] SF-104 — Preserve source preferences by media/audio
   - Status: completed
   - Priority: P0
   - Depends on: SF-101
@@ -515,7 +515,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `a10e2b1`
   - Completed: 2026-08-17
 
-- [ ] SF-105 — Label anime Sub/Dub groups
+- [x] SF-105 — Label anime Sub/Dub groups
   - Status: completed
   - Priority: P0
   - Depends on: SF-104
@@ -523,7 +523,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `a10e2b1`
   - Completed: 2026-08-17
 
-- [ ] SF-106 — Preserve audio/episode/progress context
+- [x] SF-106 — Preserve audio/episode/progress context
   - Status: completed
   - Priority: P1
   - Depends on: SF-105
@@ -531,7 +531,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `a10e2b1`
   - Completed: 2026-08-17
 
-- [ ] SF-107 — Preserve consent-based fallback
+- [x] SF-107 — Preserve consent-based fallback
   - Status: completed
   - Priority: P0
   - Depends on: SF-100
@@ -539,7 +539,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `a10e2b1`
   - Completed: 2026-08-17
 
-- [ ] SF-108 — Prevent silent manual-source replacement
+- [x] SF-108 — Prevent silent manual-source replacement
   - Status: completed
   - Priority: P0
   - Depends on: SF-107
@@ -547,7 +547,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `a10e2b1`
   - Completed: 2026-08-17
 
-- [ ] SF-109 — Keep eventless providers neutral
+- [x] SF-109 — Keep eventless providers neutral
   - Status: completed
   - Priority: P1
   - Depends on: SF-107
@@ -555,7 +555,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `a10e2b1`
   - Completed: 2026-08-17
 
-- [ ] SF-110 — Verify trusted playback events before history
+- [x] SF-110 — Verify trusted playback events before history
   - Status: completed
   - Priority: P0
   - Depends on: SF-107
@@ -587,7 +587,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: —
   - Next action: add emulator flow
 
-- [ ] SF-114 — Add TV D-pad focus behavior
+- [x] SF-114 — Add TV D-pad focus behavior
   - Status: completed
   - Priority: P1
   - Depends on: SF-113
@@ -595,7 +595,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `a10e2b1`
   - Completed: 2026-08-17
 
-- [ ] SF-115 — Add TV next-episode countdown
+- [x] SF-115 — Add TV next-episode countdown
   - Status: completed
   - Priority: P0
   - Depends on: SF-037
@@ -611,7 +611,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `c56b8f2`
   - Completed: 2026-08-17
 
-- [ ] SF-117 — Preserve source/audio on next episode
+- [x] SF-117 — Preserve source/audio on next episode
   - Status: completed
   - Priority: P1
   - Depends on: SF-116
@@ -662,20 +662,20 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Completed: 2026-08-17
 
 - [ ] SF-125 — Verify core offline/error/retry states
-  - Status: not started
+  - Status: in progress
   - Priority: P1
   - Depends on: SF-084
-  - Evidence: —
+  - Evidence: local browser observed retryable “Couldn’t reach TMDB” state on movie detail and actionable “Movies are taking a break” state on Browse; full offline/reconnect matrix remains open
   - Commit: —
-  - Next action: build route state matrix
+  - Next action: complete offline/reconnect and retry matrix across Home, Browse, Search, details, player, and native shells
 
 - [ ] SF-126 — Verify focus restoration
-  - Status: not started
+  - Status: in progress
   - Priority: P1
   - Depends on: SF-103, SF-121
-  - Evidence: —
+  - Evidence: Browse filter selection returned focus to the active filter control in the local browser snapshot; modal/source-sheet, route, and Android Back focus paths remain open
   - Commit: —
-  - Next action: test modal/sheet/route/Back flows
+  - Next action: test source sheet, onboarding, modal, route, and Back focus flows when a playable fixture and device bridge are available
 
 - [x] SF-127 — Remove decorative signatures from player semantics
   - Status: completed
@@ -769,29 +769,29 @@ Rule: complete one task at a time, update this file with evidence and commit has
 
 ## Final test and rollout
 
-- [ ] SF-150 — Run authored-source lint/typecheck/source contracts
-  - Status: not started
+- [x] SF-150 — Run authored-source lint/typecheck/source contracts
+  - Status: completed
   - Priority: P0
   - Depends on: all implementation tasks
-  - Evidence: —
-  - Commit: —
-  - Next action: run final automated checks
+  - Evidence: authored ESLint, TypeScript, player-source, episode-resolver, Continue Watching, Home feed, native cache/history/update-state, update-manifest, release-artifact, leak scan, production webpack build, and `git diff --check` all passed
+  - Commit: pending
+  - Completed: 2026-08-17
 
 - [ ] SF-151 — Run Playwright web/PWA matrix
-  - Status: not started
+  - Status: in progress
   - Priority: P0
   - Depends on: SF-082, SF-100, SF-125
-  - Evidence: —
-  - Commit: —
-  - Next action: run desktop/mobile/tablet flows
+  - Evidence: local production browser verified Home/About shells at default and 820×1180, Home at 390×844, Browse filter selection/reset at desktop and mobile, Search keyboard submit, and retryable catalog states; source-picker, authenticated library, PWA update, and real-title flows remain blocked by missing catalog/auth fixtures
+  - Commit: pending
+  - Next action: run source picker, removal/Undo, authenticated Continue Watching, PWA update, and mocked provider flows with deterministic fixtures
 
 - [ ] SF-152 — Run accessibility and reduced-motion matrix
-  - Status: not started
+  - Status: in progress
   - Priority: P1
   - Depends on: SF-086, SF-087, SF-121
-  - Evidence: —
-  - Commit: —
-  - Next action: scan core routes and controls
+  - Evidence: DOM snapshots expose named navigation, searchbox, tabs, filter group, retry buttons, live-region alerts, and focusable actions across Home/Search/Browse/About; automated axe/reduced-motion and player/device scans remain open
+  - Commit: pending
+  - Next action: run automated accessibility scan and reduced-motion screenshots across core routes
 
 - [ ] SF-153 — Run physical Android phone matrix
   - Status: not started
