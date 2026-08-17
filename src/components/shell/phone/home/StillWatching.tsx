@@ -4,9 +4,8 @@
  * `PHONE_SPEC.md` §G "01 — Still watching" — the narrow ringed rail right
  * below the resume hero. Reads the same `["continue-watching", user?.id]`
  * query `ResumeHero` (via `useHomeHero`) already populates, so this never
- * issues a second network request. Filters out completed titles, then
- * slices off index 0 — the hero above already promoted whichever
- * non-completed entry comes first.
+ * issues a second network request. Filters out completed titles, then removes
+ * only the title the hero above actually promoted.
  *
  * Tapping a card resumes playback directly. `HistoryItemActions` lets a
  * viewer remove a title or mark it complete without leaving the rail.
@@ -16,6 +15,7 @@ import Link from "next/link";
 import EclipseRing from "@/components/media/EclipseRing";
 import HistoryItemActions from "@/components/ui/button/HistoryItemActions";
 import useContinueWatching from "@/hooks/useContinueWatching";
+import { useHomeHero } from "@/hooks/useHomeHero";
 import type { HistoryDetail } from "@/types/movie";
 import type { MediaKind } from "@/types/media";
 import { formatTimeLeft, getImageUrl } from "@/utils/movies";
@@ -33,14 +33,14 @@ function playHrefFor(item: HistoryDetail): string {
 export default function StillWatching() {
   const { ref, inViewport } = useInViewport<HTMLDivElement>();
   const { items, fetchNextPage, hasNextPage, isFetchingNextPage } = useContinueWatching();
+  const { pick } = useHomeHero();
 
   useEffect(() => {
     if (inViewport && hasNextPage && !isFetchingNextPage) fetchNextPage();
   }, [fetchNextPage, hasNextPage, inViewport, isFetchingNextPage]);
 
-  // Completed titles aren't "still watching" — filtered before the slice so
-  // it always skips whichever entry the hero above is showing, not just
-  // positional index 0 (`useHomeHero` applies the same filter).
+  // Completed titles aren't "still watching". Remove the hero by identity, not
+  // by position, so a trending hero cannot hide a real active title.
   const active = items.filter((h) => !h.completed);
   // Histories are episode-level rows; the rail is title-level. Keep the most
   // recently updated episode for each title because the server already sorts
@@ -49,7 +49,8 @@ export default function StillWatching() {
     (item, index, rows) =>
       rows.findIndex((candidate) => candidate.type === item.type && candidate.media_id === item.media_id) === index,
   );
-  const rest = uniqueTitles.slice(1);
+  const resumeKey = pick?.source === "resume" ? `${pick.media.kind}:${pick.media.id}` : null;
+  const rest = uniqueTitles.filter((item) => `${item.type}:${item.media_id}` !== resumeKey);
 
   if (rest.length === 0) return null;
 

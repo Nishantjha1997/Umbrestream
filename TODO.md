@@ -338,12 +338,12 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Next action: implement state-specific row ordering
 
 - [ ] SF-073 — Verify complete Continue Watching pagination
-  - Status: not started
+  - Status: in progress
   - Priority: P0
   - Depends on: SF-031
-  - Evidence: —
-  - Commit: —
-  - Next action: run high-volume authenticated query checks
+  - Evidence: web phone/desktop rails now remove only the actual resume hero by identity; cursor pagination remains active and the Supabase RPC still needs production application/high-volume verification
+  - Commit: pending `fix(home): keep every active title in continue watching`
+  - Next action: apply the Supabase RPC migration and verify an authenticated account with more than 100 active episode rows
 
 - [ ] SF-074 — Verify Continue Watching ordering/completion rules
   - Status: not started

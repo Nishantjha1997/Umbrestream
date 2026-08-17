@@ -2,8 +2,8 @@
 
 /**
  * Section 01, "Still watching" (DESKTOP_SPEC.md §G) — completed titles
- * filtered out, then everything *after* whichever non-completed entry
- * `useHomeHero` already promoted to the hero above. Same query key as
+ * filtered out, then the title (if any) that `useHomeHero` promoted to the
+ * hero above is removed by identity. Same query key as
  * `useHomeHero`, so this is a cache hit rather than a second network round
  * trip.
  *
@@ -16,6 +16,7 @@
 import EclipseRing from "@/components/media/EclipseRing";
 import HistoryItemActions from "@/components/ui/button/HistoryItemActions";
 import useContinueWatching from "@/hooks/useContinueWatching";
+import { useHomeHero } from "@/hooks/useHomeHero";
 import { useCustomCarousel } from "@/hooks/useCustomCarousel";
 import type { HistoryDetail } from "@/types/movie";
 import type { MediaKind } from "@/types/media";
@@ -38,19 +39,20 @@ function playHrefFor(item: HistoryDetail): string {
 export default function StillWatchingDesktop() {
   const { ref, inViewport } = useInViewport<HTMLDivElement>();
   const { items: histories, fetchNextPage, hasNextPage, isFetchingNextPage } = useContinueWatching();
+  const { pick } = useHomeHero();
 
   useEffect(() => {
     if (inViewport && hasNextPage && !isFetchingNextPage) fetchNextPage();
   }, [fetchNextPage, hasNextPage, inViewport, isFetchingNextPage]);
-  // Completed titles aren't "still watching" — filtered before the slice so
-  // it always skips whichever entry the hero above is showing, not just
-  // positional index 0 (`useHomeHero` applies the same filter).
+  // Completed titles aren't "still watching". Remove the hero by identity, not
+  // by position, so a trending hero cannot hide a real active title.
   const active = histories.filter((h) => !h.completed);
   const uniqueTitles = active.filter(
     (item, index, rows) =>
       rows.findIndex((candidate) => candidate.type === item.type && candidate.media_id === item.media_id) === index,
   );
-  const items = uniqueTitles.slice(1);
+  const resumeKey = pick?.source === "resume" ? `${pick.media.kind}:${pick.media.id}` : null;
+  const items = uniqueTitles.filter((item) => `${item.type}:${item.media_id}` !== resumeKey);
 
   const { emblaRef, scrollPrev, scrollNext, canScrollPrev, canScrollNext } = useCustomCarousel({
     align: "start",
@@ -58,9 +60,9 @@ export default function StillWatchingDesktop() {
     containScroll: "trimSnaps",
   });
 
-  // Fewer than two active items means the hero already shows the only one —
-  // an orphan header with nothing under it is worse than no section at all.
-  if (uniqueTitles.length < 2) return null;
+  // Hide the rail only when the resume hero is the sole active title. If the
+  // hero is trending/recommended, the first active title still belongs here.
+  if (items.length === 0) return null;
 
   return (
     <section className="flex flex-col gap-4">
