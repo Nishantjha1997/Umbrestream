@@ -1012,7 +1012,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-191, SF-192
   - Evidence: Vercel deployment `dpl_8vrwdH2JFAtWTrZ6QGEDqQumSB2A` returned `readyState: READY` and was aliased to `https://streamfree.online`; live manifests returned phone `1.3.3`/code `7` and TV `1.2.3`/code `6`; both APK routes returned HTTP 200, APK MIME types, exact manifest sizes, and expected filenames; `/anime`, `/app`, `/app/tv`, and `/api/mobile/home` returned HTTP 200.
-  - Commit: pending
+  - Commit: `8e420d8`
   - Completed: 2026-08-18
 
 - [ ] SF-194 — Complete deterministic Anime Mode regression coverage
