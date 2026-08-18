@@ -936,3 +936,31 @@ or remain playable. The physical-device gate remains open: `adb devices` current
 and no Android TV emulator is provisioned. Next action is to connect the phone and run signed-APK playback,
 Fit/Fill, fullscreen/orientation, Back, reload/resume, and updater checks. Physical Android TV certification is
 not available; an emulator is the planned substitute.
+
+## 26. Final non-hardware web QA checkpoint — 2026-08-18
+
+Accessibility and web/PWA hardening was deployed in Vercel production deployment
+`dpl_HGo3ubtSK3oBFC6tCqnRfwr8x8x9`, which returned `READY` and is aliased to
+`https://streamfree.online`.
+
+The final browser checks covered desktop and 390×844 mobile flows:
+
+- Search suggestions returned live TMDB results for `toys`; pointer selection and mobile ArrowDown/Enter
+  selection both routed to `/movie/11597` while preserving `aria-expanded`, `aria-controls`, and
+  `aria-activedescendant`.
+- Movie Source sheet opened on mobile, Cinezo selection changed the URL to `src=cinezo`, closed the sheet,
+  and Fit/Fill changed the StreamFree shell without changing iframe identity or URL.
+- Home, Search, Browse, About, and movie player audits found zero unnamed visible interactive controls, zero
+  missing nondecorative image alt values, zero unlabeled inputs, and zero nested interactive controls.
+- About's GitHub icon now has an accessible name. Player Back/source actions no longer contain nested interactive
+  elements.
+- PWA service worker, manifest, robots, and sitemap routes return HTTP 200; `/sw.js` is served with
+  `must-revalidate, max-age=0`. Phone/TV app pages expose release versions `1.3.2` and `1.2.2`.
+- Continue Watching deterministic cursor stress coverage now walks 150 title-level records across pages with
+  no duplicates, proving the old 100-row client cap is not present. No synthetic rows were inserted into
+  production; a signed-in mutation/Undo pass remains the only web QA requiring a user session.
+
+The remaining open tasks are authorization/device-dependent only: sign in to a StreamFree test account to
+exercise live Continue Watching/watchlist removal plus Undo, connect the physical Android phone for native
+playback/orientation/updater checks, and provision an Android TV emulator for D-pad/playback checks. The
+production web/PWA and deterministic non-hardware QA gate is complete.

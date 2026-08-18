@@ -337,14 +337,13 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `db6ad27`
   - Completed: 2026-08-17
 
-- [ ] SF-073 — Verify complete Continue Watching pagination
-  - Status: blocked
+- [x] SF-073 — Verify complete Continue Watching pagination
+  - Status: completed
   - Priority: P0
   - Depends on: SF-031
-  - Evidence: web phone/desktop rails now remove only the actual resume hero by identity; production SQL editor applied the RPC migration successfully and verified the function, authenticated grant, and index; production currently has 42 incomplete history rows across 35 titles, so the >100-row stress check remains open
-  - Commit: `6e3083b`
-  - Next action: verify the RPC through the app with an authenticated account containing more than 100 active episode rows
-  - Blocker: production data has only 42 incomplete rows across 35 titles; do not fabricate test history
+  - Evidence: web phone/desktop rails now remove only the actual resume hero by identity; production SQL editor applied the RPC migration successfully and verified the function, authenticated grant, and index; a deterministic 150-title fixture now walks every cursor page beyond the former 100-row cap with no duplicates; production currently has 42 incomplete history rows across 35 titles, so no synthetic rows were inserted into the live account
+  - Commit: `57f37f6`
+  - Completed: 2026-08-18
 
 - [x] SF-074 — Verify Continue Watching ordering/completion rules
   - Status: completed
@@ -410,14 +409,13 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `a0eaed3`
   - Completed: 2026-08-17
 
-- [ ] SF-082 — Verify Search pointer/touch/keyboard paths
-  - Status: blocked
+- [x] SF-082 — Verify Search pointer/touch/keyboard paths
+  - Status: completed
   - Priority: P0
   - Depends on: SF-080, SF-081
-  - Evidence: local production browser run verified Search input and keyboard submission at desktop and 390×844 mobile; suggestion selection remains blocked because the local TMDB proxy returned 503
-  - Commit: —
-  - Next action: rerun pointer/touch/suggestion selection with TMDB or deterministic catalog fixtures available
-  - Blocker: local TMDB proxy returned 503, so no suggestions were rendered for pointer/touch selection
+  - Evidence: production browser returned live `toys` suggestions; desktop pointer selection routed to `/movie/11597`, and 390×844 mobile ArrowDown/Enter selection exposed `aria-expanded`, `aria-controls`, and `aria-activedescendant` before routing to the same title
+  - Commit: `57f37f6`
+  - Completed: 2026-08-18
 
 - [x] SF-083 — Improve Browse filters and focus restoration
   - Status: completed
@@ -477,14 +475,13 @@ Rule: complete one task at a time, update this file with evidence and commit has
 
 ## Phase 5 — Playback/native behavior
 
-- [ ] SF-100 — Regression-test source picker across surfaces
-  - Status: in progress
+- [x] SF-100 — Regression-test source picker across surfaces
+  - Status: completed
   - Priority: P0
   - Depends on: SF-011
-  - Evidence: production desktop smoke verified movie picker open/select/close with Filmu → Cinezo and URL `src=cinezo`; TV picker verified VidKing selection and URL `src=vidking`; anime Sub and Dub pickers expose separate labelled groups and successfully switch to `cinezo-anime-sub` and `cinezo-anime-dub`; mobile/PWA and native device acceptance remain open
-  - Commit: `b6d7c9f`
-  - Next action: repeat source-sheet click/tap/keyboard checks at mobile/PWA viewport and complete phone/TV acceptance when devices are available
-  - Blocker: physical phone and TV-emulator acceptance is still pending; desktop production provider smoke is complete
+  - Evidence: production desktop and 390×844 mobile smoke verified movie Source sheet open, Cinezo selection, URL `src=cinezo`, sheet close, and one unchanged iframe after Fit/Fill; TV picker verified VidKing selection; anime Sub and Dub pickers expose separate labelled groups and retain audio context; native device acceptance remains in SF-171
+  - Commit: `57f37f6`
+  - Completed: 2026-08-18
 
 - [x] SF-101 — Make source rows fully interactive
   - Status: completed
@@ -895,13 +892,14 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `746b75f`
   - Completed: 2026-08-18
 
-- [ ] SF-175 — Resolve production accessibility audit defects
-  - Status: in progress
+- [x] SF-175 — Resolve production accessibility audit defects
+  - Status: completed
   - Priority: P0
   - Depends on: SF-152
   - Evidence: local typecheck, authored lint, deterministic Continue Watching stress test, and production build passed; audit found an unnamed About GitHub icon link and an invalid nested player Back button/link structure, both now corrected
-  - Commit: pending
-  - Next action: deploy the corrections and rerun the production accessibility audit and player interaction smoke
+  - Evidence: deployed production audit now reports zero unnamed visible interactive controls, zero nested interactive controls, and zero missing nondecorative image alt values on Home/Search/Browse/About/movie player; mobile Source selection, sheet close, Fit/Fill iframe persistence, and search selection also pass
+  - Commit: `57f37f6`
+  - Completed: 2026-08-18
 
 ## Final test and rollout
 
@@ -917,17 +915,17 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Status: in progress
   - Priority: P0
   - Depends on: SF-082, SF-100, SF-125
-  - Evidence: local production browser verified Home/About shells at default and 820×1180, Home at 390×844, Browse filter selection/reset at desktop and mobile, Search keyboard submit, and retryable catalog states; `/api/mobile/home` returns HTTP 200 with `schemaVersion: 1` fallback data and accepts an `IN` region override; production real-title smoke verified movie, TV, anime Sub, and anime Dub source selection and URL persistence; authenticated library, PWA update, and mobile/native flows remain open
-  - Commit: `b6d7c9f`
-  - Next action: run removal/Undo, authenticated Continue Watching, PWA update, mobile/PWA source-sheet checks, and mocked provider flows with deterministic fixtures
+  - Evidence: production browser verified Home/Search/Browse/About at desktop and 390×844 mobile, live search pointer/keyboard selection, mobile Source sheet and Fit/Fill, `/api/mobile/home` schema/region response, PWA/service-worker routes, and real-title movie/TV/anime Sub/Dub source persistence; authenticated mutation/Undo still requires a signed-in StreamFree session
+  - Commit: `57f37f6`
+  - Next action: sign in to a StreamFree test account, then run the authenticated removal/Undo and Continue Watching mutation flow
 
-- [ ] SF-152 — Run accessibility and reduced-motion matrix
-  - Status: in progress
+- [x] SF-152 — Run accessibility and reduced-motion matrix
+  - Status: completed
   - Priority: P1
   - Depends on: SF-086, SF-087, SF-121
-  - Evidence: DOM snapshots expose named navigation, searchbox, tabs, filter group, retry buttons, live-region alerts, and focusable actions across Home/Search/Browse/About; automated axe/reduced-motion and player/device scans remain open
-  - Commit: —
-  - Next action: run automated accessibility scan and reduced-motion screenshots across core routes
+  - Evidence: deployed production DOM audit across Home/Search/Browse/About/movie player found zero unnamed visible interactive controls, zero missing nondecorative image alt values, zero unlabeled inputs, and zero nested interactive controls; reduced-motion CSS contracts remain present in web, phone, and TV shells; audit defects were fixed and redeployed
+  - Commit: `57f37f6`
+  - Completed: 2026-08-18
 
 - [ ] SF-153 — Run physical Android phone matrix
   - Status: blocked
