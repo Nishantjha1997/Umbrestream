@@ -159,7 +159,12 @@ export default function PlayerShell({
   const setPlaybackOrientation = useCallback((fullscreen: boolean) => {
     const nativeBridge = (
       window as Window & {
-        StreamFreeNative?: { lockLandscape?: () => void; lockPortrait?: () => void };
+        StreamFreeNative?: {
+          lockLandscape?: () => void;
+          lockPortrait?: () => void;
+          enterPlayerImmersive?: () => void;
+          exitPlayerImmersive?: () => void;
+        };
       }
     ).StreamFreeNative;
     const orientation = window.screen.orientation as ScreenOrientation & {
@@ -168,9 +173,11 @@ export default function PlayerShell({
     };
     if (fullscreen) {
       nativeBridge?.lockLandscape?.();
+      nativeBridge?.enterPlayerImmersive?.();
       void Promise.resolve(orientation.lock?.("landscape")).catch(() => undefined);
     } else {
       nativeBridge?.lockPortrait?.();
+      nativeBridge?.exitPlayerImmersive?.();
       orientation.unlock?.();
     }
   }, []);

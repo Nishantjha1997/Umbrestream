@@ -31,8 +31,8 @@ const SETTINGS_KEY = "streamfree-mobile-settings-v1";
 const AUTH_STORAGE_KEY = "streamfree-mobile-auth-v1";
 const REGION_STORAGE_KEY = "streamfree-mobile-region-v1";
 const REGION_OVERRIDE_KEY = "streamfree-region-override-v1";
-const APP_VERSION = "1.3.0";
-const APP_VERSION_CODE = 4;
+const APP_VERSION = "1.3.2";
+const APP_VERSION_CODE = 6;
 const APP_UPDATE_MANIFEST = "/downloads/streamfree-android.json";
 const TOUR_STORAGE_KEY = "streamfree-mobile-tour-v1";
 const ANIME_AUDIO_KEY = "streamfree:anime-audio:v1";
@@ -138,6 +138,7 @@ function nativeBridge() {
 function setPlaybackOrientation(fullscreen) {
   if (fullscreen) {
     nativeBridge()?.lockLandscape?.();
+    nativeBridge()?.enterPlayerImmersive?.();
     try {
       void Promise.resolve(screen.orientation?.lock?.("landscape")).catch(() => undefined);
     } catch {
@@ -145,6 +146,7 @@ function setPlaybackOrientation(fullscreen) {
     }
   } else {
     nativeBridge()?.lockPortrait?.();
+    nativeBridge()?.exitPlayerImmersive?.();
     try {
       screen.orientation?.unlock?.();
     } catch {

@@ -18,6 +18,10 @@ import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.database.Cursor;
 import android.provider.Settings;
+import android.graphics.Color;
+import android.view.View;
+import android.view.WindowInsets;
+import android.view.WindowInsetsController;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
@@ -54,6 +58,7 @@ public class MainActivity extends BridgeActivity {
     private BroadcastReceiver updateReceiver;
     private File expectedUpdateFile;
     private UpdateMetadata pendingUpdate;
+    private boolean immersiveRequested = true;
 
     // Keep provider filtering disabled until an official, validated policy and
     // the complete TV playback matrix both prove it cannot break streams.
@@ -97,6 +102,8 @@ public class MainActivity extends BridgeActivity {
         SplashScreen.installSplashScreen(this);
         registerPlugin(StreamFreeNativePlugin.class);
         super.onCreate(savedInstanceState);
+        configureWindowSurface();
+        setImmersivePlayback(true);
 
         WebView webView = bridge.getWebView();
         WebSettings settings = webView.getSettings();
@@ -141,6 +148,37 @@ public class MainActivity extends BridgeActivity {
         } else {
             registerReceiver(updateReceiver, filter);
         }
+    }
+
+    private void configureWindowSurface() {
+        getWindow().setStatusBarColor(Color.BLACK);
+        getWindow().setNavigationBarColor(Color.BLACK);
+        getWindow().getDecorView().setBackgroundColor(Color.BLACK);
+    }
+
+    void setImmersivePlayback(boolean active) {
+        immersiveRequested = active;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            WindowInsetsController controller = getWindow().getInsetsController();
+            if (controller == null) return;
+            controller.hide(WindowInsets.Type.statusBars() | WindowInsets.Type.navigationBars());
+            controller.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+            return;
+        }
+        getWindow().getDecorView().setSystemUiVisibility(active
+            ? View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                | View.SYSTEM_UI_FLAG_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+            : View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (hasFocus && immersiveRequested) setImmersivePlayback(true);
     }
 
     @Override

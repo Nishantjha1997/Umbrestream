@@ -22,6 +22,18 @@ public class StreamFreeNativePlugin extends Plugin {
     }
 
     @PluginMethod
+    public void enterPlayerImmersive(PluginCall call) {
+        getActivity().runOnUiThread(() -> ((MainActivity) getActivity()).setImmersivePlayback(true));
+        call.resolve();
+    }
+
+    @PluginMethod
+    public void exitPlayerImmersive(PluginCall call) {
+        getActivity().runOnUiThread(() -> ((MainActivity) getActivity()).setImmersivePlayback(false));
+        call.resolve();
+    }
+
+    @PluginMethod
     public void installOfficialUpdate(PluginCall call) {
         getActivity().runOnUiThread(() -> ((MainActivity) getActivity()).downloadOfficialUpdate());
         call.resolve();

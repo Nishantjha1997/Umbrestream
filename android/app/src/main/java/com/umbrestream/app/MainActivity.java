@@ -18,6 +18,10 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
+import android.graphics.Color;
+import android.view.View;
+import android.view.WindowInsets;
+import android.view.WindowInsetsController;
 import android.webkit.CookieManager;
 import android.webkit.WebView;
 import android.webkit.WebSettings;
@@ -47,12 +51,14 @@ public class MainActivity extends BridgeActivity {
     private BroadcastReceiver updateReceiver;
     private File expectedUpdateFile;
     private UpdateMetadata pendingUpdate;
+    private boolean immersiveRequested = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         SplashScreen.installSplashScreen(this);
         registerPlugin(StreamFreeNativePlugin.class);
         super.onCreate(savedInstanceState);
+        configureWindowSurface();
 
         WebView webView = bridge.getWebView();
         WebSettings settings = webView.getSettings();
@@ -92,6 +98,41 @@ public class MainActivity extends BridgeActivity {
         } else {
             registerReceiver(updateReceiver, filter);
         }
+    }
+
+    private void configureWindowSurface() {
+        getWindow().setStatusBarColor(Color.BLACK);
+        getWindow().setNavigationBarColor(Color.BLACK);
+        getWindow().getDecorView().setBackgroundColor(Color.BLACK);
+    }
+
+    void setImmersivePlayback(boolean active) {
+        immersiveRequested = active;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            WindowInsetsController controller = getWindow().getInsetsController();
+            if (controller == null) return;
+            if (active) {
+                controller.hide(WindowInsets.Type.statusBars() | WindowInsets.Type.navigationBars());
+                controller.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+            } else {
+                controller.show(WindowInsets.Type.statusBars() | WindowInsets.Type.navigationBars());
+            }
+            return;
+        }
+        getWindow().getDecorView().setSystemUiVisibility(active
+            ? View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                | View.SYSTEM_UI_FLAG_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+            : View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (hasFocus && immersiveRequested) setImmersivePlayback(true);
     }
 
     @Override

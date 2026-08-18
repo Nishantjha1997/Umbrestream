@@ -838,21 +838,21 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `5a85fd1`
   - Completed: 2026-08-18
 
-- [ ] SF-168 — Harden native Android player window behavior
-  - Status: in progress
+- [x] SF-168 — Harden native Android player window behavior
+  - Status: completed
   - Priority: P0
   - Depends on: SF-164, SF-165
-  - Evidence: —
-  - Commit: —
-  - Next action: inspect native activity/window flags and align system bars and release versions
+  - Evidence: phone and TV activities now use black window surfaces, immersive system-bar handling, focus reapplication, and explicit player enter/exit bridge methods; release compilation succeeded
+  - Commit: `pending`
+  - Completed: 2026-08-18
 
 - [ ] SF-169 — Build and verify phone 1.3.2/code 6 and TV 1.2.2/code 5
-  - Status: not started
+  - Status: in progress
   - Priority: P0
   - Depends on: SF-168
   - Evidence: —
   - Commit: —
-  - Next action: regenerate bundles, build signed release APKs, update manifests and app pages
+  - Next action: commit the signed APKs, manifests, synchronized website download pages, and release evidence
 
 - [ ] SF-170 — Run deterministic player and TV UI regression checks
   - Status: not started
