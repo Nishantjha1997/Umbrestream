@@ -266,7 +266,13 @@ function createRemoteAdapter(
     supportedMediaTypes: ["anime"],
     identifierRequirements: { anime: ["anilistId", "episode"] },
     priority: 12,
-    supports: (request) => Boolean(base && request.mediaType === "anime" && request.anilistId && request.episode),
+    supports: (request) => Boolean(
+      base
+      && allowedOrigins().has(base.origin)
+      && request.mediaType === "anime"
+      && request.anilistId
+      && request.episode,
+    ),
     async resolve(request, signal) {
       if (!base || !request.anilistId || !request.episode) return [];
       const origins = allowedOrigins();

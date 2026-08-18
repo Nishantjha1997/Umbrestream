@@ -1037,3 +1037,9 @@ Anivexa/Miruro adapters, AniList/MAL OAuth, and background push remain configura
 the production environment currently has no authorized API origins, OAuth client credentials, token
 encryption key, or VAPID/FCM delivery credentials. In-app notification polling is the active release
 behavior. Physical phone, Android TV emulator, and real-provider playback checks remain pending.
+
+The deterministic Anime adapter suite was expanded after this deployment checkpoint. It now verifies
+all requested Anivexa provider labels, nested Miruro provider payloads, Sub/Dub isolation, subtitle
+track normalization, rejection of unallowlisted and cleartext streams, non-anime rejection, and the
+origin allowlist gate before an optional API is queried. The corresponding adapter change must be
+deployed before it is considered live; the release task board records that follow-up deployment.

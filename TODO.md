@@ -1015,13 +1015,21 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `8e420d8`
   - Completed: 2026-08-18
 
-- [ ] SF-194 — Complete deterministic Anime Mode regression coverage
-  - Status: not started
+- [x] SF-194 — Complete deterministic Anime Mode regression coverage
+  - Status: completed
   - Priority: P0
   - Depends on: SF-189, SF-193
-  - Evidence: `pnpm run test:anime-integrations` currently passes the provider normalization/configuration contract slice.
+  - Evidence: `pnpm run test:anime-integrations`, `pnpm run typecheck`, `pnpm run lint`, and `git diff --check` pass; coverage includes all requested provider labels, nested Miruro payloads, Sub/Dub separation, subtitle tracks, unsafe stream rejection, non-anime rejection, and allowlist-gated adapters.
+  - Commit: pending
+  - Completed: 2026-08-18
+
+- [ ] SF-195 — Deploy Anime adapter allowlist hardening
+  - Status: in progress
+  - Priority: P0
+  - Depends on: SF-194
+  - Evidence: —
   - Commit: —
-  - Next action: add browser/component coverage for Anime Mode, Sub/Dub selection, auth configuration states, and notification read actions before real-provider smoke tests
+  - Next action: commit the adapter/test change, deploy the linked `umbrestream` project, and verify the new production deployment is Ready
 
 ## Final test and rollout
 
