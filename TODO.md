@@ -1039,13 +1039,21 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `fb69ed4`
   - Completed: 2026-08-18
 
-- [ ] SF-197 — Restore framed anime player page and expose provider catalog
-  - Status: in progress
+- [x] SF-197 — Restore framed anime player page and expose provider catalog
+  - Status: completed
   - Priority: P0
   - Depends on: SF-196
-  - Evidence: User reproduction confirms the player still consumes the whole route and the picker only exposes three live providers per audio variant; the requested Anivexa/Miruro provider names are not visible when those optional API origins are not configured.
+  - Evidence: Preview deployment `umbrestream-quyb9f2gl-nishants-projects-7d9628b2.vercel.app` returned `Ready`; desktop 1280×720 and mobile 390×844 checks confirmed normal document flow, no automatic fullscreen, visible Source control, Next episode navigation, 12-episode list, and 17 catalog entries labelled Not connected until a validated API candidate exists.
+  - Commit: `a4a2741`
+  - Completed: 2026-08-18
+
+- [ ] SF-198 — Promote verified anime player preview to production
+  - Status: in progress
+  - Priority: P0
+  - Depends on: SF-197
+  - Evidence: Preview deployment `7giGdMzuXGFsqBcrC6JcL7RxtygZ` is Ready; Vercel dashboard says the current production alias updates from `main`.
   - Commit: —
-  - Next action: render anime playback inline in normal document flow, add the persistent next-episode/all-episodes section, and show requested provider names as disabled until a validated API candidate exists
+  - Next action: promote the verified preview deployment to `streamfree.online` from the authenticated Vercel project dashboard, then repeat the desktop/mobile production smoke checks
 
 ## Final test and rollout
 

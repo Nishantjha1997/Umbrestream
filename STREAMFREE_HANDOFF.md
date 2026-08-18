@@ -1061,5 +1061,26 @@ in the DOM but moved with the displaced stage, which explains why users could no
 The fix changes only the non-fullscreen stage positioning to a fixed, top-centered 16:9 viewport. The
 iframe remains clipped inside the StreamFree-owned stage, while Source, Fit/Fill, Full screen, recovery,
 and episode controls stay attached to the visible player. Fullscreen continues to use the existing
-fixed full-viewport branch. The fix is tracked as `SF-196`; production deployment and post-deploy
-desktop/mobile geometry verification are still required.
+fixed full-viewport branch. `SF-196` was deployed as `dpl_EUwggePWmcSgCGeXNvqrXHMSBpFV` and verified
+on desktop and mobile geometry.
+
+## 29. Framed anime player flow — 2026-08-18
+
+The anime route now opts into an inline player layout rather than the shared body portal. This keeps the
+initial stage in normal document flow, leaves fullscreen opt-in, restores page scrolling, and places a
+persistent Next episode action plus the complete episode list below the stage. Episode links preserve the
+selected audio variant, while the device-local source preference continues to select the remembered
+provider on the next route.
+
+The source sheet now also renders the requested provider catalog — Miruro, AniKoto, ReAnime, AniZone,
+AnimeCG, AnimeGG, AniNeko, 2DHive, and MegaPlay — in the relevant Sub/Dub group. Catalog entries are
+disabled and labelled `Not connected` unless Anivexa or MiruroAPI returns a validated candidate for the
+current title and episode. This prevents a provider name from being presented as playable when the
+optional API origin is absent or unavailable.
+
+Commit: `a4a2741` (`fix(anime): restore framed episode player flow`). Preview deployment
+`7giGdMzuXGFsqBcrC6JcL7RxtygZ` is Ready at
+`https://umbrestream-quyb9f2gl-nishants-projects-7d9628b2.vercel.app`. Desktop 1280×720 and mobile
+390×844 checks passed for stage geometry, scroll position, Source sheet opening, catalog visibility,
+next-episode navigation, and default fullscreen-off behavior. Production promotion remains pending
+because the Vercel project dashboard currently indicates production is updated from `main`.
