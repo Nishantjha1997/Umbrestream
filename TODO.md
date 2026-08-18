@@ -1020,7 +1020,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-189, SF-193
   - Evidence: `pnpm run test:anime-integrations`, `pnpm run typecheck`, `pnpm run lint`, and `git diff --check` pass; coverage includes all requested provider labels, nested Miruro payloads, Sub/Dub separation, subtitle tracks, unsafe stream rejection, non-anime rejection, and allowlist-gated adapters.
-  - Commit: pending
+  - Commit: `9b6216e`
   - Completed: 2026-08-18
 
 - [ ] SF-195 — Deploy Anime adapter allowlist hardening
