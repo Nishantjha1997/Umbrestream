@@ -996,7 +996,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-181, SF-182, SF-183, SF-190
   - Evidence: Phone `1.3.3`/code `7`, package `online.streamfree.app`, SHA-256 `571FA4CB69051EDE36A16F02FDBAFF8EC7C2F1714D08B216B832DDA652D0D444`; TV `1.2.3`/code `6`, package `online.streamfree.tv`, SHA-256 `06E4C403D29C5D4F6EF5D690AC31A38908A5E64A1D1308AE703C11E9C1907683`; both release APKs pass v2/v3 signature checks and manifests match size/hash/certificate.
-  - Commit: pending
+  - Commit: `6334c34`
   - Completed: 2026-08-18
 
 - [x] SF-192 — Apply and verify the production Supabase anime integration migration
@@ -1004,7 +1004,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-185, SF-186, SF-187
   - Evidence: Supabase SQL Editor returned `Success. No rows returned` for the idempotent migration in project `kqrazmvxmjasjyrwfyyf`; linked-account and episode-notification tables, RLS, indexes, and trigger definitions were applied by the migration.
-  - Commit: pending
+  - Commit: `6334c34`
   - Completed: 2026-08-18
 
 - [ ] SF-193 — Deploy the Anime release to Vercel and verify production
