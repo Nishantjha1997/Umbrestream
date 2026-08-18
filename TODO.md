@@ -979,8 +979,8 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Status: not started
   - Priority: P0
   - Depends on: SF-184, SF-185, SF-186, SF-188
-  - Evidence: —
-  - Commit: —
+  - Evidence: `pnpm run test:anime-integrations`, `pnpm run typecheck`, `pnpm run lint`, and `git diff --check` pass for the deterministic contract slice.
+  - Commit: `5eff85a` (checkpoint)
   - Next action: add deterministic tests before any real-provider smoke run
 
 ## Final test and rollout
