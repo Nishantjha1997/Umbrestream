@@ -348,6 +348,17 @@
   @apply grid size-full max-w-6xl grid-cols-2 justify-center gap-2 sm:grid-cols-3 md:gap-4 lg:grid-cols-[repeat(auto-fit,minmax(200px,50px))];
 }
 
+/* Shared player framing. The provider remains cross-origin; these rules only
+ * control the StreamFree-owned viewport and native direct-source video. */
+.player-shell,
+.player-shell iframe,
+.player-shell video { background:#000; }
+.player-shell-frame { display:block; border:0!important; outline:0; object-fit:contain; transform:none; transform-origin:center; transition:transform .24s ease; }
+.player-shell-fill .player-shell-frame,
+.player-shell-fill video { object-fit:cover!important; transform:scale(1.12); transform-origin:center; }
+.player-shell-fit .player-shell-frame,
+.player-shell-fit video { object-fit:contain!important; transform:none; }
+
 /* Cinematic first-load splash. It exits through CSS as well as React so the
    site can never remain blocked if hydration or a cached PWA asset is slow. */
 .cinematic-splash {

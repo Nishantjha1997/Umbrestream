@@ -36,6 +36,7 @@ const APP_VERSION_CODE = 4;
 const APP_UPDATE_MANIFEST = "/downloads/streamfree-android.json";
 const TOUR_STORAGE_KEY = "streamfree-mobile-tour-v1";
 const ANIME_AUDIO_KEY = "streamfree:anime-audio:v1";
+const PLAYER_DISPLAY_KEY = "streamfree:player-display:v1";
 const TAB_ORDER = ["home", "search", "browse", "anime", "space"];
 const CACHE_TTL = 10 * 60 * 1000;
 
@@ -86,6 +87,10 @@ function readStorage(key, fallback) {
 
 function writeStorage(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
+}
+
+function normalizePlayerDisplay(value) {
+  return value === "fill" ? "fill" : "fit";
 }
 
 const TOUR_STEPS = [
@@ -160,13 +165,38 @@ function playerIsFullscreen() {
 }
 
 async function enterPlayerFullscreen() {
-  const target = document.querySelector("#player-frame") || document.querySelector(".player-stage");
+  const target = document.querySelector(".player-page") || document.querySelector(".player-stage");
   try {
     await target?.requestFullscreen?.({ navigationUI: "hide" });
   } catch {
     // The CSS/native fallback still gives the user a landscape full-bleed player.
   }
   setPlayerFullscreen(true);
+}
+
+function applyPlayerDisplayMode(mode) {
+  const displayMode = normalizePlayerDisplay(mode);
+  if (!state.player) return;
+  state.player.displayMode = displayMode;
+  writeStorage(PLAYER_DISPLAY_KEY, displayMode);
+  document.documentElement.dataset.playerDisplay = displayMode;
+  const stage = document.querySelector(".player-stage");
+  stage?.setAttribute("data-display-mode", displayMode);
+  document.querySelectorAll("[data-player-display]").forEach((control) => {
+    const selected = control.dataset.playerDisplay === displayMode;
+    control.classList.toggle("active", selected);
+    control.setAttribute("aria-pressed", String(selected));
+  });
+}
+
+async function closeActivePlayer() {
+  if (!state.player) return;
+  await exitPlayerFullscreen();
+  clearPlaybackRecoveryTimer();
+  state.player = null;
+  document.documentElement.classList.remove("player-route", "player-fullscreen");
+  delete document.documentElement.dataset.playerDisplay;
+  setPlaybackOrientation(false);
 }
 
 async function exitPlayerFullscreen() {
@@ -1092,6 +1122,7 @@ async function openPlayer(mediaTypeValue, id, title, season = 0, episode = 0, op
       sources,
       index: Math.max(0, sources.findIndex((source) => source.id === preferred?.id)),
       fullscreen: Boolean(options.fullscreen),
+      displayMode: normalizePlayerDisplay(readStorage(PLAYER_DISPLAY_KEY, "fit")),
       media: { ...media, title: title || media.title, season, episode },
       audio,
       confirmed: false,
@@ -1255,17 +1286,20 @@ document.addEventListener("visibilitychange", () => {
 function renderPlayer() {
   const player = state.player;
   if (!player) return renderError("Player closed", "Choose a title to start watching.", false);
+  document.documentElement.classList.add("player-route");
   // Re-assert the state after a source switch or next-episode navigation.
   // Android may recreate the WebView surface while the JS player state
   // survives; orientation calls are intentionally idempotent.
   setPlayerFullscreen(Boolean(player.fullscreen));
+  document.documentElement.dataset.playerDisplay = normalizePlayerDisplay(player.displayMode);
   const source = player.sources[player.index];
   const label = player.media.media_type === "tv"
     ? `S${player.media.season || 1} · E${player.media.episode || 1}`
     : player.media.media_type === "anime"
       ? `Episode ${player.media.episode || 1} · ${player.audio === "dub" ? "Dub" : "Sub"}`
       : "Movie";
-  commit(`<section class="player-page"><div class="player-header"><button class="player-back pressable" data-action="back-detail" data-media="${player.media.media_type}" data-id="${player.media.id}">‹</button><div><span>${escapeHtml(label)}</span><strong>${escapeHtml(player.media.title)}</strong></div><button class="player-more pressable" data-action="server-sheet" aria-label="Choose playback server">•••</button></div><div class="player-stage"><div class="player-loader"><span></span><p>Connecting to ${escapeHtml(source.label || source.id)}</p></div><iframe id="player-frame" src="${escapeHtml(source.url)}" title="${escapeHtml(player.media.title)} player" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="origin-when-cross-origin"></iframe><button class="player-fullscreen pressable" data-action="player-fullscreen" aria-label="Enter full screen">⛶ Full screen</button></div><div id="playback-recovery" hidden></div><section class="server-row"><div><span>Playback server</span><strong>${escapeHtml(source.label || source.id)}</strong></div><button class="glass-button pressable" data-action="server-sheet">Choose server</button></section><section class="player-tip"><span>Tip</span><p>Full screen switches to landscape. StreamFree will ask before trying another server.</p></section></section>`, { root: state.previousRoot });
+  const displayMode = normalizePlayerDisplay(player.displayMode);
+  commit(`<section class="player-page"><div class="player-header"><button class="player-back pressable" data-action="back-detail" data-media="${player.media.media_type}" data-id="${player.media.id}">‹</button><div><span>${escapeHtml(label)}</span><strong>${escapeHtml(player.media.title)}</strong></div><button class="player-more pressable" data-action="server-sheet" aria-label="Choose playback server">•••</button></div><div class="player-stage" data-display-mode="${displayMode}"><div class="player-loader"><span></span><p>Connecting to ${escapeHtml(source.label || source.id)}</p></div><iframe id="player-frame" src="${escapeHtml(source.url)}" title="${escapeHtml(player.media.title)} player" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="origin-when-cross-origin"></iframe><div class="player-controls" role="group" aria-label="Player display controls"><div class="player-display-toggle" role="group" aria-label="Video framing"><button class="pressable ${displayMode === "fit" ? "active" : ""}" data-action="player-display" data-player-display="fit" aria-pressed="${displayMode === "fit"}">Fit</button><button class="pressable ${displayMode === "fill" ? "active" : ""}" data-action="player-display" data-player-display="fill" aria-pressed="${displayMode === "fill"}">Fill</button></div><button class="player-fullscreen pressable" data-action="player-fullscreen" aria-label="Enter full screen">⛶ Full screen</button></div></div><div id="playback-recovery" hidden></div><section class="server-row"><div><span>Playback server</span><strong>${escapeHtml(source.label || source.id)}</strong></div><button class="glass-button pressable" data-action="server-sheet">Choose server</button></section><section class="player-tip"><span>Tip</span><p>Fit shows the whole frame. Fill zooms to the screen. Full screen switches to landscape.</p></section></section>`, { root: state.previousRoot });
   document.querySelector("#player-frame")?.addEventListener("load", () => document.querySelector(".player-loader")?.classList.add("done"), { once: true });
   updatePlaybackRecoveryPanel();
   armPlaybackRecovery();
@@ -1590,7 +1624,7 @@ document.addEventListener("click", (event) => {
 
   const button = event.target.closest("[data-action]");
   if (!button) return;
-  const { action, media, id, title, type, genre, filter, sort, season, episode, index, query, setting, audio } = button.dataset;
+  const { action, media, id, title, type, genre, filter, sort, season, episode, index, query, setting, audio, playerDisplay } = button.dataset;
   void impact(action === "play" ? ImpactStyle.Medium : ImpactStyle.Light);
 
   if (action === "detail") setRoute(`detail/${media}/${id}`);
@@ -1602,8 +1636,9 @@ document.addEventListener("click", (event) => {
   if (action === "season") { state.detailSeason = Number(season); void renderDetail(media, id); }
   if (action === "save") void toggleLibrary(getRemembered(media, id));
   if (action === "play") void openPlayer(media, Number(id), title, Number(season || 0), Number(episode || 0), { audio });
-  if (action === "back-detail") { clearPlaybackRecoveryTimer(); void exitPlayerFullscreen(); setRoute(`detail/${media}/${id}`); }
+  if (action === "back-detail") void (async () => { await closeActivePlayer(); setRoute(`detail/${media}/${id}`); })();
   if (action === "player-fullscreen") void (playerIsFullscreen() ? exitPlayerFullscreen() : enterPlayerFullscreen());
+  if (action === "player-display" && state.player) applyPlayerDisplayMode(playerDisplay);
   if (action === "back") window.history.back();
   if (action === "retry") void render();
   if (action === "scroll-top") window.scrollTo({ top: 0, behavior: state.settings.reduceMotion ? "instant" : "smooth" });
@@ -1680,7 +1715,10 @@ window.addEventListener("online", () => {
   void render();
 });
 window.addEventListener("offline", updateNetworkState);
-window.addEventListener("hashchange", () => void render());
+window.addEventListener("hashchange", () => {
+  if (state.player && document.querySelector(".player-page")) void closeActivePlayer();
+  void render();
+});
 
 async function initializeNativeShell() {
   if (!nativePlatform()) return;

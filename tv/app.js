@@ -139,6 +139,22 @@ function setPlaybackOrientation() {
   }
 }
 
+function setTvPlaybackMode(active) {
+  document.documentElement.classList.toggle("tv-playback-active", active);
+  document.body.classList.toggle("tv-playback-active", active);
+  [
+    document.querySelector(".app-header"),
+    document.querySelector(".tab-bar"),
+    document.querySelector("#network-banner"),
+    document.querySelector(".remote-guide"),
+  ].forEach((element) => {
+    if (!element) return;
+    element.toggleAttribute("inert", active);
+    if (active) element.setAttribute("aria-hidden", "true");
+    else element.removeAttribute("aria-hidden");
+  });
+}
+
 async function checkForUpdate({ silent = false } = {}) {
   state.update = beginUpdateCheck(state.update);
   try {
@@ -1311,6 +1327,7 @@ document.addEventListener("visibilitychange", () => {
 function renderPlayer() {
   const player = state.player;
   if (!player) return renderError("Player closed", "Choose a title to start watching.", false);
+  setTvPlaybackMode(true);
   const source = player.sources[player.index];
   const label = player.media.media_type === "tv"
     ? `S${player.media.season || 1} · E${player.media.episode || 1}`
@@ -1667,7 +1684,14 @@ document.addEventListener("click", (event) => {
   if (action === "season") { state.detailSeason = Number(season); void renderDetail(media, id); }
   if (action === "save") void toggleLibrary(getRemembered(media, id));
   if (action === "play") void openPlayer(media, Number(id), title, Number(season || 0), Number(episode || 0), { audio });
-  if (action === "back-detail") { clearPlaybackRecoveryTimer(); cancelNextEpisodeCountdown(); setRoute(`detail/${media}/${id}`); }
+  if (action === "back-detail") {
+    clearPlaybackRecoveryTimer();
+    cancelNextEpisodeCountdown();
+    setTvPlaybackMode(false);
+    state.player = null;
+    setPlaybackOrientation();
+    setRoute(`detail/${media}/${id}`);
+  }
   if (action === "back") window.history.back();
   if (action === "retry") void render();
   if (action === "scroll-top") window.scrollTo({ top: 0, behavior: state.settings.reduceMotion ? "instant" : "smooth" });
@@ -1717,10 +1741,13 @@ function remoteBack() {
     return true;
   }
   if (document.querySelector(".player-page") && state.player) {
+    const player = state.player;
     clearPlaybackRecoveryTimer();
     cancelNextEpisodeCountdown();
+    setTvPlaybackMode(false);
+    state.player = null;
     setPlaybackOrientation();
-    setRoute(`detail/${state.player.media.media_type}/${state.player.media.id}`);
+    setRoute(`detail/${player.media.media_type}/${player.media.id}`);
     return true;
   }
   if (routeFromHash() !== "home") {

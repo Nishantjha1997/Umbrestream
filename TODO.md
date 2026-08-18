@@ -790,6 +790,94 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: —
   - Next action: run Android TV emulator matrix
 
+- [x] SF-162 — Capture player and TV layout baseline
+  - Status: completed
+  - Priority: P0
+  - Depends on: SF-161
+  - Evidence: source baseline recorded; phone used a fixed-height stage without Fit/Fill and TV playback kept global chrome active
+  - Commit: `b3097f9`
+  - Completed: 2026-08-18
+
+- [x] SF-163 — Implement phone Fit/Fill player display modes
+  - Status: completed
+  - Priority: P0
+  - Depends on: SF-162
+  - Evidence: phone source and generated bundle now persist Fit/Fill locally, switch the outer viewport without remounting the iframe, and expose accessible controls
+  - Commit: `b3097f9`
+  - Completed: 2026-08-18
+
+- [x] SF-164 — Harden phone fullscreen, orientation, and Back lifecycle
+  - Status: completed
+  - Priority: P0
+  - Depends on: SF-163
+  - Evidence: fullscreen targets the app-owned player shell, hides app chrome, restores portrait on exit/route cleanup, and preserves the player state during Fit/Fill changes
+  - Commit: `b3097f9`
+  - Completed: 2026-08-18
+
+- [x] SF-165 — Isolate Android TV playback from global chrome
+  - Status: completed
+  - Priority: P0
+  - Depends on: SF-162
+  - Evidence: TV source and generated bundle now use an explicit playback mode that hides, disables, and marks global chrome inert while the player is active
+  - Commit: `b3097f9`
+  - Completed: 2026-08-18
+
+- [x] SF-166 — Rework Android TV 10-foot sizing and focus scale
+  - Status: completed
+  - Priority: P0
+  - Depends on: SF-165
+  - Evidence: TV CSS adds responsive 720p/1080p/4K tokens, capped layout dimensions, reduced focus scale, and compact playback overlays
+  - Commit: `b3097f9`
+  - Completed: 2026-08-18
+
+- [x] SF-167 — Apply player-shell parity to web and mobile web
+  - Status: completed
+  - Priority: P1
+  - Depends on: SF-163
+  - Evidence: shared web PlayerShell now has the same local Fit/Fill control and borderless outer-frame treatment without changing provider iframe contents
+  - Commit: `b3097f9`
+  - Completed: 2026-08-18
+
+- [ ] SF-168 — Harden native Android player window behavior
+  - Status: in progress
+  - Priority: P0
+  - Depends on: SF-164, SF-165
+  - Evidence: —
+  - Commit: —
+  - Next action: inspect native activity/window flags and align system bars and release versions
+
+- [ ] SF-169 — Build and verify phone 1.3.2/code 6 and TV 1.2.2/code 5
+  - Status: not started
+  - Priority: P0
+  - Depends on: SF-168
+  - Evidence: —
+  - Commit: —
+  - Next action: regenerate bundles, build signed release APKs, update manifests and app pages
+
+- [ ] SF-170 — Run deterministic player and TV UI regression checks
+  - Status: not started
+  - Priority: P0
+  - Depends on: SF-167, SF-169
+  - Evidence: —
+  - Commit: —
+  - Next action: run typecheck, lint, production build, artifact checks, and viewport smoke tests
+
+- [ ] SF-171 — Run provider and connected-device playback QA
+  - Status: not started
+  - Priority: P0
+  - Depends on: SF-170
+  - Evidence: —
+  - Commit: —
+  - Next action: test real categories, phone playback/orientation, TV layout, Fit/Fill, and recovery
+
+- [ ] SF-172 — Publish production website/APKs and update handoff
+  - Status: not started
+  - Priority: P0
+  - Depends on: SF-171
+  - Evidence: —
+  - Commit: —
+  - Next action: deploy umbrestream to Vercel, verify Ready and download metadata, then document release
+
 ## Final test and rollout
 
 - [x] SF-150 — Run authored-source lint/typecheck/source contracts

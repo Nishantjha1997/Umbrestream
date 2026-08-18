@@ -280,3 +280,62 @@ a, button, input, summary { outline:none; }
 @media (max-height:760px){.app-header{height:76px}.tab-bar{top:92px;bottom:52px;gap:6px}.tab-bar a{min-height:64px}.remote-guide{bottom:10px}.network-banner{top:76px}#view{padding-top:76px;padding-bottom:76px}.hero{min-height:530px}.hero-copy h1{font-size:58px}.poster-card{flex-basis:160px}.detail-visual{height:520px}.player-stage{height:calc(100vh - 270px)}}
 select#region-preference{min-height:48px;margin-top:12px;border:1px solid rgba(255,255,255,.14);border-radius:12px;background:#17141d;color:#fff;padding:0 12px;font:inherit} .region-note .glass-button{min-height:48px;margin-top:10px;padding:0 14px}
 html.reduce-motion .tour-card,html.reduce-motion .tour-backdrop{animation:none!important;transition:none!important}@media (prefers-reduced-motion:reduce){.tour-card,.tour-backdrop{animation:none!important;transition:none!important}}
+
+/* 10-foot layout calibration: readable at 720p/1080p without letting desktop tokens dominate a TV. */
+@media (min-width:960px) {
+  .app-header { height:clamp(64px,6.5vh,76px); padding-inline:clamp(28px,3vw,54px); }
+  .brand { gap:11px; height:52px; border-radius:15px; padding:6px 10px; font-size:clamp(16px,1.05vw,20px); }
+  .brand b { width:38px; height:38px; border-radius:12px; }
+  .brand svg { width:25px; }
+  .brand small { font-size:9px; }
+  .remote-status { margin-left:clamp(18px,2vw,32px); font-size:11px; }
+  .header-actions { gap:10px; }
+  .header-action,.account-button { width:44px; height:44px; border-radius:14px; }
+  .header-action svg { width:21px; }
+  .tab-bar { top:clamp(84px,11vh,108px); bottom:clamp(52px,6vh,68px); left:clamp(20px,1.6vw,30px); width:clamp(84px,5.2vw,100px); gap:8px; padding:9px; border-radius:22px; }
+  .tab-bar a { min-height:clamp(60px,6.7vh,72px); gap:5px; border-radius:15px; }
+  .tab-bar svg { width:clamp(23px,1.35vw,27px); height:clamp(23px,1.35vw,27px); }
+  .tab-bar small { font-size:clamp(9px,.62vw,11px); }
+  #view { padding:clamp(76px,8.5vh,92px) clamp(32px,3.1vw,60px) clamp(76px,8.5vh,100px) clamp(132px,9.1vw,166px); }
+  .pressable.tv-focus,.pressable:focus-visible,input.tv-focus,input:focus-visible,summary.tv-focus,summary:focus-visible { transform:scale(1.025); }
+  .tab-bar a.tv-focus,.tab-bar a:focus-visible { transform:scale(1.035); }
+  .poster.tv-focus,.poster:focus-visible { transform:scale(1.04); }
+  .hero { min-height:clamp(500px,57vh,610px); margin-inline:clamp(-60px,-3.1vw,-32px); padding:clamp(64px,7vh,82px) clamp(48px,4.3vw,82px) clamp(46px,6vh,68px); }
+  .hero-copy h1 { font-size:clamp(50px,4.3vw,64px); }
+  .primary,.glass-button,.load-more { min-height:clamp(50px,5.4vh,58px); border-radius:15px; padding:13px 21px; font-size:clamp(14px,1vw,17px); }
+  .poster-card { flex-basis:clamp(156px,9.2vw,180px); }
+  .poster-title { font-size:clamp(14px,.9vw,16px); }
+  .section-head h2 { font-size:clamp(25px,1.6vw,30px); }
+}
+
+/* Playback is an application mode. Hidden global chrome is also inert and unfocusable. */
+html.tv-playback-active .app-header,
+html.tv-playback-active .tab-bar,
+html.tv-playback-active .network-banner,
+html.tv-playback-active .remote-guide,
+body.tv-playback-active .app-header,
+body.tv-playback-active .tab-bar,
+body.tv-playback-active .network-banner,
+body.tv-playback-active .remote-guide { display:none!important; visibility:hidden!important; pointer-events:none!important; }
+html.tv-playback-active #app,
+body.tv-playback-active #app { min-height:100dvh; padding:0; background:#000; }
+html.tv-playback-active #view,
+body.tv-playback-active #view { min-height:100dvh; padding:0; overflow:hidden; }
+.tv-player-page { position:fixed; z-index:100; inset:0; display:block; min-height:100dvh; margin:0; background:#000; overflow:hidden; }
+.tv-player-page .player-header { position:absolute; z-index:4; top:0; right:0; left:0; grid-template-columns:auto 1fr auto; gap:12px; padding:clamp(14px,2.2vh,22px) clamp(22px,2.8vw,48px); background:linear-gradient(180deg,rgba(0,0,0,.84),transparent); border:0; }
+.tv-player-page .player-back,.tv-player-page .player-more { width:clamp(44px,3vw,54px); height:clamp(44px,3vw,54px); border-radius:15px; }
+.tv-player-page .player-header span { font-size:clamp(10px,.75vw,13px); }
+.tv-player-page .player-header strong { font-size:clamp(14px,1.15vw,18px); }
+.tv-player-page .player-stage { width:100%; height:100dvh; aspect-ratio:auto; background:#000; overflow:hidden; }
+.tv-player-page .player-stage iframe { display:block; width:100%; height:100%; border:0!important; outline:0; background:#000; }
+.tv-player-page .player-enter { right:clamp(22px,2vw,36px); bottom:clamp(22px,2.5vh,34px); min-height:48px; gap:9px; border-radius:15px; padding:10px 16px; font-size:clamp(13px,1vw,15px); }
+.tv-player-page .player-enter span { min-width:32px; height:28px; }
+.tv-player-page .server-row,.tv-player-page .player-tip { display:none; }
+html.tv-playback-active #sheet-root .bottom-sheet { width:min(430px,34vw); padding:30px 26px; border-radius:22px 0 0 22px; }
+html.tv-playback-active #sheet-root .bottom-sheet h2 { font-size:clamp(25px,1.8vw,32px); }
+html.tv-playback-active #sheet-root .sheet-server { min-height:58px; padding:10px 12px; border-radius:15px; }
+html.tv-playback-active #sheet-root .sheet-close { min-height:48px; }
+html.tv-playback-active .player-recovery,
+html.tv-playback-active .next-episode-card { right:clamp(24px,3vw,48px); bottom:clamp(24px,3vh,42px); width:min(560px,42vw); padding:18px; border-radius:18px; }
+html.tv-playback-active .player-recovery p,
+html.tv-playback-active .next-episode-card p { font-size:clamp(15px,1.2vw,18px); }
