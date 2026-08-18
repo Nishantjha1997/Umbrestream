@@ -1,6 +1,7 @@
 "use client";
 
 import PlayerPanel from "@/components/player/PlayerPanel";
+import type { AnimeProviderCatalogEntry } from "@/lib/sources/animeCatalog";
 import VaulDrawer from "@/components/ui/overlay/VaulDrawer";
 import type { PlayerSource } from "@/lib/sources/types";
 import { cn } from "@/utils/helpers";
@@ -15,6 +16,8 @@ export interface PlayerSourceSheetProps {
   switchingSourceId?: string | null;
   hasPreference?: boolean;
   onResetPreference?: () => void;
+  /** Anime providers that are known by the product but not active for this request. */
+  animeCatalog?: AnimeProviderCatalogEntry[];
   /** The parent commits the iframe swap before dismissing this overlay. */
   onSelect: (sourceId: string) => Promise<void> | void;
 }
@@ -27,6 +30,7 @@ export default function PlayerSourceSheet({
   switchingSourceId,
   hasPreference,
   onResetPreference,
+  animeCatalog,
   onSelect,
 }: PlayerSourceSheetProps) {
   // Do not mount Vaul's modal drawer on desktop. Hiding an open drawer with
@@ -130,7 +134,7 @@ export default function PlayerSourceSheet({
         ]
       : [{ label: "Video servers", sources }];
 
-    return groups
+    const renderedGroups = groups
       .filter((group) => group.sources.length > 0)
       .map((group) => (
         <section key={group.label} className="flex flex-col gap-2.5" aria-label={group.label}>
@@ -144,6 +148,54 @@ export default function PlayerSourceSheet({
           </div>
         </section>
       ));
+
+    if (!animeCatalog?.length || !hasAudioGroups) return renderedGroups;
+
+    const catalogRows = (variant: "sub" | "dub") =>
+      animeCatalog
+        .filter((entry) => entry.variants.includes(variant))
+        .filter(
+          (entry) =>
+            !sources.some(
+              (source) =>
+                source.audioVariant === variant &&
+                (source.providerId === entry.id || source.providerId.endsWith(`:${entry.id}`)),
+            ),
+        )
+        .map((entry) => (
+          <div
+            key={`${entry.id}:${variant}`}
+            className="grid min-h-14 w-full grid-cols-[auto_1fr_auto] items-center gap-3 rounded-[13px] border border-white/7 bg-white/[0.015] p-3.5 opacity-75"
+            aria-label={`${entry.label} ${variant === "dub" ? "Dub" : "Sub"} unavailable`}
+          >
+            <span className="size-[7px] rounded-full bg-white/25" aria-hidden />
+            <span className="flex min-w-0 flex-col gap-0.5">
+              <span className="truncate text-[13.5px] font-medium text-white/80">
+                {entry.label} {variant === "dub" ? "Dub" : "Sub"}
+              </span>
+              <span className="truncate text-[11px] text-white/38">
+                Additional source · waiting for a configured provider API
+              </span>
+            </span>
+            <span className="text-right text-[9.5px] font-medium tracking-[.08em] text-white/35 uppercase">
+              Not connected
+            </span>
+          </div>
+        ));
+
+    return renderedGroups.map((groupNode, index) => {
+      const variant = groups[index]?.label === "Dub servers" ? "dub" : "sub";
+      const rows = catalogRows(variant);
+      if (!rows.length) return groupNode;
+      return (
+        <div key={groups[index]?.label ?? index} className="flex flex-col gap-2.5">
+          {groupNode}
+          <div className="flex flex-col gap-2.5" aria-label={`${variant === "dub" ? "Dub" : "Sub"} catalog sources`}>
+            {rows}
+          </div>
+        </div>
+      );
+    });
   };
 
   const resetPreference = hasPreference && onResetPreference && (

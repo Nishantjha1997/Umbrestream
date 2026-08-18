@@ -48,6 +48,7 @@ import { usePlayerChromeVisibility } from "@/hooks/usePlayerChromeVisibility";
 import { usePlayerEvents, type PlayerEventIdentity } from "@/hooks/usePlayerEvents";
 import { trackUmbraEvent } from "@/lib/analytics/client";
 import { createPublicEmbedSources } from "@/lib/sources/adapters/embed";
+import { ANIME_PROVIDER_CATALOG } from "@/lib/sources/animeCatalog";
 import { legacySourceId } from "@/lib/sources/legacy";
 import {
   clearPlaybackPreference,
@@ -89,6 +90,8 @@ export interface PlayerShellProps {
   renderExtras?: (context: PlayerShellHeaderContext) => ReactNode;
   onEnded?: () => void;
   onAudioVariantChange?: (audioVariant: AudioVariant) => void;
+  /** Render the initial stage in the route flow instead of as a body portal. */
+  inlineLayout?: boolean;
 }
 
 type PlayerDisplayMode = "fit" | "fill";
@@ -116,18 +119,11 @@ export default function PlayerShell({
   renderExtras,
   onEnded,
   onAudioVariantChange,
+  inlineLayout = false,
 }: PlayerShellProps) {
   const [mounted, setMounted] = useState(false);
   // Standard one-tick-late mount guard for `createPortal` — see `DetailModal.tsx`.
   useEffect(() => setMounted(true), []);
-
-  useEffect(() => {
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, []);
 
   const [sourceOpened, setSourceOpened] = useState(false);
   const sourceOpenerRef = useRef<HTMLElement | null>(null);
@@ -192,6 +188,15 @@ export default function PlayerShell({
     document.addEventListener("fullscreenchange", syncFullscreen);
     return () => document.removeEventListener("fullscreenchange", syncFullscreen);
   }, [setPlaybackOrientation]);
+
+  useEffect(() => {
+    if (!isFullscreen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isFullscreen]);
 
   useEffect(() => {
     return () => {
@@ -754,13 +759,15 @@ export default function PlayerShell({
 
   if (!mounted) return null;
 
-  return createPortal(
+  const playerContent = (
     <div
       ref={playerRootRef}
       className={`player-shell player-shell-${displayMode} ${
         isFullscreen
           ? "fixed inset-0 z-70 h-dvh w-full"
-          : "fixed inset-x-0 top-0 z-70 mx-auto aspect-video w-full max-w-[min(100vw,1600px)]"
+          : inlineLayout
+            ? "relative z-30 mx-auto aspect-video w-full max-w-[min(100vw,1600px)]"
+            : "fixed inset-x-0 top-0 z-70 mx-auto aspect-video w-full max-w-[min(100vw,1600px)]"
       } overflow-hidden bg-black`}
     >
       {selectedSource ? (
@@ -889,13 +896,15 @@ export default function PlayerShell({
         opened={sourceOpened}
         onClose={closeSource}
         sources={sources}
+        animeCatalog={request.mediaType === "anime" ? ANIME_PROVIDER_CATALOG : undefined}
         selectedSourceId={selectedSource?.id ?? ""}
         switchingSourceId={switchingSourceId}
         hasPreference={Boolean(rememberedSourceId)}
         onResetPreference={resetPreferredSource}
         onSelect={selectSource}
       />
-    </div>,
-    document.body,
+    </div>
   );
+
+  return inlineLayout ? playerContent : createPortal(playerContent, document.body);
 }

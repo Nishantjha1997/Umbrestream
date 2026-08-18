@@ -74,35 +74,47 @@ const AnimePlayer: React.FC<AnimePlayerProps> = ({ anime, episode, startAt }) =>
   );
 
   return (
-    <PlayerShell
-      request={request}
-      identity={identity}
-      historyMetadata={{ episode }}
-      onAudioVariantChange={changeAudio}
-      renderHeader={({ selectedSourceId, selectedAudioVariant, onOpenSource, chromeHidden }) => (
-        <AnimePlayerHeader
-          id={anime.id}
-          animeTitle={animeTitle}
-          episode={episode}
-          totalEpisodes={anime.episodes}
-          selectedSource={selectedSourceId}
-          audioVariant={selectedAudioVariant ?? audio}
-          onOpenSource={onOpenSource}
-          onOpenEpisode={episodeHandlers.open}
-          hidden={chromeHidden}
-        />
-      )}
-      renderExtras={({ selectedSourceId, selectedAudioVariant }) => (
-        <AnimePlayerEpisodeSheet
-          opened={episodeOpened}
-          onClose={episodeHandlers.close}
-          anime={anime}
-          currentEpisode={episode}
-          selectedSourceId={selectedSourceId}
-          audioVariant={selectedAudioVariant ?? audio}
-        />
-      )}
-    />
+    <div className="mx-auto flex w-full max-w-[min(100vw,1600px)] flex-col">
+      <PlayerShell
+        request={request}
+        identity={identity}
+        inlineLayout
+        historyMetadata={{ episode }}
+        onAudioVariantChange={changeAudio}
+        renderHeader={({ selectedSourceId, selectedAudioVariant, onOpenSource, chromeHidden }) => (
+          <AnimePlayerHeader
+            id={anime.id}
+            animeTitle={animeTitle}
+            episode={episode}
+            totalEpisodes={anime.episodes}
+            selectedSource={selectedSourceId}
+            audioVariant={selectedAudioVariant ?? audio}
+            onOpenSource={onOpenSource}
+            onOpenEpisode={episodeHandlers.open}
+            hidden={chromeHidden}
+          />
+        )}
+        renderExtras={({ selectedSourceId, selectedAudioVariant }) => (
+          <AnimePlayerEpisodeSheet
+            opened={episodeOpened}
+            onClose={episodeHandlers.close}
+            anime={anime}
+            currentEpisode={episode}
+            selectedSourceId={selectedSourceId}
+            audioVariant={selectedAudioVariant ?? audio}
+          />
+        )}
+      />
+      <AnimePlayerEpisodeSheet
+        opened
+        onClose={() => undefined}
+        anime={anime}
+        currentEpisode={episode}
+        selectedSourceId={undefined}
+        audioVariant={audio}
+        inline
+      />
+    </div>
   );
 };
 

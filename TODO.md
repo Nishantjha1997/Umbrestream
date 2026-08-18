@@ -1031,13 +1031,21 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `153af67`
   - Completed: 2026-08-18
 
-- [ ] SF-196 — Fix off-screen web anime player and source controls
-  - Status: in progress
+- [x] SF-196 — Fix off-screen web anime player and source controls
+  - Status: completed
   - Priority: P0
   - Depends on: SF-100, SF-151
-  - Evidence: Production reproduction showed the portal-mounted player below the route's `min-h-dvh` container; on a 390×844 viewport the player stage was at document position `y=844` and the iframe was not in the visible route area. The Source button existed but was attached to that displaced stage.
+  - Evidence: Production deployment `dpl_EUwggePWmcSgCGeXNvqrXHMSBpFV` returned `readyState: READY`; desktop 1280×720 and mobile 390×844 checks confirmed `scrollY=0`, a visible 16:9 stage, Source control visibility, source-sheet opening, and Cinezo↔VidNest source URL switching.
+  - Commit: `fb69ed4`
+  - Completed: 2026-08-18
+
+- [ ] SF-197 — Restore framed anime player page and expose provider catalog
+  - Status: in progress
+  - Priority: P0
+  - Depends on: SF-196
+  - Evidence: User reproduction confirms the player still consumes the whole route and the picker only exposes three live providers per audio variant; the requested Anivexa/Miruro provider names are not visible when those optional API origins are not configured.
   - Commit: —
-  - Next action: keep the non-fullscreen stage fixed at the top of the viewport, then verify desktop/mobile player geometry, source picker opening, and source switching after deployment
+  - Next action: render anime playback inline in normal document flow, add the persistent next-episode/all-episodes section, and show requested provider names as disabled until a validated API candidate exists
 
 ## Final test and rollout
 
