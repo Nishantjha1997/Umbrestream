@@ -855,28 +855,29 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Completed: 2026-08-18
 
 - [ ] SF-170 — Run deterministic player and TV UI regression checks
-  - Status: in progress
+  - Status: completed
   - Priority: P0
   - Depends on: SF-167, SF-169
-  - Evidence: —
-  - Commit: —
-  - Next action: run typecheck, lint, production build, player/source contracts, episode resolver, leak scan, and release checks
+  - Evidence: `pnpm run typecheck`, `pnpm run lint`, `pnpm run test:player-sources`, `pnpm run test:episode-resolver`, `pnpm run test:update-manifests`, `pnpm run check:release-artifacts`, `pnpm run check:leak`, `pnpm run build`, and `git diff --check` passed; preview and production browser smoke verified the borderless 16:9 stage, Fit/Fill controls, no iframe remount during framing changes, explicit fullscreen stage, and always-reachable Source action
+  - Commit: pending
+  - Completed: 2026-08-18
 
 - [ ] SF-171 — Run provider and connected-device playback QA
-  - Status: not started
+  - Status: in progress
   - Priority: P0
   - Depends on: SF-170
-  - Evidence: —
-  - Commit: —
-  - Next action: test real categories, phone playback/orientation, TV layout, Fit/Fill, and recovery
+  - Evidence: production route smoke mounted two movie fixtures, two TV fixtures, and two anime fixtures with separate Sub/Dub routes; source URLs and provider selections were recorded without `No playable source found`; this confirms source resolution and mounting, not guaranteed third-party video playback
+  - Commit: pending
+  - Next action: connect the physical Android phone and run signed-APK playback, Fit/Fill, fullscreen/orientation, Back, reload/resume, and updater checks; use an Android TV emulator if provisioned
+  - Blocker: `adb devices` currently reports no attached phone and no Android TV emulator is provisioned; physical Android TV certification is unavailable
 
-- [ ] SF-172 — Publish production website/APKs and update handoff
-  - Status: not started
+- [x] SF-172 — Publish production website/APKs and update handoff
+  - Status: completed
   - Priority: P0
   - Depends on: SF-171
-  - Evidence: —
-  - Commit: —
-  - Next action: deploy umbrestream to Vercel, verify Ready and download metadata, then document release
+  - Evidence: Vercel production deployment `https://umbrestream-l0nyvg9fp-nishants-projects-7d9628b2.vercel.app` returned `Ready` and is aliased to `https://streamfree.online`; live phone/TV manifests return HTTP 200 and match release versions, package IDs, hashes, and sizes; APK routes return `application/vnd.android.package-archive` with the expected filenames; app pages show phone `1.3.2` and TV `1.2.2`; handoff records release and QA evidence
+  - Commit: pending
+  - Completed: 2026-08-18
 
 - [x] SF-173 — Make web initial playback stage explicit
   - Status: completed

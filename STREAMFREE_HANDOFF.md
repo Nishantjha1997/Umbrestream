@@ -894,3 +894,45 @@ The fix is deployed in Vercel production deployment
 to `https://streamfree.online`. The available QA browser session was signed out during verification,
 so authenticated mutation and Undo behavior remain explicitly unclaimed until a signed-in session is
 available.
+
+## 25. Player and Android TV experience release — 2026-08-18
+
+The player/TV experience release is deployed to production. Vercel deployment
+`https://umbrestream-l0nyvg9fp-nishants-projects-7d9628b2.vercel.app` returned `Ready` and is aliased to
+`https://streamfree.online`. The prior Vercel deployments remain available for rollback.
+
+Web and generated native clients now include:
+
+- A borderless initial 16:9 cinema stage with black framing and no page-level player margins.
+- Device-local Fit/Fill display preference. Fit preserves the whole frame; Fill scales the StreamFree-owned
+  viewport to the available bounds without remounting the provider iframe or changing its URL.
+- Explicit app-owned fullscreen handling, with the web stage becoming fixed to the viewport only after
+  Full screen is requested.
+- A persistent StreamFree-owned Source action so provider selection remains reachable after temporary player
+  chrome fades.
+- Phone/TV native black window surfaces and immersive system-bar handling. TV playback mode hides and removes
+  global chrome from focus instead of placing it above the player.
+- Responsive TV 720p/1080p/4K sizing tokens and compact playback overlays.
+
+Release artifacts published at `/downloads`:
+
+- Phone `1.3.2`, code `6`, package `online.streamfree.app`, SHA-256
+  `5B0B9CDDC36CEFFA72D0EE7733C609A83E6F73351D8840CEE62C581B58186653`, size `3347279` bytes,
+  certificate SHA-256 `4218B5F726FD4D61703B2112D7A41C77B93F215F1C1DC85560BAB86A6FB38EF4`.
+- TV `1.2.2`, code `5`, package `online.streamfree.tv`, SHA-256
+  `D035E163E033E822AB493F85B679B7EFBBB51518C18157E46CD8C7752A08DAC7`, size `3375097` bytes,
+  certificate SHA-256 `7D5C1BB46BA3CE888C56E9CF1F39F86F65BC502BCD5480B0F8CF4663C80779D7`.
+
+Production verification confirmed both manifests and APKs return HTTP 200, the manifests match the local
+artifact hashes/sizes/version codes, APKs use `application/vnd.android.package-archive`, and the phone/TV
+download pages expose the new release versions. Deterministic checks passed: TypeScript, authored lint,
+player-source contracts, episode resolver, update-manifest validation, release-artifact validation, leak scan,
+production build, and `git diff --check`.
+
+Browser smoke verification covered the production movie source picker and the real-title route matrix:
+two movies, two TV fixtures, and two anime fixtures with separate Sub and Dub routes. Source mounting and
+URL/provider selection were confirmed; these checks do not claim that a third-party provider will always start
+or remain playable. The physical-device gate remains open: `adb devices` currently reports no connected phone,
+and no Android TV emulator is provisioned. Next action is to connect the phone and run signed-APK playback,
+Fit/Fill, fullscreen/orientation, Back, reload/resume, and updater checks. Physical Android TV certification is
+not available; an emulator is the planned substitute.
