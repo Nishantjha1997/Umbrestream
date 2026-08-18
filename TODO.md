@@ -916,7 +916,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-180
   - Evidence: Home now has a responsive Anime Mode CTA and `/anime` renders a dedicated themed shell with focused Anime navigation.
-  - Commit: —
+  - Commit: `dad4f6e`
   - Completed: 2026-08-18
 
 - [x] SF-182 — Define the server-side anime provider adapter contract
@@ -924,7 +924,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-180
   - Evidence: `src/lib/sources/adapters/animeRemote.ts` normalizes documented episode/watch payloads into allowlisted `PlayerSource` candidates with stable provider IDs and Sub/Dub audio variants.
-  - Commit: —
+  - Commit: `dad4f6e`
   - Completed: 2026-08-18
 
 - [x] SF-183 — Integrate configurable Anivexa and Miruro APIs
@@ -932,7 +932,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-182
   - Evidence: `ANIVEXA_API_BASE_URL`, `MIRURO_API_BASE_URL`, and `STREAMFREE_ANIME_ALLOWED_ORIGINS` gate server-only fetches; incomplete configuration returns no remote candidates and existing public sources remain available.
-  - Commit: —
+  - Commit: `dad4f6e`
   - Completed: 2026-08-18
 
 - [x] SF-184 — Add Anime Sub/Dub provider groups and source labels
@@ -940,7 +940,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-183
   - Evidence: provider labels include ReAnime, AniKoto, AnimeGG, AniNeko, 2DHive, AniZone, AnimeCG, AnimeNoSub, MegaPlay, and Miruro; candidates carry `audioVariant` and flow through the existing grouped source sheet.
-  - Commit: —
+  - Commit: `dad4f6e`
   - Completed: 2026-08-18
 
 - [x] SF-185 — Add AniList account connection and sync foundation
@@ -988,7 +988,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-181, SF-184
   - Evidence: Home Anime Mode CTA added to both native shells; allowlisted HLS/MP4/DASH candidates render in native video with playback/error/end events; `node --check mobile/app.js`, `node --check tv/app.js`, `pnpm run mobile:build`, `pnpm run tv:build`, `pnpm run test:anime-integrations`, `pnpm run typecheck`, and `pnpm run lint` pass
-  - Commit: —
+  - Commit: `752f9d9`
   - Completed: 2026-08-18
 
 ## Final test and rollout
