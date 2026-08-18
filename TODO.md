@@ -943,37 +943,37 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: —
   - Completed: 2026-08-18
 
-- [ ] SF-185 — Add AniList account connection and sync foundation
-  - Status: not started
+- [x] SF-185 — Add AniList account connection and sync foundation
+  - Status: completed
   - Priority: P1
   - Depends on: SF-181
-  - Evidence: —
-  - Commit: —
-  - Next action: implement state/PKCE-safe OAuth routes and a disabled-until-configured account card
+  - Evidence: AniList start/callback routes validate signed-in Supabase session and state, exchange the official OAuth code, fetch Viewer identity, and encrypt access tokens before upsert; Space shows a configuration-aware connect card.
+  - Commit: `pending`
+  - Completed: 2026-08-18
 
-- [ ] SF-186 — Add MyAnimeList account connection and sync foundation
-  - Status: not started
+- [x] SF-186 — Add MyAnimeList account connection and sync foundation
+  - Status: completed
   - Priority: P1
   - Depends on: SF-181
-  - Evidence: —
-  - Commit: —
-  - Next action: implement PKCE OAuth routes and a disabled-until-configured account card
+  - Evidence: MyAnimeList start/callback routes use state plus S256 PKCE, exchange the authorization code server-side, fetch the user profile, and encrypt access/refresh tokens before upsert; Space shows a configuration-aware connect card.
+  - Commit: `pending`
+  - Completed: 2026-08-18
 
-- [ ] SF-187 — Add in-app new-episode notification foundation
-  - Status: not started
+- [x] SF-187 — Add in-app new-episode notification foundation
+  - Status: completed
   - Priority: P1
   - Depends on: SF-183
-  - Evidence: —
-  - Commit: —
-  - Next action: define notification records from Continue Watching/history and add a visible notification state
+  - Evidence: Authenticated `/api/anime/notifications` derives newest released episodes from anime history, stores deduplicated notification rows through the service role, and Anime Mode exposes an unread panel with mark-read actions.
+  - Commit: `pending`
+  - Completed: 2026-08-18
 
 - [ ] SF-188 — Add optional web/push delivery and episode polling
-  - Status: not started
+  - Status: in progress
   - Priority: P1
   - Depends on: SF-187
-  - Evidence: —
-  - Commit: —
-  - Next action: add a Vercel-safe scheduled job contract; keep delivery disabled until provider credentials are configured
+  - Evidence: Anime Mode polls the notification endpoint every 15 minutes while open. Background web push/native delivery is intentionally not enabled without an authorized VAPID/FCM delivery configuration.
+  - Commit: `pending`
+  - Next action: configure and test an authorized push delivery channel or keep in-app notifications as the documented release behavior
 
 - [ ] SF-189 — Test Anime Mode, provider contracts, auth, and notifications
   - Status: not started

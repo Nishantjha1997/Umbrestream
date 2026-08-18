@@ -11,6 +11,13 @@ export const env = createEnv({
     TMDB_ACCESS_TOKEN: z.string().optional().default(""),
     PLAYER_DIRECT_SOURCES_JSON: z.string().optional().default(""),
     PLAYER_SUBTITLE_HOSTS: z.string().optional().default(""),
+    ANIVEXA_API_BASE_URL: z.string().optional().default(""),
+    MIRURO_API_BASE_URL: z.string().optional().default(""),
+    STREAMFREE_ANIME_ALLOWED_ORIGINS: z.string().optional().default(""),
+    ANILIST_CLIENT_ID: z.string().optional().default(""),
+    ANILIST_CLIENT_SECRET: z.string().optional().default(""),
+    MAL_CLIENT_ID: z.string().optional().default(""),
+    OAUTH_TOKEN_ENCRYPTION_KEY: z.string().optional().default(""),
   },
   client: {
     NEXT_PUBLIC_SUPABASE_URL: z.string().optional().default(""),

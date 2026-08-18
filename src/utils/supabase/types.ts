@@ -190,6 +190,75 @@ export type Database = {
         };
         Relationships: [];
       };
+      anime_linked_accounts: {
+        Row: {
+          user_id: string;
+          provider: "anilist" | "mal";
+          provider_user_id: string;
+          provider_username: string | null;
+          access_token_ciphertext: string;
+          refresh_token_ciphertext: string | null;
+          expires_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          provider: "anilist" | "mal";
+          provider_user_id: string;
+          provider_username?: string | null;
+          access_token_ciphertext: string;
+          refresh_token_ciphertext?: string | null;
+          expires_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          provider?: "anilist" | "mal";
+          provider_user_id?: string;
+          provider_username?: string | null;
+          access_token_ciphertext?: string;
+          refresh_token_ciphertext?: string | null;
+          expires_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      anime_episode_notifications: {
+        Row: {
+          id: number;
+          user_id: string;
+          anilist_id: number;
+          title: string;
+          episode: number;
+          aired_at: string | null;
+          read_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: number;
+          user_id: string;
+          anilist_id: number;
+          title: string;
+          episode: number;
+          aired_at?: string | null;
+          read_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: number;
+          user_id?: string;
+          anilist_id?: number;
+          title?: string;
+          episode?: number;
+          aired_at?: string | null;
+          read_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;

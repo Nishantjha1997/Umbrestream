@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Anime, ArrowLeft, Server } from "@/utils/icons";
+import AnimeNotifications from "@/components/sections/Anime/AnimeNotifications";
 
 interface AnimeModeShellProps {
   children: ReactNode;
@@ -24,6 +25,7 @@ export default function AnimeModeShell({ children }: AnimeModeShellProps) {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <AnimeNotifications />
           <Link href="/anime/discover" prefetch={false} className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/12 bg-white/6 px-4 text-[12px] font-medium text-white/75 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-fuchsia-200/75 focus-visible:outline-none">
             <Server size={14} aria-hidden="true" />
             Discover

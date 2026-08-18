@@ -13,6 +13,7 @@ import {
 import { FiBarChart2 } from "react-icons/fi";
 import { getAdminAccess } from "@/lib/admin";
 import RegionPreference from "@/components/sections/Settings/RegionPreference";
+import AnimeConnections from "@/components/sections/Settings/AnimeConnections";
 
 export const metadata: Metadata = { title: `My Space | ${siteConfig.name}` };
 
@@ -102,6 +103,7 @@ export default async function MySpacePage() {
         </p>
         <RegionPreference />
       </section>
+      <AnimeConnections />
     </div>
   );
 }
