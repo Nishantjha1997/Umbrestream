@@ -1043,3 +1043,9 @@ all requested Anivexa provider labels, nested Miruro provider payloads, Sub/Dub 
 track normalization, rejection of unallowlisted and cleartext streams, non-anime rejection, and the
 origin allowlist gate before an optional API is queried. The corresponding adapter change must be
 deployed before it is considered live; the release task board records that follow-up deployment.
+
+The adapter hardening was deployed in Vercel production deployment
+`dpl_BStWz2stsDZCDEvhTDFSQyeNuzWk`, which returned `READY` and was aliased to
+`https://streamfree.online`. Live `/anime` and `/api/mobile/home` returned HTTP 200. The live player
+source contract returned six existing anime sources with `fallbackMode: prompt`; optional Anivexa and
+Miruro sources were intentionally absent because no authorized API origins are configured in Vercel.

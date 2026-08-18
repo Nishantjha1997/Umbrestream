@@ -1024,12 +1024,12 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Completed: 2026-08-18
 
 - [ ] SF-195 — Deploy Anime adapter allowlist hardening
-  - Status: in progress
+  - Status: completed
   - Priority: P0
   - Depends on: SF-194
-  - Evidence: —
-  - Commit: —
-  - Next action: commit the adapter/test change, deploy the linked `umbrestream` project, and verify the new production deployment is Ready
+  - Evidence: Vercel deployment `dpl_BStWz2stsDZCDEvhTDFSQyeNuzWk` returned `readyState: READY` and was aliased to `https://streamfree.online`; live `/anime` and `/api/mobile/home` returned HTTP 200, and the player source contract returned six existing anime sources with `fallbackMode: prompt`.
+  - Commit: pending
+  - Completed: 2026-08-18
 
 ## Final test and rollout
 
