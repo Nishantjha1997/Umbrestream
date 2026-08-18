@@ -891,7 +891,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-100, SF-101
   - Evidence: web PlayerShell now keeps an accessible Source action beside Fit/Fill/Full screen, so source selection does not depend on the temporary chrome-reveal timer
-  - Commit: `pending`
+  - Commit: `746b75f`
   - Completed: 2026-08-18
 
 ## Final test and rollout
