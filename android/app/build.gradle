@@ -9,8 +9,8 @@ android {
         applicationId legacyMigration ? "com.umbrestream.app" : "online.streamfree.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 5
-        versionName legacyMigration ? "1.3.1-migration" : "1.3.1"
+        versionCode 6
+        versionName legacyMigration ? "1.3.2-migration" : "1.3.2"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.

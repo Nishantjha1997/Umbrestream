@@ -846,21 +846,21 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `cc4f64a`
   - Completed: 2026-08-18
 
-- [ ] SF-169 — Build and verify phone 1.3.2/code 6 and TV 1.2.2/code 5
-  - Status: in progress
+- [x] SF-169 — Build and verify phone 1.3.2/code 6 and TV 1.2.2/code 5
+  - Status: completed
   - Priority: P0
   - Depends on: SF-168
-  - Evidence: —
-  - Commit: —
-  - Next action: commit the signed APKs, manifests, synchronized website download pages, and release evidence
+  - Evidence: signed release builds passed v2/v3 verification; phone `online.streamfree.app` code 6/version 1.3.2 SHA-256 `5B0B9CDDC36CEFFA72D0EE7733C609A83E6F73351D8840CEE62C581B58186653`; TV `online.streamfree.tv` code 5/version 1.2.2 SHA-256 `D035E163E033E822AB493F85B679B7EFBBB51518C18157E46CD8C7752A08DAC7`; manifest and release-artifact checks passed
+  - Commit: `pending`
+  - Completed: 2026-08-18
 
 - [ ] SF-170 — Run deterministic player and TV UI regression checks
-  - Status: not started
+  - Status: in progress
   - Priority: P0
   - Depends on: SF-167, SF-169
   - Evidence: —
   - Commit: —
-  - Next action: run typecheck, lint, production build, artifact checks, and viewport smoke tests
+  - Next action: run typecheck, lint, production build, player/source contracts, episode resolver, leak scan, and release checks
 
 - [ ] SF-171 — Run provider and connected-device playback QA
   - Status: not started

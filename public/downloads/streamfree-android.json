@@ -2,20 +2,20 @@
   "platform": "android",
   "schemaVersion": 1,
   "packageId": "online.streamfree.app",
-  "versionName": "1.3.1",
-  "versionCode": 5,
-  "apkUrl": "/downloads/StreamFree-Android-v1.3.1.apk",
-  "sha256": "A19B3ED6E96FDA0DA2E0E5B5FD08BC19B5987599F77B2C4120E2C96C631241E9",
-  "sizeBytes": 3344756,
+  "versionName": "1.3.2",
+  "versionCode": 6,
+  "apkUrl": "/downloads/StreamFree-Android-v1.3.2.apk",
+  "sha256": "5B0B9CDDC36CEFFA72D0EE7733C609A83E6F73351D8840CEE62C581B58186653",
+  "sizeBytes": 3347279,
   "signingCertificateSha256": "4218B5F726FD4D61703B2112D7A41C77B93F215F1C1DC85560BAB86A6FB38EF4",
-  "publishedAt": "2026-08-17T12:00:00.000Z",
+  "publishedAt": "2026-08-18T12:00:00.000Z",
   "minimumSupportedVersion": 1,
   "mandatory": false,
-  "freshInstallRequired": true,
-  "releaseNotes": ["Fresh install required after the signing reset.", "Faster navigation and more reliable playback recovery."],
+  "freshInstallRequired": false,
+  "releaseNotes": ["Borderless 16:9 playback stage with Fit and Fill display modes.", "Improved fullscreen orientation and black immersive playback window.", "Faster navigation and more reliable playback recovery."],
   "notes": [
-    "Landscape full-screen playback with portrait restore",
-    "Faster startup and regional discovery shelves",
-    "Skippable first-launch tour"
+    "Fit preserves the whole frame; Fill zooms to the screen and remembers your choice",
+    "Fullscreen locks landscape and restores portrait safely",
+    "Existing canonical installs can update in place"
   ]
 }

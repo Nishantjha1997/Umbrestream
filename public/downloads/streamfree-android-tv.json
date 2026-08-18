@@ -2,20 +2,20 @@
   "platform": "android-tv",
   "schemaVersion": 1,
   "packageId": "online.streamfree.tv",
-  "versionName": "1.2.1",
-  "versionCode": 4,
-  "apkUrl": "/downloads/StreamFree-TV-v1.2.1.apk",
-  "sha256": "BA2BDB9E65176D1C250DFABDFFA78C90C2F57DDB63130FD80FAC6C31B6BB5969",
-  "sizeBytes": 3373310,
+  "versionName": "1.2.2",
+  "versionCode": 5,
+  "apkUrl": "/downloads/StreamFree-TV-v1.2.2.apk",
+  "sha256": "D035E163E033E822AB493F85B679B7EFBBB51518C18157E46CD8C7752A08DAC7",
+  "sizeBytes": 3375097,
   "signingCertificateSha256": "7D5C1BB46BA3CE888C56E9CF1F39F86F65BC502BCD5480B0F8CF4663C80779D7",
-  "publishedAt": "2026-08-17T12:00:00.000Z",
+  "publishedAt": "2026-08-18T12:00:00.000Z",
   "minimumSupportedVersion": 1,
   "mandatory": false,
-  "freshInstallRequired": true,
-  "releaseNotes": ["Fresh install required after the signing reset.", "Immersive TV playback and clearer episode progression."],
+  "freshInstallRequired": false,
+  "releaseNotes": ["Immersive playback now removes global navigation from rendering and TV focus.", "Compact 10-foot overlay and responsive TV sizing for 720p, 1080p, and 4K.", "Clearer episode progression and remote-friendly playback controls."],
   "notes": [
-    "Immersive landscape playback by default",
-    "Automatic next-episode progression",
-    "Regional discovery and skippable first-launch tour"
+    "Playback opens in landscape with a focused, compact overlay",
+    "Back restores the previous TV navigation focus",
+    "Existing canonical installs can update in place"
   ]
 }
