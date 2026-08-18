@@ -273,7 +273,9 @@ export default function PlayerShell({
     fetch(`/api/player/sources?${directSourceParams(request)}`, { signal: controller.signal })
       .then((res) => (res.ok ? (res.json() as Promise<SourceResolutionResponse>) : null))
       .then((data) => {
-        const direct = data?.sources.filter((s) => s.providerId === "direct") ?? [];
+        const direct = data?.sources.filter(
+          (s) => s.providerId === "direct" || s.providerId === "anivexa" || s.providerId === "miruro" || s.providerId.startsWith("anivexa:") || s.providerId.startsWith("miruro:"),
+        ) ?? [];
         if (direct.length) setDirectResult({ key, sources: direct });
       })
       .catch(() => undefined)

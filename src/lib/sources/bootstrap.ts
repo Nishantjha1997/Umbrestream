@@ -1,5 +1,6 @@
 import { createDirectAdapter, type DirectEntry } from "./adapters/direct";
 import { createEmbedAdapters } from "./adapters/embed";
+import { createAnimeRemoteAdapters } from "./adapters/animeRemote";
 import { isRegistered, register } from "./registry";
 
 /**
@@ -48,5 +49,9 @@ if (!isRegistered("direct")) {
 }
 
 for (const adapter of createEmbedAdapters()) {
+  if (!isRegistered(adapter.id)) register(adapter);
+}
+
+for (const adapter of createAnimeRemoteAdapters()) {
   if (!isRegistered(adapter.id)) register(adapter);
 }

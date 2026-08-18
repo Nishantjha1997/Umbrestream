@@ -5,7 +5,7 @@ Movie, TV, and Anime playback use one adapter registry. Public iframe sources ar
 ## Current registry
 
 - Movie/TV: Filmu is the trial default, followed by Cinezo, VidLink, VidKing, Vidrift, Vidbolt, and Videasy.
-- Anime: VidLink sub/dub via MAL ID and Cinezo sub/dub via AniList ID.
+- Anime: VidLink sub/dub via MAL ID and Cinezo sub/dub via AniList ID. Optional server-side Anivexa and MiruroAPI adapters can add ReAnime, AniKoto, AnimeGG, AniNeko, 2DHive, AniZone, AnimeCG, MegaPlay, and other documented provider entries while preserving separate Sub/Dub groups.
 - Experimental Anime routes for Vidrift, Vidbolt, Videasy, and Filmu require an explicit `animeTmdbId`; they are excluded when that mapping is unavailable.
 - Authorized direct HLS, DASH, and MP4 entries can be supplied with `PLAYER_DIRECT_SOURCES_JSON` and play in Umbra's native player.
 
@@ -48,7 +48,24 @@ The stream must be authorized for the site and expose browser-compatible CORS he
 
 1. Add an adapter under `adapters/` and assign a stable provider identity and tier.
 2. Validate identifiers in `supports()` and return no candidate when requirements are missing.
-3. Keep public embed resolution synchronous; asynchronous authenticated resolvers belong on the server.
+3. Keep public embed resolution synchronous; asynchronous provider API resolvers belong on the server.
 4. Add URL, ordering, missing-ID, audio, subtitle, and fallback fixtures to `scripts/check-player-sources.mjs`.
 
 Do not accept arbitrary stream URLs from requests, expose provider secrets, copy private endpoints, or bypass provider protections.
+
+## Optional Anime API configuration
+
+The Anivexa and Miruro adapters are disabled unless the server provides all of
+the following:
+
+- `ANIVEXA_API_BASE_URL` and/or `MIRURO_API_BASE_URL`, using HTTPS.
+- `STREAMFREE_ANIME_ALLOWED_ORIGINS`, a comma-separated exact-origin allowlist
+  containing the API origin and every authorized stream/subtitle origin the
+  API is permitted to return.
+
+The adapters call only the documented episode/watch routes, reject non-HTTPS or
+non-allowlisted URLs, and return no candidate when configuration is incomplete.
+They do not copy provider resolvers, inspect protected HTML, or bypass provider
+access controls. Vercel deployment should use a separately operated,
+authorized API instance; free/serverless provider deployments may be blocked or
+too slow for reliable playback.

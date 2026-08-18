@@ -23,10 +23,12 @@ import StillWatching from "./StillWatching";
 import Tonight from "./Tonight";
 import VibeTiles from "./VibeTiles";
 import HomeDiscoveryFeed from "@/components/sections/Home/HomeDiscoveryFeed";
+import AnimeModeEntry from "@/components/sections/Home/AnimeModeEntry";
 
 export default function PhoneHome() {
   return (
     <div id="phone-home-top" className="-mx-3 flex flex-col gap-9 sm:-mx-5">
+      <AnimeModeEntry />
       <ResumeHero />
       <StillWatching />
       <HomeDiscoveryFeed idPrefix="phone" variant="phone" />

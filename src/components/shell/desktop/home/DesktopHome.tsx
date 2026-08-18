@@ -15,10 +15,12 @@ import StillWatchingDesktop from "./StillWatchingDesktop";
 import TonightInset from "./TonightInset";
 import VibeTilesDesktop from "./VibeTilesDesktop";
 import HomeDiscoveryFeed from "@/components/sections/Home/HomeDiscoveryFeed";
+import AnimeModeEntry from "@/components/sections/Home/AnimeModeEntry";
 
 export default function DesktopHome() {
   return (
     <div id="desktop-home-top" className="relative flex flex-col gap-[42px] pb-16">
+      <AnimeModeEntry />
       <DesktopHero />
       <StillWatchingDesktop />
       <HomeDiscoveryFeed idPrefix="desktop" variant="desktop" />

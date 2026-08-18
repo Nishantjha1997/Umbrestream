@@ -145,3 +145,13 @@ Testing runs after implementation tasks:
 7. Confirm Vercel status is `Ready` and production routes, APIs, service worker, playback, manifests, APK hashes, and analytics.
 8. Preserve the previous Vercel deployment and APKs for rollback.
 9. Update `TODO.md` and `STREAMFREE_HANDOFF.md` with final evidence, release hashes, deployment ID, known provider limits, and deferred TV hardware certification.
+
+## Anime Mode expansion (2026-08-18)
+
+- Add a dedicated Anime Mode entry point from Home and a route-level anime shell with its own visual language while preserving the existing shared playback core.
+- Do not copy Anilili source or assets unless a source-bearing, appropriately licensed repository is provided. The inspected checkout contains documentation/showcase material only, so StreamFree implements the requested interaction model natively.
+- Integrate Anivexa and Miruro only through documented, configurable server-side API contracts. No reverse-engineered secure-pipe bypass, HTML extraction, or arbitrary client-supplied stream URL is permitted.
+- Normalize provider episodes and watch responses into the existing source registry with explicit `sub`/`dub` labels, same-audio fallback, exact HTTPS allowlists, and neutral unavailable states.
+- Add optional AniList and MyAnimeList OAuth account connections using secure state/PKCE, server-side token exchange, and configuration-gated UI. Do not store provider tokens in client storage or commit credentials.
+- Add an in-app new-episode notification foundation based on Continue Watching and Watch History. External push delivery and scheduled polling remain configuration-gated until VAPID/FCM or another authorized delivery path is supplied.
+- Add deterministic tests and run real-provider smoke tests last. Do not publish claims that a provider is guaranteed available.

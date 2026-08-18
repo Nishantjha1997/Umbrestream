@@ -901,6 +901,88 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `57f37f6`
   - Completed: 2026-08-18
 
+## Anime Mode and integrations
+
+- [x] SF-180 — Audit Anilili, Anivexa, and Miruro source availability and licensing
+  - Status: completed
+  - Priority: P0
+  - Depends on: SF-175
+  - Evidence: Anilili checkout contains README/showcase assets only; no Kotlin/Compose source or license file was available to copy. Anivexa provider routes and MiruroAPI MIT contract were inspected without copying third-party provider or bypass code.
+  - Commit: —
+  - Completed: 2026-08-18
+
+- [x] SF-181 — Add the dedicated Anime Mode entry point and themed shell
+  - Status: completed
+  - Priority: P0
+  - Depends on: SF-180
+  - Evidence: Home now has a responsive Anime Mode CTA and `/anime` renders a dedicated themed shell with focused Anime navigation.
+  - Commit: —
+  - Completed: 2026-08-18
+
+- [x] SF-182 — Define the server-side anime provider adapter contract
+  - Status: completed
+  - Priority: P0
+  - Depends on: SF-180
+  - Evidence: `src/lib/sources/adapters/animeRemote.ts` normalizes documented episode/watch payloads into allowlisted `PlayerSource` candidates with stable provider IDs and Sub/Dub audio variants.
+  - Commit: —
+  - Completed: 2026-08-18
+
+- [x] SF-183 — Integrate configurable Anivexa and Miruro APIs
+  - Status: completed
+  - Priority: P0
+  - Depends on: SF-182
+  - Evidence: `ANIVEXA_API_BASE_URL`, `MIRURO_API_BASE_URL`, and `STREAMFREE_ANIME_ALLOWED_ORIGINS` gate server-only fetches; incomplete configuration returns no remote candidates and existing public sources remain available.
+  - Commit: —
+  - Completed: 2026-08-18
+
+- [x] SF-184 — Add Anime Sub/Dub provider groups and source labels
+  - Status: completed
+  - Priority: P0
+  - Depends on: SF-183
+  - Evidence: provider labels include ReAnime, AniKoto, AnimeGG, AniNeko, 2DHive, AniZone, AnimeCG, AnimeNoSub, MegaPlay, and Miruro; candidates carry `audioVariant` and flow through the existing grouped source sheet.
+  - Commit: —
+  - Completed: 2026-08-18
+
+- [ ] SF-185 — Add AniList account connection and sync foundation
+  - Status: not started
+  - Priority: P1
+  - Depends on: SF-181
+  - Evidence: —
+  - Commit: —
+  - Next action: implement state/PKCE-safe OAuth routes and a disabled-until-configured account card
+
+- [ ] SF-186 — Add MyAnimeList account connection and sync foundation
+  - Status: not started
+  - Priority: P1
+  - Depends on: SF-181
+  - Evidence: —
+  - Commit: —
+  - Next action: implement PKCE OAuth routes and a disabled-until-configured account card
+
+- [ ] SF-187 — Add in-app new-episode notification foundation
+  - Status: not started
+  - Priority: P1
+  - Depends on: SF-183
+  - Evidence: —
+  - Commit: —
+  - Next action: define notification records from Continue Watching/history and add a visible notification state
+
+- [ ] SF-188 — Add optional web/push delivery and episode polling
+  - Status: not started
+  - Priority: P1
+  - Depends on: SF-187
+  - Evidence: —
+  - Commit: —
+  - Next action: add a Vercel-safe scheduled job contract; keep delivery disabled until provider credentials are configured
+
+- [ ] SF-189 — Test Anime Mode, provider contracts, auth, and notifications
+  - Status: not started
+  - Priority: P0
+  - Depends on: SF-184, SF-185, SF-186, SF-188
+  - Evidence: —
+  - Commit: —
+  - Next action: add deterministic tests before any real-provider smoke run
+
 ## Final test and rollout
 
 - [x] SF-150 — Run authored-source lint/typecheck/source contracts
