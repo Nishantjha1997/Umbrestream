@@ -13,6 +13,7 @@
     "test:episode-resolver": "node --experimental-strip-types scripts/check-episode-resolver.mjs",
     "test:continue-watching": "node --experimental-strip-types scripts/check-continue-watching.mjs",
     "test:home-feed": "node --experimental-strip-types scripts/check-home-feed.mjs",
+    "test:anime-integrations": "node --experimental-strip-types scripts/check-anime-integrations.mjs",
     "test:native-cache": "node --experimental-strip-types scripts/check-native-cache.mjs",
     "test:native-history": "node --experimental-strip-types scripts/check-native-history.mjs",
     "test:native-update-state": "node --experimental-strip-types scripts/check-native-update-state.mjs",
