@@ -883,7 +883,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-167
   - Evidence: shared web PlayerShell now opens in a borderless 16:9 stage and switches to fixed viewport mode only after explicit Full screen; iframe identity remains unchanged during Fit/Fill
-  - Commit: `pending`
+  - Commit: `4d48d85`
   - Completed: 2026-08-18
 
 ## Final test and rollout
