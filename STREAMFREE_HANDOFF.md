@@ -1011,3 +1011,29 @@ The remaining open tasks are authorization/device-dependent only: sign in to a S
 exercise live Continue Watching/watchlist removal plus Undo, connect the physical Android phone for native
 playback/orientation/updater checks, and provision an Android TV emulator for D-pad/playback checks. The
 production web/PWA and deterministic non-hardware QA gate is complete.
+
+## 27. Anime release deployed — 2026-08-18
+
+The Anime Mode release is live in the linked `umbrestream` Vercel project. Production deployment
+`dpl_8vrwdH2JFAtWTrZ6QGEDqQumSB2A` returned `readyState: READY` and was aliased to
+`https://streamfree.online`. The remote build completed successfully with the Anime routes and APIs:
+`/anime`, `/api/anime/accounts`, `/api/anime/notifications`, `/api/auth/anilist/*`,
+`/api/auth/mal/*`, `/api/mobile/home`, and the existing player/source routes.
+
+Live release checks returned:
+
+- Phone manifest: HTTP 200, version `1.3.3`, code `7`, size `3347964`, SHA-256
+  `571FA4CB69051EDE36A16F02FDBAFF8EC7C2F1714D08B216B832DDA652D0D444`.
+- TV manifest: HTTP 200, version `1.2.3`, code `6`, size `3375567`, SHA-256
+  `06E4C403D29C5D4F6EF5D690AC31A38908A5E64A1D1308AE703C11E9C1907683`.
+- Both APK URLs: HTTP 200, `application/vnd.android.package-archive`, exact manifest byte length,
+  and expected release filenames.
+- `/anime`, `/app`, `/app/tv`, and `/api/mobile/home`: HTTP 200. The mobile home response reported
+  schema version `1`, signed-out provenance, and effective country `IN`.
+
+Vercel's build emitted only the existing dynamic-rendering notices for authenticated `/library`,
+`/space`, and `/space/history` static generation; the build still completed successfully. Live
+Anivexa/Miruro adapters, AniList/MAL OAuth, and background push remain configuration-gated because
+the production environment currently has no authorized API origins, OAuth client credentials, token
+encryption key, or VAPID/FCM delivery credentials. In-app notification polling is the active release
+behavior. Physical phone, Android TV emulator, and real-provider playback checks remain pending.
