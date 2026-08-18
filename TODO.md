@@ -895,6 +895,14 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `746b75f`
   - Completed: 2026-08-18
 
+- [ ] SF-175 — Resolve production accessibility audit defects
+  - Status: in progress
+  - Priority: P0
+  - Depends on: SF-152
+  - Evidence: local typecheck, authored lint, deterministic Continue Watching stress test, and production build passed; audit found an unnamed About GitHub icon link and an invalid nested player Back button/link structure, both now corrected
+  - Commit: pending
+  - Next action: deploy the corrections and rerun the production accessibility audit and player interaction smoke
+
 ## Final test and rollout
 
 - [x] SF-150 — Run authored-source lint/typecheck/source contracts

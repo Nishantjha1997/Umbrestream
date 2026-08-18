@@ -28,32 +28,29 @@ const PlayerActionButton: React.FC<PlayerActionButtonProps> = ({
     default: "hover:[&>svg]:text-default",
   };
 
-  const Button = (
-    <Tooltip content={tooltip} isDisabled={disabled || !tooltip} showArrow placement="bottom">
-      <button
-        type="button"
-        aria-label={label}
-        onClick={onClick}
-        disabled={disabled}
-        className={cn(
-          "group pointer-events-auto flex size-11 touch-manipulation items-center justify-center rounded-full drop-shadow-md sm:size-12 [&>svg]:transition-all motion-reduce:[&>svg]:transition-none",
-          {
-            [`hover:[&>svg]:scale-125 ${hoverColors[color]}`]: !disabled,
-            "cursor-not-allowed opacity-50": disabled,
-          },
-        )}
-      >
-        {children}
-      </button>
-    </Tooltip>
+  const className = cn(
+    "group pointer-events-auto flex size-11 touch-manipulation items-center justify-center rounded-full drop-shadow-md sm:size-12 [&>svg]:transition-all motion-reduce:[&>svg]:transition-none",
+    {
+      [`hover:[&>svg]:scale-125 ${hoverColors[color]}`]: !disabled,
+      "cursor-not-allowed opacity-50": disabled,
+    },
   );
 
-  return href && !disabled ? (
-    <Link href={href} className="pointer-events-auto flex items-center">
-      {Button}
-    </Link>
-  ) : (
-    Button
+  const action =
+    href && !disabled ? (
+      <Link href={href} aria-label={label} className={className}>
+        {children}
+      </Link>
+    ) : (
+      <button type="button" aria-label={label} onClick={onClick} disabled={disabled} className={className}>
+        {children}
+      </button>
+    );
+
+  return (
+    <Tooltip content={tooltip} isDisabled={disabled || !tooltip} showArrow placement="bottom">
+      {action}
+    </Tooltip>
   );
 };
 
