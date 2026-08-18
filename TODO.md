@@ -1031,6 +1031,14 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `153af67`
   - Completed: 2026-08-18
 
+- [ ] SF-196 — Fix off-screen web anime player and source controls
+  - Status: in progress
+  - Priority: P0
+  - Depends on: SF-100, SF-151
+  - Evidence: Production reproduction showed the portal-mounted player below the route's `min-h-dvh` container; on a 390×844 viewport the player stage was at document position `y=844` and the iframe was not in the visible route area. The Source button existed but was attached to that displaced stage.
+  - Commit: —
+  - Next action: keep the non-fullscreen stage fixed at the top of the viewport, then verify desktop/mobile player geometry, source picker opening, and source switching after deployment
+
 ## Final test and rollout
 
 - [x] SF-150 — Run authored-source lint/typecheck/source contracts

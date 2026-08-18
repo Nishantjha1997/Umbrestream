@@ -1049,3 +1049,17 @@ The adapter hardening was deployed in Vercel production deployment
 `https://streamfree.online`. Live `/anime` and `/api/mobile/home` returned HTTP 200. The live player
 source contract returned six existing anime sources with `fallbackMode: prompt`; optional Anivexa and
 Miruro sources were intentionally absent because no authorized API origins are configured in Vercel.
+
+## 28. Anime player visibility bug — 2026-08-18
+
+A production browser reproduction found that the shared `PlayerShell` is portalled to `document.body`
+after the immersive route's `min-h-dvh` main container. Its non-fullscreen `relative` stage therefore
+landed below the viewport; on a 390×844 test viewport the stage was at document position `y=844`, and
+the browser's scroll restoration made the iframe appear blank/off-frame. The Source control was present
+in the DOM but moved with the displaced stage, which explains why users could not choose a server.
+
+The fix changes only the non-fullscreen stage positioning to a fixed, top-centered 16:9 viewport. The
+iframe remains clipped inside the StreamFree-owned stage, while Source, Fit/Fill, Full screen, recovery,
+and episode controls stay attached to the visible player. Fullscreen continues to use the existing
+fixed full-viewport branch. The fix is tracked as `SF-196`; production deployment and post-deploy
+desktop/mobile geometry verification are still required.

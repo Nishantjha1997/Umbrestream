@@ -760,7 +760,7 @@ export default function PlayerShell({
       className={`player-shell player-shell-${displayMode} ${
         isFullscreen
           ? "fixed inset-0 z-70 h-dvh w-full"
-          : "relative z-30 mx-auto aspect-video w-full max-w-[min(100vw,1600px)]"
+          : "fixed inset-x-0 top-0 z-70 mx-auto aspect-video w-full max-w-[min(100vw,1600px)]"
       } overflow-hidden bg-black`}
     >
       {selectedSource ? (
