@@ -813,6 +813,14 @@ export default function PlayerShell({
       {renderHeader(headerContext)}
 
       <div className="absolute right-4 bottom-5 z-45 flex items-center gap-2">
+        <button
+          type="button"
+          onClick={openSource}
+          aria-label="Choose playback source"
+          className="min-h-11 rounded-full border border-white/20 bg-black/65 px-3.5 py-2 text-xs font-semibold text-white/90 shadow-lg backdrop-blur-xl transition hover:bg-black/85 focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:outline-none"
+        >
+          Source
+        </button>
         <div className="player-display-toggle flex overflow-hidden rounded-full border border-white/20 bg-black/65 shadow-lg backdrop-blur-xl" role="group" aria-label="Video framing">
           {(["fit", "fill"] as const).map((mode) => (
             <button

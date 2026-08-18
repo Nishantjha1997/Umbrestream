@@ -886,6 +886,14 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `4d48d85`
   - Completed: 2026-08-18
 
+- [x] SF-174 — Keep source selection reachable after chrome fades
+  - Status: completed
+  - Priority: P0
+  - Depends on: SF-100, SF-101
+  - Evidence: web PlayerShell now keeps an accessible Source action beside Fit/Fill/Full screen, so source selection does not depend on the temporary chrome-reveal timer
+  - Commit: `pending`
+  - Completed: 2026-08-18
+
 ## Final test and rollout
 
 - [x] SF-150 — Run authored-source lint/typecheck/source contracts
