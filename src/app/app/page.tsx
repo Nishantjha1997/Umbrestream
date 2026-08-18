@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { brand } from "@/config/brand";
 
-const APK_PATH = "/downloads/StreamFree-Android-v1.3.2.apk";
+const APK_PATH = "/downloads/StreamFree-Android-v1.3.3.apk";
 
 export const metadata: Metadata = {
   title: `Get the Android app | ${brand.name}`,
@@ -67,7 +67,7 @@ export default function AndroidAppPage() {
           <div className="mt-5 flex flex-wrap gap-2 text-[11px] font-medium text-white/62">
             {[
               "Android 7.0+",
-              "Version 1.3.2",
+              "Version 1.3.3",
               "3.12 MB",
               "Shared account sync",
               "Internet required for catalogue and streaming",
@@ -239,7 +239,7 @@ export default function AndroidAppPage() {
         <article className="rounded-2xl border border-white/8 bg-white/[0.025] p-5 text-sm leading-6 text-white/58 sm:p-6">
           <h2 className="text-lg font-semibold text-white">Verified updates</h2>
           <p className="mt-3">
-            Version 1.3.2 is a signed direct-install release. Existing StreamFree 1.3.1 installs
+            Version 1.3.3 is a signed direct-install release. Existing StreamFree 1.3.2 installs
             can update in place; builds from before the signing reset must be uninstalled first. The
             in-app updater
             fetches the official manifest, checks the package identity, version, certificate,

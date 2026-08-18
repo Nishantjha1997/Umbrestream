@@ -879,6 +879,53 @@ types, and the expected filenames. Remaining QA is physical-device validation: c
 phone for orientation, Back, playback, and updater checks. Physical TV testing remains deferred;
 an Android TV emulator is the substitute when provisioned.
 
+## 24. Anime Mode release checkpoint — 2026-08-18
+
+Anime Mode is now a dedicated, themed experience at `/anime`, reachable from the Home page through
+the Anime Mode entry card. Its web shell provides Discover, Back, and in-app episode notifications;
+the phone and TV bundles expose the same Anime Mode entry point. The implementation is native to
+StreamFree rather than a source copy of Anilili: the checked-out Anilili repository contained
+documentation/showcase material without the Kotlin/Compose application source or a visible license,
+so no unavailable or unlicensed code was copied. The intended interaction principles—focused anime
+discovery, source grouping, Sub/Dub clarity, and remote-friendly playback—are implemented in the
+existing StreamFree architecture.
+
+Anime source adapters support documented Anivexa and Miruro API payload shapes and normalize provider
+labels for ReAnime, AniKoto, AnimeGG, AniNeko, 2DHive, AniZone, AnimeCG, AnimeNoSub, MegaPlay, and
+Miruro provider keys. The adapters are deliberately configuration-gated by exact HTTPS origins:
+set `ANIVEXA_API_BASE_URL`, `MIRURO_API_BASE_URL`, and `STREAMFREE_ANIME_ALLOWED_ORIGINS` in Vercel
+only after selecting an authorized, reliable API deployment. They do not bypass secure pipes,
+extract provider HTML, or claim third-party availability. Anivexa documents self-hosted deployment
+as the reliable option for serverless consumers; Miruro's hosted API can be paused or return provider
+errors. The deterministic adapter contract is covered by `pnpm run test:anime-integrations`.
+
+AniList and MyAnimeList connection routes are present and configuration-gated. OAuth state/PKCE is
+validated server-side and access/refresh tokens are encrypted before storage in
+`anime_linked_accounts`. Configure the official client IDs, redirects, and
+`STREAMFREE_ANIME_TOKEN_ENCRYPTION_KEY` before enabling them in production. New-episode notifications
+currently use authenticated in-app polling every 15 minutes while Anime Mode is open; background web
+push/native delivery is intentionally deferred until an authorized VAPID/FCM channel is configured.
+
+The production Supabase migration was applied in project `kqrazmvxmjasjyrwfyyf` through SQL Editor on
+2026-08-18. It creates the linked-account and episode-notification tables with RLS, indexes, and the
+updated-at trigger. The SQL Editor returned `Success. No rows returned`.
+
+New release candidates built from this checkpoint are additive and preserve the previous APKs for
+rollback:
+
+- Phone: `StreamFree-Android-v1.3.3.apk`, package `online.streamfree.app`, version code `7`, size
+  `3347964`, SHA-256 `571FA4CB69051EDE36A16F02FDBAFF8EC7C2F1714D08B216B832DDA652D0D444`, certificate
+  `4218B5F726FD4D61703B2112D7A41C77B93F215F1C1DC85560BAB86A6FB38EF4`.
+- TV: `StreamFree-TV-v1.2.3.apk`, package `online.streamfree.tv`, version code `6`, size `3375567`,
+  SHA-256 `06E4C403D29C5D4F6EF5D690AC31A38908A5E64A1D1308AE703C11E9C1907683`, certificate
+  `7D5C1BB46BA3CE888C56E9CF1F39F86F65BC502BCD5480B0F8CF4663C80779D7`.
+
+Both APKs are release-only, non-debuggable, and pass v2/v3 signature verification. No ADB was
+required to assemble them. Physical Android phone testing, Android TV emulator testing, and new
+real-provider smoke testing remain final release gates; do not describe them as passed until the
+devices/providers are exercised. Production Anime API adapters and OAuth remain dormant until their
+authorized Vercel configuration is added.
+
 ## 24. Continue Watching removal navigation fix — 2026-08-17
 
 The Continue Watching removal regression was caused by `HistoryItemActions` being rendered inside
