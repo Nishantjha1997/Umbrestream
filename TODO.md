@@ -851,7 +851,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-168
   - Evidence: signed release builds passed v2/v3 verification; phone `online.streamfree.app` code 6/version 1.3.2 SHA-256 `5B0B9CDDC36CEFFA72D0EE7733C609A83E6F73351D8840CEE62C581B58186653`; TV `online.streamfree.tv` code 5/version 1.2.2 SHA-256 `D035E163E033E822AB493F85B679B7EFBBB51518C18157E46CD8C7752A08DAC7`; manifest and release-artifact checks passed
-  - Commit: `pending`
+  - Commit: `cb72426`
   - Completed: 2026-08-18
 
 - [ ] SF-170 — Run deterministic player and TV UI regression checks
