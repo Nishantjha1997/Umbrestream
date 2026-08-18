@@ -586,7 +586,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-038
   - Evidence: —
-  - Commit: —
+  - Commit: `dad4f6e`
   - Next action: add emulator flow
 
 - [x] SF-114 — Add TV D-pad focus behavior
@@ -677,7 +677,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P1
   - Depends on: SF-103, SF-121
   - Evidence: Browse filter selection returned focus to the active filter control in the local browser snapshot; modal/source-sheet, route, and Android Back focus paths remain open
-  - Commit: —
+  - Commit: `dad4f6e`
   - Next action: test source sheet, onboarding, modal, route, and Back focus flows when a playable fixture and device bridge are available
   - Blocker: source sheet needs a playable title and Android Back needs an ADB-connected device
 
@@ -736,7 +736,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-111, SF-133
   - Evidence: —
-  - Commit: —
+  - Commit: `dad4f6e`
   - Next action: wait for connected phone at final gate
 
 - [x] SF-136 — Resolve legacy migration behavior
@@ -784,7 +784,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-113, SF-115, SF-116
   - Evidence: —
-  - Commit: —
+  - Commit: `dad4f6e`
   - Next action: run Android TV emulator matrix
 
 - [x] SF-162 — Capture player and TV layout baseline
@@ -908,7 +908,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-175
   - Evidence: Anilili checkout contains README/showcase assets only; no Kotlin/Compose source or license file was available to copy. Anivexa provider routes and MiruroAPI MIT contract were inspected without copying third-party provider or bypass code.
-  - Commit: —
+  - Commit: `dad4f6e`
   - Completed: 2026-08-18
 
 - [x] SF-181 — Add the dedicated Anime Mode entry point and themed shell
