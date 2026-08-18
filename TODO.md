@@ -843,7 +843,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-164, SF-165
   - Evidence: phone and TV activities now use black window surfaces, immersive system-bar handling, focus reapplication, and explicit player enter/exit bridge methods; release compilation succeeded
-  - Commit: `pending`
+  - Commit: `cc4f64a`
   - Completed: 2026-08-18
 
 - [ ] SF-169 — Build and verify phone 1.3.2/code 6 and TV 1.2.2/code 5
