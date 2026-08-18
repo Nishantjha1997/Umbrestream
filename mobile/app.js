@@ -840,6 +840,7 @@ function renderSharedHomeFeed(feed) {
   const displayName = state.user ? state.profile?.username || state.user.email?.split("@")[0] : "Guest";
   const markup = [
     heroMarkup(hero, mapped.heroIsResume),
+    '<section class="anime-mode-card"><div><span class="eyebrow">Dedicated space</span><strong>Anime Mode</strong><p>Sub and Dub servers, seasonal discovery and episode-first browsing.</p></div><button class="primary pressable" data-route="anime">Open Anime</button></section>',
     '<section class="welcome-strip"><div><span>' + (state.user ? "Synced across devices" : "Private guest session") + '</span><strong>' + escapeHtml(displayName) + '</strong></div><button class="avatar-chip pressable" data-route="space">' + escapeHtml(accountInitials()) + '</button></section>',
     section("Continue watching", history.slice(1), "movie", { kicker: "Most recently watched", progress: true, action: "open-history", actionLabel: "History" }),
     mapped.personalized.length ? section("Picked for you", mapped.personalized, "movie", { kicker: "Based on your watches" }) : "",
@@ -893,6 +894,7 @@ async function renderHome() {
     const anime = animeData?.data?.Page?.media?.map(fromAnime) || [];
     const countryLabel = region.source === "default" ? "Global" : region.countryName;
     commit(`${heroMarkup(hero, Boolean(history[0]))}
+      <section class="anime-mode-card"><div><span class="eyebrow">Dedicated space</span><strong>Anime Mode</strong><p>Sub and Dub servers, seasonal discovery and episode-first browsing.</p></div><button class="primary pressable" data-route="anime">Open Anime</button></section>
       <section class="welcome-strip"><div><span>${state.user ? "Synced across devices" : "Private guest session"}</span><strong>${escapeHtml(displayName)}</strong></div><button class="avatar-chip pressable" data-route="space">${escapeHtml(accountInitials())}</button></section>
       ${section("Continue watching", history.slice(1), "movie", { kicker: "Most recently watched", progress: true, action: "open-history", actionLabel: "History" })}
       ${section(state.user ? "Picked for you" : "Trending now", picked.slice(0, 12), "movie", { kicker: state.user ? "Based on your watches" : `Popular in ${countryLabel}` })}
@@ -1143,6 +1145,7 @@ async function openPlayer(mediaTypeValue, id, title, season = 0, episode = 0, op
 function trustedPlaybackEvent(event) {
   const player = state.player;
   const source = player?.sources[player.index];
+  if (source?.kind !== "iframe") return null;
   const frame = document.querySelector("#player-frame");
   if (!player || !source || !frame || event.source !== frame.contentWindow) return null;
   if (event.origin !== source.providerOrigin) return null;
@@ -1301,8 +1304,21 @@ function renderPlayer() {
       ? `Episode ${player.media.episode || 1} · ${player.audio === "dub" ? "Dub" : "Sub"}`
       : "Movie";
   const displayMode = normalizePlayerDisplay(player.displayMode);
-  commit(`<section class="player-page"><div class="player-header"><button class="player-back pressable" data-action="back-detail" data-media="${player.media.media_type}" data-id="${player.media.id}">‹</button><div><span>${escapeHtml(label)}</span><strong>${escapeHtml(player.media.title)}</strong></div><button class="player-more pressable" data-action="server-sheet" aria-label="Choose playback server">•••</button></div><div class="player-stage" data-display-mode="${displayMode}"><div class="player-loader"><span></span><p>Connecting to ${escapeHtml(source.label || source.id)}</p></div><iframe id="player-frame" src="${escapeHtml(source.url)}" title="${escapeHtml(player.media.title)} player" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="origin-when-cross-origin"></iframe><div class="player-controls" role="group" aria-label="Player display controls"><div class="player-display-toggle" role="group" aria-label="Video framing"><button class="pressable ${displayMode === "fit" ? "active" : ""}" data-action="player-display" data-player-display="fit" aria-pressed="${displayMode === "fit"}">Fit</button><button class="pressable ${displayMode === "fill" ? "active" : ""}" data-action="player-display" data-player-display="fill" aria-pressed="${displayMode === "fill"}">Fill</button></div><button class="player-fullscreen pressable" data-action="player-fullscreen" aria-label="Enter full screen">⛶ Full screen</button></div></div><div id="playback-recovery" hidden></div><section class="server-row"><div><span>Playback server</span><strong>${escapeHtml(source.label || source.id)}</strong></div><button class="glass-button pressable" data-action="server-sheet">Choose server</button></section><section class="player-tip"><span>Tip</span><p>Fit shows the whole frame. Fill zooms to the screen. Full screen switches to landscape.</p></section></section>`, { root: state.previousRoot });
-  document.querySelector("#player-frame")?.addEventListener("load", () => document.querySelector(".player-loader")?.classList.add("done"), { once: true });
+  const nativeVideo = ["hls", "mp4", "dash"].includes(source.kind);
+  const stageMedia = nativeVideo
+    ? `<video id="player-video" src="${escapeHtml(source.url)}" title="${escapeHtml(player.media.title)} player" controls playsinline preload="metadata"></video>`
+    : `<iframe id="player-frame" src="${escapeHtml(source.url)}" title="${escapeHtml(player.media.title)} player" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="origin-when-cross-origin"></iframe>`;
+  commit(`<section class="player-page"><div class="player-header"><button class="player-back pressable" data-action="back-detail" data-media="${player.media.media_type}" data-id="${player.media.id}">‹</button><div><span>${escapeHtml(label)}</span><strong>${escapeHtml(player.media.title)}</strong></div><button class="player-more pressable" data-action="server-sheet" aria-label="Choose playback server">•••</button></div><div class="player-stage" data-display-mode="${displayMode}"><div class="player-loader"><span></span><p>Connecting to ${escapeHtml(source.label || source.id)}</p></div>${stageMedia}<div class="player-controls" role="group" aria-label="Player display controls"><div class="player-display-toggle" role="group" aria-label="Video framing"><button class="pressable ${displayMode === "fit" ? "active" : ""}" data-action="player-display" data-player-display="fit" aria-pressed="${displayMode === "fit"}">Fit</button><button class="pressable ${displayMode === "fill" ? "active" : ""}" data-action="player-display" data-player-display="fill" aria-pressed="${displayMode === "fill"}">Fill</button></div><button class="player-fullscreen pressable" data-action="player-fullscreen" aria-label="Enter full screen">⛶ Full screen</button></div></div><div id="playback-recovery" hidden></div><section class="server-row"><div><span>Playback server</span><strong>${escapeHtml(source.label || source.id)}</strong></div><button class="glass-button pressable" data-action="server-sheet">Choose server</button></div><section class="player-tip"><span>Tip</span><p>Fit shows the whole frame. Fill zooms to the screen. Full screen switches to landscape.</p></section></section>`, { root: state.previousRoot });
+  const video = document.querySelector("#player-video");
+  if (video) {
+    video.addEventListener("loadedmetadata", () => document.querySelector(".player-loader")?.classList.add("done"), { once: true });
+    video.addEventListener("playing", confirmPlaybackStarted, { once: true });
+    video.addEventListener("timeupdate", confirmPlaybackStarted);
+    video.addEventListener("error", () => showPlaybackRecovery("error"), { once: true });
+    video.addEventListener("ended", () => void advanceToNextEpisode(), { once: true });
+  } else {
+    document.querySelector("#player-frame")?.addEventListener("load", () => document.querySelector(".player-loader")?.classList.add("done"), { once: true });
+  }
   updatePlaybackRecoveryPanel();
   armPlaybackRecovery();
 }

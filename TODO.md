@@ -983,6 +983,14 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: `5eff85a` (checkpoint)
   - Next action: add deterministic tests before any real-provider smoke run
 
+- [x] SF-190 — Surface Anime Mode and native API video streams in phone/TV bundles
+  - Status: completed
+  - Priority: P0
+  - Depends on: SF-181, SF-184
+  - Evidence: Home Anime Mode CTA added to both native shells; allowlisted HLS/MP4/DASH candidates render in native video with playback/error/end events; `node --check mobile/app.js`, `node --check tv/app.js`, `pnpm run mobile:build`, `pnpm run tv:build`, `pnpm run test:anime-integrations`, `pnpm run typecheck`, and `pnpm run lint` pass
+  - Commit: —
+  - Completed: 2026-08-18
+
 ## Final test and rollout
 
 - [x] SF-150 — Run authored-source lint/typecheck/source contracts

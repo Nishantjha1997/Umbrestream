@@ -821,6 +821,7 @@ function renderSharedHomeFeed(feed) {
   const displayName = state.user ? state.profile?.username || state.user.email?.split("@")[0] : "Guest";
   const markup = [
     heroMarkup(hero, mapped.heroIsResume),
+    '<section class="anime-mode-card"><div><span class="eyebrow">Dedicated space</span><strong>Anime Mode</strong><p>Sub and Dub servers, seasonal discovery and episode-first browsing.</p></div><button class="primary pressable" data-route="anime">Open Anime</button></section>',
     '<section class="welcome-strip"><div><span>' + (state.user ? "Synced across devices" : "Private guest session") + '</span><strong>' + escapeHtml(displayName) + '</strong></div><button class="avatar-chip pressable" data-route="space">' + escapeHtml(accountInitials()) + '</button></section>',
     section("Continue watching", history.slice(1), "movie", { kicker: "Most recently watched", progress: true, action: "open-history", actionLabel: "History" }),
     mapped.personalized.length ? section("Picked for you", mapped.personalized, "movie", { kicker: "Based on your watches" }) : "",
@@ -878,6 +879,7 @@ async function renderHome() {
     const anime = animeData?.data?.Page?.media?.map(fromAnime) || [];
     const countryLabel = region.source === "default" ? "Global" : region.countryName;
     commit(`${heroMarkup(hero, Boolean(history[0]))}
+      <section class="anime-mode-card"><div><span class="eyebrow">Dedicated space</span><strong>Anime Mode</strong><p>Sub and Dub servers, seasonal discovery and episode-first browsing.</p></div><button class="primary pressable" data-route="anime">Open Anime</button></section>
       <section class="welcome-strip"><div><span>${state.user ? "Synced across devices" : "Private guest session"}</span><strong>${escapeHtml(displayName)}</strong></div><button class="avatar-chip pressable" data-route="space">${escapeHtml(accountInitials())}</button></section>
       ${section("Continue watching", history.slice(1), "movie", { kicker: "Most recently watched", progress: true, action: "open-history", actionLabel: "History" })}
       ${section(state.user ? "Picked for you" : "Trending now", picked.slice(0, 12), "movie", { kicker: state.user ? "Based on your watches" : "Critic favorites" })}
@@ -1132,6 +1134,7 @@ async function openPlayer(mediaTypeValue, id, title, season = 0, episode = 0, op
 function trustedPlaybackEvent(event) {
   const player = state.player;
   const source = player?.sources[player.index];
+  if (source?.kind !== "iframe") return null;
   const frame = document.querySelector("#player-frame");
   if (!player || !source || !frame || event.source !== frame.contentWindow) return null;
   if (event.origin !== source.providerOrigin) return null;
@@ -1335,10 +1338,23 @@ function renderPlayer() {
     : player.media.media_type === "anime"
       ? `Episode ${player.media.episode || 1} · ${player.audio === "dub" ? "Dub" : "Sub"}`
       : "Movie";
-  commit(`<section class="player-page tv-player-page"><div class="player-header"><button class="player-back pressable" data-action="back-detail" data-media="${player.media.media_type}" data-id="${player.media.id}">‹</button><div><span>${escapeHtml(label)}</span><strong>${escapeHtml(player.media.title)}</strong></div><button class="player-more pressable" data-action="server-sheet" aria-label="Choose playback server">•••</button></div><div class="player-stage"><div class="player-loader"><span></span><p>Connecting to ${escapeHtml(source.label || source.id)}</p></div><iframe id="player-frame" tabindex="-1" src="${escapeHtml(source.url)}" title="${escapeHtml(player.media.title)} player" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="origin-when-cross-origin"></iframe><button class="player-enter pressable" data-action="enter-player"><span>OK</span> Control player</button></div><div id="playback-recovery" hidden></div><div id="next-episode-countdown" hidden></div><section class="server-row"><div><span>Playback server</span><strong>${escapeHtml(source.label || source.id)}</strong></div></section><section class="player-tip"><span>Remote tip</span><p>Playback starts full screen. Press Back to return, or Menu to choose another server.</p></section></section>`, { root: state.previousRoot });
+  const nativeVideo = ["hls", "mp4", "dash"].includes(source.kind);
+  const stageMedia = nativeVideo
+    ? `<video id="player-video" tabindex="-1" src="${escapeHtml(source.url)}" title="${escapeHtml(player.media.title)} player" controls playsinline preload="metadata"></video>`
+    : `<iframe id="player-frame" tabindex="-1" src="${escapeHtml(source.url)}" title="${escapeHtml(player.media.title)} player" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="origin-when-cross-origin"></iframe>`;
+  commit(`<section class="player-page tv-player-page"><div class="player-header"><button class="player-back pressable" data-action="back-detail" data-media="${player.media.media_type}" data-id="${player.media.id}">‹</button><div><span>${escapeHtml(label)}</span><strong>${escapeHtml(player.media.title)}</strong></div><button class="player-more pressable" data-action="server-sheet" aria-label="Choose playback server">•••</button></div><div class="player-stage"><div class="player-loader"><span></span><p>Connecting to ${escapeHtml(source.label || source.id)}</p></div>${stageMedia}<button class="player-enter pressable" data-action="enter-player"><span>OK</span> Control player</button></div><div id="playback-recovery" hidden></div><div id="next-episode-countdown" hidden></div><section class="server-row"><div><span>Playback server</span><strong>${escapeHtml(source.label || source.id)}</strong></div></section><section class="player-tip"><span>Remote tip</span><p>Playback starts full screen. Press Back to return, or Menu to choose another server.</p></section></section>`, { root: state.previousRoot });
   setPlaybackOrientation();
-  requestAnimationFrame(() => document.querySelector("#player-frame")?.focus({ preventScroll: true }));
-  document.querySelector("#player-frame")?.addEventListener("load", () => document.querySelector(".player-loader")?.classList.add("done"), { once: true });
+  const video = document.querySelector("#player-video");
+  requestAnimationFrame(() => (video || document.querySelector("#player-frame"))?.focus({ preventScroll: true }));
+  if (video) {
+    video.addEventListener("loadedmetadata", () => document.querySelector(".player-loader")?.classList.add("done"), { once: true });
+    video.addEventListener("playing", confirmPlaybackStarted, { once: true });
+    video.addEventListener("timeupdate", confirmPlaybackStarted);
+    video.addEventListener("error", () => showPlaybackRecovery("error"), { once: true });
+    video.addEventListener("ended", () => void advanceToNextEpisode(), { once: true });
+  } else {
+    document.querySelector("#player-frame")?.addEventListener("load", () => document.querySelector(".player-loader")?.classList.add("done"), { once: true });
+  }
   updatePlaybackRecoveryPanel();
   renderNextEpisodeCountdown();
   armPlaybackRecovery();

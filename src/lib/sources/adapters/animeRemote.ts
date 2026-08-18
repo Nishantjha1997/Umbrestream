@@ -11,6 +11,20 @@ const API_PROVIDERS = new Set([
   "animenosub",
   "megaplay",
   "miruro",
+  // MiruroAPI provider keys. These are the provider variants returned by its
+  // documented /api/episodes and /api/watch contracts.
+  "kiwi",
+  "pewe",
+  "bee",
+  "bonk",
+  "bun",
+  "ally",
+  "nun",
+  "twin",
+  "cog",
+  "moo",
+  "hop",
+  "telli",
 ]);
 
 const IFRAME_ALLOW = "autoplay; encrypted-media; picture-in-picture; fullscreen; screen-wake-lock";
@@ -83,6 +97,18 @@ function providerLabel(value: string): string {
     animenosub: "AnimeNoSub",
     megaplay: "MegaPlay",
     miruro: "Miruro",
+    kiwi: "Miruro · Kiwi",
+    pewe: "Miruro · Pewe",
+    bee: "Miruro · Bee",
+    bonk: "Miruro · Bonk",
+    bun: "Miruro · Bun",
+    ally: "Miruro · Ally",
+    nun: "Miruro · Nun",
+    twin: "Miruro · Twin",
+    cog: "Miruro · Cog",
+    moo: "Miruro · Moo",
+    hop: "Miruro · Hop",
+    telli: "Miruro · Telli",
   };
   return labels[value.toLowerCase()] ?? value;
 }
@@ -110,7 +136,8 @@ function listForAudio(value: Record<string, unknown>, audio: AudioVariant): unkn
 function providerEntries(payload: unknown): Array<[string, Record<string, unknown>]> {
   const root = asRecord(payload);
   if (!root) return [];
-  const providers = asRecord(root.providers) ?? root;
+  const result = asRecord(root.results);
+  const providers = asRecord(result?.providers) ?? asRecord(root.providers) ?? root;
   return Object.entries(providers).flatMap(([name, value]) => {
     const record = asRecord(value);
     return record && API_PROVIDERS.has(name.toLowerCase()) ? [[name.toLowerCase(), record] as const] : [];
@@ -123,6 +150,14 @@ function episodeSlug(value: Record<string, unknown>, fallback: number): string |
     if (typeof candidate === "string" || typeof candidate === "number") return String(candidate);
   }
   return String(fallback);
+}
+
+function miruroEpisodeParts(value: Record<string, unknown>, fallback: number): { category: AudioVariant; slug: string } {
+  const raw = episodeSlug(value, fallback) ?? String(fallback);
+  const parts = raw.split("/").filter(Boolean);
+  const category = parts.find((part): part is AudioVariant => part === "sub" || part === "dub") ?? "sub";
+  const slug = parts[parts.length - 1] || String(fallback);
+  return { category, slug };
 }
 
 function tracks(value: unknown, origins: Set<string>): MediaTrack[] | undefined {
@@ -168,7 +203,9 @@ async function watchCandidates(
   const idSegment = segment(anilistId);
   const audioSegment = segment(audio);
   const slug = episodeSlug(episode, episodeNumberValue);
-  const slugSegment = segment(slug);
+  const miruroParts = api === "miruro" ? miruroEpisodeParts(episode, episodeNumberValue) : null;
+  const resolvedSlug = miruroParts?.slug ?? slug;
+  const slugSegment = segment(resolvedSlug);
   if (!providerSegment || !idSegment || !audioSegment || !slugSegment) return [];
 
   const url = new URL(base);
@@ -176,10 +213,11 @@ async function watchCandidates(
     const watchPath = String(episode.id ?? `watch/${provider}/${anilistId}/${audio}/${provider}-${episodeNumberValue}`).replace(/^\//, "");
     url.pathname = `${url.pathname.replace(/\/$/, "")}/${watchPath}`;
   } else {
-    url.pathname = `${url.pathname.replace(/\/$/, "")}/api/watch/${providerSegment}/${idSegment}/${audioSegment}/${slugSegment}`;
+    url.pathname = `${url.pathname.replace(/\/$/, "")}/api/watch/${providerSegment}/${idSegment}/${miruroParts?.category ?? audioSegment}/${slugSegment}`;
   }
 
-  const payload = asRecord(await json(url, signal));
+  const responsePayload = asRecord(await json(url, signal));
+  const payload = asRecord(responsePayload?.results) ?? responsePayload;
   if (!payload) return [];
   const rawStreams = [
     ...(Array.isArray(payload.streams) ? payload.streams : []),
