@@ -248,9 +248,10 @@
  * Phase 6, §10: nothing in the player is ever hidden by media query or by a
  * fullscreen/cinema-mode fallback path — that is what hid the server switcher
  * exactly when a stream died (UI Analysis finding 03). `.player-shell` owns
- * the viewport directly (`fixed inset-0`, portalled — see `PlayerShell.tsx`)
- * from the moment it mounts, in both orientations, so rotating to landscape
- * *is* fullscreen with no `requestFullscreen()` call and no separate CSS path.
+ * a borderless 16:9 stage from the moment it mounts and takes over the
+ * viewport only after the explicit Full screen action. In fullscreen it is
+ * portalled and uses `fixed inset-0` (see `PlayerShell.tsx`) so no ancestor
+ * transform can introduce a shell border or alter the containing block.
  */
 
 .safe-bottom-nav {

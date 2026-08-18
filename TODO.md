@@ -878,6 +878,14 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Commit: —
   - Next action: deploy umbrestream to Vercel, verify Ready and download metadata, then document release
 
+- [x] SF-173 — Make web initial playback stage explicit
+  - Status: completed
+  - Priority: P0
+  - Depends on: SF-167
+  - Evidence: shared web PlayerShell now opens in a borderless 16:9 stage and switches to fixed viewport mode only after explicit Full screen; iframe identity remains unchanged during Fit/Fill
+  - Commit: `pending`
+  - Completed: 2026-08-18
+
 ## Final test and rollout
 
 - [x] SF-150 — Run authored-source lint/typecheck/source contracts

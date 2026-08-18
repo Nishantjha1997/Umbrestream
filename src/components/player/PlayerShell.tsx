@@ -26,17 +26,17 @@
  * one notification slot (`PlayerNotificationSlot`) and nothing is ever
  * hidden by media query.
  *
- * **No fullscreen button, no fallback chain.** The player owns the viewport
- * at `100dvh` from the moment it opens (portalled past `template.tsx`'s
- * animated wrapper for the same containing-block reason `DetailModal.tsx`
- * is — any ancestor `transform` breaks a `position: fixed` descendant).
- * Rotating to landscape *is* fullscreen: the persistent nav chrome is
- * already hidden on `/player` routes (`ImmersiveAppShell.tsx`), and the top
- * and bottom bars are overlays on a full-bleed stage in both orientations,
- * not grid rows that would letterbox the video. StreamFree chrome yields to
- * provider controls after three idle seconds and can be restored from a
- * small left-edge reveal target. There is no `webkitEnterFullscreen` →
- * `requestFullscreen` → cinema-mode cascade to silently cancel.
+ * **Explicit fullscreen, no fallback chain.** The player opens in a
+ * borderless 16:9 cinema stage and becomes a fixed viewport only after the
+ * user chooses Full screen. It is portalled past `template.tsx`'s animated
+ * wrapper for the same containing-block reason `DetailModal.tsx` is — any
+ * ancestor `transform` breaks a `position: fixed` descendant. The persistent
+ * nav chrome is already hidden on `/player` routes (`ImmersiveAppShell.tsx`),
+ * and the top and bottom bars are overlays on the stage in both states.
+ * StreamFree chrome yields to provider controls after three idle seconds and
+ * can be restored from a small left-edge reveal target. There is no
+ * `webkitEnterFullscreen` → `requestFullscreen` → cinema-mode cascade to
+ * silently cancel.
  */
 
 import NativePlayer from "@/components/player/NativePlayer";
@@ -753,7 +753,14 @@ export default function PlayerShell({
   if (!mounted) return null;
 
   return createPortal(
-    <div ref={playerRootRef} className={`player-shell player-shell-${displayMode} fixed inset-0 z-70 h-dvh w-full overflow-hidden bg-black`}>
+    <div
+      ref={playerRootRef}
+      className={`player-shell player-shell-${displayMode} ${
+        isFullscreen
+          ? "fixed inset-0 z-70 h-dvh w-full"
+          : "relative z-30 mx-auto aspect-video w-full max-w-[min(100vw,1600px)]"
+      } overflow-hidden bg-black`}
+    >
       {selectedSource ? (
         selectedSource.kind === "iframe" ? (
           <iframe
