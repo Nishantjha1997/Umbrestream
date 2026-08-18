@@ -948,7 +948,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P1
   - Depends on: SF-181
   - Evidence: AniList start/callback routes validate signed-in Supabase session and state, exchange the official OAuth code, fetch Viewer identity, and encrypt access tokens before upsert; Space shows a configuration-aware connect card.
-  - Commit: `pending`
+  - Commit: `719ca0f`
   - Completed: 2026-08-18
 
 - [x] SF-186 — Add MyAnimeList account connection and sync foundation
@@ -956,7 +956,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P1
   - Depends on: SF-181
   - Evidence: MyAnimeList start/callback routes use state plus S256 PKCE, exchange the authorization code server-side, fetch the user profile, and encrypt access/refresh tokens before upsert; Space shows a configuration-aware connect card.
-  - Commit: `pending`
+  - Commit: `719ca0f`
   - Completed: 2026-08-18
 
 - [x] SF-187 — Add in-app new-episode notification foundation
@@ -964,7 +964,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P1
   - Depends on: SF-183
   - Evidence: Authenticated `/api/anime/notifications` derives newest released episodes from anime history, stores deduplicated notification rows through the service role, and Anime Mode exposes an unread panel with mark-read actions.
-  - Commit: `pending`
+  - Commit: `719ca0f`
   - Completed: 2026-08-18
 
 - [ ] SF-188 — Add optional web/push delivery and episode polling
@@ -972,7 +972,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P1
   - Depends on: SF-187
   - Evidence: Anime Mode polls the notification endpoint every 15 minutes while open. Background web push/native delivery is intentionally not enabled without an authorized VAPID/FCM delivery configuration.
-  - Commit: `pending`
+  - Commit: `719ca0f`
   - Next action: configure and test an authorized push delivery channel or keep in-app notifications as the documented release behavior
 
 - [ ] SF-189 — Test Anime Mode, provider contracts, auth, and notifications
