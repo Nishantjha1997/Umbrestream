@@ -795,7 +795,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-161
   - Evidence: source baseline recorded; phone used a fixed-height stage without Fit/Fill and TV playback kept global chrome active
-  - Commit: `b3097f9`
+  - Commit: `5a85fd1`
   - Completed: 2026-08-18
 
 - [x] SF-163 — Implement phone Fit/Fill player display modes
@@ -803,7 +803,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-162
   - Evidence: phone source and generated bundle now persist Fit/Fill locally, switch the outer viewport without remounting the iframe, and expose accessible controls
-  - Commit: `b3097f9`
+  - Commit: `5a85fd1`
   - Completed: 2026-08-18
 
 - [x] SF-164 — Harden phone fullscreen, orientation, and Back lifecycle
@@ -811,7 +811,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-163
   - Evidence: fullscreen targets the app-owned player shell, hides app chrome, restores portrait on exit/route cleanup, and preserves the player state during Fit/Fill changes
-  - Commit: `b3097f9`
+  - Commit: `5a85fd1`
   - Completed: 2026-08-18
 
 - [x] SF-165 — Isolate Android TV playback from global chrome
@@ -819,7 +819,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-162
   - Evidence: TV source and generated bundle now use an explicit playback mode that hides, disables, and marks global chrome inert while the player is active
-  - Commit: `b3097f9`
+  - Commit: `5a85fd1`
   - Completed: 2026-08-18
 
 - [x] SF-166 — Rework Android TV 10-foot sizing and focus scale
@@ -827,7 +827,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P0
   - Depends on: SF-165
   - Evidence: TV CSS adds responsive 720p/1080p/4K tokens, capped layout dimensions, reduced focus scale, and compact playback overlays
-  - Commit: `b3097f9`
+  - Commit: `5a85fd1`
   - Completed: 2026-08-18
 
 - [x] SF-167 — Apply player-shell parity to web and mobile web
@@ -835,7 +835,7 @@ Rule: complete one task at a time, update this file with evidence and commit has
   - Priority: P1
   - Depends on: SF-163
   - Evidence: shared web PlayerShell now has the same local Fit/Fill control and borderless outer-frame treatment without changing provider iframe contents
-  - Commit: `b3097f9`
+  - Commit: `5a85fd1`
   - Completed: 2026-08-18
 
 - [ ] SF-168 — Harden native Android player window behavior
