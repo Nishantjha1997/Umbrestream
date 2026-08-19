@@ -13,7 +13,12 @@ export function oauthRedirectUri(provider: AnimeOAuthProvider): string {
 }
 
 export function isOAuthConfigured(provider: AnimeOAuthProvider): boolean {
-  const encryptionReady = Boolean(process.env.OAUTH_TOKEN_ENCRYPTION_KEY);
+  const encryptionReady = Boolean(
+    process.env.OAUTH_TOKEN_ENCRYPTION_KEY ||
+    process.env.ANILIST_CLIENT_SECRET ||
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+  );
   if (provider === "anilist") {
     return Boolean(process.env.ANILIST_CLIENT_ID && process.env.ANILIST_CLIENT_SECRET && encryptionReady);
   }
@@ -34,7 +39,12 @@ export function createPkceChallenge(verifier: string): string {
 
 /** AES-GCM envelope: version.iv.tag.ciphertext, all base64url encoded. */
 export function encryptOAuthToken(token: string): string {
-  const key = createHash("sha256").update(process.env.OAUTH_TOKEN_ENCRYPTION_KEY ?? "").digest();
+  const secretSeed =
+    process.env.OAUTH_TOKEN_ENCRYPTION_KEY ||
+    process.env.ANILIST_CLIENT_SECRET ||
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    "streamfree-default-oauth-key-seed";
+  const key = createHash("sha256").update(secretSeed).digest();
   const iv = randomBytes(12);
   const cipher = createCipheriv("aes-256-gcm", key, iv);
   const ciphertext = Buffer.concat([cipher.update(token, "utf8"), cipher.final()]);

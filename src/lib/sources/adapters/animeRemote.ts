@@ -1,4 +1,5 @@
 import type { AudioVariant, MediaTrack, SourceAdapter, StreamCandidate, StreamKind } from "../types";
+import { proxiedFetch } from "@/utils/proxy";
 
 const API_PROVIDERS = new Set([
   "reanime",
@@ -215,13 +216,27 @@ function tracks(value: unknown, origins: Set<string>): MediaTrack[] | undefined 
 }
 
 async function json(url: URL, signal?: AbortSignal): Promise<unknown> {
-  const response = await fetch(url, {
-    signal,
-    cache: "no-store",
-    headers: { Accept: "application/json" },
-  });
-  if (!response.ok) throw new Error(`Anime provider returned HTTP ${response.status}`);
-  return response.json();
+  try {
+    const response = await fetch(url, {
+      signal,
+      cache: "no-store",
+      headers: { Accept: "application/json" },
+    });
+    if (response.ok) return response.json();
+    throw new Error(`Anime provider returned HTTP ${response.status}`);
+  } catch (directErr) {
+    try {
+      const proxiedResponse = await proxiedFetch(url.toString(), {
+        signal,
+        cache: "no-store",
+        headers: { Accept: "application/json" },
+      });
+      if (proxiedResponse.ok) return proxiedResponse.json();
+    } catch {
+      // Ignore proxy error and throw original error
+    }
+    throw directErr;
+  }
 }
 
 async function watchCandidates(

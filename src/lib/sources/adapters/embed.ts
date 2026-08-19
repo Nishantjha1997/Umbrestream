@@ -88,6 +88,24 @@ const movieOrTv = (
 
 const definitions: EmbedDefinition[] = [
   {
+    id: "vidsrc",
+    label: "VidSrc",
+    origin: "https://vidsrc.rip",
+    tier: "stable",
+    priorities: { movie: 6, tv: 6 },
+    requirements: movieAndTvRequirements,
+    build: (request) =>
+      movieOrTv(
+        request,
+        (id) => `https://vidsrc.rip/embed/movie/${id}`,
+        (id, season, episode) => `https://vidsrc.rip/embed/tv/${id}/${season}/${episode}`,
+      ),
+    capabilities: {
+      ads: true,
+      subtitles: "unverified",
+    },
+  },
+  {
     id: "cinezo",
     label: "Cinezo",
     origin: "https://player.cinezo.live",
@@ -411,6 +429,24 @@ const legacyAnimeDefinitions: EmbedDefinition[] = [
 ];
 
 const recoveredAnimeDefinitions: EmbedDefinition[] = [
+  {
+    id: "vidsrc-anime-sub",
+    label: "VidSrc Sub",
+    origin: "https://vidsrc.me",
+    tier: "stable",
+    variant: "anime-sub",
+    priorities: { anime: 35 },
+    requirements: { anime: ["malId", "episode"] },
+    build: (request) =>
+      request.malId && request.episode
+        ? `https://vidsrc.me/embed/anime/${request.malId}/${request.episode}`
+        : null,
+    capabilities: {
+      subtitles: "unverified",
+      ads: true,
+    },
+    audioVariant: "sub",
+  },
   {
     id: "anilink-sub",
     label: "AniLink Sub",
