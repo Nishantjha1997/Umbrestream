@@ -37,6 +37,24 @@ const API_PROVIDERS = new Set([
 
 const IFRAME_ALLOW = "autoplay; encrypted-media; picture-in-picture; fullscreen; screen-wake-lock";
 const animeRemoteCache = new Map<string, { expiresAt: number; data: StreamCandidate[] }>();
+const DIRECT_WATCH_DEADLINE_MS = 25_000;
+
+/** Resolves to { value } on success or null on timeout/rejection. */
+function withDeadline<T>(promise: Promise<T>, ms: number): Promise<{ value: T } | null> {
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => resolve(null), ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve({ value });
+      },
+      () => {
+        clearTimeout(timer);
+        resolve(null);
+      },
+    );
+  });
+}
 
 function configuredOrigin(value: string | undefined): string | null {
   if (!value) return null;
@@ -89,7 +107,7 @@ function segment(value: unknown): string | null {
 
 function streamKind(value: unknown, url: string): StreamKind | null {
   const declared = typeof value === "string" ? value.toLowerCase() : "";
-  if (declared === "hls" || declared === "m3u8") return "hls";
+  if (declared === "hls" || declared === "m3u8" || declared === "hls-redirect") return "hls";
   if (declared === "dash" || declared === "mpd") return "dash";
   if (declared === "mp4") return "mp4";
   if (declared === "embed" || declared === "iframe") return "iframe";
@@ -275,6 +293,11 @@ async function watchCandidates(
   const payload = asRecord(responsePayload?.results) ?? responsePayload;
   if (!payload) return [];
   const rawStreams = [
+    // Anivexa's reanime response exposes the direct HLS as a top-level
+    // stream_url instead of a streams[] entry; surface it first.
+    ...(api === "anivexa" && typeof payload.stream_url === "string" && payload.stream_url
+      ? [{ url: payload.stream_url, type: payload.type ?? "hls" }]
+      : []),
     ...(Array.isArray(payload.streams) ? payload.streams : []),
     ...(payload.bestStream ? [payload.bestStream] : []),
   ];
@@ -353,6 +376,45 @@ function createRemoteAdapter(
       const origins = allowedOrigins();
       const primaryAudio: AudioVariant = request.preferredAudio === "dub" ? "dub" : "sub";
       try {
+        if (id === "anivexa") {
+          // Fast path: hit /watch directly for the top providers instead of
+          // paying for the heavy /episodes scrape (8-24s on Render free tier).
+          // Each call gets its own deadline so a slow scraper (animegg) can't
+          // stall the whole batch.
+          const directProviders = ["anibd", "reanime", "animegg", "kaa"];
+          const settled = await Promise.all(
+            directProviders.map((provider) =>
+              withDeadline(
+                watchCandidates(
+                  id,
+                  activeBase,
+                  provider,
+                  request.anilistId!,
+                  primaryAudio,
+                  { id: `watch/${provider}/${request.anilistId}/${primaryAudio}/${provider}-${request.episode}`, number: request.episode },
+                  request.episode!,
+                  origins,
+                  signal,
+                ).catch(() => []),
+                DIRECT_WATCH_DEADLINE_MS,
+              ),
+            ),
+          );
+          const candidates: StreamCandidate[] = [];
+          for (const outcome of settled) {
+            if (outcome) candidates.push(...outcome.value);
+          }
+          if (candidates.length > 0) {
+            // Cache only when every provider answered, so a provider that got
+            // cut by the deadline is retried on the next request instead of
+            // being frozen out for the whole cache TTL.
+            if (settled.every((outcome) => outcome)) {
+              animeRemoteCache.set(cacheKey, { expiresAt: Date.now() + 300_000, data: candidates });
+            }
+            return candidates;
+          }
+        }
+
         const payload = await json(endpoint(activeBase, request.anilistId), signal);
         const entries = providerEntries(payload);
         const tasks: Promise<StreamCandidate[]>[] = [];
