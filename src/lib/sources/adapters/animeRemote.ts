@@ -1,5 +1,5 @@
 import type { AudioVariant, MediaTrack, SourceAdapter, StreamCandidate, StreamKind } from "../types";
-import { proxiedFetch } from "@/utils/proxy";
+import { proxiedFetch, toProxiedUrl } from "@/utils/proxy";
 
 const API_PROVIDERS = new Set([
   "reanime",
@@ -172,10 +172,10 @@ function providerEntries(payload: unknown): Array<[string, Record<string, unknow
   const result = asRecord(root.results);
   const providers = asRecord(result?.providers) ?? asRecord(root.providers) ?? root;
   return Object.entries(providers)
-    .flatMap(([name, value]) => {
+    .flatMap(([name, value]): Array<[string, Record<string, unknown>]> => {
       const record = asRecord(value);
       return record && API_PROVIDERS.has(name.toLowerCase())
-        ? ([[name.toLowerCase(), record] as const])
+        ? [[name.toLowerCase(), record]]
         : [];
     })
     .sort(([a], [b]) => (PROVIDER_PRIORITY[a] ?? 99) - (PROVIDER_PRIORITY[b] ?? 99));
@@ -285,13 +285,17 @@ async function watchCandidates(
     if (!kind) return [];
     const providerId = `${api}:${provider}`;
     const quality = typeof stream?.quality === "string" || typeof stream?.quality === "number" ? ` · ${stream.quality}` : "";
+    const rawPlaybackUrl = streamUrl;
+    const finalStreamUrl = (kind === "hls" && (streamUrl.includes("animeapps.top") || streamUrl.includes("playeng")))
+      ? toProxiedUrl(streamUrl)
+      : streamUrl;
     return [{
       id: `${providerId}:${audio}:${episodeNumberValue}:${index}`,
       providerId,
       label: `${providerLabel(provider)} · ${audio === "sub" ? "Sub" : "Dub"}${quality}`,
       kind,
-      url: streamUrl,
-      providerOrigin: new URL(streamUrl).origin,
+      url: finalStreamUrl,
+      providerOrigin: new URL(rawPlaybackUrl).origin,
       providerTier: "stable",
       playerVariant: api,
       mediaType: "anime",
