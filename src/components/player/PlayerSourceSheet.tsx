@@ -151,59 +151,7 @@ export default function PlayerSourceSheet({
         </section>
       ));
 
-    if (!animeCatalog?.length || !hasAudioGroups) return renderedGroups;
-
-    const catalogRows = (variant: "sub" | "dub") =>
-      animeCatalog
-        .filter((entry) => entry.variants.includes(variant))
-        .filter(
-          (entry) =>
-            !sources.some(
-              (source) =>
-                source.audioVariant === variant &&
-                (source.providerId === entry.id || source.providerId.endsWith(`:${entry.id}`)),
-            ),
-        )
-        .map((entry) => (
-          <div
-            key={`${entry.id}:${variant}`}
-            className="grid min-h-14 w-full grid-cols-[auto_1fr_auto] items-center gap-3 rounded-[13px] border border-white/7 bg-white/[0.015] p-3.5 opacity-65"
-            aria-label={`${entry.label} ${variant === "dub" ? "Dub" : "Sub"} unavailable`}
-          >
-            <span
-              className={cn(
-                "size-[7px] rounded-full",
-                loading ? "bg-amber-400/80 animate-pulse" : "bg-white/20",
-              )}
-              aria-hidden
-            />
-            <span className="flex min-w-0 flex-col gap-0.5">
-              <span className="truncate text-[13.5px] font-medium text-white/80">
-                {entry.label} {variant === "dub" ? "Dub" : "Sub"}
-              </span>
-              <span className="truncate text-[11px] text-white/38">
-                {loading ? "Searching streams..." : "No stream found for this episode"}
-              </span>
-            </span>
-            <span className="text-right text-[9.5px] font-medium tracking-[.08em] text-white/35 uppercase">
-              {loading ? "Checking" : "Unavailable"}
-            </span>
-          </div>
-        ));
-
-    return renderedGroups.map((groupNode, index) => {
-      const variant = groups[index]?.label === "Dub servers" ? "dub" : "sub";
-      const rows = catalogRows(variant);
-      if (!rows.length) return groupNode;
-      return (
-        <div key={groups[index]?.label ?? index} className="flex flex-col gap-2.5">
-          {groupNode}
-          <div className="flex flex-col gap-2.5" aria-label={`${variant === "dub" ? "Dub" : "Sub"} catalog sources`}>
-            {rows}
-          </div>
-        </div>
-      );
-    });
+    return renderedGroups;
   };
 
   const resetPreference = hasPreference && onResetPreference && (
@@ -229,6 +177,12 @@ export default function PlayerSourceSheet({
               </p>
             </div>
           </div>
+        </div>
+      )}
+      {loading && (
+        <div className="flex items-center gap-2.5 rounded-xl border border-purple-500/20 bg-purple-500/10 px-3.5 py-2.5 text-xs text-purple-200 backdrop-blur-md">
+          <span className="size-2 rounded-full bg-purple-400 animate-ping" />
+          <span>Searching additional HD servers...</span>
         </div>
       )}
       {renderSourceGroups()}
