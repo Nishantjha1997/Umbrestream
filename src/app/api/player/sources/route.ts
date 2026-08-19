@@ -161,7 +161,7 @@ export async function GET(request: Request): Promise<Response> {
 
   return Response.json(response, {
     headers: {
-      "Cache-Control": "private, max-age=0, must-revalidate",
+      "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
       "Server-Timing": `sources;dur=${resolvedInMs}`,
     },
   });

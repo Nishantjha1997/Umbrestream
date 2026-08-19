@@ -151,15 +151,33 @@ function listForAudio(value: Record<string, unknown>, audio: AudioVariant): unkn
   return Array.isArray(list) ? list : [];
 }
 
+const PROVIDER_PRIORITY: Record<string, number> = {
+  anibd: 1,
+  reanime: 2,
+  anikoto: 3,
+  animegg: 4,
+  anineko: 5,
+  "2dhive": 6,
+  mkissa: 7,
+  senshi: 8,
+  kickassanime: 9,
+  anidbapp: 10,
+  megaplay: 11,
+};
+
 function providerEntries(payload: unknown): Array<[string, Record<string, unknown>]> {
   const root = asRecord(payload);
   if (!root) return [];
   const result = asRecord(root.results);
   const providers = asRecord(result?.providers) ?? asRecord(root.providers) ?? root;
-  return Object.entries(providers).flatMap(([name, value]) => {
-    const record = asRecord(value);
-    return record && API_PROVIDERS.has(name.toLowerCase()) ? [[name.toLowerCase(), record] as const] : [];
-  });
+  return Object.entries(providers)
+    .flatMap(([name, value]) => {
+      const record = asRecord(value);
+      return record && API_PROVIDERS.has(name.toLowerCase())
+        ? ([[name.toLowerCase(), record] as const])
+        : [];
+    })
+    .sort(([a], [b]) => (PROVIDER_PRIORITY[a] ?? 99) - (PROVIDER_PRIORITY[b] ?? 99));
 }
 
 function episodeSlug(value: Record<string, unknown>, fallback: number): string | null {
