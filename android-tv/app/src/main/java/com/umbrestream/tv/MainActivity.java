@@ -18,6 +18,10 @@ import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.database.Cursor;
 import android.provider.Settings;
+import android.graphics.Color;
+import android.view.View;
+import android.view.WindowInsets;
+import android.view.WindowInsetsController;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
@@ -25,8 +29,11 @@ import android.webkit.WebView;
 import android.webkit.CookieManager;
 import android.widget.Toast;
 import androidx.core.content.FileProvider;
+import androidx.core.splashscreen.SplashScreen;
 import com.getcapacitor.Bridge;
 import com.getcapacitor.BridgeActivity;
+import com.getcapacitor.PluginCall;
+import com.getcapacitor.JSObject;
 import com.getcapacitor.BridgeWebViewClient;
 import java.io.File;
 import java.io.ByteArrayOutputStream;
@@ -47,11 +54,15 @@ import org.json.JSONObject;
 public class MainActivity extends BridgeActivity {
     private static final String UPDATE_MANIFEST_URL = "https://streamfree.online/downloads/streamfree-android-tv.json";
     private static final String EXPECTED_UPDATE_PACKAGE = "online.streamfree.tv";
-    private static final String EXPECTED_UPDATE_CERTIFICATE = "3899CD4ABFB7DC439680CE0BE05BEB455B32CA2A4B012D15FCEFF1E0D4D2CE2B";
     private long updateDownloadId = -1L;
     private BroadcastReceiver updateReceiver;
     private File expectedUpdateFile;
     private UpdateMetadata pendingUpdate;
+    private boolean immersiveRequested = true;
+
+    // Keep provider filtering disabled until an official, validated policy and
+    // the complete TV playback matrix both prove it cannot break streams.
+    private static final boolean AD_PROTECTION_ENABLED = false;
 
     private static final Set<String> BLOCKED_HOSTS = new HashSet<>(Arrays.asList(
         "2mdn.net",
@@ -88,8 +99,11 @@ public class MainActivity extends BridgeActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        SplashScreen.installSplashScreen(this);
         registerPlugin(StreamFreeNativePlugin.class);
         super.onCreate(savedInstanceState);
+        configureWindowSurface();
+        setImmersivePlayback(true);
 
         WebView webView = bridge.getWebView();
         WebSettings settings = webView.getSettings();
@@ -136,6 +150,37 @@ public class MainActivity extends BridgeActivity {
         }
     }
 
+    private void configureWindowSurface() {
+        getWindow().setStatusBarColor(Color.BLACK);
+        getWindow().setNavigationBarColor(Color.BLACK);
+        getWindow().getDecorView().setBackgroundColor(Color.BLACK);
+    }
+
+    void setImmersivePlayback(boolean active) {
+        immersiveRequested = active;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            WindowInsetsController controller = getWindow().getInsetsController();
+            if (controller == null) return;
+            controller.hide(WindowInsets.Type.statusBars() | WindowInsets.Type.navigationBars());
+            controller.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+            return;
+        }
+        getWindow().getDecorView().setSystemUiVisibility(active
+            ? View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                | View.SYSTEM_UI_FLAG_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+            : View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (hasFocus && immersiveRequested) setImmersivePlayback(true);
+    }
+
     @Override
     public void onDestroy() {
         if (updateReceiver != null) unregisterReceiver(updateReceiver);
@@ -155,6 +200,25 @@ public class MainActivity extends BridgeActivity {
         checkAndQueueUpdate();
     }
 
+    void checkOfficialUpdate(PluginCall call) {
+        new Thread(() -> {
+            try {
+                UpdateMetadata update = fetchOfficialUpdateManifest();
+                JSObject result = new JSObject();
+                result.put("status", update == null ? "current" : "available");
+                if (update != null) {
+                    result.put("versionName", update.versionName);
+                    result.put("versionCode", update.versionCode);
+                    result.put("mandatory", update.mandatory);
+                    result.put("releaseNotes", update.releaseNotes);
+                }
+                call.resolve(result);
+            } catch (Exception error) {
+                call.reject("Official TV update manifest validation failed");
+            }
+        }, "streamfree-tv-update-status").start();
+    }
+
     private void checkAndQueueUpdate() {
         new Thread(() -> {
             try {
@@ -170,80 +234,6 @@ public class MainActivity extends BridgeActivity {
             }
         }, "streamfree-tv-update-check").start();
     }
-    /*
-            expectedUpdateFile = new File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "streamfree-update.apk");
-            if (expectedUpdateFile.exists()) expectedUpdateFile.delete();
-            DownloadManager.Request request = new DownloadManager.Request(source)
-                .setTitle("StreamFree TV update")
-                .setDescription("Downloading the latest StreamFree TV app")
-                .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-                .setMimeType("application/vnd.android.package-archive")
-                .setDestinationInExternalFilesDir(this, Environment.DIRECTORY_DOWNLOADS, "streamfree-tv-update.apk");
-            updateDownloadId = ((DownloadManager) getSystemService(DOWNLOAD_SERVICE)).enqueue(request);
-            Toast.makeText(this, "Downloading StreamFree TV update…", Toast.LENGTH_SHORT).show();
-        } catch (Exception error) {
-            Toast.makeText(this, "Could not download the TV update", Toast.LENGTH_LONG).show();
-        }
-    }
-
-    private void installDownloadedApk(long id) {
-        DownloadManager manager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
-        DownloadManager.Query query = new DownloadManager.Query().setFilterById(id);
-        try (Cursor cursor = manager.query(query)) {
-            if (cursor == null || !cursor.moveToFirst()) return;
-            int status = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS));
-            if (status != DownloadManager.STATUS_SUCCESSFUL) {
-                Toast.makeText(this, "TV update download failed", Toast.LENGTH_LONG).show();
-                return;
-            }
-            if (expectedUpdateFile == null || !verifyOfficialApk(expectedUpdateFile)) {
-                if (expectedUpdateFile != null) expectedUpdateFile.delete();
-                Toast.makeText(this, "TV update verification failed", Toast.LENGTH_LONG).show();
-                return;
-            }
-            Uri packageUri = FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", expectedUpdateFile);
-            Intent install = new Intent(Intent.ACTION_VIEW)
-                .setDataAndType(packageUri, "application/vnd.android.package-archive")
-                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
-            try {
-                startActivity(install);
-            } catch (SecurityException error) {
-                Intent settings = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:" + getPackageName()));
-                startActivity(settings);
-                Toast.makeText(this, "Allow installs, then tap Check for update again", Toast.LENGTH_LONG).show();
-            }
-        } catch (Exception error) {
-            Toast.makeText(this, "Could not open the TV update installer", Toast.LENGTH_LONG).show();
-        }
-    }
-
-    private boolean verifyOfficialApk(File apk) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            try (FileInputStream input = new FileInputStream(apk)) {
-                byte[] buffer = new byte[8192];
-                int count;
-                while ((count = input.read(buffer)) >= 0) if (count > 0) digest.update(buffer, 0, count);
-            }
-            int flags = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
-                ? PackageManager.GET_SIGNING_CERTIFICATES
-                : PackageManager.GET_SIGNATURES;
-            PackageInfo info = getPackageManager().getPackageArchiveInfo(apk.getAbsolutePath(), flags);
-            if (info == null || !EXPECTED_UPDATE_PACKAGE.equals(info.packageName)) return false;
-            Signature[] signatures = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
-                ? info.signingInfo.getApkContentsSigners()
-                : info.signatures;
-            if (signatures == null || signatures.length == 0) return false;
-            return EXPECTED_UPDATE_CERTIFICATE.equalsIgnoreCase(
-                toHex(MessageDigest.getInstance("SHA-256").digest(signatures[0].toByteArray()))
-            );
-        } catch (Exception error) {
-            return false;
-        }
-    }
-
-    */
-
     private void enqueueOfficialUpdate(UpdateMetadata update) {
         try {
             Uri source = Uri.parse(update.apkUrl);
@@ -312,7 +302,8 @@ public class MainActivity extends BridgeActivity {
                     output.write(buffer, 0, count);
                 }
                 JSONObject json = new JSONObject(output.toString("UTF-8"));
-                if (json.optInt("schemaVersion", -1) != 1) throw new IllegalStateException("Unsupported manifest");
+                if (json.optInt("schemaVersion", -1) != 1 ||
+                    !"android-tv".equals(json.optString("platform", ""))) throw new IllegalStateException("Unsupported manifest");
                 String packageId = json.optString("packageId", "");
                 long versionCode = json.optLong("versionCode", -1L);
                 String versionName = json.optString("versionName", "");
@@ -320,18 +311,23 @@ public class MainActivity extends BridgeActivity {
                 String sha256 = json.optString("sha256", "").toUpperCase(java.util.Locale.US);
                 long sizeBytes = json.optLong("sizeBytes", -1L);
                 String certificate = json.optString("signingCertificateSha256", "").toUpperCase(java.util.Locale.US);
+                long minimumSupportedVersion = json.optLong("minimumSupportedVersion", -1L);
+                boolean mandatory = json.optBoolean("mandatory", false);
+                String publishedAt = json.optString("publishedAt", "");
+                org.json.JSONArray releaseNotes = json.optJSONArray("releaseNotes");
                 Uri apkUri = apkUrl.startsWith("/")
                     ? Uri.parse("https://streamfree.online" + apkUrl)
                     : Uri.parse(apkUrl);
                 if (!EXPECTED_UPDATE_PACKAGE.equals(packageId) || versionName.trim().isEmpty() ||
                     !sha256.matches("[A-F0-9]{64}") || sizeBytes <= 0 ||
-                    !EXPECTED_UPDATE_CERTIFICATE.equals(certificate) || !isOfficialDownloadUrl(apkUri)) {
+                    minimumSupportedVersion < 1L || publishedAt.trim().isEmpty() ||
+                    !currentSigningCertificate().equalsIgnoreCase(certificate) || !isOfficialDownloadUrl(apkUri)) {
                     throw new IllegalStateException("Manifest validation failed");
                 }
                 long currentVersionCode = currentVersionCode();
                 if ((!isLegacyPackage() && versionCode <= currentVersionCode) ||
                     (isLegacyPackage() && versionCode < currentVersionCode)) return null;
-                return new UpdateMetadata(packageId, versionCode, apkUri.toString(), sha256, sizeBytes, certificate);
+                return new UpdateMetadata(packageId, versionCode, versionName, apkUri.toString(), sha256, sizeBytes, certificate, mandatory, releaseNotes == null ? "" : releaseNotes.toString());
             }
         } finally {
             connection.disconnect();
@@ -350,7 +346,7 @@ public class MainActivity extends BridgeActivity {
         try {
             if (update == null || !apk.isFile() || apk.length() != update.sizeBytes ||
                 !EXPECTED_UPDATE_PACKAGE.equals(update.packageId) ||
-                !EXPECTED_UPDATE_CERTIFICATE.equals(update.certificate)) return false;
+                !currentSigningCertificate().equalsIgnoreCase(update.certificate)) return false;
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             try (FileInputStream input = new FileInputStream(apk)) {
                 byte[] buffer = new byte[8192];
@@ -393,21 +389,39 @@ public class MainActivity extends BridgeActivity {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.P ? current.getLongVersionCode() : current.versionCode;
     }
 
+    private String currentSigningCertificate() throws Exception {
+        int flags = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
+            ? PackageManager.GET_SIGNING_CERTIFICATES
+            : PackageManager.GET_SIGNATURES;
+        PackageInfo current = getPackageManager().getPackageInfo(getPackageName(), flags);
+        Signature[] signatures = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
+            ? current.signingInfo.getApkContentsSigners()
+            : current.signatures;
+        if (signatures == null || signatures.length == 0) throw new IllegalStateException("No app signer");
+        return toHex(MessageDigest.getInstance("SHA-256").digest(signatures[0].toByteArray()));
+    }
+
     private static final class UpdateMetadata {
         final String packageId;
         final long versionCode;
+        final String versionName;
         final String apkUrl;
         final String sha256;
         final long sizeBytes;
         final String certificate;
+        final boolean mandatory;
+        final String releaseNotes;
 
-        UpdateMetadata(String packageId, long versionCode, String apkUrl, String sha256, long sizeBytes, String certificate) {
+        UpdateMetadata(String packageId, long versionCode, String versionName, String apkUrl, String sha256, long sizeBytes, String certificate, boolean mandatory, String releaseNotes) {
             this.packageId = packageId;
             this.versionCode = versionCode;
+            this.versionName = versionName;
             this.apkUrl = apkUrl;
             this.sha256 = sha256;
             this.sizeBytes = sizeBytes;
             this.certificate = certificate;
+            this.mandatory = mandatory;
+            this.releaseNotes = releaseNotes;
         }
     }
 
@@ -418,6 +432,7 @@ public class MainActivity extends BridgeActivity {
     }
 
     private static boolean shouldBlock(Uri uri) {
+        if (!AD_PROTECTION_ENABLED) return false;
         String host = uri == null ? null : uri.getHost();
         if (host == null || host.trim().isEmpty()) return false;
         String normalized = host.toLowerCase(Locale.US);

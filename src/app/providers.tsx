@@ -4,11 +4,16 @@ import { PropsWithChildren, Suspense } from "react";
 import { HeroUIProvider, ToastProvider } from "@heroui/react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { AppProgressProvider as ProgressProvider } from "@bprogress/next";
 import { AmbientProvider } from "@/components/media/AmbientProvider";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import dynamic from "next/dynamic";
+
+const DevelopmentQueryDevtools = dynamic(
+  () => import("@tanstack/react-query-devtools").then((module) => module.ReactQueryDevtools),
+  { ssr: false },
+);
 
 export default function Providers({ children }: PropsWithChildren) {
   const [queryClient] = useState(
@@ -78,9 +83,11 @@ export default function Providers({ children }: PropsWithChildren) {
           </Suspense>
         </NextThemesProvider>
       </HeroUIProvider>
-      <div className="hidden md:block">
-        <ReactQueryDevtools initialIsOpen={false} />
-      </div>
+      {process.env.NODE_ENV === "development" && (
+        <div className="hidden md:block">
+          <DevelopmentQueryDevtools initialIsOpen={false} />
+        </div>
+      )}
     </QueryClientProvider>
   );
 }

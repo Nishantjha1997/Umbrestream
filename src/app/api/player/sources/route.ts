@@ -124,7 +124,8 @@ export async function GET(request: Request): Promise<Response> {
   }
 
   const legacyPreflight = searchParams.get("version") === "2";
-  const groups = await resolveAll(sourceRequest, request.signal, legacyPreflight ? 4500 : 500);
+  const resolveTimeout = legacyPreflight ? 4500 : sourceRequest.mediaType === "anime" ? 2500 : 500;
+  const groups = await resolveAll(sourceRequest, request.signal, resolveTimeout);
   const candidates = fallbackChain(groups);
   // Probe only the head of the fallback chain. The tail is what the user reaches
   // by switching servers manually, at which point it gets probed on demand —

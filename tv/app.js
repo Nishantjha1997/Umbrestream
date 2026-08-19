@@ -13,6 +13,13 @@ import {
   readPlaybackPreference,
   writePlaybackPreference,
 } from "../src/lib/sources/playbackPolicy.ts";
+import { toNativeHomeFeed } from "../src/lib/homeFeed/nativeAdapter.ts";
+import { fetchSharedHomeFeed } from "../src/lib/homeFeed/nativeClient.ts";
+import { resolveAdjacentEpisode } from "../src/lib/tv/adjacentEpisode.ts";
+import { REGION_OPTIONS, normalizeRegionOverride, regionName } from "../src/lib/native/region.ts";
+import { createNativeCache } from "../src/lib/native/cache.ts";
+import { historyDate, historyProgress, latestHistoryTitles, onlyLocalAnime, sortHistoryItems } from "../src/lib/native/history.ts";
+import { beginUpdateCheck, resolveUpdateState, updateError } from "../src/lib/native/update.ts";
 
 const BACKEND_ORIGIN = "https://streamfree.online";
 const IMAGE_ORIGIN = "https://image.tmdb.org/t/p/w500";
@@ -23,8 +30,9 @@ const RECENT_SEARCH_KEY = "streamfree-tv-recent-searches";
 const SETTINGS_KEY = "streamfree-tv-settings-v1";
 const AUTH_STORAGE_KEY = "streamfree-tv-auth-v1";
 const REGION_STORAGE_KEY = "streamfree-tv-region-v1";
-const APP_VERSION = "1.2.0";
-const APP_VERSION_CODE = 3;
+const REGION_OVERRIDE_KEY = "streamfree-region-override-v1";
+const APP_VERSION = "1.2.3";
+const APP_VERSION_CODE = 6;
 const APP_UPDATE_MANIFEST = "/downloads/streamfree-android-tv.json";
 const TOUR_STORAGE_KEY = "streamfree-tv-tour-v1";
 const ANIME_AUDIO_KEY = "streamfree:anime-audio:v1";
@@ -47,7 +55,7 @@ const state = {
   browsePage: 1,
   animeSort: "TRENDING_DESC",
   detailSeason: 1,
-  cache: new Map(),
+  cache: createNativeCache(),
   media: new Map(),
   supabase: null,
   authReady: false,
@@ -124,6 +132,7 @@ function nativeBridge() {
 
 function setPlaybackOrientation() {
   nativeBridge()?.lockLandscape?.();
+  nativeBridge()?.enterPlayerImmersive?.();
   try {
     void Promise.resolve(screen.orientation?.lock?.("landscape")).catch(() => undefined);
   } catch {
@@ -131,17 +140,39 @@ function setPlaybackOrientation() {
   }
 }
 
+function setTvPlaybackMode(active) {
+  document.documentElement.classList.toggle("tv-playback-active", active);
+  document.body.classList.toggle("tv-playback-active", active);
+  [
+    document.querySelector(".app-header"),
+    document.querySelector(".tab-bar"),
+    document.querySelector("#network-banner"),
+    document.querySelector(".remote-guide"),
+  ].forEach((element) => {
+    if (!element) return;
+    element.toggleAttribute("inert", active);
+    if (active) element.setAttribute("aria-hidden", "true");
+    else element.removeAttribute("aria-hidden");
+  });
+}
+
 async function checkForUpdate({ silent = false } = {}) {
-  state.update = { ...state.update, status: "checking", error: "" };
+  state.update = beginUpdateCheck(state.update);
   try {
+    if (nativePlatform() && nativeBridge()?.checkOfficialUpdate) {
+      const result = await nativeBridge().checkOfficialUpdate();
+      state.update = resolveUpdateState(result || {}, APP_VERSION_CODE);
+      if (!silent) showToast(state.update.status === "available" ? `StreamFree TV ${result.versionName || "update"} is ready.` : "You are on the latest version.");
+      if (state.route === "space/settings") renderSettings();
+      return state.update;
+    }
     const manifest = await requestJson(`${APP_UPDATE_MANIFEST}?t=${Date.now()}`);
-    const available = Number(manifest.versionCode || 0) > APP_VERSION_CODE;
-    state.update = { status: available ? "available" : "current", manifest, error: "" };
-    if (!silent) showToast(available ? `StreamFree TV ${manifest.versionName || "update"} is ready.` : "You are on the latest TV version.");
+    state.update = resolveUpdateState(manifest, APP_VERSION_CODE);
+    if (!silent) showToast(state.update.status === "available" ? `StreamFree TV ${manifest.versionName || "update"} is ready.` : "You are on the latest TV version.");
     if (state.route === "space/settings") renderSettings();
     return state.update;
   } catch (error) {
-    state.update = { ...state.update, status: "error", error: error.message || "Update check failed" };
+    state.update = updateError(state.update, error);
     if (!silent) showToast("Could not check for updates.", "error");
     if (state.route === "space/settings") renderSettings();
     return state.update;
@@ -149,13 +180,13 @@ async function checkForUpdate({ silent = false } = {}) {
 }
 
 function installUpdate() {
-  const apkUrl = state.update.manifest?.apkUrl;
-  if (!apkUrl) return showToast("Check for an update first.", "warning");
   if (nativePlatform() && nativeBridge()?.installOfficialUpdate) {
     void nativeBridge().installOfficialUpdate().catch(() => undefined);
     showToast("Verifying and downloading the official StreamFree TV update…");
     return;
   }
+  const apkUrl = state.update.manifest?.apkUrl;
+  if (!apkUrl) return showToast("Check for an update first.", "warning");
   const url = absoluteUrl(apkUrl);
   window.open(url, "_blank", "noopener,noreferrer");
   showToast("The TV update download has started.");
@@ -229,38 +260,21 @@ async function requestJson(path, { method = "GET", body, headers: extraHeaders =
   return response.json();
 }
 
-async function cached(key, loader, ttl = CACHE_TTL) {
-  const found = state.cache.get(key);
-  if (found?.data && Date.now() - found.at < ttl) return found.data;
-  if (found?.promise) return found.promise;
-
-  const promise = loader()
-    .then((data) => {
-      state.cache.set(key, { data, at: Date.now() });
-      return data;
-    })
-    .catch((error) => {
-      state.cache.delete(key);
-      throw error;
-    });
-  state.cache.set(key, { promise, at: Date.now() });
-  return promise;
-}
-
 async function getRegion() {
   if (state.region) return state.region;
+  const override = normalizeRegionOverride(readStorage(REGION_OVERRIDE_KEY, ""));
   const stored = readStorage(REGION_STORAGE_KEY, null);
-  if (stored?.country && Date.now() - Number(stored.at || 0) < 24 * 60 * 60 * 1000) {
+  if (!override && stored?.country && Date.now() - Number(stored.at || 0) < 24 * 60 * 60 * 1000) {
     state.region = stored;
     return state.region;
   }
   try {
     const region = await requestJson("/api/geo");
-    state.region = { ...region, at: Date.now() };
+    state.region = override ? { ...region, detectedCountry: region.country, country: override, countryName: regionName(override), source: "override", at: Date.now() } : { ...region, at: Date.now() };
   } catch {
-    state.region = { country: "US", countryName: "Global", source: "default", at: Date.now() };
+    state.region = override ? { country: override, countryName: regionName(override), source: "override", at: Date.now() } : { country: "US", countryName: "Global", source: "default", at: Date.now() };
   }
-  writeStorage(REGION_STORAGE_KEY, state.region);
+  if (!override) writeStorage(REGION_STORAGE_KEY, state.region);
   return state.region;
 }
 
@@ -280,7 +294,7 @@ function tmdb(endpoint, params = {}) {
     if (value !== undefined && value !== "") query.set(key, String(value));
   });
   const path = `/api/tmdb/${endpoint}${query.size ? `?${query}` : ""}`;
-  return cached(`tmdb:${path}`, () => requestJson(path));
+  return state.cache.get(`tmdb:${path}`, () => requestJson(path), CACHE_TTL);
 }
 
 function anilist(query, variables = {}) {
@@ -424,28 +438,7 @@ function currentLibrary() {
 
 function currentHistory() {
   if (!state.user) return guestHistory();
-  return [...state.histories, ...guestHistory().filter((item) => mediaType(item, item.type) === "anime")]
-    .sort((a, b) => new Date(b.updated_at || b.watchedAt || 0) - new Date(a.updated_at || a.watchedAt || 0));
-}
-
-function latestHistoryTitles(items) {
-  return [...items]
-    .sort((a, b) => new Date(b.updated_at || b.watchedAt || 0) - new Date(a.updated_at || a.watchedAt || 0))
-    .filter((item, index, rows) => rows.findIndex((candidate) => mediaType(candidate, candidate.type) === mediaType(item, item.type) && mediaId(candidate) === mediaId(item)) === index);
-}
-
-function historyProgress(item) {
-  const duration = Number(item.duration || 0);
-  const position = Number(item.last_position || 0);
-  if (!duration) return item.completed ? 100 : 8;
-  return Math.round((position / duration) * 100);
-}
-
-function historyDate(item) {
-  const value = item.updated_at || item.watchedAt || item.created_at;
-  if (!value) return "Recently watched";
-  const date = new Date(value);
-  return `Watched ${new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" }).format(date)}`;
+  return sortHistoryItems([...state.histories, ...onlyLocalAnime(guestHistory())]);
 }
 
 function accountInitials() {
@@ -620,12 +613,24 @@ async function loadAccountData({ mergeGuest = false } = {}) {
       if (!historyRefresh.error) state.histories = historyRefresh.data || [];
     }
     updateAccountChrome();
-    if (state.route === "home" || state.route.startsWith("space")) render();
+    if (state.route === "home") void refreshHomeAfterAuth();
+    else if (state.route.startsWith("space")) render();
   } catch (error) {
     console.error("[mobile-sync] refresh failed", error);
     showToast("Your account is connected, but sync needs another try.", "warning");
   } finally {
     state.syncBusy = false;
+  }
+}
+
+async function refreshHomeAfterAuth() {
+  if (state.route !== "home" || !navigator.onLine) return;
+  try {
+    const feed = await loadSharedHomeFeed();
+    renderSharedHomeFeed(feed);
+  } catch {
+    // A failed personalized refresh must not leave the existing Home blank.
+    void renderHome();
   }
 }
 
@@ -797,6 +802,38 @@ function heroMarkup(hero, resume = false) {
   </section>`;
 }
 
+async function loadSharedHomeFeed() {
+  const override = normalizeRegionOverride(readStorage(REGION_OVERRIDE_KEY, ""));
+  let accessToken;
+  if (state.supabase) {
+    const { data } = await state.supabase.auth.getSession();
+    accessToken = data.session?.access_token;
+  }
+  return fetchSharedHomeFeed(requestJson, { accessToken, regionOverride: override || undefined });
+}
+
+function renderSharedHomeFeed(feed) {
+  const mapped = toNativeHomeFeed(feed);
+  const history = mapped.history.filter((item) => !item.completed);
+  const hero = mapped.hero || history[0] || mapped.trending[0] || mapped.regionalMovies[0] || mapped.anime[0];
+  if (!hero) throw new Error("Shared home feed is empty");
+  const countryLabel = feed.region.source === "default" && feed.region.effectiveCountry === "US" ? "Global" : feed.region.countryName;
+  const displayName = state.user ? state.profile?.username || state.user.email?.split("@")[0] : "Guest";
+  const markup = [
+    heroMarkup(hero, mapped.heroIsResume),
+    '<section class="anime-mode-card"><div><span class="eyebrow">Dedicated space</span><strong>Anime Mode</strong><p>Sub and Dub servers, seasonal discovery and episode-first browsing.</p></div><button class="primary pressable" data-route="anime">Open Anime</button></section>',
+    '<section class="welcome-strip"><div><span>' + (state.user ? "Synced across devices" : "Private guest session") + '</span><strong>' + escapeHtml(displayName) + '</strong></div><button class="avatar-chip pressable" data-route="space">' + escapeHtml(accountInitials()) + '</button></section>',
+    section("Continue watching", history.slice(1), "movie", { kicker: "Most recently watched", progress: true, action: "open-history", actionLabel: "History" }),
+    mapped.personalized.length ? section("Picked for you", mapped.personalized, "movie", { kicker: "Based on your watches" }) : "",
+    section(countryLabel + " trending movies", mapped.regionalMovies, "movie", { kicker: "What people are watching nearby", ranked: true }),
+    section(countryLabel + " trending series", mapped.regionalSeries, "tv", { kicker: "Series popular in your region" }),
+    section("Trending anime", mapped.anime, "anime", { kicker: "Fresh picks from AniList" }),
+    section("Trending now", mapped.trending, "movie", { kicker: "Everyone is watching", ranked: true }),
+    '<section class="home-end"><span>SF</span><p>You reached the credits.</p><button class="text-action" data-action="scroll-top">Back to top</button></section>',
+  ].join("");
+  commit(markup, { root: "home" });
+}
+
 async function renderHome() {
   if (!navigator.onLine) {
     renderOfflineHome();
@@ -804,6 +841,13 @@ async function renderHome() {
   }
   renderLoading(state.user ? `Welcome back, ${state.profile?.username || "movie lover"}` : "Building your home");
   try {
+    try {
+      const sharedFeed = await loadSharedHomeFeed();
+      renderSharedHomeFeed(sharedFeed);
+      return;
+    } catch (sharedError) {
+      console.warn("[tv-home] shared feed unavailable; using legacy fallback", sharedError);
+    }
     const region = await getRegion();
     const localParams = regionalParams(region);
     const [trending, movies, shows, nowPlaying, topShows, topMovies, airing, regionalMovies, regionalSeries, animeData] = await Promise.all([
@@ -835,9 +879,10 @@ async function renderHome() {
     const anime = animeData?.data?.Page?.media?.map(fromAnime) || [];
     const countryLabel = region.source === "default" ? "Global" : region.countryName;
     commit(`${heroMarkup(hero, Boolean(history[0]))}
+      <section class="anime-mode-card"><div><span class="eyebrow">Dedicated space</span><strong>Anime Mode</strong><p>Sub and Dub servers, seasonal discovery and episode-first browsing.</p></div><button class="primary pressable" data-route="anime">Open Anime</button></section>
       <section class="welcome-strip"><div><span>${state.user ? "Synced across devices" : "Private guest session"}</span><strong>${escapeHtml(displayName)}</strong></div><button class="avatar-chip pressable" data-route="space">${escapeHtml(accountInitials())}</button></section>
       ${section("Continue watching", history.slice(1), "movie", { kicker: "Most recently watched", progress: true, action: "open-history", actionLabel: "History" })}
-      ${section("Picked for you", picked.slice(0, 12), "movie", { kicker: state.user ? "Based on your watches" : "Critic favorites" })}
+      ${section(state.user ? "Picked for you" : "Trending now", picked.slice(0, 12), "movie", { kicker: state.user ? "Based on your watches" : "Critic favorites" })}
       ${section(`${countryLabel} trending movies`, regionalMovies.results?.slice(0, 14), "movie", { kicker: "What people are watching nearby", ranked: true })}
       ${section(`${countryLabel} trending series`, regionalSeries.results?.slice(0, 14), "tv", { kicker: "Series popular in your region" })}
       ${section("Trending anime", anime.slice(0, 14), "anime", { kicker: "Fresh picks from AniList" })}
@@ -1089,6 +1134,7 @@ async function openPlayer(mediaTypeValue, id, title, season = 0, episode = 0, op
 function trustedPlaybackEvent(event) {
   const player = state.player;
   const source = player?.sources[player.index];
+  if (source?.kind !== "iframe") return null;
   const frame = document.querySelector("#player-frame");
   if (!player || !source || !frame || event.source !== frame.contentWindow) return null;
   if (event.origin !== source.providerOrigin) return null;
@@ -1245,16 +1291,23 @@ async function advanceToNextEpisode() {
   const season = Number(player.media.season || 1);
   const episode = Number(player.media.episode || 1);
   try {
-    const seasonData = await tmdb(`tv/${player.media.id}/season/${season}`);
-    const next = (seasonData.episodes || [])
-      .filter((entry) => Number(entry.episode_number) > episode)
-      .sort((a, b) => Number(a.episode_number) - Number(b.episode_number))[0];
+    const [details, seasonData] = await Promise.all([
+      tmdb("tv/" + player.media.id),
+      tmdb("tv/" + player.media.id + "/season/" + season),
+    ]);
+    const next = resolveAdjacentEpisode(
+      details.seasons || [],
+      season,
+      episode,
+      seasonData.episodes || [],
+      "next",
+    );
     if (!next) {
       player.nextEpisodeBusy = false;
       showToast("That was the last episode.");
       return;
     }
-    startNextEpisodeCountdown(season, Number(next.episode_number));
+    startNextEpisodeCountdown(next.season, next.episode);
   } catch (error) {
     player.nextEpisodeBusy = false;
     console.error("[tv-next-episode]", error);
@@ -1278,16 +1331,30 @@ document.addEventListener("visibilitychange", () => {
 function renderPlayer() {
   const player = state.player;
   if (!player) return renderError("Player closed", "Choose a title to start watching.", false);
+  setTvPlaybackMode(true);
   const source = player.sources[player.index];
   const label = player.media.media_type === "tv"
     ? `S${player.media.season || 1} · E${player.media.episode || 1}`
     : player.media.media_type === "anime"
       ? `Episode ${player.media.episode || 1} · ${player.audio === "dub" ? "Dub" : "Sub"}`
       : "Movie";
-  commit(`<section class="player-page tv-player-page"><div class="player-header"><button class="player-back pressable" data-action="back-detail" data-media="${player.media.media_type}" data-id="${player.media.id}">‹</button><div><span>${escapeHtml(label)}</span><strong>${escapeHtml(player.media.title)}</strong></div><button class="player-more pressable" data-action="server-sheet" aria-label="Choose playback server">•••</button></div><div class="player-stage"><div class="player-loader"><span></span><p>Connecting to ${escapeHtml(source.label || source.id)}</p></div><iframe id="player-frame" tabindex="-1" src="${escapeHtml(source.url)}" title="${escapeHtml(player.media.title)} player" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="origin-when-cross-origin"></iframe><button class="player-enter pressable" data-action="enter-player"><span>OK</span> Control player</button></div><div id="playback-recovery" hidden></div><div id="next-episode-countdown" hidden></div><section class="server-row"><div><span>Playback server</span><strong>${escapeHtml(source.label || source.id)}</strong></div></section><section class="player-tip"><span>Remote tip</span><p>Playback starts full screen. Press Back to return, or Menu to choose another server.</p></section></section>`, { root: state.previousRoot });
+  const nativeVideo = ["hls", "mp4", "dash"].includes(source.kind);
+  const stageMedia = nativeVideo
+    ? `<video id="player-video" tabindex="-1" src="${escapeHtml(source.url)}" title="${escapeHtml(player.media.title)} player" controls playsinline preload="metadata"></video>`
+    : `<iframe id="player-frame" tabindex="-1" src="${escapeHtml(source.url)}" title="${escapeHtml(player.media.title)} player" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="origin-when-cross-origin"></iframe>`;
+  commit(`<section class="player-page tv-player-page"><div class="player-header"><button class="player-back pressable" data-action="back-detail" data-media="${player.media.media_type}" data-id="${player.media.id}">‹</button><div><span>${escapeHtml(label)}</span><strong>${escapeHtml(player.media.title)}</strong></div><button class="player-more pressable" data-action="server-sheet" aria-label="Choose playback server">•••</button></div><div class="player-stage"><div class="player-loader"><span></span><p>Connecting to ${escapeHtml(source.label || source.id)}</p></div>${stageMedia}<button class="player-enter pressable" data-action="enter-player"><span>OK</span> Control player</button></div><div id="playback-recovery" hidden></div><div id="next-episode-countdown" hidden></div><section class="server-row"><div><span>Playback server</span><strong>${escapeHtml(source.label || source.id)}</strong></div></section><section class="player-tip"><span>Remote tip</span><p>Playback starts full screen. Press Back to return, or Menu to choose another server.</p></section></section>`, { root: state.previousRoot });
   setPlaybackOrientation();
-  requestAnimationFrame(() => document.querySelector("#player-frame")?.focus({ preventScroll: true }));
-  document.querySelector("#player-frame")?.addEventListener("load", () => document.querySelector(".player-loader")?.classList.add("done"), { once: true });
+  const video = document.querySelector("#player-video");
+  requestAnimationFrame(() => (video || document.querySelector("#player-frame"))?.focus({ preventScroll: true }));
+  if (video) {
+    video.addEventListener("loadedmetadata", () => document.querySelector(".player-loader")?.classList.add("done"), { once: true });
+    video.addEventListener("playing", confirmPlaybackStarted, { once: true });
+    video.addEventListener("timeupdate", confirmPlaybackStarted);
+    video.addEventListener("error", () => showPlaybackRecovery("error"), { once: true });
+    video.addEventListener("ended", () => void advanceToNextEpisode(), { once: true });
+  } else {
+    document.querySelector("#player-frame")?.addEventListener("load", () => document.querySelector(".player-loader")?.classList.add("done"), { once: true });
+  }
   updatePlaybackRecoveryPanel();
   renderNextEpisodeCountdown();
   armPlaybackRecovery();
@@ -1371,7 +1438,9 @@ function settingToggle(key, title, copy) {
 }
 
 function renderSettings() {
-  commit(`<section class="subpage-head"><button class="back-fab pressable" data-action="back">‹</button><span class="eyebrow">Make it yours</span><h1>TV settings</h1><p>Stored privately on this Android TV device.</p></section><section class="settings-card">${settingToggle("dataSaver", "Data saver", "Prefer lighter artwork while browsing")}${settingToggle("autoplayNext", "Autoplay next episode", "Keep a series moving when supported")}${settingToggle("reduceMotion", "Reduce motion", "Use simpler screen transitions")}</section><section class="settings-note"><span>TV ad protection · Always on</span><p>Known advertising, tracking and popup hosts are blocked by the app WebView. Stream and video CDN requests remain allowed to protect playback.</p></section><section class="settings-note"><span>Native Android TV beta</span><p>The interface lives on your TV. Internet is used for account sync, title information, artwork and playback providers.</p></section>`, { root: "space" });
+  const selectedRegion = normalizeRegionOverride(readStorage(REGION_OVERRIDE_KEY, ""));
+  const regionOptions = REGION_OPTIONS.map(([code, name]) => `<option value="${code}" ${code === selectedRegion ? "selected" : ""}>${name}</option>`).join("");
+  commit(`<section class="subpage-head"><button class="back-fab pressable" data-action="back">‹</button><span class="eyebrow">Make it yours</span><h1>TV settings</h1><p>Stored privately on this Android TV device.</p></section><section class="settings-card">${settingToggle("dataSaver", "Data saver", "Prefer lighter artwork while browsing")}${settingToggle("autoplayNext", "Autoplay next episode", "Keep a series moving when supported")}${settingToggle("reduceMotion", "Reduce motion", "Use simpler screen transitions")}</section><section class="settings-note region-note"><span>Home region</span><p>Automatic uses your connection region. Choose another region when travelling, then reset it anytime.</p><select id="region-preference" aria-label="Home region">${regionOptions}</select>${selectedRegion ? '<button class="glass-button pressable" data-action="reset-region">Reset to automatic</button>' : ""}</section><section class="settings-note"><span>Provider protection · Disabled</span><p>Provider and playback requests are left untouched while StreamFree completes its safety and compatibility review.</p></section><section class="settings-note"><span>Native Android TV</span><p>The interface lives on your TV. Internet is used for account sync, title information, artwork and playback providers.</p></section>`, { root: "space" });
   const updateCopy = state.update.status === "available" ? `Version ${state.update.manifest?.versionName || "new"} is ready to install.` : state.update.status === "checking" ? "Checking StreamFree for a newer build…" : state.update.status === "error" ? state.update.error : `Current version ${APP_VERSION}`;
   const updateAction = state.update.status === "available" ? `<button class="primary pressable settings-update-button" data-action="install-update">Install update</button>` : `<button class="glass-button pressable settings-update-button" data-action="check-update">${state.update.status === "checking" ? "Checking…" : "Check for update"}</button>`;
   const note = document.createElement("section");
@@ -1381,7 +1450,7 @@ function renderSettings() {
 }
 
 function renderHelp() {
-  commit(`<section class="subpage-head"><button class="back-fab pressable" data-action="back">‹</button><span class="eyebrow">StreamFree TV</span><h1>Help & about</h1><p>A remote-first app powered by StreamFree's online catalogue and account services.</p></section><section class="faq-list"><details open><summary>How do I use the Mi TV remote?</summary><p>Use the arrows to move, OK to select, Back to return and Menu inside the player to choose another server.</p></details><details><summary>Can I use my website account?</summary><p>Yes. Sign in with the exact same email and password. Movies, series, library items and history use the same Supabase account.</p></details><details><summary>Does ad protection block every advert?</summary><p>The TV app blocks known advertising, tracking and popup hosts. Ads delivered from the same domain as a video can remain because blocking that domain would also stop playback.</p></details><details><summary>Why does a stream take time to start?</summary><p>Playback providers operate independently. Try another numbered server from the player if the first one is busy.</p></details><details><summary>Is this a website wrapper?</summary><p>No. The navigation, focus system, screens and animations are bundled in the TV APK. Only live data and streams are requested online.</p></details></section><section class="about-card"><div class="about-logo">SF</div><div><strong>StreamFree for Android TV</strong><span>Version 1.0 · Mi TV Remote Beta</span></div></section>`, { root: "space" });
+  commit(`<section class="subpage-head"><button class="back-fab pressable" data-action="back">‹</button><span class="eyebrow">StreamFree TV</span><h1>Help & about</h1><p>A remote-first app powered by StreamFree's online catalogue and account services.</p></section><section class="faq-list"><details open><summary>How do I use an Android TV remote?</summary><p>Use the arrows to move, OK to select, Back to return and Menu inside the player to choose another server.</p></details><details><summary>Can I use my website account?</summary><p>Yes. Sign in with the exact same email and password. Movies, series, library items and history use the same Supabase account.</p></details><details><summary>Does StreamFree block provider requests?</summary><p>No. Provider protection is disabled while compatibility and safety tests are completed. Ads or popups delivered by a provider may remain.</p></details><details><summary>Why does a stream take time to start?</summary><p>Playback providers operate independently. Choose another labelled server from the player if the first one is busy.</p></details><details><summary>Is this a website wrapper?</summary><p>No. The navigation, focus system, screens and animations are bundled in the TV APK. Only live data and streams are requested online.</p></details></section><section class="about-card"><div class="about-logo">SF</div><div><strong>StreamFree for Android TV</strong><span>Immersive Android TV experience</span></div></section><button class="primary pressable tour-replay" data-action="replay-tour">Show the app tour again</button>`, { root: "space" });
 }
 
 function authShell(kind, body) {
@@ -1581,6 +1650,24 @@ document.addEventListener("submit", (event) => {
   if (form.id === "profile-form") void submitProfile(form);
 });
 
+document.addEventListener("change", (event) => {
+  if (event.target?.id !== "region-preference") return;
+  const value = normalizeRegionOverride(event.target.value);
+  if (value) writeStorage(REGION_OVERRIDE_KEY, value);
+  else localStorage.removeItem(REGION_OVERRIDE_KEY);
+  state.region = null;
+  state.cache.clear();
+  showToast(value ? `Home region set to ${regionName(value)}.` : "Home region reset to automatic.");
+  void render();
+});
+
+document.addEventListener("keydown", (event) => {
+  if (state.tour.open && (event.key === "Escape" || event.key === "BrowserBack" || event.key === "GoBack")) {
+    event.preventDefault();
+    finishTour();
+  }
+});
+
 document.addEventListener("click", (event) => {
   const tourAction = event.target.closest("[data-tour-action]")?.dataset.tourAction;
   if (tourAction) {
@@ -1614,7 +1701,14 @@ document.addEventListener("click", (event) => {
   if (action === "season") { state.detailSeason = Number(season); void renderDetail(media, id); }
   if (action === "save") void toggleLibrary(getRemembered(media, id));
   if (action === "play") void openPlayer(media, Number(id), title, Number(season || 0), Number(episode || 0), { audio });
-  if (action === "back-detail") { clearPlaybackRecoveryTimer(); cancelNextEpisodeCountdown(); setRoute(`detail/${media}/${id}`); }
+  if (action === "back-detail") {
+    clearPlaybackRecoveryTimer();
+    cancelNextEpisodeCountdown();
+    setTvPlaybackMode(false);
+    state.player = null;
+    setPlaybackOrientation();
+    setRoute(`detail/${media}/${id}`);
+  }
   if (action === "back") window.history.back();
   if (action === "retry") void render();
   if (action === "scroll-top") window.scrollTo({ top: 0, behavior: state.settings.reduceMotion ? "instant" : "smooth" });
@@ -1644,6 +1738,8 @@ document.addEventListener("click", (event) => {
     showToast("Player controls active · press Back to return");
   }
   if (action === "setting") { state.settings[setting] = !state.settings[setting]; writeStorage(SETTINGS_KEY, state.settings); document.documentElement.classList.toggle("reduce-motion", state.settings.reduceMotion); renderSettings(); }
+  if (action === "reset-region") { localStorage.removeItem(REGION_OVERRIDE_KEY); state.region = null; state.cache.clear(); showToast("Home region reset to automatic."); renderSettings(); }
+  if (action === "replay-tour") { state.tour = { open: true, step: 0 }; renderTour(); }
   if (action === "check-update") void checkForUpdate();
   if (action === "install-update") installUpdate();
   if (action === "trailer") {
@@ -1653,15 +1749,22 @@ document.addEventListener("click", (event) => {
 });
 
 function remoteBack() {
+  if (state.tour.open) {
+    finishTour();
+    return true;
+  }
   if (sheetRoot.classList.contains("open")) {
     closeSheet();
     return true;
   }
   if (document.querySelector(".player-page") && state.player) {
+    const player = state.player;
     clearPlaybackRecoveryTimer();
     cancelNextEpisodeCountdown();
+    setTvPlaybackMode(false);
+    state.player = null;
     setPlaybackOrientation();
-    setRoute(`detail/${state.player.media.media_type}/${state.player.media.id}`);
+    setRoute(`detail/${player.media.media_type}/${player.media.id}`);
     return true;
   }
   if (routeFromHash() !== "home") {

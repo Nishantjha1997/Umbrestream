@@ -98,6 +98,11 @@ import { getUserHistories } from "./histories";
 export type RecommendedItem =
   { type: "movie"; media: any } | { type: "tv"; media: any } | { type: "anime"; media: any };
 
+export interface RecommendationFeed {
+  items: RecommendedItem[];
+  provenance: "personalized" | "trending";
+}
+
 /** A TMDB list entry, in the shape every list endpoint agrees on. */
 interface TmdbListItem {
   id: number;
@@ -161,7 +166,7 @@ const CLOCK_QUANTUM_MS = 3_600_000;
 /*  Entry point                                                                 */
 /* -------------------------------------------------------------------------- */
 
-export async function getPersonalizedRecommendations(): Promise<RecommendedItem[]> {
+export async function getPersonalizedRecommendationFeed(): Promise<RecommendationFeed> {
   try {
     const supabase = await createClient();
     const {
@@ -170,13 +175,13 @@ export async function getPersonalizedRecommendations(): Promise<RecommendedItem[
 
     // Cold start, case 1: nobody is signed in. Trending, not an error and not
     // an empty row.
-    if (!user) return await cachedTrending();
+    if (!user) return { items: await cachedTrending(), provenance: "trending" };
 
     const historyRes = await getUserHistories(HISTORY_DEPTH);
     const rows = historyRes.success ? (historyRes.data ?? []) : [];
 
     // Cold start, case 2: signed in, has watched nothing.
-    if (rows.length === 0) return await cachedTrending();
+    if (rows.length === 0) return { items: await cachedTrending(), provenance: "trending" };
 
     const now = Math.floor(Date.now() / CLOCK_QUANTUM_MS) * CLOCK_QUANTUM_MS;
     const weighted = weighHistory(rows, now);
@@ -216,11 +221,18 @@ export async function getPersonalizedRecommendations(): Promise<RecommendedItem[
 
     // Everything failed upstream but nothing threw — still better to show the
     // charts than an empty section.
-    return row.length > 0 ? row : await cachedTrending();
+    return row.length > 0
+      ? { items: row, provenance: "personalized" }
+      : { items: await cachedTrending(), provenance: "trending" };
   } catch (error) {
     console.error("Failed to build recommendations:", error);
-    return await cachedTrending();
+    return { items: await cachedTrending(), provenance: "trending" };
   }
+}
+
+/** Backwards-compatible list-only API for integrations that do not need provenance. */
+export async function getPersonalizedRecommendations(): Promise<RecommendedItem[]> {
+  return (await getPersonalizedRecommendationFeed()).items;
 }
 
 /* -------------------------------------------------------------------------- */

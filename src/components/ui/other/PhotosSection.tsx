@@ -1,13 +1,15 @@
 "use client";
 
-import Gallery from "@/components/ui/overlay/Gallery";
 import SectionTitle from "@/components/ui/other/SectionTitle";
 import { isEmpty } from "@/utils/helpers";
 import { Eye } from "@/utils/icons";
 import { getImageUrl } from "@/utils/movies";
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { Image as ImageProps } from "tmdb-ts";
-import { Slide } from "yet-another-react-lightbox";
+import type { Slide } from "yet-another-react-lightbox";
+
+const Gallery = dynamic(() => import("@/components/ui/overlay/Gallery"), { ssr: false });
 
 /** The grid shows this many; the rest live behind the "+N" tile. */
 const VISIBLE = 4;

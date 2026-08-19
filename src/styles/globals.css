@@ -248,9 +248,10 @@
  * Phase 6, §10: nothing in the player is ever hidden by media query or by a
  * fullscreen/cinema-mode fallback path — that is what hid the server switcher
  * exactly when a stream died (UI Analysis finding 03). `.player-shell` owns
- * the viewport directly (`fixed inset-0`, portalled — see `PlayerShell.tsx`)
- * from the moment it mounts, in both orientations, so rotating to landscape
- * *is* fullscreen with no `requestFullscreen()` call and no separate CSS path.
+ * a borderless 16:9 stage from the moment it mounts and takes over the
+ * viewport only after the explicit Full screen action. In fullscreen it is
+ * portalled and uses `fixed inset-0` (see `PlayerShell.tsx`) so no ancestor
+ * transform can introduce a shell border or alter the containing block.
  */
 
 .safe-bottom-nav {
@@ -348,6 +349,17 @@
   @apply grid size-full max-w-6xl grid-cols-2 justify-center gap-2 sm:grid-cols-3 md:gap-4 lg:grid-cols-[repeat(auto-fit,minmax(200px,50px))];
 }
 
+/* Shared player framing. The provider remains cross-origin; these rules only
+ * control the StreamFree-owned viewport and native direct-source video. */
+.player-shell,
+.player-shell iframe,
+.player-shell video { background:#000; }
+.player-shell-frame { display:block; border:0!important; outline:0; object-fit:contain; transform:none; transform-origin:center; transition:transform .24s ease; }
+.player-shell-fill .player-shell-frame,
+.player-shell-fill video { object-fit:cover!important; transform:scale(1.12); transform-origin:center; }
+.player-shell-fit .player-shell-frame,
+.player-shell-fit video { object-fit:contain!important; transform:none; }
+
 /* Cinematic first-load splash. It exits through CSS as well as React so the
    site can never remain blocked if hydration or a cached PWA asset is slow. */
 .cinematic-splash {
@@ -363,7 +375,7 @@
     radial-gradient(circle at 50% 44%, rgba(139, 92, 246, 0.22), transparent 31%),
     radial-gradient(circle at 50% 110%, rgba(244, 63, 94, 0.12), transparent 42%),
     #070609;
-  animation: splash-shell-exit 650ms 2550ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: splash-shell-exit 160ms 540ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 .splash-noise {
@@ -658,7 +670,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .cinematic-splash {
-    animation: splash-shell-exit 220ms 620ms ease-out forwards;
+    animation: splash-shell-exit 120ms 500ms ease-out forwards;
   }
 
   .splash-curtain,

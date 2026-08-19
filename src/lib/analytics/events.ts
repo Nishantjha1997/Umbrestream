@@ -21,6 +21,13 @@ export const ANALYTICS_EVENT_NAMES = [
   "player_fullscreen",
   "subtitle_selected",
   "audio_selected",
+  "home_feed_ready",
+  "search_suggestion_selected",
+  "source_sheet_opened",
+  "source_sheet_selection_completed",
+  "app_shell_ready",
+  "pwa_update_ready",
+  "pwa_update_accepted",
 ] as const;
 
 export type AnalyticsEventName = (typeof ANALYTICS_EVENT_NAMES)[number];

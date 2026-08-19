@@ -5,7 +5,7 @@ This is the current handoff document for another developer or AI agent taking ov
 StreamFree project. Read this file before changing production, playback, Android builds, or
 the Vercel deployment.
 
-Last updated: 2026-08-15
+Last updated: 2026-08-17
 
 ## 1. Product identity and live state
 
@@ -13,13 +13,13 @@ Last updated: 2026-08-15
 - Historical code/package names: **Umbra** and **Umbrestream**. Do not rename packages or the
   Vercel project casually; the public brand is already StreamFree.
 - Git repository: https://github.com/Nishantjha1997/Umbrestream
-- Main branch: main
+- Baseline branch: main
+- Active implementation branch: `codex/streamfree-worldclass-hardening`
 - Production domain: https://streamfree.online
 - Vercel project: umbrestream
-- Production code baseline: efdbfe7 (fix: name downloadable APK files correctly).
-- The latest repository commit adds only this handoff documentation and the README link; it
-  does not change runtime behavior.
-- Current production status for the release: Ready and Current on Vercel.
+- Production baseline commit recorded before this hardening branch: `2f234a6`.
+- This branch has not been deployed or published as production. Vercel status must be rechecked
+  after the final test gate; do not infer production status from the dashboard's last deployment.
 - Creator branding: **Nishant**. The site and app splash screens use the signature
   Created with love by Nishant.
 
@@ -239,7 +239,8 @@ handled with an explicit, user-visible server choice and a tested fallback order
 ## 6. Android phone app
 
 The phone app is a bundled static shell in mobile/, packaged by Capacitor in android/.
-It uses package ID com.umbrestream.app.
+It uses canonical package ID `online.streamfree.app`. Historical `com.umbrestream.app` artifacts
+are legacy packages and cannot be upgraded in place with a different signing certificate.
 
 ### Implemented phone features
 
@@ -269,23 +270,25 @@ The command performs:
 
 Build output:
 
-    android/app/build/outputs/apk/debug/app-debug.apk
+    android/app/build/outputs/apk/release/app-release.apk
 
-The current production copy is:
+The current checked-in release copy is:
 
-    public/downloads/StreamFree-Android-v1.2.apk
+public/downloads/StreamFree-Android-v1.3.apk
 
 Current phone release metadata:
 
-- Version name: 1.2.0
-- Version code: 3
-- APK size: 4,272,365 bytes
-- SHA-256: 6031CBED6380012E5AEE791E9EFF14FF75716B189F2940916EDF79012D17A1AA
+- Package: online.streamfree.app
+- Version name: 1.3.0
+- Version code: 4
+- APK size: 3,271,575 bytes
+- SHA-256: 427FCA603B8DE1D743A5D32A80D03FA0EC4FD06201AB72E7A92A67306007B497
 
 ## 7. Android TV app
 
 The TV app is a large-screen static shell in tv/, packaged by Capacitor in android-tv/.
-It uses package ID com.umbrestream.tv.
+It uses canonical package ID `online.streamfree.tv`. Historical `com.umbrestream.tv` artifacts
+are legacy packages and cannot be upgraded in place with a different signing certificate.
 
 ### Implemented TV features
 
@@ -315,18 +318,19 @@ The command performs:
 
 Build output:
 
-    android-tv/app/build/outputs/apk/debug/app-debug.apk
+    android-tv/app/build/outputs/apk/release/app-release.apk
 
-The current production copy is:
+The current checked-in release copy is:
 
-    public/downloads/StreamFree-TV-v1.1.apk
+public/downloads/StreamFree-TV-v1.2.apk
 
 Current TV release metadata:
 
-- Version name: 1.1.0
-- Version code: 2
-- APK size: 4,346,221 bytes
-- SHA-256: 7407020DD6087A8C0E0649ED62608E974363BFDFF213306AAF32E0D8A05526C9
+- Package: online.streamfree.tv
+- Version name: 1.2.0
+- Version code: 3
+- APK size: 3,302,587 bytes
+- SHA-256: D40AE8717FDA6E9D5B90F607782A1BD4EC019349C54D94F43447DEC086832B0E
 
 ## 8. Publishing APKs and the update flow
 
@@ -352,8 +356,8 @@ When releasing a new APK:
 
 Current live download URLs:
 
-- Phone: https://streamfree.online/downloads/StreamFree-Android-v1.2.apk
-- TV: https://streamfree.online/downloads/StreamFree-TV-v1.1.apk
+- Phone: https://streamfree.online/downloads/StreamFree-Android-v1.3.apk
+- TV: https://streamfree.online/downloads/StreamFree-TV-v1.2.apk
 - Phone manifest: https://streamfree.online/downloads/streamfree-android.json
 - TV manifest: https://streamfree.online/downloads/streamfree-android-tv.json
 
@@ -419,14 +423,13 @@ client requests should go through the guarded /api/tmdb proxy.
 
 ## 11. Verification completed for the current release
 
-### Source/build validation
+### Historical source/build validation
 
 - npm run test:player-sources passed; expected movie, TV, and anime adapter orders passed.
 - npm run typecheck passed with the bundled Node runtime.
 - git diff --check passed before the final release commits.
-- APK package metadata was verified:
-  - phone com.umbrestream.app, version code 3, version 1.2.0;
-  - TV com.umbrestream.tv, version code 2, version 1.1.0.
+- Historical APK package metadata was verified before the current hardening branch; the current
+  release artifacts are the canonical packages recorded in Sections 6 and 7.
 - APK assets were checked for the creator signature and playback/autoplay code.
 - A full Next production webpack build passed before the final header filename polish; Vercel then
   built the final efdbfe7 deployment successfully.
@@ -465,8 +468,9 @@ The bundled Node runtime used successfully in this workspace was:
 
     C:/Users/HP_5C/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe
 
-The local Android toolchain included JDK 21 and Android SDK build tools. If node is not on
-PATH, use the bundled runtime path above or run from a machine with Node 20+ and Java 21.
+The current workspace has the Android SDK/Gradle project but no usable `java`/`JAVA_HOME`, so
+Gradle APK compilation is blocked until a JDK is made available. Do not claim a new APK was
+built from this workspace until the release command succeeds.
 
 This Windows/OneDrive workspace has previously shown intermittent 0xC0000005 and EPERM process
 failures. The project intentionally uses webpack for Next builds and runs TypeScript separately.
@@ -494,7 +498,10 @@ Normal release path:
     git diff --check
     git add <intended-files>
     git commit -m "<focused release message>"
-    git push origin main
+    git push origin codex/streamfree-worldclass-hardening
+
+Do not publish this branch directly until the final testing tasks pass and the intended merge or
+Vercel production promotion is explicitly performed.
 
 Vercel is connected to GitHub and automatically builds main. In the Vercel dashboard, check
 the umbrestream project's Deployments page and wait for the new commit to show Ready and
@@ -649,3 +656,431 @@ Release limitations:
   removable only after the user confirms the new app and account data are available.
 - Real provider playback smoke tests and the connected-phone orientation/update test remain
   required. Third-party provider availability is not guaranteed by StreamFree.
+
+## 17. August 17, 2026 world-class hardening checkpoint
+
+Implementation is being continued on the Git branch
+`codex/streamfree-worldclass-hardening`. The durable implementation contract is in
+`plan.md`; `TODO.md` is the live task board and must be updated and committed with every
+completed task so another agent can resume safely.
+
+Baseline recorded before code changes:
+
+- Git baseline: `2f234a6 Fix blocked desktop player menus`.
+- Vercel project: `umbrestream`; production domain: `streamfree.online`.
+- Phone manifest: `online.streamfree.app`, version `1.3.0`, code `4`, certificate
+  `577D4F3C9BBE0A87C3F2CDFC087BD1A6D26EF1A613F392091DF0A26F10677DB9`.
+- TV manifest: `online.streamfree.tv`, version `1.2.0`, code `3`, certificate
+  `3899CD4ABFB7DC439680CE0BE05BEB455B32CA2A4B012D15FCEFF1E0D4D2CE2B`.
+- TypeScript, production build, player-source contracts, and leak scan passed at baseline.
+- Production desktop source picker opens and switches providers successfully. Mobile web,
+  phone, and TV source-picker regression testing remains outstanding.
+- The web splash is fixed-duration and blocks the shell for approximately 3.25 seconds;
+  phone and TV retain a roughly 2.9-second custom splash overlay.
+- Search suggestions do not currently activate through Arrow Down followed by Enter from the
+  search field.
+- Authored-source lint fails and the broad lint command also scans generated Android/build
+  assets.
+- `public/downloads/StreamFree-local-debug.apk` is publicly present and has the same SHA-256
+  as `StreamFree-Android-v1.2.apk`; it must be removed before release.
+- Android unit/instrumentation tests are still Capacitor placeholders with obsolete package
+  assertions.
+- Android TV ad filtering is currently hardcoded on and must be disabled until a safe,
+  remotely disableable policy is proven.
+- TV and web episode navigation currently need a shared cross-season resolver.
+
+Resume protocol: read `plan.md`, then `TODO.md`, then this handoff, inspect the latest Git
+commit, and continue only the task marked `in progress` or the next unstarted dependency.
+
+## 18. Current hardening branch checkpoint — 2026-08-17
+
+This section supersedes stale version/build statements in older sections above.
+
+Implemented on `codex/streamfree-worldclass-hardening` since the baseline:
+
+- Authored-source lint is clean; generated/build assets are excluded from the authored lint scope.
+- The public debug APK was removed from `public/downloads/` and retained outside the repository as
+  a recoverable local file. Release checks reject debug/unsigned APK names and invalid manifests.
+- The shared playback policy, trusted-event recovery, source picker, anime Sub/Dub grouping,
+  cross-season episode resolver, region-aware Home API, Continue Watching helper, PWA update prompt,
+  native official-manifest updater, native SplashScreen integration, onboarding replay, and app/About
+  trust copy are implemented. See the corresponding completed tasks in `TODO.md`.
+- Home-feed rows now remove repeated `kind:id` titles across ordered rows, with deterministic
+  regression coverage in `scripts/check-home-feed.mjs`.
+- Browse segment switching now resets incompatible filter state, normalizes direct-link query values,
+  labels controls, and restores focus to the results region.
+- Phone and TV shells consume a shared native region policy in `src/lib/native/region.ts`; their
+  touch and remote presentation layers remain separate.
+
+Current verified checks on this branch include TypeScript, targeted authored lint, player-source
+contracts, episode resolver, Continue Watching, Home-feed dedupe, update-manifest validation, and
+static phone/TV esbuild bundles. Full release testing is intentionally still pending.
+
+Open release blockers:
+
+- Supabase Continue Watching RPC migration is ready locally but has not been applied to production;
+  an authorized Supabase dashboard/CLI session is required for application and high-volume account
+  verification.
+- Android Gradle release builds are blocked in this workspace because no usable JDK is available.
+- Physical Android phone QA is still required. Android TV physical QA is unavailable by decision;
+  use an Android TV emulator and document the deferral.
+- Final browser/source-picker, real-provider playback, accessibility, performance, APK, Vercel
+  production, and rollback checks remain in the final testing phase. Do not publish new manifests or
+  claim Vercel Ready for this branch before those gates pass.
+
+The next agent should read `TODO.md` for the single active task, keep task evidence and commit hashes
+current, and never replace the canonical release artifacts with debug builds.
+
+## 19. Latest implementation checkpoint — 2026-08-17
+
+Since the previous checkpoint, the branch also includes:
+
+- Shared native cache, history, and update-state modules consumed by both phone and TV shells,
+  with deterministic checks for concurrent cache requests, history ordering/deduplication, and
+  strict higher-version update availability. Phone and TV still own separate touch/remote
+  presentation code.
+- Retryable service states for movie details, TV details, and anime discovery. Transient TMDB or
+  AniList failures no longer masquerade as missing titles or leave an indefinite spinner.
+- The photo lightbox and plugin graph are client-only and dynamically loaded from Photos; its type
+  import is erased from the detail route's initial module graph.
+- Core web interaction targets now meet the 44px minimum on player actions, phone header controls,
+  desktop search, and the standalone fullscreen control. Playback/source/update/next-episode
+  notifications are explicit live regions and include the anime audio variant when relevant.
+- Home copy now says personal picks improve after sign-in, while signed-out rows remain labelled
+  as trending. The unavailable Watch Parties teaser remains inert and honestly marked Coming soon.
+
+Latest commits are recorded in `TODO.md`; the worktree is expected to remain clean after each
+checkpoint. Before release, rerun the complete automated checks rather than relying only on the
+targeted checks recorded above. The remaining gates are Supabase migration application and
+high-volume verification, browser/source-picker/accessibility QA, physical-phone QA, Android TV
+emulator QA, real-provider smoke tests, signed release APK production, Vercel readiness, and
+production rollback verification. Do not claim production readiness until those gates pass.
+
+## 20. Final validation checkpoint — 2026-08-17
+
+The local production server was started from the current branch and exercised through the in-app
+browser at the default viewport, 390×844, and 820×1180. Home and About rendered with the expected
+navigation, trust copy, app links, and Nishant attribution. Browse filter selection changed the
+URL, exposed an enabled Reset Filters action, and reset back to the unfiltered route on desktop and
+mobile. Search accepted typed input and keyboard submission on desktop and mobile. Movie detail and
+Browse displayed the new retryable catalog-service states when the local TMDB proxy returned 503.
+
+These checks are evidence for the browser gate but are not a release pass. A playable source-picker
+exercise, authenticated Continue Watching/removal flow, PWA update flow, mocked provider recovery,
+and real-title source selection still require catalog/auth fixtures or a configured environment.
+
+Current environment blockers confirmed during this checkpoint:
+
+- No `adb`, Android SDK/emulator, or usable Java/JDK is available in the workspace, so physical-phone
+  orientation/update QA, TV-emulator QA, and new signed APK production cannot be claimed.
+- No Supabase CLI session, production environment variables, or dashboard session is available, so
+  the Continue Watching cursor migration cannot be applied or verified against an authenticated
+  account with more than 100 active rows.
+- Vercel production must remain unchanged until the device, migration, provider, APK, and rollback
+  gates are available and pass.
+
+The latest task-board evidence is commit `e21f5f7`. Resume by reading `plan.md`, `TODO.md`, and this
+section, then satisfy the blockers in dependency order. Keep `SF-073`, `SF-100`, `SF-111`, `SF-112`,
+`SF-125`, `SF-126`, and `SF-151` in progress until their stated evidence exists; do not mark
+`SF-155` through `SF-159` complete early.
+
+## 21. Supabase and Android build checkpoint — 2026-08-17
+
+The user authenticated in the Supabase dashboard for the production project
+`kqrazmvxmjasjyrwfyyf`. Through the SQL Editor, the Continue Watching migration was applied
+idempotently. Verification returned:
+
+- `public.get_continue_watching_page(integer,timestamp with time zone,bigint)` exists.
+- The `authenticated` role has execute privilege.
+- `histories_continue_watching_idx` exists.
+- Production currently contains 42 incomplete history rows across 35 distinct titles. The planned
+  more-than-100-row stress test is therefore still pending; no synthetic history was inserted.
+
+ADB is not required for APK assembly. A portable Temurin JDK 21 and Android SDK 36 were installed
+outside the repository, and the existing mobile/TV sync strategy completed. The phone Gradle release
+build reached `:app:packageRelease` and then stopped because the canonical release keystore is not
+available in this workspace. Existing public phone and TV APKs were independently verified with
+APK Signature Scheme v2 and match the pinned certificate fingerprints, but they are not rebuilt
+artifacts from this checkpoint. Do not generate replacement signing keys: that would invalidate
+upgrades for existing installs. Recover the original keystores before producing or publishing new
+APK versions.
+
+The worktree must remain clean after generated bundle review. Do not commit environment-specific
+`capacitor.settings.gradle` paths generated by a local pnpm layout, and do not publish the existing
+APKs as if they contained this checkpoint's source changes.
+
+## 22. Production playback and release metadata checkpoint — 2026-08-17
+
+The production source-picker flow was exercised against real title routes in the in-app browser.
+The movie fixture Spider-Man: Brand New Day opened the picker, switched from Filmu to Cinezo exactly
+once (`src=cinezo`), closed safely, and retained Cinezo as the selected source when reopened. The TV
+fixture Lanterns S1E1 switched from Cinezo to VidKing exactly once (`src=vidking`) and carried the
+selection into the Next Episode link. The anime fixture ONE PIECE E1 exposed separate `Sub servers`
+and `Dub servers` groups. Sub switched to `cinezo-anime-sub`; Dub switched to `cinezo-anime-dub`;
+both retained their `audio` query and episode context. These are provider-selection and recovery
+smoke results, not a guarantee that a third-party iframe will always permit playback.
+
+Signing certificate fingerprints are now stored in the checked-in release metadata file
+`release/signing-certificates.json`. `scripts/check-update-manifests.mjs` reads that file and fails
+when either public manifest drifts from the pinned phone or TV certificate. The website phone and TV
+download pages no longer display APK or certificate SHA digests; the values remain available to the
+native updater through the manifests and to release validation through the repository metadata.
+
+The bundled Node runtime passed TypeScript, authored ESLint, player-source, episode-resolver,
+Continue Watching, Home-feed, native cache/history/update-state, update-manifest, release-artifact,
+leak, and production webpack checks after this change. New APK publication is still blocked by the
+missing original phone and TV private keystores. The public APKs are the older v1.3.0/code 4 and
+v1.2.0/code 3 artifacts; do not relabel or republish them as the new source checkpoint. Once the
+canonical keystores are recovered, build phone 1.3.1/code 5 and TV 1.2.1/code 4, verify signatures
+and hashes, then publish manifests/APKs and deploy the matching Vercel production commit.
+
+The verified website-only production deployment is `dpl_Dt2ZUKLhXj27M6KgNeieMxQ61k48`; Vercel
+returned `readyState: READY` and aliased it to `https://streamfree.online`. This deployment includes
+the download-page digest removal and current web fixes, but intentionally does not claim new APK
+publication. Recheck the deployment and APK routes after the signed artifacts are available.
+
+## 23. Fresh signing reset and release candidates — 2026-08-17
+
+The original private keystores were not found in the repository, Stream project, desktop search
+scope, or Git history. Per the user's decision, a fresh signing reset was created. Private material
+is outside Git at:
+
+- `C:\Users\HP_5C\.cache\codex-runtimes\streamfree-signing-20260817\streamfree-phone-release.jks`
+  alias `streamfree-phone`.
+- `C:\Users\HP_5C\.cache\codex-runtimes\streamfree-signing-20260817\streamfree-tv-release.jks`
+  alias `streamfree-tv`.
+
+The folder is ACL-restricted to the current Windows user and contains `KEEP-PRIVATE.txt` with the
+local build credentials. Never commit or upload that folder. Future releases must reuse these exact
+keystores. Because the package IDs remain `online.streamfree.app` and `online.streamfree.tv` but the
+certificates changed, users must uninstall the old APK before installing this release. Future
+updates from these new APKs can install in place.
+
+New release artifacts:
+
+- Phone: `StreamFree-Android-v1.3.1.apk`, package `online.streamfree.app`, code `5`, size `3344756`,
+  SHA-256 `A19B3ED6E96FDA0DA2E0E5B5FD08BC19B5987599F77B2C4120E2C96C631241E9`, certificate
+  `4218B5F726FD4D61703B2112D7A41C77B93F215F1C1DC85560BAB86A6FB38EF4`.
+- TV: `StreamFree-TV-v1.2.1.apk`, package `online.streamfree.tv`, code `4`, size `3373310`,
+  SHA-256 `BA2BDB9E65176D1C250DFABDFFA78C90C2F57DDB63130FD80FAC6C31B6BB5969`, certificate
+  `7D5C1BB46BA3CE888C56E9CF1F39F86F65BC502BCD5480B0F8CF4663C80779D7`.
+
+Both APKs are non-debuggable and pass APK Signature Scheme v2 and v3 verification. The checked-in
+manifests point to these filenames and pass `test:update-manifests` and `check:release-artifacts`.
+The updater now compares the manifest certificate to the currently installed app signer, then
+verifies the downloaded APK's package, version, certificate, size, and SHA-256. This keeps future
+certificate pins out of Java release constants while retaining the official-host and APK identity
+checks.
+
+The exact APKs/manifests are now deployed to Vercel deployment
+`dpl_CrsmiM7s1iwXY5SpfoUjGukswvRM`, which returned `READY` and aliases `streamfree.online`. Live
+verification confirmed both manifest hashes/sizes, `application/vnd.android.package-archive` MIME
+types, and the expected filenames. Remaining QA is physical-device validation: connect the Android
+phone for orientation, Back, playback, and updater checks. Physical TV testing remains deferred;
+an Android TV emulator is the substitute when provisioned.
+
+## 24. Anime Mode release checkpoint — 2026-08-18
+
+Anime Mode is now a dedicated, themed experience at `/anime`, reachable from the Home page through
+the Anime Mode entry card. Its web shell provides Discover, Back, and in-app episode notifications;
+the phone and TV bundles expose the same Anime Mode entry point. The implementation is native to
+StreamFree rather than a source copy of Anilili: the checked-out Anilili repository contained
+documentation/showcase material without the Kotlin/Compose application source or a visible license,
+so no unavailable or unlicensed code was copied. The intended interaction principles—focused anime
+discovery, source grouping, Sub/Dub clarity, and remote-friendly playback—are implemented in the
+existing StreamFree architecture.
+
+Anime source adapters support documented Anivexa and Miruro API payload shapes and normalize provider
+labels for ReAnime, AniKoto, AnimeGG, AniNeko, 2DHive, AniZone, AnimeCG, AnimeNoSub, MegaPlay, and
+Miruro provider keys. The adapters are deliberately configuration-gated by exact HTTPS origins:
+set `ANIVEXA_API_BASE_URL`, `MIRURO_API_BASE_URL`, and `STREAMFREE_ANIME_ALLOWED_ORIGINS` in Vercel
+only after selecting an authorized, reliable API deployment. They do not bypass secure pipes,
+extract provider HTML, or claim third-party availability. Anivexa documents self-hosted deployment
+as the reliable option for serverless consumers; Miruro's hosted API can be paused or return provider
+errors. The deterministic adapter contract is covered by `pnpm run test:anime-integrations`.
+
+AniList and MyAnimeList connection routes are present and configuration-gated. OAuth state/PKCE is
+validated server-side and access/refresh tokens are encrypted before storage in
+`anime_linked_accounts`. Configure the official client IDs, redirects, and
+`STREAMFREE_ANIME_TOKEN_ENCRYPTION_KEY` before enabling them in production. New-episode notifications
+currently use authenticated in-app polling every 15 minutes while Anime Mode is open; background web
+push/native delivery is intentionally deferred until an authorized VAPID/FCM channel is configured.
+
+The production Supabase migration was applied in project `kqrazmvxmjasjyrwfyyf` through SQL Editor on
+2026-08-18. It creates the linked-account and episode-notification tables with RLS, indexes, and the
+updated-at trigger. The SQL Editor returned `Success. No rows returned`.
+
+New release candidates built from this checkpoint are additive and preserve the previous APKs for
+rollback:
+
+- Phone: `StreamFree-Android-v1.3.3.apk`, package `online.streamfree.app`, version code `7`, size
+  `3347964`, SHA-256 `571FA4CB69051EDE36A16F02FDBAFF8EC7C2F1714D08B216B832DDA652D0D444`, certificate
+  `4218B5F726FD4D61703B2112D7A41C77B93F215F1C1DC85560BAB86A6FB38EF4`.
+- TV: `StreamFree-TV-v1.2.3.apk`, package `online.streamfree.tv`, version code `6`, size `3375567`,
+  SHA-256 `06E4C403D29C5D4F6EF5D690AC31A38908A5E64A1D1308AE703C11E9C1907683`, certificate
+  `7D5C1BB46BA3CE888C56E9CF1F39F86F65BC502BCD5480B0F8CF4663C80779D7`.
+
+Both APKs are release-only, non-debuggable, and pass v2/v3 signature verification. No ADB was
+required to assemble them. Physical Android phone testing, Android TV emulator testing, and new
+real-provider smoke testing remain final release gates; do not describe them as passed until the
+devices/providers are exercised. Production Anime API adapters and OAuth remain dormant until their
+authorized Vercel configuration is added.
+
+## 24. Continue Watching removal navigation fix — 2026-08-17
+
+The Continue Watching removal regression was caused by `HistoryItemActions` being rendered inside
+the resume `<Link>` on the phone rail, desktop rail, and phone resume hero. Although the action
+component stopped bubbling events, nested interactive elements can still activate the ancestor link
+in browsers. The action controls now render as siblings of the playback link, with the card art and
+metadata remaining the only resume target. This makes Remove and Mark complete safe for pointer,
+touch, and keyboard activation. Re-run the authenticated removal/Undo browser flow after the next
+Vercel deployment and confirm the URL never changes when the action is used.
+
+The fix is deployed in Vercel production deployment
+`umbrestream-ga17rhrt4-nishants-projects-7d9628b2.vercel.app`, which returned `Ready` and was aliased
+to `https://streamfree.online`. The available QA browser session was signed out during verification,
+so authenticated mutation and Undo behavior remain explicitly unclaimed until a signed-in session is
+available.
+
+## 25. Player and Android TV experience release — 2026-08-18
+
+The player/TV experience release is deployed to production. Vercel deployment
+`https://umbrestream-l0nyvg9fp-nishants-projects-7d9628b2.vercel.app` returned `Ready` and is aliased to
+`https://streamfree.online`. The prior Vercel deployments remain available for rollback.
+
+Web and generated native clients now include:
+
+- A borderless initial 16:9 cinema stage with black framing and no page-level player margins.
+- Device-local Fit/Fill display preference. Fit preserves the whole frame; Fill scales the StreamFree-owned
+  viewport to the available bounds without remounting the provider iframe or changing its URL.
+- Explicit app-owned fullscreen handling, with the web stage becoming fixed to the viewport only after
+  Full screen is requested.
+- A persistent StreamFree-owned Source action so provider selection remains reachable after temporary player
+  chrome fades.
+- Phone/TV native black window surfaces and immersive system-bar handling. TV playback mode hides and removes
+  global chrome from focus instead of placing it above the player.
+- Responsive TV 720p/1080p/4K sizing tokens and compact playback overlays.
+
+Release artifacts published at `/downloads`:
+
+- Phone `1.3.2`, code `6`, package `online.streamfree.app`, SHA-256
+  `5B0B9CDDC36CEFFA72D0EE7733C609A83E6F73351D8840CEE62C581B58186653`, size `3347279` bytes,
+  certificate SHA-256 `4218B5F726FD4D61703B2112D7A41C77B93F215F1C1DC85560BAB86A6FB38EF4`.
+- TV `1.2.2`, code `5`, package `online.streamfree.tv`, SHA-256
+  `D035E163E033E822AB493F85B679B7EFBBB51518C18157E46CD8C7752A08DAC7`, size `3375097` bytes,
+  certificate SHA-256 `7D5C1BB46BA3CE888C56E9CF1F39F86F65BC502BCD5480B0F8CF4663C80779D7`.
+
+Production verification confirmed both manifests and APKs return HTTP 200, the manifests match the local
+artifact hashes/sizes/version codes, APKs use `application/vnd.android.package-archive`, and the phone/TV
+download pages expose the new release versions. Deterministic checks passed: TypeScript, authored lint,
+player-source contracts, episode resolver, update-manifest validation, release-artifact validation, leak scan,
+production build, and `git diff --check`.
+
+Browser smoke verification covered the production movie source picker and the real-title route matrix:
+two movies, two TV fixtures, and two anime fixtures with separate Sub and Dub routes. Source mounting and
+URL/provider selection were confirmed; these checks do not claim that a third-party provider will always start
+or remain playable. The physical-device gate remains open: `adb devices` currently reports no connected phone,
+and no Android TV emulator is provisioned. Next action is to connect the phone and run signed-APK playback,
+Fit/Fill, fullscreen/orientation, Back, reload/resume, and updater checks. Physical Android TV certification is
+not available; an emulator is the planned substitute.
+
+## 26. Final non-hardware web QA checkpoint — 2026-08-18
+
+Accessibility and web/PWA hardening was deployed in Vercel production deployment
+`dpl_HGo3ubtSK3oBFC6tCqnRfwr8x8x9`, which returned `READY` and is aliased to
+`https://streamfree.online`.
+
+The final browser checks covered desktop and 390×844 mobile flows:
+
+- Search suggestions returned live TMDB results for `toys`; pointer selection and mobile ArrowDown/Enter
+  selection both routed to `/movie/11597` while preserving `aria-expanded`, `aria-controls`, and
+  `aria-activedescendant`.
+- Movie Source sheet opened on mobile, Cinezo selection changed the URL to `src=cinezo`, closed the sheet,
+  and Fit/Fill changed the StreamFree shell without changing iframe identity or URL.
+- Home, Search, Browse, About, and movie player audits found zero unnamed visible interactive controls, zero
+  missing nondecorative image alt values, zero unlabeled inputs, and zero nested interactive controls.
+- About's GitHub icon now has an accessible name. Player Back/source actions no longer contain nested interactive
+  elements.
+- PWA service worker, manifest, robots, and sitemap routes return HTTP 200; `/sw.js` is served with
+  `must-revalidate, max-age=0`. Phone/TV app pages expose release versions `1.3.2` and `1.2.2`.
+- Continue Watching deterministic cursor stress coverage now walks 150 title-level records across pages with
+  no duplicates, proving the old 100-row client cap is not present. No synthetic rows were inserted into
+  production; a signed-in mutation/Undo pass remains the only web QA requiring a user session.
+
+The remaining open tasks are authorization/device-dependent only: sign in to a StreamFree test account to
+exercise live Continue Watching/watchlist removal plus Undo, connect the physical Android phone for native
+playback/orientation/updater checks, and provision an Android TV emulator for D-pad/playback checks. The
+production web/PWA and deterministic non-hardware QA gate is complete.
+
+## 27. Anime release deployed — 2026-08-18
+
+The Anime Mode release is live in the linked `umbrestream` Vercel project. Production deployment
+`dpl_8vrwdH2JFAtWTrZ6QGEDqQumSB2A` returned `readyState: READY` and was aliased to
+`https://streamfree.online`. The remote build completed successfully with the Anime routes and APIs:
+`/anime`, `/api/anime/accounts`, `/api/anime/notifications`, `/api/auth/anilist/*`,
+`/api/auth/mal/*`, `/api/mobile/home`, and the existing player/source routes.
+
+Live release checks returned:
+
+- Phone manifest: HTTP 200, version `1.3.3`, code `7`, size `3347964`, SHA-256
+  `571FA4CB69051EDE36A16F02FDBAFF8EC7C2F1714D08B216B832DDA652D0D444`.
+- TV manifest: HTTP 200, version `1.2.3`, code `6`, size `3375567`, SHA-256
+  `06E4C403D29C5D4F6EF5D690AC31A38908A5E64A1D1308AE703C11E9C1907683`.
+- Both APK URLs: HTTP 200, `application/vnd.android.package-archive`, exact manifest byte length,
+  and expected release filenames.
+- `/anime`, `/app`, `/app/tv`, and `/api/mobile/home`: HTTP 200. The mobile home response reported
+  schema version `1`, signed-out provenance, and effective country `IN`.
+
+Vercel's build emitted only the existing dynamic-rendering notices for authenticated `/library`,
+`/space`, and `/space/history` static generation; the build still completed successfully. Live
+Anivexa/Miruro adapters, AniList/MAL OAuth, and background push remain configuration-gated because
+the production environment currently has no authorized API origins, OAuth client credentials, token
+encryption key, or VAPID/FCM delivery credentials. In-app notification polling is the active release
+behavior. Physical phone, Android TV emulator, and real-provider playback checks remain pending.
+
+The deterministic Anime adapter suite was expanded after this deployment checkpoint. It now verifies
+all requested Anivexa provider labels, nested Miruro provider payloads, Sub/Dub isolation, subtitle
+track normalization, rejection of unallowlisted and cleartext streams, non-anime rejection, and the
+origin allowlist gate before an optional API is queried. The corresponding adapter change must be
+deployed before it is considered live; the release task board records that follow-up deployment.
+
+The adapter hardening was deployed in Vercel production deployment
+`dpl_BStWz2stsDZCDEvhTDFSQyeNuzWk`, which returned `READY` and was aliased to
+`https://streamfree.online`. Live `/anime` and `/api/mobile/home` returned HTTP 200. The live player
+source contract returned six existing anime sources with `fallbackMode: prompt`; optional Anivexa and
+Miruro sources were intentionally absent because no authorized API origins are configured in Vercel.
+
+## 28. Anime player visibility bug — 2026-08-18
+
+A production browser reproduction found that the shared `PlayerShell` is portalled to `document.body`
+after the immersive route's `min-h-dvh` main container. Its non-fullscreen `relative` stage therefore
+landed below the viewport; on a 390×844 test viewport the stage was at document position `y=844`, and
+the browser's scroll restoration made the iframe appear blank/off-frame. The Source control was present
+in the DOM but moved with the displaced stage, which explains why users could not choose a server.
+
+The fix changes only the non-fullscreen stage positioning to a fixed, top-centered 16:9 viewport. The
+iframe remains clipped inside the StreamFree-owned stage, while Source, Fit/Fill, Full screen, recovery,
+and episode controls stay attached to the visible player. Fullscreen continues to use the existing
+fixed full-viewport branch. `SF-196` was deployed as `dpl_EUwggePWmcSgCGeXNvqrXHMSBpFV` and verified
+on desktop and mobile geometry.
+
+## 29. Framed anime player flow — 2026-08-18
+
+The anime route now opts into an inline player layout rather than the shared body portal. This keeps the
+initial stage in normal document flow, leaves fullscreen opt-in, restores page scrolling, and places a
+persistent Next episode action plus the complete episode list below the stage. Episode links preserve the
+selected audio variant, while the device-local source preference continues to select the remembered
+provider on the next route.
+
+The source sheet now also renders the requested provider catalog — Miruro, AniKoto, ReAnime, AniZone,
+AnimeCG, AnimeGG, AniNeko, 2DHive, and MegaPlay — in the relevant Sub/Dub group. Catalog entries are
+disabled and labelled `Not connected` unless Anivexa or MiruroAPI returns a validated candidate for the
+current title and episode. This prevents a provider name from being presented as playable when the
+optional API origin is absent or unavailable.
+
+Commit: `a4a2741` (`fix(anime): restore framed episode player flow`). Preview deployment
+`7giGdMzuXGFsqBcrC6JcL7RxtygZ` is Ready at
+`https://umbrestream-quyb9f2gl-nishants-projects-7d9628b2.vercel.app`. Desktop 1280×720 and mobile
+390×844 checks passed for stage geometry, scroll position, Source sheet opening, catalog visibility,
+next-episode navigation, and default fullscreen-off behavior. Production promotion remains pending
+because the Vercel project dashboard currently indicates production is updated from `main`.

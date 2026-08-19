@@ -1,10 +1,11 @@
 "use client";
 
 import BackToTopButton from "@/components/ui/button/BackToTopButton";
+import ServiceRetryState from "@/components/ui/feedback/ServiceRetryState";
 import { Spinner } from "@heroui/react";
 import { useInViewport } from "@mantine/hooks";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { notFound, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { memo, useEffect } from "react";
 import PosterCard from "@/components/media/PosterCard";
 import { fromAnime } from "@/utils/normalize-media";
@@ -28,7 +29,7 @@ const AnimeDiscoverList = () => {
   const category = searchParams.get("category") || "trending";
   const genre = searchParams.get("genre") || undefined;
 
-  const { data, isPending, status, fetchNextPage, isFetchingNextPage, hasNextPage } =
+  const { data, isPending, status, refetch, isFetching, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
       queryKey: ["discover-anime", category, genre],
       queryFn: ({ pageParam }) => {
@@ -63,7 +64,16 @@ const AnimeDiscoverList = () => {
     }
   }, [inViewport, isPending, fetchNextPage]);
 
-  if (status === "error") return notFound();
+  if (status === "error") {
+    return (
+      <ServiceRetryState
+        title="Couldn’t reach AniList"
+        description="The anime catalogue didn’t load. It’s usually temporary."
+        isRetrying={isFetching}
+        onRetry={() => void refetch()}
+      />
+    );
+  }
 
   const title = genre ? `${genre} Anime` : CATEGORY_NAMES[category] || "Discover Anime";
 

@@ -9,7 +9,7 @@
  * so the same title never appears twice on one page load.
  */
 
-import { getPersonalizedRecommendations } from "@/actions/recommendations";
+import { getPersonalizedRecommendationFeed } from "@/actions/recommendations";
 import { tmdbBrowser } from "@/api/tmdb-browser";
 import { useHomeHero } from "@/hooks/useHomeHero";
 import useSupabaseUser from "@/hooks/useSupabaseUser";
@@ -29,7 +29,7 @@ export default function TonightInset() {
 
   const { data: recommendations } = useQuery({
     queryKey: ["personalized-recommendations", user?.id],
-    queryFn: () => getPersonalizedRecommendations(),
+    queryFn: () => getPersonalizedRecommendationFeed(),
     enabled: !isUserLoading,
     staleTime: 30 * 60 * 1000,
     gcTime: 60 * 60 * 1000,
@@ -37,7 +37,7 @@ export default function TonightInset() {
   });
 
   const pick = useMemo<MediaSummary | undefined>(() => {
-    for (const item of recommendations ?? []) {
+    for (const item of recommendations?.items ?? []) {
       const media =
         item.type === "movie"
           ? fromMovie(item.media)
@@ -51,7 +51,7 @@ export default function TonightInset() {
       return media;
     }
     return undefined;
-  }, [recommendations, heroPick]);
+  }, [recommendations?.items, heroPick]);
 
   const { data: artwork } = useQuery({
     queryKey: ["cinematic-backdrop", pick?.kind, pick?.id, "alternate"],

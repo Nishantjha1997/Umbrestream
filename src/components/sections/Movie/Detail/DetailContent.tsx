@@ -13,8 +13,8 @@ import { Suspense } from "react";
 import { Spinner } from "@heroui/spinner";
 import { useQuery } from "@tanstack/react-query";
 import { tmdbBrowser } from "@/api/tmdb-browser";
+import ServiceRetryState from "@/components/ui/feedback/ServiceRetryState";
 import { Cast } from "tmdb-ts/dist/types/credits";
-import { notFound } from "next/navigation";
 import { Image } from "tmdb-ts";
 import dynamic from "next/dynamic";
 import {
@@ -34,6 +34,8 @@ export default function MovieDetailContent({ id }: { id: number }) {
     data: movie,
     isPending,
     error,
+    refetch,
+    isFetching,
   } = useQuery({
     queryFn: () =>
       tmdbBrowser.movies.details(id, [
@@ -53,7 +55,16 @@ export default function MovieDetailContent({ id }: { id: number }) {
     return <Spinner size="lg" className="absolute-center" variant="simple" />;
   }
 
-  if (error) notFound();
+  if (error) {
+    return (
+      <ServiceRetryState
+        title="Couldn’t reach TMDB"
+        description="This movie didn’t load. It’s usually temporary."
+        isRetrying={isFetching}
+        onRetry={() => void refetch()}
+      />
+    );
+  }
 
   return (
     <div className="mx-auto max-w-5xl">

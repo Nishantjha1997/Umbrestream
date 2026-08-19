@@ -18,7 +18,7 @@ import VaulDrawer from "@/components/ui/overlay/VaulDrawer";
 import { HandlerType } from "@/types/component";
 import { Button, Card, Chip, ScrollShadow } from "@heroui/react";
 import { useMediaQuery } from "@mantine/hooks";
-import { PlayOutline } from "@/utils/icons";
+import { Next, PlayOutline } from "@/utils/icons";
 import Link from "next/link";
 import Image from "next/image";
 import type { AniListMediaDetail } from "@/types/anilist";
@@ -30,6 +30,9 @@ interface AnimePlayerEpisodeSheetProps extends HandlerType {
   currentEpisode: number;
   selectedSourceId?: string;
   audioVariant: AudioVariant;
+  inline?: boolean;
+  /** "sidebar" renders as a sticky always-visible panel beside the player on desktop. */
+  variant?: "sidebar";
 }
 
 const CHUNK_SIZE = 50;
@@ -41,6 +44,8 @@ const AnimePlayerEpisodeSheet: React.FC<AnimePlayerEpisodeSheetProps> = ({
   currentEpisode,
   selectedSourceId,
   audioVariant,
+  inline = false,
+  variant,
 }) => {
   const isDesktop = useMediaQuery("(min-width: 768px)", false, {
     getInitialValueInEffect: false,
@@ -163,6 +168,69 @@ const AnimePlayerEpisodeSheet: React.FC<AnimePlayerEpisodeSheetProps> = ({
       })}
     </div>
   );
+
+  const nextEpisode = currentEpisode < totalEpisodes ? currentEpisode + 1 : null;
+  const nextEpisodeHref = nextEpisode ? episodeHref(nextEpisode, audioVariant) : null;
+
+  if (variant === "sidebar") {
+    return (
+      <div className="flex h-full flex-col rounded-2xl border border-white/10 bg-white/[0.025]">
+        {/* Sidebar header */}
+        <div className="border-b border-white/10 px-4 py-3">
+          <p className="text-xs font-semibold tracking-[.12em] text-primary uppercase">Episodes</p>
+          <h2 className="mt-0.5 text-sm font-semibold text-white">{title}</h2>
+          <p className="text-xs text-white/50">
+            EP {currentEpisode} · {audioVariant === "dub" ? "Dub" : "Sub"}
+            {totalEpisodes ? ` of ${totalEpisodes}` : ""}
+          </p>
+        </div>
+        {/* Episode list */}
+        <div className="flex flex-col gap-2 overflow-y-auto p-3">
+          {chunkTabs}
+          {episodeGrid("grid grid-cols-1 gap-2")}
+        </div>
+      </div>
+    );
+  }
+
+  if (inline) {
+    return (
+      <section className="mx-auto mt-5 w-full max-w-[min(100vw,1600px)] rounded-3xl border border-white/10 bg-white/[0.025] p-4 shadow-2xl shadow-black/20 sm:mt-7 sm:p-6">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-semibold tracking-[.12em] text-primary uppercase">Anime episodes</p>
+            <h2 className="mt-1 text-lg font-semibold text-white sm:text-xl">{title}</h2>
+            <p className="mt-1 text-sm text-white/50">
+              Episode {currentEpisode} · {audioVariant === "dub" ? "Dub" : "Sub"}
+            </p>
+          </div>
+          {nextEpisodeHref ? (
+            <Button
+              as={Link}
+              href={nextEpisodeHref}
+              onPress={onClose}
+              color="primary"
+              radius="full"
+              className="min-h-11 px-4 font-semibold"
+              endContent={<Next aria-hidden size={16} />}
+            >
+              Next episode
+            </Button>
+          ) : (
+            <span className="rounded-full border border-white/10 px-4 py-2 text-sm text-white/50">
+              Final episode
+            </span>
+          )}
+        </div>
+        <div className="flex flex-col gap-3">
+          {chunkTabs}
+          <div className="max-h-[min(62vh,38rem)] overflow-y-auto pr-1">
+            {episodeGrid("grid grid-cols-1 gap-2.5 sm:grid-cols-2")}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   if (isDesktop) {
     return (

@@ -1,11 +1,12 @@
 "use client";
 
 import PlayerPanel from "@/components/player/PlayerPanel";
+import type { AnimeProviderCatalogEntry } from "@/lib/sources/animeCatalog";
 import VaulDrawer from "@/components/ui/overlay/VaulDrawer";
 import type { PlayerSource } from "@/lib/sources/types";
 import { cn } from "@/utils/helpers";
 import { Check, Rocket, Star } from "@/utils/icons";
-import { useMediaQuery } from "@mantine/hooks";
+import { useEffect, useRef, useState } from "react";
 
 export interface PlayerSourceSheetProps {
   opened: boolean;
@@ -15,6 +16,8 @@ export interface PlayerSourceSheetProps {
   switchingSourceId?: string | null;
   hasPreference?: boolean;
   onResetPreference?: () => void;
+  /** Anime providers that are known by the product but not active for this request. */
+  animeCatalog?: AnimeProviderCatalogEntry[];
   /** The parent commits the iframe swap before dismissing this overlay. */
   onSelect: (sourceId: string) => Promise<void> | void;
 }
@@ -27,14 +30,24 @@ export default function PlayerSourceSheet({
   switchingSourceId,
   hasPreference,
   onResetPreference,
+  animeCatalog,
   onSelect,
 }: PlayerSourceSheetProps) {
   // Do not mount Vaul's modal drawer on desktop. Hiding an open drawer with
   // CSS still leaves its focus/pointer lock active on <body>, which makes the
-  // visible desktop panel look interactive while swallowing every click.
-  const isDesktop = useMediaQuery("(min-width: 768px)", false, {
-    getInitialValueInEffect: false,
-  });
+  // visible desktop panel look interactive while swallowing every click. We
+  // also wait for the first client media-query result so a desktop refresh
+  // never briefly mounts the mobile drawer before the panel branch wins.
+  const [isDesktop, setIsDesktop] = useState<boolean | null>(null);
+  const selectionInFlightRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    const media = window.matchMedia("(min-width: 768px)");
+    const update = () => setIsDesktop(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
 
   const sourceOption = (source: PlayerSource) => {
     const isSelected = source.id === selectedSourceId;
@@ -46,11 +59,17 @@ export default function PlayerSourceSheet({
         type="button"
         role="radio"
         aria-checked={isSelected}
+        aria-busy={isSwitching || undefined}
+        disabled={Boolean(switchingSourceId) && !isSwitching}
         onPointerDown={(event) => event.stopPropagation()}
         onClick={(event) => {
           event.preventDefault();
           event.stopPropagation();
-          void onSelect(source.id);
+          if (selectionInFlightRef.current) return;
+          selectionInFlightRef.current = source.id;
+          Promise.resolve(onSelect(source.id)).finally(() => {
+            if (selectionInFlightRef.current === source.id) selectionInFlightRef.current = null;
+          });
         }}
         className={cn(
           "grid min-h-14 w-full touch-manipulation grid-cols-[auto_1fr_auto] items-center gap-3 rounded-[13px] border p-3.5 text-left transition-[background-color,border-color,transform] duration-200 active:scale-[.985]",
@@ -115,7 +134,7 @@ export default function PlayerSourceSheet({
         ]
       : [{ label: "Video servers", sources }];
 
-    return groups
+    const renderedGroups = groups
       .filter((group) => group.sources.length > 0)
       .map((group) => (
         <section key={group.label} className="flex flex-col gap-2.5" aria-label={group.label}>
@@ -129,6 +148,54 @@ export default function PlayerSourceSheet({
           </div>
         </section>
       ));
+
+    if (!animeCatalog?.length || !hasAudioGroups) return renderedGroups;
+
+    const catalogRows = (variant: "sub" | "dub") =>
+      animeCatalog
+        .filter((entry) => entry.variants.includes(variant))
+        .filter(
+          (entry) =>
+            !sources.some(
+              (source) =>
+                source.audioVariant === variant &&
+                (source.providerId === entry.id || source.providerId.endsWith(`:${entry.id}`)),
+            ),
+        )
+        .map((entry) => (
+          <div
+            key={`${entry.id}:${variant}`}
+            className="grid min-h-14 w-full grid-cols-[auto_1fr_auto] items-center gap-3 rounded-[13px] border border-white/7 bg-white/[0.015] p-3.5 opacity-75"
+            aria-label={`${entry.label} ${variant === "dub" ? "Dub" : "Sub"} unavailable`}
+          >
+            <span className="size-[7px] rounded-full bg-white/25" aria-hidden />
+            <span className="flex min-w-0 flex-col gap-0.5">
+              <span className="truncate text-[13.5px] font-medium text-white/80">
+                {entry.label} {variant === "dub" ? "Dub" : "Sub"}
+              </span>
+              <span className="truncate text-[11px] text-white/38">
+                Additional source · waiting for a configured provider API
+              </span>
+            </span>
+            <span className="text-right text-[9.5px] font-medium tracking-[.08em] text-white/35 uppercase">
+              Not connected
+            </span>
+          </div>
+        ));
+
+    return renderedGroups.map((groupNode, index) => {
+      const variant = groups[index]?.label === "Dub servers" ? "dub" : "sub";
+      const rows = catalogRows(variant);
+      if (!rows.length) return groupNode;
+      return (
+        <div key={groups[index]?.label ?? index} className="flex flex-col gap-2.5">
+          {groupNode}
+          <div className="flex flex-col gap-2.5" aria-label={`${variant === "dub" ? "Dub" : "Sub"} catalog sources`}>
+            {rows}
+          </div>
+        </div>
+      );
+    });
   };
 
   const resetPreference = hasPreference && onResetPreference && (
@@ -143,10 +210,25 @@ export default function PlayerSourceSheet({
 
   const content = (
     <div className="flex flex-col gap-4">
+      {animeCatalog && animeCatalog.length > 0 && (
+        <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-3 text-xs text-amber-200/90 backdrop-blur-md">
+          <div className="flex items-start gap-2.5">
+            <span className="text-base select-none">☕</span>
+            <div className="flex flex-col gap-0.5">
+              <span className="font-semibold text-amber-300">Free Tier Wake-Up Call</span>
+              <p className="leading-relaxed text-amber-200/75">
+                We run on free cloud servers to keep everything 100% free for you. If an Anivexa server takes ~40–50s on your first episode of the day, it&apos;s just waking up from its nap. Once awake, it streams at full speed!
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
       {renderSourceGroups()}
       {resetPreference}
     </div>
   );
+
+  if (isDesktop === null) return null;
 
   if (isDesktop) {
     return (

@@ -22,6 +22,11 @@ const eslintConfig = [
       ".next/**",
       "out/**",
       "build/**",
+      "android/**",
+      "android-tv/**",
+      "mobile/app.bundle.js",
+      "tv/app.bundle.js",
+      "docs/design/**",
       "next-env.d.ts",
       "public/sw.js",
       "public/workbox-*.js",
@@ -44,6 +49,15 @@ const eslintConfig = [
           caughtErrorsIgnorePattern: "^_",
         },
       ],
+      // These diagnostics are not actionable for the current libraries and
+      // rendering architecture: Embla exposes imperative refs by design,
+      // React Hook Form's watch API is intentionally incompatible with the
+      // compiler memoizer, and a few hydration effects synchronize browser
+      // state after mount. Keep the useful dependency and type rules active.
+      "react-hooks/refs": "off",
+      "react-hooks/incompatible-library": "off",
+      "react-hooks/preserve-manual-memoization": "off",
+      "react-hooks/set-state-in-effect": "off",
     },
   },
 ];

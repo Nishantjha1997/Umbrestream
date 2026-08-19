@@ -23,7 +23,7 @@ const MoviePlayerPage: NextPage<Params<{ id: number }>> = ({ params }) => {
     queryKey: ["movie-player-detail", id],
   });
 
-  const { data: startAt, isPending: isPendingStartAt } = useQuery({
+  const { data: startAt } = useQuery({
     queryFn: () => getMovieLastPosition(id),
     queryKey: ["movie-player-start-at", id],
   });

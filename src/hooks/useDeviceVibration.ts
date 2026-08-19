@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 /**
  * Custom hook to manage device vibration.
@@ -26,18 +26,18 @@ const useDeviceVibration = () => {
   /**
    * Stop the current vibration.
    */
-  const stopVibration = () => {
+  const stopVibration = useCallback(() => {
     if (isVibrationSupported()) {
       navigator.vibrate(0);
       setIsVibrating(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     return () => {
       stopVibration();
     };
-  }, []);
+  }, [stopVibration]);
 
   return {
     isVibrating,

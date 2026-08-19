@@ -90,9 +90,9 @@ const LibraryList = () => {
 
   useEffect(() => {
     if (inViewport && hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
+      void fetchNextPage();
     }
-  }, [inViewport]);
+  }, [fetchNextPage, hasNextPage, inViewport, isFetchingNextPage]);
 
   const clearWatchlistMutation = useMutation({
     mutationFn: async (type: "movie" | "tv" | "anime") => {

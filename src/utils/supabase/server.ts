@@ -13,7 +13,7 @@ import { isSupabaseConfigured, SUPABASE_UNCONFIGURED_MESSAGE } from "./config";
  * feature rather than taking down a page — unlike the browser client, which is
  * mounted in the root layout and therefore returns `null` instead.
  */
-export async function createClient(admin?: boolean) {
+export async function createClient(admin?: boolean, accessToken?: string) {
   if (!isSupabaseConfigured) {
     throw new Error(SUPABASE_UNCONFIGURED_MESSAGE);
   }
@@ -25,6 +25,9 @@ export async function createClient(admin?: boolean) {
   // Create a server's supabase client with newly configured cookie,
   // which could be used to maintain user's session
   return createServerClient<Database>(env.NEXT_PUBLIC_SUPABASE_URL, key, {
+    ...(accessToken
+      ? { global: { headers: { Authorization: `Bearer ${accessToken}` } } }
+      : {}),
     cookies: {
       getAll() {
         return cookieStore.getAll();

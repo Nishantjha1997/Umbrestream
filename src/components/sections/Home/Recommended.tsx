@@ -1,6 +1,6 @@
 "use client";
 
-import { getPersonalizedRecommendations } from "@/actions/recommendations";
+import { getPersonalizedRecommendationFeed } from "@/actions/recommendations";
 import Shelf from "@/components/media/Shelf";
 import HomeEmptyState from "@/components/sections/Home/EmptyState";
 import useSupabaseUser from "@/hooks/useSupabaseUser";
@@ -49,7 +49,7 @@ const Recommended: React.FC<RecommendedProps> = ({
     // Keyed on the user so signing in or out rebuilds the row instead of
     // serving the previous identity's taste profile from cache.
     queryKey: ["personalized-recommendations", user?.id],
-    queryFn: () => getPersonalizedRecommendations(),
+    queryFn: () => getPersonalizedRecommendationFeed(),
     // Don't fire against `undefined` and then immediately re-fire against the
     // resolved id — that was two full engine runs per cold page load.
     enabled: !isUserLoading,
@@ -67,15 +67,16 @@ const Recommended: React.FC<RecommendedProps> = ({
   // the shelf below never learns there was more than one source.
   const items = useMemo<MediaSummary[]>(
     () =>
-      (recommendations ?? []).map((item) => {
+      (recommendations?.items ?? []).map((item) => {
         if (item.type === "movie") return fromMovie(item.media);
         if (item.type === "tv") return fromTvShow(item.media);
         return fromAnime(item.media);
       }),
-    [recommendations],
+    [recommendations?.items],
   );
 
   const isLoading = isUserLoading || (isPending && !isError);
+  const displayTitle = recommendations?.provenance === "personalized" ? title : "Trending now";
 
   // <Shelf> renders nothing at all when it has no items, which left this
   // section as a silent hole for anyone the engine has nothing to go on for
@@ -89,7 +90,7 @@ const Recommended: React.FC<RecommendedProps> = ({
     return (
       <section id={id} className="scroll-mt-24">
         <HomeEmptyState
-          title={title}
+          title={displayTitle}
           headline={user ? "Nothing to go on yet" : "Recommendations get sharper as you watch"}
           description={
             user
@@ -107,7 +108,7 @@ const Recommended: React.FC<RecommendedProps> = ({
   return (
     <section id={id} className="scroll-mt-24">
       <Shelf
-        title={title}
+        title={displayTitle}
         items={items}
         isLoading={isLoading}
         isError={isError}

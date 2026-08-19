@@ -9,9 +9,9 @@
 
 import { tmdbBrowser } from "@/api/tmdb-browser";
 import { Spinner } from "@heroui/react";
+import ServiceRetryState from "@/components/ui/feedback/ServiceRetryState";
 import { useScrollIntoView } from "@mantine/hooks";
 import { useQuery } from "@tanstack/react-query";
-import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import dynamic from "next/dynamic";
 import {
@@ -36,6 +36,8 @@ export default function TvShowDetailContent({ id }: { id: number }) {
     data: tv,
     isPending,
     error,
+    refetch,
+    isFetching,
   } = useQuery({
     queryFn: () =>
       tmdbBrowser.tvShows.details(id, [
@@ -60,7 +62,16 @@ export default function TvShowDetailContent({ id }: { id: number }) {
     );
   }
 
-  if (error) notFound();
+  if (error) {
+    return (
+      <ServiceRetryState
+        title="Couldn’t reach TMDB"
+        description="This series didn’t load. It’s usually temporary."
+        isRetrying={isFetching}
+        onRetry={() => void refetch()}
+      />
+    );
+  }
 
   return (
     <div className="mx-auto max-w-5xl">

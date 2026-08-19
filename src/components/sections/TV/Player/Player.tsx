@@ -4,8 +4,9 @@ import PlayerShell from "@/components/player/PlayerShell";
 import { siteConfig } from "@/config/site";
 import type { SourceRequest } from "@/lib/sources/types";
 import { useDisclosure, useDocumentTitle } from "@mantine/hooks";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Episode, TvShowDetails } from "tmdb-ts";
+import type { AdjacentEpisode } from "@/lib/tv/adjacentEpisode";
 import TvShowPlayerEpisodeSelection from "./EpisodeSelection";
 import TvShowPlayerHeader from "./Header";
 import { useRouter } from "next/navigation";
@@ -17,8 +18,8 @@ export interface TvShowPlayerProps {
   seasonName: string;
   episode: Episode;
   episodes: Episode[];
-  nextEpisodeNumber: number | null;
-  prevEpisodeNumber: number | null;
+  nextEpisode: AdjacentEpisode | null;
+  prevEpisode: AdjacentEpisode | null;
   startAt?: number;
 }
 
@@ -33,12 +34,15 @@ const TvShowPlayer: React.FC<TvShowPlayerProps> = ({
   id,
   episode,
   episodes,
-  nextEpisodeNumber,
+  nextEpisode,
+  prevEpisode,
   startAt,
   ...headerProps
 }) => {
   const router = useRouter();
   const [episodeOpened, episodeHandlers] = useDisclosure(false);
+  const [nextEpisodeCountdown, setNextEpisodeCountdown] = useState<number | null>(null);
+  const selectedSourceRef = useRef<string>("");
   const season = episode.season_number;
   const episodeNumber = episode.episode_number;
 
@@ -63,10 +67,31 @@ const TvShowPlayer: React.FC<TvShowPlayerProps> = ({
     [tv.id, season, episodeNumber],
   );
 
+  const playNextEpisode = useCallback(() => {
+    if (!nextEpisode) return;
+    const query = selectedSourceRef.current
+      ? `?src=${encodeURIComponent(selectedSourceRef.current)}`
+      : "";
+    router.replace(`/tv/${id}/${nextEpisode.season}/${nextEpisode.episode}/player${query}`);
+  }, [id, nextEpisode, router]);
+
   const advanceToNextEpisode = useCallback(() => {
-    if (nextEpisodeNumber == null) return;
-    router.replace(`/tv/${id}/${season}/${nextEpisodeNumber}/player`);
-  }, [id, nextEpisodeNumber, router, season]);
+    if (!nextEpisode) return;
+    setNextEpisodeCountdown(10);
+  }, [nextEpisode]);
+
+  useEffect(() => {
+    if (nextEpisodeCountdown === null) return;
+    if (nextEpisodeCountdown <= 0) {
+      playNextEpisode();
+      return;
+    }
+    const timer = window.setTimeout(
+      () => setNextEpisodeCountdown((current) => (current === null ? null : current - 1)),
+      1000,
+    );
+    return () => window.clearTimeout(timer);
+  }, [nextEpisodeCountdown, playNextEpisode]);
 
   return (
     <PlayerShell
@@ -74,26 +99,66 @@ const TvShowPlayer: React.FC<TvShowPlayerProps> = ({
       identity={identity}
       historyMetadata={{ season, episode: episodeNumber }}
       onEnded={advanceToNextEpisode}
-      renderHeader={({ selectedSourceId, onOpenSource, chromeHidden }) => (
-        <TvShowPlayerHeader
-          id={id}
-          episode={episode}
-          selectedSource={selectedSourceId}
-          onOpenSource={onOpenSource}
-          onOpenEpisode={episodeHandlers.open}
-          nextEpisodeNumber={nextEpisodeNumber}
-          hidden={chromeHidden}
-          {...headerProps}
-        />
-      )}
+      renderHeader={({ selectedSourceId, onOpenSource, chromeHidden }) => {
+        selectedSourceRef.current = selectedSourceId;
+        return (
+          <TvShowPlayerHeader
+            id={id}
+            episode={episode}
+            selectedSource={selectedSourceId}
+            onOpenSource={onOpenSource}
+            onOpenEpisode={episodeHandlers.open}
+            nextEpisode={nextEpisode}
+            prevEpisode={prevEpisode}
+            hidden={chromeHidden}
+            {...headerProps}
+          />
+        );
+      }}
       renderExtras={({ selectedSourceId }) => (
-        <TvShowPlayerEpisodeSelection
-          id={id}
-          opened={episodeOpened}
-          onClose={episodeHandlers.close}
-          episodes={episodes}
-          selectedSourceId={selectedSourceId}
-        />
+        <>
+          <TvShowPlayerEpisodeSelection
+            id={id}
+            opened={episodeOpened}
+            onClose={episodeHandlers.close}
+            episodes={episodes}
+            selectedSourceId={selectedSourceId}
+          />
+          {nextEpisode && nextEpisodeCountdown !== null && (
+            <div
+              className="pointer-events-auto fixed inset-x-4 bottom-6 z-95 mx-auto flex max-w-md flex-col gap-3 rounded-2xl border border-white/15 bg-black/85 p-4 text-white shadow-2xl backdrop-blur-xl"
+              role="dialog"
+              aria-live="assertive"
+              aria-atomic="true"
+              aria-label="Next episode"
+            >
+              <div>
+                <p className="text-xs font-semibold tracking-[0.14em] text-white/55 uppercase">
+                  Up next
+                </p>
+                <p className="mt-1 text-sm font-medium">
+                  Season {nextEpisode.season} · Episode {nextEpisode.episode} starts in {nextEpisodeCountdown}s
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  className="min-h-11 flex-1 rounded-full bg-white px-4 text-sm font-semibold text-black"
+                  onClick={playNextEpisode}
+                >
+                  Play now
+                </button>
+                <button
+                  type="button"
+                  className="min-h-11 rounded-full border border-white/20 px-4 text-sm font-semibold text-white"
+                  onClick={() => setNextEpisodeCountdown(null)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+        </>
       )}
     />
   );

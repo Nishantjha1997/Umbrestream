@@ -26,17 +26,17 @@
  * one notification slot (`PlayerNotificationSlot`) and nothing is ever
  * hidden by media query.
  *
- * **No fullscreen button, no fallback chain.** The player owns the viewport
- * at `100dvh` from the moment it opens (portalled past `template.tsx`'s
- * animated wrapper for the same containing-block reason `DetailModal.tsx`
- * is — any ancestor `transform` breaks a `position: fixed` descendant).
- * Rotating to landscape *is* fullscreen: the persistent nav chrome is
- * already hidden on `/player` routes (`ImmersiveAppShell.tsx`), and the top
- * and bottom bars are overlays on a full-bleed stage in both orientations,
- * not grid rows that would letterbox the video. StreamFree chrome yields to
- * provider controls after three idle seconds and can be restored from a
- * small left-edge reveal target. There is no `webkitEnterFullscreen` →
- * `requestFullscreen` → cinema-mode cascade to silently cancel.
+ * **Explicit fullscreen, no fallback chain.** The player opens in a
+ * borderless 16:9 cinema stage and becomes a fixed viewport only after the
+ * user chooses Full screen. It is portalled past `template.tsx`'s animated
+ * wrapper for the same containing-block reason `DetailModal.tsx` is — any
+ * ancestor `transform` breaks a `position: fixed` descendant. The persistent
+ * nav chrome is already hidden on `/player` routes (`ImmersiveAppShell.tsx`),
+ * and the top and bottom bars are overlays on the stage in both states.
+ * StreamFree chrome yields to provider controls after three idle seconds and
+ * can be restored from a small left-edge reveal target. There is no
+ * `webkitEnterFullscreen` → `requestFullscreen` → cinema-mode cascade to
+ * silently cancel.
  */
 
 import NativePlayer from "@/components/player/NativePlayer";
@@ -48,6 +48,7 @@ import { usePlayerChromeVisibility } from "@/hooks/usePlayerChromeVisibility";
 import { usePlayerEvents, type PlayerEventIdentity } from "@/hooks/usePlayerEvents";
 import { trackUmbraEvent } from "@/lib/analytics/client";
 import { createPublicEmbedSources } from "@/lib/sources/adapters/embed";
+import { ANIME_PROVIDER_CATALOG } from "@/lib/sources/animeCatalog";
 import { legacySourceId } from "@/lib/sources/legacy";
 import {
   clearPlaybackPreference,
@@ -76,6 +77,19 @@ export interface PlayerShellHeaderContext {
   chromeHidden: boolean;
 }
 
+/** Context passed to the optional `renderControls` render-prop. When provided
+ *  the default Source/Fit/Fill/Fullscreen button row inside the shell is
+ *  suppressed so the caller can render those controls outside the video
+ *  viewport (e.g. below the player on the anime page). */
+export interface PlayerShellControlsContext {
+  displayMode: "fit" | "fill";
+  isFullscreen: boolean;
+  selectedSourceId: string;
+  onChooseDisplayMode: (mode: "fit" | "fill") => void;
+  onToggleFullscreen: () => Promise<void>;
+  onOpenSource: () => void;
+}
+
 export interface PlayerShellProps {
   /** Callers must keep this referentially stable (useMemo) — it drives
    *  every derived query below. */
@@ -87,9 +101,18 @@ export interface PlayerShellProps {
   renderHeader: (context: PlayerShellHeaderContext) => ReactNode;
   /** Extra sheets a specific media type owns — episode drawers/panels. */
   renderExtras?: (context: PlayerShellHeaderContext) => ReactNode;
+  /** When provided, the built-in Source/Fit/Fill/Fullscreen button row is
+   *  omitted from inside the player viewport. The caller is responsible for
+   *  rendering those controls using the supplied context. */
+  renderControls?: (context: PlayerShellControlsContext) => ReactNode;
   onEnded?: () => void;
   onAudioVariantChange?: (audioVariant: AudioVariant) => void;
+  /** Render the initial stage in the route flow instead of as a body portal. */
+  inlineLayout?: boolean;
 }
+
+type PlayerDisplayMode = "fit" | "fill";
+const PLAYER_DISPLAY_STORAGE_KEY = "streamfree:player-display:v1";
 
 function directSourceParams(request: SourceRequest): URLSearchParams {
   const params = new URLSearchParams({ mediaType: request.mediaType, version: "3" });
@@ -111,23 +134,17 @@ export default function PlayerShell({
   historyMetadata,
   renderHeader,
   renderExtras,
+  renderControls,
   onEnded,
   onAudioVariantChange,
+  inlineLayout = false,
 }: PlayerShellProps) {
   const [mounted, setMounted] = useState(false);
   // Standard one-tick-late mount guard for `createPortal` — see `DetailModal.tsx`.
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setMounted(true), []);
 
-  useEffect(() => {
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, []);
-
   const [sourceOpened, setSourceOpened] = useState(false);
+  const sourceOpenerRef = useRef<HTMLElement | null>(null);
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
   const { hidden: chromeHidden, reveal: revealChrome } = usePlayerChromeVisibility(sourceOpened);
 
@@ -140,12 +157,28 @@ export default function PlayerShell({
   const events = usePlayerEvents({ saveHistory: true, metadata: historyMetadata, identity });
   const { setAllowedOrigin } = events;
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [displayMode, setDisplayMode] = useState<PlayerDisplayMode>("fit");
   const playerRootRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const saved = window.localStorage.getItem(PLAYER_DISPLAY_STORAGE_KEY);
+    if (saved === "fill") setDisplayMode("fill");
+  }, []);
+
+  const chooseDisplayMode = useCallback((mode: PlayerDisplayMode) => {
+    setDisplayMode(mode);
+    window.localStorage.setItem(PLAYER_DISPLAY_STORAGE_KEY, mode);
+  }, []);
 
   const setPlaybackOrientation = useCallback((fullscreen: boolean) => {
     const nativeBridge = (
       window as Window & {
-        StreamFreeNative?: { lockLandscape?: () => void; lockPortrait?: () => void };
+        StreamFreeNative?: {
+          lockLandscape?: () => void;
+          lockPortrait?: () => void;
+          enterPlayerImmersive?: () => void;
+          exitPlayerImmersive?: () => void;
+        };
       }
     ).StreamFreeNative;
     const orientation = window.screen.orientation as ScreenOrientation & {
@@ -154,9 +187,11 @@ export default function PlayerShell({
     };
     if (fullscreen) {
       nativeBridge?.lockLandscape?.();
-      void orientation.lock?.("landscape").catch(() => undefined);
+      nativeBridge?.enterPlayerImmersive?.();
+      void Promise.resolve(orientation.lock?.("landscape")).catch(() => undefined);
     } else {
       nativeBridge?.lockPortrait?.();
+      nativeBridge?.exitPlayerImmersive?.();
       orientation.unlock?.();
     }
   }, []);
@@ -173,6 +208,15 @@ export default function PlayerShell({
   }, [setPlaybackOrientation]);
 
   useEffect(() => {
+    if (!isFullscreen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isFullscreen]);
+
+  useEffect(() => {
     return () => {
       document.documentElement.classList.remove("player-fullscreen");
       setPlaybackOrientation(false);
@@ -180,13 +224,18 @@ export default function PlayerShell({
   }, [setPlaybackOrientation]);
 
   const toggleFullscreen = useCallback(async () => {
+    const entering = !document.fullscreenElement;
     try {
-      if (document.fullscreenElement) await document.exitFullscreen();
-      else await playerRootRef.current?.requestFullscreen?.({ navigationUI: "hide" });
+      if (entering) await playerRootRef.current?.requestFullscreen?.({ navigationUI: "hide" });
+      else await document.exitFullscreen();
     } catch {
       // The fixed shell and native orientation bridge remain the fallback in WebView.
     }
-    const active = !document.fullscreenElement;
+    // `requestFullscreen()` updates `document.fullscreenElement` asynchronously
+    // and some WebViews reject it even though the fixed player shell remains a
+    // usable full-bleed fallback. Treat the user's intent as authoritative for
+    // entry, while an exit only becomes portrait once the browser confirms it.
+    const active = entering ? true : Boolean(document.fullscreenElement);
     setIsFullscreen(active);
     document.documentElement.classList.toggle("player-fullscreen", active);
     setPlaybackOrientation(active);
@@ -247,7 +296,9 @@ export default function PlayerShell({
     fetch(`/api/player/sources?${directSourceParams(request)}`, { signal: controller.signal })
       .then((res) => (res.ok ? (res.json() as Promise<SourceResolutionResponse>) : null))
       .then((data) => {
-        const direct = data?.sources.filter((s) => s.providerId === "direct") ?? [];
+        const direct = data?.sources.filter(
+          (s) => s.providerId === "direct" || s.providerId === "anivexa" || s.providerId === "miruro" || s.providerId.startsWith("anivexa:") || s.providerId.startsWith("miruro:"),
+        ) ?? [];
         if (direct.length) setDirectResult({ key, sources: direct });
       })
       .catch(() => undefined)
@@ -293,6 +344,7 @@ export default function PlayerShell({
   const [sourceFeedback, setSourceFeedback] = useState<{
     sourceId: string;
     label: string;
+    audioVariant?: AudioVariant;
     phase: "switching" | "selected";
   } | null>(null);
   const selectionVersionRef = useRef(0);
@@ -357,7 +409,6 @@ export default function PlayerShell({
       selectedSourceOverride?.requestKey === directRequestKey &&
       sourceParam === selectedSourceOverride.id
     ) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedSourceOverride(null);
     }
   }, [directRequestKey, selectedSourceOverride, sourceParam]);
@@ -382,8 +433,11 @@ export default function PlayerShell({
     requestKey: string;
     ids: Set<string>;
   }>({ requestKey: directRequestKey, ids: new Set() });
-  const attemptedSourceIds =
-    attemptedState.requestKey === directRequestKey ? attemptedState.ids : new Set<string>();
+  const attemptedSourceIds = useMemo(
+    () =>
+      attemptedState.requestKey === directRequestKey ? attemptedState.ids : new Set<string>(),
+    [attemptedState, directRequestKey],
+  );
   useEffect(() => {
     confirmedReadyRef.current = confirmedReady;
   }, [confirmedReady]);
@@ -397,7 +451,6 @@ export default function PlayerShell({
       // Syncing from `usePlayerEvents`' postMessage-derived state, which is
       // exactly the "external system" case an effect is for — this isn't
       // derivable from props/state already available at render time.
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setConfirmedReadySourceId(selectedSource.id);
       setRecoveryPrompt((current) =>
         current?.sourceId === selectedSource.id ? null : current,
@@ -490,10 +543,19 @@ export default function PlayerShell({
     return () => window.clearTimeout(timeout);
   }, [sourceFeedback]);
 
+  const closeSource = useCallback(() => {
+    setSourceOpened(false);
+    window.requestAnimationFrame(() => sourceOpenerRef.current?.focus());
+  }, []);
+
   const openSource = useCallback(() => {
+    sourceOpenerRef.current = document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null;
     revealChrome();
     setSourceOpened(true);
-  }, [revealChrome]);
+    trackUmbraEvent("source_sheet_opened", { mediaType: request.mediaType });
+  }, [request.mediaType, revealChrome]);
 
   const switchSource = useCallback(
     (id: string, reason: "manual" | "recovery" | "reset" = "manual") => {
@@ -505,7 +567,7 @@ export default function PlayerShell({
           clearPlaybackPreference(window.localStorage, request.mediaType, preferredAudio);
           setRememberedSourceId(null);
         }
-        setSourceOpened(false);
+        closeSource();
         revealChrome();
         return;
       }
@@ -525,9 +587,14 @@ export default function PlayerShell({
             seconds: events.currentTime,
           });
         }
-        setSourceFeedback({ sourceId: id, label: nextSource.label, phase: "switching" });
+        setSourceFeedback({
+          sourceId: id,
+          label: nextSource.label,
+          audioVariant: nextSource.audioVariant,
+          phase: "switching",
+        });
       });
-      setSourceOpened(false);
+      closeSource();
       setRecoveryPrompt(null);
       revealChrome();
 
@@ -567,6 +634,12 @@ export default function PlayerShell({
         setRememberedSourceId(null);
       }
 
+      trackUmbraEvent("source_sheet_selection_completed", {
+        mediaType: request.mediaType,
+        provider: nextSource.providerId,
+        audio: nextSource.audioVariant ?? "none",
+      });
+
       // The selected iframe already changed above; URL persistence is
       // intentionally non-blocking. A failed History API update must never
       // undo a user's server choice.
@@ -580,6 +653,7 @@ export default function PlayerShell({
     [
       directRequestKey,
       events.currentTime,
+      closeSource,
       onAudioVariantChange,
       preferredAudio,
       request.mediaType,
@@ -597,10 +671,12 @@ export default function PlayerShell({
     if (recommended) switchSource(recommended.id, "reset");
   }, [preferredAudio, sources, switchSource]);
 
-  const handleIframeLoad = useCallback((sourceId: string, label: string) => {
-    setSwitchingSourceId((current) => (current === sourceId ? null : current));
+  const handleIframeLoad = useCallback((source: PlayerSource) => {
+    setSwitchingSourceId((current) => (current === source.id ? null : current));
     setSourceFeedback((current) =>
-      current?.sourceId === sourceId ? { sourceId, label, phase: "selected" } : current,
+      current?.sourceId === source.id
+        ? { sourceId: source.id, label: source.label, audioVariant: source.audioVariant, phase: "selected" }
+        : current,
     );
   }, []);
 
@@ -699,10 +775,28 @@ export default function PlayerShell({
     chromeHidden,
   };
 
+  const controlsContext: PlayerShellControlsContext = {
+    displayMode,
+    isFullscreen,
+    selectedSourceId: selectedSource?.id ?? "",
+    onChooseDisplayMode: chooseDisplayMode,
+    onToggleFullscreen: toggleFullscreen,
+    onOpenSource: openSource,
+  };
+
   if (!mounted) return null;
 
-  return createPortal(
-    <div ref={playerRootRef} className="player-shell fixed inset-0 z-70 h-dvh w-full overflow-hidden bg-black">
+  const playerContent = (
+    <div
+      ref={playerRootRef}
+      className={`player-shell player-shell-${displayMode} ${
+        isFullscreen
+          ? "fixed inset-0 z-70 h-dvh w-full"
+          : inlineLayout
+            ? "relative z-30 mx-auto aspect-video w-full max-w-[min(100vw,1600px)]"
+            : "fixed inset-x-0 top-0 z-70 mx-auto aspect-video w-full max-w-[min(100vw,1600px)]"
+      } overflow-hidden bg-black`}
+    >
       {selectedSource ? (
         selectedSource.kind === "iframe" ? (
           <iframe
@@ -712,8 +806,8 @@ export default function PlayerShell({
             allow={selectedSource.capabilities.iframe?.allow}
             referrerPolicy={selectedSource.capabilities.iframe?.referrerPolicy}
             title={`${selectedSource.label} player`}
-            onLoad={() => handleIframeLoad(selectedSource.id, selectedSource.label)}
-            className="absolute inset-0 h-full w-full border-0"
+            onLoad={() => handleIframeLoad(selectedSource)}
+            className="player-shell-frame absolute inset-0 h-full w-full border-0"
           />
         ) : (
           <NativePlayer
@@ -754,14 +848,39 @@ export default function PlayerShell({
 
       {renderHeader(headerContext)}
 
-      <button
-        type="button"
-        onClick={() => void toggleFullscreen()}
-        aria-label={isFullscreen ? "Exit full screen" : "Enter full screen"}
-        className="absolute right-4 bottom-5 z-45 rounded-full border border-white/20 bg-black/65 px-3.5 py-2 text-xs font-semibold text-white/90 shadow-lg backdrop-blur-xl transition hover:bg-black/85 focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:outline-none"
-      >
-        {isFullscreen ? "Exit full screen" : "Full screen"}
-      </button>
+      {!renderControls && (
+        <div className="absolute right-4 bottom-5 z-45 flex items-center gap-2">
+          <button
+            type="button"
+            onClick={openSource}
+            aria-label="Choose playback source"
+            className="min-h-11 rounded-full border border-white/20 bg-black/65 px-3.5 py-2 text-xs font-semibold text-white/90 shadow-lg backdrop-blur-xl transition hover:bg-black/85 focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:outline-none"
+          >
+            Source
+          </button>
+          <div className="player-display-toggle flex overflow-hidden rounded-full border border-white/20 bg-black/65 shadow-lg backdrop-blur-xl" role="group" aria-label="Video framing">
+            {(["fit", "fill"] as const).map((mode) => (
+              <button
+                key={mode}
+                type="button"
+                onClick={() => chooseDisplayMode(mode)}
+                aria-pressed={displayMode === mode}
+                className={`px-3.5 py-2 text-xs font-semibold transition focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:outline-none ${displayMode === mode ? "bg-white text-black" : "text-white/85 hover:bg-white/15"}`}
+              >
+                {mode === "fit" ? "Fit" : "Fill"}
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => void toggleFullscreen()}
+            aria-label={isFullscreen ? "Exit full screen" : "Enter full screen"}
+            className="rounded-full border border-white/20 bg-black/65 px-3.5 py-2 text-xs font-semibold text-white/90 shadow-lg backdrop-blur-xl transition hover:bg-black/85 focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:outline-none"
+          >
+            {isFullscreen ? "Exit full screen" : "Full screen"}
+          </button>
+        </div>
+      )}
 
       {chromeHidden && !sourceOpened && (
         <button
@@ -780,10 +899,14 @@ export default function PlayerShell({
           <div
             role="status"
             aria-live="polite"
+            aria-atomic="true"
             className="rounded-full border border-white/12 bg-black/72 px-3.5 py-2 text-[11.5px] font-medium text-white/90 shadow-xl backdrop-blur-xl"
           >
             {sourceFeedback.phase === "switching" ? "Switching to" : "Now using"}{" "}
             {sourceFeedback.label}
+            {sourceFeedback.audioVariant
+              ? ` · ${sourceFeedback.audioVariant === "dub" ? "Dub" : "Sub"}`
+              : ""}
           </div>
         </div>
       )}
@@ -800,15 +923,26 @@ export default function PlayerShell({
 
       <PlayerSourceSheet
         opened={sourceOpened}
-        onClose={() => setSourceOpened(false)}
+        onClose={closeSource}
         sources={sources}
+        animeCatalog={request.mediaType === "anime" ? ANIME_PROVIDER_CATALOG : undefined}
         selectedSourceId={selectedSource?.id ?? ""}
         switchingSourceId={switchingSourceId}
         hasPreference={Boolean(rememberedSourceId)}
         onResetPreference={resetPreferredSource}
         onSelect={selectSource}
       />
-    </div>,
-    document.body,
+    </div>
   );
+
+  if (renderControls) {
+    return (
+      <>
+        {inlineLayout ? playerContent : createPortal(playerContent, document.body)}
+        {renderControls(controlsContext)}
+      </>
+    );
+  }
+
+  return inlineLayout ? playerContent : createPortal(playerContent, document.body);
 }

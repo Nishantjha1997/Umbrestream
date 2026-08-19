@@ -43,6 +43,8 @@ export default function PlayerNotificationSlot({
   return (
     <div
       role="status"
+      aria-live="polite"
+      aria-atomic="true"
       className={cn(
         "flex flex-wrap items-center gap-2.5 rounded-xl border px-3 py-2.5 text-sm",
         active.tone === "danger"

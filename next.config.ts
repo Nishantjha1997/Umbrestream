@@ -28,7 +28,7 @@ const nextConfig: NextConfig = {
     // types are still enforced, just outside the build.
     // A green build is NOT a green typecheck here. Run typecheck explicitly.
     // Remove this once the local Node install is repaired.
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: process.env.STREAMFREE_SKIP_NEXT_TYPECHECK === "1",
   },
   experimental: {
     cpus: 1,
@@ -109,10 +109,6 @@ const nextConfig: NextConfig = {
         {
           source: "/downloads/StreamFree-TV-v1.2.apk",
           filename: "StreamFree-TV-v1.2.apk",
-        },
-        {
-          source: "/downloads/StreamFree-local-debug.apk",
-          filename: "StreamFree-local-debug.apk",
         },
       ].map(({ source, filename }) => ({
         source,

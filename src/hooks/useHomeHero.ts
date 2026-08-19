@@ -1,7 +1,7 @@
 "use client";
 
 import { tmdbBrowser } from "@/api/tmdb-browser";
-import { getPersonalizedRecommendations } from "@/actions/recommendations";
+import { getPersonalizedRecommendationFeed } from "@/actions/recommendations";
 import useContinueWatching from "@/hooks/useContinueWatching";
 import type { HistoryDetail } from "@/types/movie";
 import type { MediaKind, MediaSummary } from "@/types/media";
@@ -116,7 +116,7 @@ export function useHomeHero() {
   // whichever of the two mounts second.
   const recsQuery = useQuery({
     queryKey: ["personalized-recommendations", user?.id],
-    queryFn: () => getPersonalizedRecommendations(),
+    queryFn: () => getPersonalizedRecommendationFeed(),
     enabled: !isUserLoading,
     staleTime: 30 * 60 * 1000,
   });
@@ -134,7 +134,7 @@ export function useHomeHero() {
     const active = histories.find((h) => !h.completed);
     if (active) return fromHistory(active);
 
-    const rec = (recsQuery.data ?? [])[0];
+    const rec = (recsQuery.data?.items ?? [])[0];
     if (rec) {
       const media =
         rec.type === "movie"
@@ -142,7 +142,10 @@ export function useHomeHero() {
           : rec.type === "tv"
             ? fromTvShow(rec.media as TV)
             : fromAnime(rec.media);
-      if (!isEmpty(media.posterUrl)) return fromMediaSummary("recommended", media);
+      if (!isEmpty(media.posterUrl)) {
+        const source = recsQuery.data?.provenance === "personalized" ? "recommended" : "trending";
+        return fromMediaSummary(source, media);
+      }
     }
 
     for (const entry of trendingQuery.data?.results ?? []) {

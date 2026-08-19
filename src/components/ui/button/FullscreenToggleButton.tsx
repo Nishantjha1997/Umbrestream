@@ -17,7 +17,7 @@ const FullscreenToggleButton: React.FC = () => {
       <IconButton
         tooltip={tooltip}
         tooltipProps={{ placement: "left" }}
-        className="p-2"
+        className="size-11 p-2"
         icon={icon}
         onPress={toggle}
         variant="light"

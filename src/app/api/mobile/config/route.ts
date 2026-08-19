@@ -8,6 +8,22 @@ const MOBILE_HEADERS = {
   "Cache-Control": "public, max-age=300, s-maxage=3600, stale-while-revalidate=86400",
 };
 
+const MOBILE_CONFIG = {
+  schemaVersion: 1,
+  features: {
+    /**
+     * Provider filtering stays explicitly disabled until a separately reviewed
+     * policy can be validated against every playback provider. Keeping the
+     * list empty makes a malformed or stale response fail closed in clients.
+     */
+    adProtection: {
+      enabled: false,
+      policyVersion: "disabled",
+      blockedHosts: [] as string[],
+    },
+  },
+};
+
 /**
  * Client-safe runtime configuration for the bundled Android application.
  *
@@ -27,6 +43,7 @@ export async function GET() {
     {
       supabaseUrl: env.NEXT_PUBLIC_SUPABASE_URL,
       supabasePublishableKey: env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+      ...MOBILE_CONFIG,
     },
     { headers: MOBILE_HEADERS },
   );
