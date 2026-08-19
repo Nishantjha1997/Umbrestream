@@ -36,6 +36,7 @@ const API_PROVIDERS = new Set([
 ]);
 
 const IFRAME_ALLOW = "autoplay; encrypted-media; picture-in-picture; fullscreen; screen-wake-lock";
+const animeRemoteCache = new Map<string, { expiresAt: number; data: StreamCandidate[] }>();
 
 function configuredOrigin(value: string | undefined): string | null {
   if (!value) return null;
@@ -343,36 +344,38 @@ function createRemoteAdapter(
     async resolve(request, signal) {
       const activeBase = getBase();
       if (!activeBase || !request.anilistId || !request.episode) return [];
+      const cacheKey = `${id}:${request.anilistId}:${request.episode}:${request.preferredAudio ?? "sub"}`;
+      const cached = animeRemoteCache.get(cacheKey);
+      if (cached && cached.expiresAt > Date.now() && cached.data.length > 0) {
+        return cached.data;
+      }
+
       const origins = allowedOrigins();
       const primaryAudio: AudioVariant = request.preferredAudio === "dub" ? "dub" : "sub";
-      const secondaryAudio: AudioVariant = primaryAudio === "dub" ? "sub" : "dub";
-      const audioVariants: AudioVariant[] = [primaryAudio, secondaryAudio];
       try {
         const payload = await json(endpoint(activeBase, request.anilistId), signal);
         const entries = providerEntries(payload);
         const tasks: Promise<StreamCandidate[]>[] = [];
-        for (const [provider, providerData] of entries) {
-          for (const audio of audioVariants) {
-            const episode = listForAudio(providerData, audio).find((item) => {
-              const record = asRecord(item);
-              return record ? episodeNumber(record) === request.episode : false;
-            });
-            const episodeRecord = asRecord(episode);
-            if (!episodeRecord) continue;
-            tasks.push(
-              watchCandidates(
-                id,
-                activeBase,
-                provider,
-                request.anilistId,
-                audio,
-                episodeRecord,
-                request.episode,
-                origins,
-                signal,
-              ).catch(() => []),
-            );
-          }
+        for (const [provider, providerData] of entries.slice(0, 4)) {
+          const episode = listForAudio(providerData, primaryAudio).find((item) => {
+            const record = asRecord(item);
+            return record ? episodeNumber(record) === request.episode : false;
+          });
+          const episodeRecord = asRecord(episode);
+          if (!episodeRecord) continue;
+          tasks.push(
+            watchCandidates(
+              id,
+              activeBase,
+              provider,
+              request.anilistId,
+              primaryAudio,
+              episodeRecord,
+              request.episode,
+              origins,
+              signal,
+            ).catch(() => []),
+          );
         }
         const results = await Promise.allSettled(tasks);
         const candidates: StreamCandidate[] = [];
@@ -380,6 +383,9 @@ function createRemoteAdapter(
           if (res.status === "fulfilled" && Array.isArray(res.value)) {
             candidates.push(...res.value);
           }
+        }
+        if (candidates.length > 0) {
+          animeRemoteCache.set(cacheKey, { expiresAt: Date.now() + 300_000, data: candidates });
         }
         return candidates;
       } catch (err) {
