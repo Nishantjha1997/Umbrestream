@@ -39,8 +39,24 @@ export async function GET(request: Request) {
       }),
       cache: "no-store",
     });
-    if (!tokenResponse.ok) return redirect(origin, next, "anilist_token_exchange_failed");
-    const token = await tokenResponse.json() as { access_token?: string; expires_in?: number };
+    const tokenText = await tokenResponse.text();
+    if (!tokenResponse.ok) {
+      // AniList returns a JSON body like {"error":"invalid_client"} or
+      // {"error":"invalid_grant"} on failure. Surfacing status + body here is
+      // what makes the redirect_uri/secret mismatches diagnosable in Vercel
+      // logs — the secret itself is never logged.
+      console.error(
+        `[anime-oauth] AniList token exchange failed: HTTP ${tokenResponse.status} ${tokenText.slice(0, 500)}`,
+      );
+      return redirect(origin, next, "anilist_token_exchange_failed");
+    }
+    let token: { access_token?: string; expires_in?: number };
+    try {
+      token = JSON.parse(tokenText) as { access_token?: string; expires_in?: number };
+    } catch {
+      console.error("[anime-oauth] AniList token response was not valid JSON:", tokenText.slice(0, 500));
+      return redirect(origin, next, "anilist_token_missing");
+    }
     if (!token.access_token) return redirect(origin, next, "anilist_token_missing");
     const viewerResponse = await fetch("https://graphql.anilist.co", {
       method: "POST",

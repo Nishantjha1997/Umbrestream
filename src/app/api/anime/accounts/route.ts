@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
-import { isOAuthConfigured, type AnimeOAuthProvider } from "@/lib/anime/oauth";
+import { isOAuthConfigured, oauthRedirectUri, type AnimeOAuthProvider } from "@/lib/anime/oauth";
 
 export const runtime = "nodejs";
 
@@ -16,7 +16,11 @@ export async function GET() {
     if (error) throw error;
     const linked = new Set((data ?? []).map((row) => row.provider));
     const providers = (['anilist', 'mal'] as AnimeOAuthProvider[]).reduce<Record<string, unknown>>((result, provider) => {
-      result[provider] = { configured: isOAuthConfigured(provider), connected: linked.has(provider) };
+      result[provider] = {
+        configured: isOAuthConfigured(provider),
+        connected: linked.has(provider),
+        redirect_uri: oauthRedirectUri(provider),
+      };
       return result;
     }, {});
     return NextResponse.json({ authenticated: true, providers, accounts: data ?? [] }, { headers: { "Cache-Control": "private, no-store" } });

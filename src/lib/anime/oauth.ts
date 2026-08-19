@@ -9,6 +9,12 @@ export const OAUTH_COOKIE_NAMES: Record<AnimeOAuthProvider, string> = {
 };
 
 export function oauthRedirectUri(provider: AnimeOAuthProvider): string {
+  // Allow pinning the exact callback URL via env (e.g. ANILIST_REDIRECT_URI),
+  // independent of the build-time-inlined NEXT_PUBLIC_SITE_URL. AniList
+  // requires this to match the registered app callback exactly, so an explicit
+  // override removes an entire class of silent redirect_uri mismatches.
+  const override = process.env[`${provider.toUpperCase()}_REDIRECT_URI`];
+  if (override) return override.replace(/\/+$/, "");
   return `${SITE_URL}/api/auth/${provider}/callback`;
 }
 

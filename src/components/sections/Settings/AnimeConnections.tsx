@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-type ProviderStatus = { configured: boolean; connected: boolean };
+type ProviderStatus = { configured: boolean; connected: boolean; redirect_uri?: string };
 type AccountState = {
   authenticated: boolean;
   providers: Record<string, ProviderStatus>;
@@ -10,6 +10,23 @@ type AccountState = {
 };
 
 const labels = { anilist: "AniList", mal: "MyAnimeList" } as const;
+
+const ERROR_MESSAGES: Record<string, string> = {
+  anilist_token_exchange_failed:
+    "AniList rejected the connection. Check that the AniList app's client secret and callback URL match what's registered in the deployment settings, then try again.",
+  anilist_authorization_failed:
+    "The AniList authorization could not be completed. Try connecting again.",
+  anilist_token_missing:
+    "AniList did not return an access token. Check the app credentials and try again.",
+  anilist_profile_failed:
+    "AniList signed you in, but we couldn't load your profile. Try again shortly.",
+  anilist_account_save_failed:
+    "AniList authorized the connection, but saving the account failed. Try again.",
+  anilist_unavailable:
+    "The AniList connection is temporarily unavailable. Try again later.",
+  anilist_not_configured:
+    "AniList integration isn't configured yet. Check the deployment environment variables.",
+};
 
 export default function AnimeConnections() {
   const [state, setState] = useState<AccountState | null>(null);
@@ -20,7 +37,7 @@ export default function AnimeConnections() {
     const connected = params.get("anime_connected");
     const error = params.get("anime_error");
     if (connected) setNotice(`${connected === "mal" ? "MyAnimeList" : "AniList"} connected successfully.`);
-    if (error) setNotice("The anime account connection could not be completed. Check the account setup and try again.");
+    if (error) setNotice(ERROR_MESSAGES[error] ?? "The anime account connection could not be completed. Check the account setup and try again.");
     void fetch("/api/anime/accounts", { cache: "no-store" })
       .then((response) => response.ok ? response.json() as Promise<AccountState> : null)
       .then((data) => { if (data) setState(data); })
@@ -44,6 +61,11 @@ export default function AnimeConnections() {
               <div className="min-w-0">
                 <p className="font-semibold text-white">{labels[provider]}</p>
                 <p className="mt-1 truncate text-xs text-white/45">{account?.provider_username ? `Connected as ${account.provider_username}` : item?.configured ? "Ready to connect" : "Not enabled by StreamFree yet"}</p>
+                {item?.redirect_uri && (
+                  <p className="mt-1 truncate text-[10px] text-white/35" title="Must match the callback URL registered in the provider app settings">
+                    Callback: {item.redirect_uri}
+                  </p>
+                )}
               </div>
               {item?.connected ? (
                 <span className="shrink-0 rounded-full border border-emerald-200/20 bg-emerald-300/10 px-3 py-2 text-xs font-semibold text-emerald-100">Connected</span>
