@@ -926,6 +926,7 @@ export default function PlayerShell({
         onClose={closeSource}
         sources={sources}
         animeCatalog={request.mediaType === "anime" ? ANIME_PROVIDER_CATALOG : undefined}
+        loading={request.mediaType === "anime" && !directSettled}
         selectedSourceId={selectedSource?.id ?? ""}
         switchingSourceId={switchingSourceId}
         hasPreference={Boolean(rememberedSourceId)}
