@@ -18,6 +18,7 @@ export const env = createEnv({
     ANILIST_CLIENT_SECRET: z.string().optional().default(""),
     MAL_CLIENT_ID: z.string().optional().default(""),
     OAUTH_TOKEN_ENCRYPTION_KEY: z.string().optional().default(""),
+    CLOUDFLARE_PROXY_URL: z.string().optional().default("https://streamfree-proxy.nishantjha31.workers.dev"),
   },
   client: {
     NEXT_PUBLIC_SUPABASE_URL: z.string().optional().default(""),
@@ -28,6 +29,7 @@ export const env = createEnv({
     NEXT_PUBLIC_PLAYER_ENGINE_V3: z.enum(["true", "false"]).optional().default("true"),
     NEXT_PUBLIC_ANIME_SOURCES_V2: z.enum(["true", "false"]).optional().default("true"),
     NEXT_PUBLIC_UMBRA_UI_V2: z.enum(["true", "false"]).optional().default("true"),
+    NEXT_PUBLIC_CLOUDFLARE_PROXY_URL: z.string().optional().default("https://streamfree-proxy.nishantjha31.workers.dev"),
   },
   experimental__runtimeEnv: {
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -38,6 +40,7 @@ export const env = createEnv({
     NEXT_PUBLIC_PLAYER_ENGINE_V3: process.env.NEXT_PUBLIC_PLAYER_ENGINE_V3,
     NEXT_PUBLIC_ANIME_SOURCES_V2: process.env.NEXT_PUBLIC_ANIME_SOURCES_V2,
     NEXT_PUBLIC_UMBRA_UI_V2: process.env.NEXT_PUBLIC_UMBRA_UI_V2,
+    NEXT_PUBLIC_CLOUDFLARE_PROXY_URL: process.env.NEXT_PUBLIC_CLOUDFLARE_PROXY_URL,
   },
   emptyStringAsUndefined: true,
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
