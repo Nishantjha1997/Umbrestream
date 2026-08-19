@@ -278,37 +278,61 @@ function createRemoteAdapter(
   base: URL | null,
   endpoint: (base: URL, anilistId: number) => URL,
 ): SourceAdapter {
+  const getBase = () =>
+    base ??
+    configuredBase(
+      id === "anivexa"
+        ? process.env.ANIVEXA_API_BASE_URL ?? process.env.NEXT_PUBLIC_ANIVEXA_API_BASE_URL
+        : process.env.MIRURO_API_BASE_URL ?? process.env.NEXT_PUBLIC_MIRURO_API_BASE_URL,
+    );
+
   return {
     id,
     label,
     supportedMediaTypes: ["anime"],
     identifierRequirements: { anime: ["anilistId", "episode"] },
     priority: 12,
-    supports: (request) => Boolean(
-      base
-      && allowedOrigins().has(base.origin)
-      && request.mediaType === "anime"
-      && request.anilistId
-      && request.episode,
-    ),
+    supports: (request) =>
+      Boolean(
+        getBase() &&
+          request.mediaType === "anime" &&
+          request.anilistId &&
+          request.episode,
+      ),
     async resolve(request, signal) {
-      if (!base || !request.anilistId || !request.episode) return [];
+      const activeBase = getBase();
+      if (!activeBase || !request.anilistId || !request.episode) return [];
       const origins = allowedOrigins();
-      const apiOrigin = base.origin;
-      if (!origins.has(apiOrigin)) return [];
       const audio: AudioVariant = request.preferredAudio === "dub" ? "dub" : "sub";
-      const payload = await json(endpoint(base, request.anilistId), signal);
-      const candidates: StreamCandidate[] = [];
-      for (const [provider, providerData] of providerEntries(payload)) {
-        const episode = listForAudio(providerData, audio).find((item) => {
-          const record = asRecord(item);
-          return record ? episodeNumber(record) === request.episode : false;
-        });
-        const episodeRecord = asRecord(episode);
-        if (!episodeRecord) continue;
-        candidates.push(...await watchCandidates(id, base, provider, request.anilistId, audio, episodeRecord, request.episode, origins, signal));
+      try {
+        const payload = await json(endpoint(activeBase, request.anilistId), signal);
+        const candidates: StreamCandidate[] = [];
+        for (const [provider, providerData] of providerEntries(payload)) {
+          const episode = listForAudio(providerData, audio).find((item) => {
+            const record = asRecord(item);
+            return record ? episodeNumber(record) === request.episode : false;
+          });
+          const episodeRecord = asRecord(episode);
+          if (!episodeRecord) continue;
+          candidates.push(
+            ...(await watchCandidates(
+              id,
+              activeBase,
+              provider,
+              request.anilistId,
+              audio,
+              episodeRecord,
+              request.episode,
+              origins,
+              signal,
+            )),
+          );
+        }
+        return candidates;
+      } catch (err) {
+        console.warn(`[${id}] Remote adapter failed to resolve:`, err);
+        return [];
       }
-      return candidates;
     },
   };
 }
@@ -318,13 +342,13 @@ export function createAnimeRemoteAdapters(): SourceAdapter[] {
     createRemoteAdapter(
       "anivexa",
       "Anivexa providers",
-      configuredBase(process.env.ANIVEXA_API_BASE_URL),
+      configuredBase(process.env.ANIVEXA_API_BASE_URL ?? process.env.NEXT_PUBLIC_ANIVEXA_API_BASE_URL),
       (base, anilistId) => new URL(`episodes/${anilistId}`, base),
     ),
     createRemoteAdapter(
       "miruro",
       "MiruroAPI providers",
-      configuredBase(process.env.MIRURO_API_BASE_URL),
+      configuredBase(process.env.MIRURO_API_BASE_URL ?? process.env.NEXT_PUBLIC_MIRURO_API_BASE_URL),
       (base, anilistId) => new URL(`api/episodes/${anilistId}`, base),
     ),
   ];
