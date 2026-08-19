@@ -14,6 +14,23 @@ export interface AnimeProviderCatalogEntry {
 }
 
 export const ANIME_PROVIDER_CATALOG: AnimeProviderCatalogEntry[] = [
+  // Anivexa API providers (requires ANIVEXA_API_BASE_URL env var)
+  { id: "anivexa:anibd", label: "Anivexa · AniBD", variants: ["sub", "dub"] },
+  { id: "anivexa:reanime", label: "Anivexa · ReAnime", variants: ["sub", "dub"] },
+  { id: "anivexa:anikoto", label: "Anivexa · AniKoto", variants: ["sub", "dub"] },
+  { id: "anivexa:animegg", label: "Anivexa · AnimeGG", variants: ["sub", "dub"] },
+  { id: "anivexa:anineko", label: "Anivexa · AniNeko", variants: ["sub", "dub"] },
+  { id: "anivexa:anizone", label: "Anivexa · AniZone", variants: ["sub"] },
+  { id: "anivexa:2dhive", label: "Anivexa · 2DHive", variants: ["sub", "dub"] },
+  { id: "anivexa:mkissa", label: "Anivexa · MKissa", variants: ["sub", "dub"] },
+  { id: "anivexa:senshi", label: "Anivexa · Senshi", variants: ["sub", "dub"] },
+  { id: "anivexa:kickassanime", label: "Anivexa · KickAssAnime", variants: ["sub", "dub"] },
+  { id: "anivexa:anidbapp", label: "Anivexa · AniDB", variants: ["sub", "dub"] },
+  { id: "anivexa:animenosub", label: "Anivexa · AnimeNoSub", variants: ["sub", "dub"] },
+  { id: "anivexa:animedunya", label: "Anivexa · AnimeDunya", variants: ["sub", "dub"] },
+  { id: "anivexa:animecg", label: "Anivexa · AnimeCG", variants: ["sub", "dub"] },
+  { id: "anivexa:megaplay", label: "Anivexa · MegaPlay", variants: ["sub", "dub"] },
+  // MiruroAPI providers (requires MIRURO_API_BASE_URL env var)
   { id: "miruro", label: "Miruro", variants: ["sub", "dub"] },
   { id: "anikoto", label: "AniKoto", variants: ["sub", "dub"] },
   { id: "reanime", label: "ReAnime", variants: ["sub", "dub"] },

@@ -210,6 +210,19 @@ export default function PlayerSourceSheet({
 
   const content = (
     <div className="flex flex-col gap-4">
+      {animeCatalog && animeCatalog.length > 0 && (
+        <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-3 text-xs text-amber-200/90 backdrop-blur-md">
+          <div className="flex items-start gap-2.5">
+            <span className="text-base select-none">☕</span>
+            <div className="flex flex-col gap-0.5">
+              <span className="font-semibold text-amber-300">Free Tier Wake-Up Call</span>
+              <p className="leading-relaxed text-amber-200/75">
+                We run on free cloud servers to keep everything 100% free for you. If an Anivexa server takes ~40–50s on your first episode of the day, it&apos;s just waking up from its nap. Once awake, it streams at full speed!
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
       {renderSourceGroups()}
       {resetPreference}
     </div>

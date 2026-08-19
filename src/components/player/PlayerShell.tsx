@@ -77,6 +77,19 @@ export interface PlayerShellHeaderContext {
   chromeHidden: boolean;
 }
 
+/** Context passed to the optional `renderControls` render-prop. When provided
+ *  the default Source/Fit/Fill/Fullscreen button row inside the shell is
+ *  suppressed so the caller can render those controls outside the video
+ *  viewport (e.g. below the player on the anime page). */
+export interface PlayerShellControlsContext {
+  displayMode: "fit" | "fill";
+  isFullscreen: boolean;
+  selectedSourceId: string;
+  onChooseDisplayMode: (mode: "fit" | "fill") => void;
+  onToggleFullscreen: () => Promise<void>;
+  onOpenSource: () => void;
+}
+
 export interface PlayerShellProps {
   /** Callers must keep this referentially stable (useMemo) — it drives
    *  every derived query below. */
@@ -88,6 +101,10 @@ export interface PlayerShellProps {
   renderHeader: (context: PlayerShellHeaderContext) => ReactNode;
   /** Extra sheets a specific media type owns — episode drawers/panels. */
   renderExtras?: (context: PlayerShellHeaderContext) => ReactNode;
+  /** When provided, the built-in Source/Fit/Fill/Fullscreen button row is
+   *  omitted from inside the player viewport. The caller is responsible for
+   *  rendering those controls using the supplied context. */
+  renderControls?: (context: PlayerShellControlsContext) => ReactNode;
   onEnded?: () => void;
   onAudioVariantChange?: (audioVariant: AudioVariant) => void;
   /** Render the initial stage in the route flow instead of as a body portal. */
@@ -117,6 +134,7 @@ export default function PlayerShell({
   historyMetadata,
   renderHeader,
   renderExtras,
+  renderControls,
   onEnded,
   onAudioVariantChange,
   inlineLayout = false,
@@ -757,6 +775,15 @@ export default function PlayerShell({
     chromeHidden,
   };
 
+  const controlsContext: PlayerShellControlsContext = {
+    displayMode,
+    isFullscreen,
+    selectedSourceId: selectedSource?.id ?? "",
+    onChooseDisplayMode: chooseDisplayMode,
+    onToggleFullscreen: toggleFullscreen,
+    onOpenSource: openSource,
+  };
+
   if (!mounted) return null;
 
   const playerContent = (
@@ -821,37 +848,39 @@ export default function PlayerShell({
 
       {renderHeader(headerContext)}
 
-      <div className="absolute right-4 bottom-5 z-45 flex items-center gap-2">
-        <button
-          type="button"
-          onClick={openSource}
-          aria-label="Choose playback source"
-          className="min-h-11 rounded-full border border-white/20 bg-black/65 px-3.5 py-2 text-xs font-semibold text-white/90 shadow-lg backdrop-blur-xl transition hover:bg-black/85 focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:outline-none"
-        >
-          Source
-        </button>
-        <div className="player-display-toggle flex overflow-hidden rounded-full border border-white/20 bg-black/65 shadow-lg backdrop-blur-xl" role="group" aria-label="Video framing">
-          {(["fit", "fill"] as const).map((mode) => (
-            <button
-              key={mode}
-              type="button"
-              onClick={() => chooseDisplayMode(mode)}
-              aria-pressed={displayMode === mode}
-              className={`px-3.5 py-2 text-xs font-semibold transition focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:outline-none ${displayMode === mode ? "bg-white text-black" : "text-white/85 hover:bg-white/15"}`}
-            >
-              {mode === "fit" ? "Fit" : "Fill"}
-            </button>
-          ))}
+      {!renderControls && (
+        <div className="absolute right-4 bottom-5 z-45 flex items-center gap-2">
+          <button
+            type="button"
+            onClick={openSource}
+            aria-label="Choose playback source"
+            className="min-h-11 rounded-full border border-white/20 bg-black/65 px-3.5 py-2 text-xs font-semibold text-white/90 shadow-lg backdrop-blur-xl transition hover:bg-black/85 focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:outline-none"
+          >
+            Source
+          </button>
+          <div className="player-display-toggle flex overflow-hidden rounded-full border border-white/20 bg-black/65 shadow-lg backdrop-blur-xl" role="group" aria-label="Video framing">
+            {(["fit", "fill"] as const).map((mode) => (
+              <button
+                key={mode}
+                type="button"
+                onClick={() => chooseDisplayMode(mode)}
+                aria-pressed={displayMode === mode}
+                className={`px-3.5 py-2 text-xs font-semibold transition focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:outline-none ${displayMode === mode ? "bg-white text-black" : "text-white/85 hover:bg-white/15"}`}
+              >
+                {mode === "fit" ? "Fit" : "Fill"}
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => void toggleFullscreen()}
+            aria-label={isFullscreen ? "Exit full screen" : "Enter full screen"}
+            className="rounded-full border border-white/20 bg-black/65 px-3.5 py-2 text-xs font-semibold text-white/90 shadow-lg backdrop-blur-xl transition hover:bg-black/85 focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:outline-none"
+          >
+            {isFullscreen ? "Exit full screen" : "Full screen"}
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={() => void toggleFullscreen()}
-          aria-label={isFullscreen ? "Exit full screen" : "Enter full screen"}
-          className="rounded-full border border-white/20 bg-black/65 px-3.5 py-2 text-xs font-semibold text-white/90 shadow-lg backdrop-blur-xl transition hover:bg-black/85 focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:outline-none"
-        >
-          {isFullscreen ? "Exit full screen" : "Full screen"}
-        </button>
-      </div>
+      )}
 
       {chromeHidden && !sourceOpened && (
         <button
@@ -905,6 +934,15 @@ export default function PlayerShell({
       />
     </div>
   );
+
+  if (renderControls) {
+    return (
+      <>
+        {inlineLayout ? playerContent : createPortal(playerContent, document.body)}
+        {renderControls(controlsContext)}
+      </>
+    );
+  }
 
   return inlineLayout ? playerContent : createPortal(playerContent, document.body);
 }

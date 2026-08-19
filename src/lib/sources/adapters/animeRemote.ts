@@ -11,6 +11,12 @@ const API_PROVIDERS = new Set([
   "animenosub",
   "megaplay",
   "miruro",
+  "mkissa",
+  "anidbapp",
+  "anibd",
+  "senshi",
+  "kickassanime",
+  "animedunya",
   // MiruroAPI provider keys. These are the provider variants returned by its
   // documented /api/episodes and /api/watch contracts.
   "kiwi",
@@ -50,10 +56,12 @@ function configuredBase(value: string | undefined): URL | null {
 }
 
 function allowedOrigins(): Set<string> {
+  const raw = process.env.STREAMFREE_ANIME_ALLOWED_ORIGINS ?? "";
+  if (!raw || raw.trim() === "*") return new Set(["*"]);
   return new Set(
-    (process.env.STREAMFREE_ANIME_ALLOWED_ORIGINS ?? "")
+    raw
       .split(",")
-      .map((value) => configuredOrigin(value.trim()))
+      .map((value) => (value.trim() === "*" ? "*" : configuredOrigin(value.trim())))
       .filter((value): value is string => Boolean(value)),
   );
 }
@@ -62,7 +70,11 @@ function safeUrl(value: unknown, origins: Set<string>): string | null {
   if (typeof value !== "string" || value.length === 0) return null;
   try {
     const url = new URL(value);
-    return url.protocol === "https:" && origins.has(url.origin) ? url.toString() : null;
+    if (url.protocol !== "https:") return null;
+    if (origins.size === 0 || origins.has("*") || origins.has(url.origin)) {
+      return url.toString();
+    }
+    return null;
   } catch {
     return null;
   }
@@ -96,6 +108,12 @@ function providerLabel(value: string): string {
     animecg: "AnimeCG",
     animenosub: "AnimeNoSub",
     megaplay: "MegaPlay",
+    anibd: "AniBD",
+    mkissa: "MKissa",
+    senshi: "Senshi",
+    kickassanime: "KickAssAnime",
+    anidbapp: "AniDB",
+    animedunya: "AnimeDunya",
     miruro: "Miruro",
     kiwi: "Miruro · Kiwi",
     pewe: "Miruro · Pewe",

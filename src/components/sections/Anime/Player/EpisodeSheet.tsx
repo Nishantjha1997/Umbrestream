@@ -31,6 +31,8 @@ interface AnimePlayerEpisodeSheetProps extends HandlerType {
   selectedSourceId?: string;
   audioVariant: AudioVariant;
   inline?: boolean;
+  /** "sidebar" renders as a sticky always-visible panel beside the player on desktop. */
+  variant?: "sidebar";
 }
 
 const CHUNK_SIZE = 50;
@@ -43,6 +45,7 @@ const AnimePlayerEpisodeSheet: React.FC<AnimePlayerEpisodeSheetProps> = ({
   selectedSourceId,
   audioVariant,
   inline = false,
+  variant,
 }) => {
   const isDesktop = useMediaQuery("(min-width: 768px)", false, {
     getInitialValueInEffect: false,
@@ -168,6 +171,27 @@ const AnimePlayerEpisodeSheet: React.FC<AnimePlayerEpisodeSheetProps> = ({
 
   const nextEpisode = currentEpisode < totalEpisodes ? currentEpisode + 1 : null;
   const nextEpisodeHref = nextEpisode ? episodeHref(nextEpisode, audioVariant) : null;
+
+  if (variant === "sidebar") {
+    return (
+      <div className="flex h-full flex-col rounded-2xl border border-white/10 bg-white/[0.025]">
+        {/* Sidebar header */}
+        <div className="border-b border-white/10 px-4 py-3">
+          <p className="text-xs font-semibold tracking-[.12em] text-primary uppercase">Episodes</p>
+          <h2 className="mt-0.5 text-sm font-semibold text-white">{title}</h2>
+          <p className="text-xs text-white/50">
+            EP {currentEpisode} · {audioVariant === "dub" ? "Dub" : "Sub"}
+            {totalEpisodes ? ` of ${totalEpisodes}` : ""}
+          </p>
+        </div>
+        {/* Episode list */}
+        <div className="flex flex-col gap-2 overflow-y-auto p-3">
+          {chunkTabs}
+          {episodeGrid("grid grid-cols-1 gap-2")}
+        </div>
+      </div>
+    );
+  }
 
   if (inline) {
     return (
