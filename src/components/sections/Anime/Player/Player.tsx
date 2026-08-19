@@ -102,8 +102,7 @@ const AnimePlayer: React.FC<AnimePlayerProps> = ({ anime, episode, startAt }) =>
             onAudioVariantChange={changeAudio}
             renderHeader={({ selectedSourceId, selectedAudioVariant, onOpenSource, chromeHidden }) => (
               <AnimePlayerHeader
-                id={anime.id}
-                animeTitle={animeTitle}
+                anime={anime}
                 episode={episode}
                 totalEpisodes={anime.episodes}
                 selectedSource={selectedSourceId}
