@@ -17,6 +17,7 @@ const API_PROVIDERS = new Set([
   "anibd",
   "senshi",
   "kickassanime",
+  "kaa",
   "animedunya",
   // MiruroAPI provider keys. These are the provider variants returned by its
   // documented /api/episodes and /api/watch contracts.
@@ -71,7 +72,10 @@ function safeUrl(value: unknown, origins: Set<string>): string | null {
   if (typeof value !== "string" || value.length === 0) return null;
   try {
     const url = new URL(value);
-    if (url.protocol !== "https:") return null;
+    if (url.protocol !== "https:" && url.protocol !== "http:") return null;
+    if (url.protocol === "http:" && url.hostname.includes("onrender.com")) {
+      url.protocol = "https:";
+    }
     if (origins.size === 0 || origins.has("*") || origins.has(url.origin)) {
       return url.toString();
     }
@@ -113,6 +117,7 @@ function providerLabel(value: string): string {
     mkissa: "MKissa",
     senshi: "Senshi",
     kickassanime: "KickAssAnime",
+    kaa: "KickAssAnime",
     anidbapp: "AniDB",
     animedunya: "AnimeDunya",
     miruro: "Miruro",
@@ -162,6 +167,7 @@ const PROVIDER_PRIORITY: Record<string, number> = {
   mkissa: 7,
   senshi: 8,
   kickassanime: 9,
+  kaa: 9,
   anidbapp: 10,
   megaplay: 11,
 };
@@ -320,7 +326,7 @@ function createRemoteAdapter(
     base ??
     configuredBase(
       id === "anivexa"
-        ? process.env.ANIVEXA_API_BASE_URL ?? process.env.NEXT_PUBLIC_ANIVEXA_API_BASE_URL
+        ? process.env.ANIVEXA_API_BASE_URL ?? process.env.NEXT_PUBLIC_ANIVEXA_API_BASE_URL ?? "https://anivexa-api-tvd0.onrender.com"
         : process.env.MIRURO_API_BASE_URL ?? process.env.NEXT_PUBLIC_MIRURO_API_BASE_URL,
     );
 
@@ -392,7 +398,7 @@ export function createAnimeRemoteAdapters(): SourceAdapter[] {
     createRemoteAdapter(
       "anivexa",
       "Anivexa providers",
-      configuredBase(process.env.ANIVEXA_API_BASE_URL ?? process.env.NEXT_PUBLIC_ANIVEXA_API_BASE_URL),
+      configuredBase(process.env.ANIVEXA_API_BASE_URL ?? process.env.NEXT_PUBLIC_ANIVEXA_API_BASE_URL ?? "https://anivexa-api-tvd0.onrender.com"),
       (base, anilistId) => new URL(`episodes/${anilistId}`, base),
     ),
     createRemoteAdapter(
