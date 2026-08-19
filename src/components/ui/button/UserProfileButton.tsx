@@ -26,9 +26,11 @@ const UserProfileButton: React.FC = () => {
 
   const ITEMS: DropdownItemProps[] = useMemo(
     () => [
-      // TODO: Add profile and settings page
-      // { label: "Profile", href: "/profile", icon: <User /> },
-      // { label: "Settings", href: "/settings", icon: <Gear /> },
+      {
+        label: "My Space",
+        href: "/space",
+        icon: <User />,
+      },
       {
         label: "Logout",
         onClick: async () => {

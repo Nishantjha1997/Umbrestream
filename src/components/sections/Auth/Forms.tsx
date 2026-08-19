@@ -7,11 +7,13 @@ import Brand from "@/components/ui/other/BrandLogo";
 import { SpacingClasses } from "@/utils/constants";
 import { cn, isEmpty, shuffleArray } from "@/utils/helpers";
 import { ArrowLeft } from "@/utils/icons";
+import { PiFlowerLotusFill } from "react-icons/pi";
 import { transition, useReducedMotionSafe } from "@/utils/motion";
 import { getImageUrl } from "@/utils/movies";
 import { Card, CardBody, CardHeader, ScrollShadow } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "motion/react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { parseAsBoolean, parseAsStringLiteral, useQueryState } from "nuqs";
 import { useMemo } from "react";
@@ -142,6 +144,21 @@ const AuthForms: React.FC = () => {
             </CardBody>
           </ScrollShadow>
         </Card>
+
+        {/* AniList sync prompt — the container is `pointer-events-none` so the
+            poster wall stays inert; the card opts back in above and this
+            banner must too. */}
+        <Link
+          href="/space"
+          className="pointer-events-auto mt-5 inline-flex max-w-lg items-center gap-3 rounded-2xl border border-fuchsia-200/15 bg-fuchsia-400/[0.06] px-4 py-3 text-left text-sm text-fuchsia-100/80 transition-colors hover:border-fuchsia-200/30 hover:bg-fuchsia-400/[0.11] hover:text-fuchsia-50 focus-visible:ring-2 focus-visible:ring-fuchsia-300/70 focus-visible:outline-none"
+        >
+          <PiFlowerLotusFill className="size-5 shrink-0 text-fuchsia-200" aria-hidden="true" />
+          <span>
+            <span className="font-semibold text-fuchsia-50">Sync Your Anime:</span>{" "}
+            Link your AniList account in My Space (/space) to track watched episodes and receive
+            live episode notifications.
+          </span>
+        </Link>
       </div>
       <div className="pointer-events-none absolute inset-0 z-10 h-full w-full bg-black/60 backdrop-blur-[2px] dark:bg-black/20" />
       {/*

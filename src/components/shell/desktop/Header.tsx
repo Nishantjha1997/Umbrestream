@@ -24,6 +24,7 @@ import { cn } from "@/utils/helpers";
 import { useRouter } from "@bprogress/next";
 import { useHotkeys } from "@mantine/hooks";
 import Link from "next/link";
+import { TbUserCircle } from "react-icons/tb";
 
 interface DesktopHeaderProps {
   /** Escape hatch for whoever mounts this at the top of `<main>`
@@ -52,6 +53,22 @@ export default function DesktopHeader({ className }: DesktopHeaderProps) {
         className,
       )}
     >
+      {/* "My Space" entry point, promoted from the rail footer to the persistent
+          desktop header so /space is one obvious click from every screen. */}
+      <Link
+        href="/space"
+        aria-label="My Space"
+        className="group inline-flex min-h-11 items-center gap-[9px] rounded-full border border-white/14 bg-black/36 px-4 text-white outline-none transition-colors duration-(--duration-fast) ease-(--ease-out-quint) hover:border-white/22 hover:bg-black/45 focus-visible:ring-2 focus-visible:ring-violet-400/60 motion-reduce:transition-none"
+        style={{
+          backdropFilter: "blur(16px) saturate(var(--glass-saturate))",
+          WebkitBackdropFilter: "blur(16px) saturate(var(--glass-saturate))",
+        }}
+      >
+        <TbUserCircle className="size-[15px] shrink-0 text-white/55" aria-hidden="true" />
+        <span className="text-[12.5px] whitespace-nowrap text-white/40 transition-colors group-hover:text-white/65">
+          My Space
+        </span>
+      </Link>
       {/* The glass search pill, `DESKTOP_SPEC.md` §C — right-aligned, per the
           mockup's `top:26px; right:40px` hero placement, now persistent
           instead of Home-only. Hand-rolled rather than the `glass-control`
