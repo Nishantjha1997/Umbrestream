@@ -264,6 +264,7 @@ async function watchCandidates(
     const stream = asRecord(raw);
     const streamUrl = safeUrl(stream?.url ?? stream?.file, origins);
     if (!streamUrl || seen.has(streamUrl)) return [];
+    if (streamUrl.includes("play2.php") || streamUrl.includes("/b2/play")) return [];
     seen.add(streamUrl);
     const kind = streamKind(stream?.type, streamUrl);
     if (!kind) return [];
