@@ -1,7 +1,7 @@
 "use client";
 
 import BackToTopButton from "@/components/ui/button/BackToTopButton";
-import { Spinner } from "@heroui/react";
+import { Button, Spinner } from "@heroui/react";
 import { useInViewport } from "@mantine/hooks";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { memo, useEffect } from "react";
@@ -17,7 +17,7 @@ import DiscoverLoadState from "./LoadState";
 
 const MovieDiscoverList = () => {
   const { ref, inViewport } = useInViewport();
-  const { genresString, queryType } = useDiscoverFilters();
+  const { genresString, queryType, resetFilters } = useDiscoverFilters();
 
   const { data, isPending, isError, refetch, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
@@ -57,6 +57,29 @@ const MovieDiscoverList = () => {
             <PosterCardSkeleton />
           </Loop>
         </div>
+      </div>
+    );
+  }
+
+  // A filter combination can legitimately return nothing — say "no matches"
+  // instead of "end of the list", which describes exhaustion, not emptiness.
+  const totalResults = data.pages.reduce((count, page) => count + page.results.length, 0);
+  if (totalResults === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-10">
+        <div
+          role="status"
+          className="glass-panel flex min-h-48 w-full max-w-md flex-col items-center justify-center gap-3 rounded-(--radius-panel) border px-6 py-10 text-center"
+        >
+          <h2 className="text-lg font-semibold">No movies match your filters</h2>
+          <p className="text-default-500 max-w-sm text-sm">
+            Try removing a genre or switching the list — or reset your filters and start over.
+          </p>
+          <Button size="sm" radius="full" variant="flat" onPress={resetFilters}>
+            Clear filters
+          </Button>
+        </div>
+        <BackToTopButton />
       </div>
     );
   }

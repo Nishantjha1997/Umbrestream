@@ -61,11 +61,6 @@ export default function AnimeConnections() {
               <div className="min-w-0">
                 <p className="font-semibold text-white">{labels[provider]}</p>
                 <p className="mt-1 truncate text-xs text-white/45">{account?.provider_username ? `Connected as ${account.provider_username}` : item?.configured ? "Ready to connect" : "Not enabled by StreamFree yet"}</p>
-                {item?.redirect_uri && (
-                  <p className="mt-1 truncate text-[10px] text-white/35" title="Must match the callback URL registered in the provider app settings">
-                    Callback: {item.redirect_uri}
-                  </p>
-                )}
               </div>
               {item?.connected ? (
                 <span className="shrink-0 rounded-full border border-emerald-200/20 bg-emerald-300/10 px-3 py-2 text-xs font-semibold text-emerald-100">Connected</span>

@@ -2,9 +2,10 @@
 
 import BackToTopButton from "@/components/ui/button/BackToTopButton";
 import ServiceRetryState from "@/components/ui/feedback/ServiceRetryState";
-import { Spinner } from "@heroui/react";
+import { Button, Spinner } from "@heroui/react";
 import { useInViewport } from "@mantine/hooks";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { memo, useEffect } from "react";
 import PosterCard from "@/components/media/PosterCard";
@@ -80,7 +81,7 @@ const AnimeDiscoverList = () => {
   if (isPending) {
     return (
       <div className="flex flex-col gap-6 py-6">
-        <SectionTitle color="secondary">{title}</SectionTitle>
+        <SectionTitle>{title}</SectionTitle>
         <div className="movie-grid">
           <Loop count={24} prefix="SkeletonDiscoverAnimePosterCard">
             <PosterCardSkeleton />
@@ -90,9 +91,35 @@ const AnimeDiscoverList = () => {
     );
   }
 
+  // A genre can legitimately return nothing — say "no matches" instead of
+  // "end of the list", which describes exhaustion, not emptiness.
+  const totalResults = data.pages.reduce((count, page) => count + page.media.length, 0);
+  if (totalResults === 0) {
+    return (
+      <div className="flex flex-col gap-6 py-6">
+        <SectionTitle>{title}</SectionTitle>
+        <div
+          role="status"
+          className="glass-panel flex min-h-48 w-full flex-col items-center justify-center gap-3 rounded-(--radius-panel) border px-6 py-10 text-center"
+        >
+          <h2 className="text-lg font-semibold">
+            No anime match {genre ? `the “${genre}” genre` : "your filters"}
+          </h2>
+          <p className="text-default-500 max-w-sm text-sm">
+            Try a different genre, or browse the full anime catalogue instead.
+          </p>
+          <Button as={Link} href="/anime/discover" size="sm" radius="full" variant="flat">
+            Clear filters
+          </Button>
+        </div>
+        <BackToTopButton />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-6 py-6">
-      <SectionTitle color="secondary">{title}</SectionTitle>
+      <SectionTitle>{title}</SectionTitle>
       <div className="movie-grid">
         {data.pages.map((page) => {
           return page.media.map((anime) => {
@@ -102,7 +129,7 @@ const AnimeDiscoverList = () => {
       </div>
       <div ref={ref} className="flex h-24 items-center justify-center">
         {isFetchingNextPage && (
-          <Spinner size="lg" variant="wave" color="secondary" label={getLoadingLabel()} />
+          <Spinner size="lg" variant="wave" label={getLoadingLabel()} />
         )}
         {!hasNextPage && !isPending && (
           <p className="text-muted-foreground text-center text-base">

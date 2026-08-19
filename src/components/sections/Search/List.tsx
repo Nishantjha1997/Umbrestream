@@ -8,7 +8,7 @@ import BackToTopButton from "@/components/ui/button/BackToTopButton";
 import useDiscoverFilters from "@/hooks/useDiscoverFilters";
 import { ContentType } from "@/types";
 import type { AniListMediaSummary, AniListPage } from "@/types/anilist";
-import { cn, isEmpty } from "@/utils/helpers";
+import { isEmpty } from "@/utils/helpers";
 import { getLoadingLabel } from "@/utils/movies";
 import { Spinner } from "@heroui/react";
 import { useInViewport } from "@mantine/hooks";
@@ -95,15 +95,22 @@ const SearchList = () => {
     if (isEmpty(results)) {
       const label = content === "tv" ? "TV series" : content === "anime" ? "anime" : "movies";
       return (
-        <h5 className="mt-56 text-center text-xl">
-          No {label} found with query{" "}
-          <span className="text-warning font-semibold">&quot;{submittedSearchQuery}&quot;</span>
-        </h5>
+        <div
+          role="status"
+          className="glass-panel flex min-h-48 w-full max-w-md flex-col items-center justify-center gap-3 rounded-(--radius-panel) border px-6 py-10 text-center"
+        >
+          <h2 className="text-lg font-semibold">
+            No {label} found for <span className="font-semibold text-primary">&quot;{submittedSearchQuery}&quot;</span>
+          </h2>
+          <p className="text-default-500 max-w-sm text-sm">
+            Check the spelling or try a broader term — short, simple queries usually find the
+            most.
+          </p>
+        </div>
       );
     }
 
     const label = content === "tv" ? "TV series" : content === "anime" ? "anime" : "movies";
-    const color = content === "movie" ? "text-success" : content === "tv" ? "text-warning" : "text-secondary";
     const moviePages = (data?.pages ?? []) as TmdbSearchPage<Movie>[];
     const tvPages = (data?.pages ?? []) as TmdbSearchPage<TV>[];
     const animePages = (data?.pages ?? []) as AniListPage<AniListMediaSummary>[];
@@ -112,8 +119,8 @@ const SearchList = () => {
       <>
         <h5 className="text-center text-xl">
           <span className="motion-preset-focus">
-            Found <span className={cn("font-semibold", color)}>{totalCount}</span> {label} with query{" "}
-            <span className="text-warning font-semibold">&quot;{submittedSearchQuery}&quot;</span>
+            Found <span className="font-semibold">{totalCount}</span> {label} with query{" "}
+            <span className="text-primary font-semibold">&quot;{submittedSearchQuery}&quot;</span>
           </span>
         </h5>
         <div className="movie-grid">
@@ -140,12 +147,6 @@ const SearchList = () => {
     );
   };
 
-  const getColor = () => {
-    if (content === "movie") return "primary";
-    if (content === "tv") return "warning";
-    return "secondary";
-  };
-
   return (
     <div className="flex flex-col items-center gap-8">
       <SearchFilter
@@ -166,7 +167,6 @@ const SearchList = () => {
               <Spinner
                 size="lg"
                 className="absolute-center mt-56"
-                color={getColor()}
                 variant="simple"
               />
             ) : (
@@ -176,7 +176,6 @@ const SearchList = () => {
           <div ref={ref} className="flex h-24 items-center justify-center">
             {isFetchingNextPage && (
               <Spinner
-                color={getColor()}
                 size="lg"
                 variant="wave"
                 label={getLoadingLabel()}

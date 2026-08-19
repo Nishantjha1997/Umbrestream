@@ -16,8 +16,9 @@ interface TvShowPlayerHeaderProps extends Omit<TvShowPlayerProps, "episodes" | "
 /**
  * No fullscreen control here on purpose (TV_PLAYER_ROLLBACK_HANDOFF.md): the
  * embedded provider owns fullscreen entirely via its own `allowFullScreen`
- * iframe permission. Umbra no longer tracks or intercepts fullscreen state
- * for TV.
+ * iframe permission, and the below-stage `TvShowPlayerControls` bar owns the
+ * explicit Full screen / Source / Fit-Fill actions — the header only carries
+ * navigation and the source sheet opener.
  */
 const TvShowPlayerHeader: React.FC<TvShowPlayerHeaderProps> = ({
   id,

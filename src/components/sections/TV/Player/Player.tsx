@@ -1,6 +1,8 @@
 "use client";
 
-import PlayerShell from "@/components/player/PlayerShell";
+import PlayerShell, {
+  type PlayerShellControlsContext,
+} from "@/components/player/PlayerShell";
 import { siteConfig } from "@/config/site";
 import type { SourceRequest } from "@/lib/sources/types";
 import { useDisclosure, useDocumentTitle, useMediaQuery } from "@mantine/hooks";
@@ -8,8 +10,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Episode, TvShowDetails } from "tmdb-ts";
 import type { AdjacentEpisode } from "@/lib/tv/adjacentEpisode";
 import TvShowPlayerEpisodeSelection from "./EpisodeSelection";
+import TvShowPlayerControls from "./TvShowPlayerControls";
 import TvShowPlayerHeader from "./Header";
 import { useRouter } from "next/navigation";
+import { createPortal } from "react-dom";
 
 export interface TvShowPlayerProps {
   tv: TvShowDetails;
@@ -24,10 +28,87 @@ export interface TvShowPlayerProps {
 }
 
 /**
+ * The "Up next" countdown dialog. Portalled to `document.body` — inside the
+ * inline (non-portaled) `PlayerShell` tree it would inherit `AppRouteMotion`'s
+ * transformed containing block and its `fixed` pin would anchor to the page
+ * wrapper instead of the viewport (the same bug `DetailModal.tsx` documents).
+ * Focus moves here on mount, Escape cancels, and the countdown never traps
+ * focus — the page stays interactive underneath while it counts down.
+ */
+const NextEpisodeCountdownDialog: React.FC<{
+  nextEpisode: AdjacentEpisode;
+  countdown: number;
+  onPlayNow: () => void;
+  onCancel: () => void;
+}> = ({ nextEpisode, countdown, onPlayNow, onCancel }) => {
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    dialogRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onCancel();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onCancel]);
+
+  const buttonBase =
+    "min-h-11 rounded-full text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-black";
+
+  return createPortal(
+    <div
+      ref={dialogRef}
+      tabIndex={-1}
+      role="dialog"
+      aria-live="assertive"
+      aria-atomic="true"
+      aria-label="Next episode"
+      className="fixed inset-x-4 bottom-6 z-95 mx-auto flex max-w-md flex-col gap-3 rounded-2xl border border-white/15 bg-black/85 p-4 text-white shadow-2xl backdrop-blur-xl outline-none"
+    >
+      <div>
+        <p className="text-xs font-semibold tracking-[0.14em] text-white/70 uppercase">
+          Up next
+        </p>
+        <p className="mt-1 text-sm font-medium">
+          Season {nextEpisode.season} · Episode {nextEpisode.episode} starts in {countdown}s
+        </p>
+      </div>
+      <div className="flex gap-2">
+        <button
+          type="button"
+          className={`${buttonBase} flex-1 bg-white px-4 text-black hover:bg-white/90`}
+          onClick={onPlayNow}
+        >
+          Play now
+        </button>
+        <button
+          type="button"
+          className={`${buttonBase} border border-white/20 px-4 text-white hover:bg-white/10`}
+          onClick={onCancel}
+        >
+          Cancel
+        </button>
+      </div>
+    </div>,
+    document.body,
+  );
+};
+
+/**
  * TV playback on the shared `PlayerShell` (Phase 6, §10 — promoted from
  * Phase 0's TV-only direct-mount controller, which is why TV is the first
  * media type moved onto the shared shell: it is the already-proven
  * reference implementation, not a new one).
+ *
+ * Layout matches Movie/Anime (web, not fullscreen):
+ *   ┌─────────────────────────────────────┬────────────────┐
+ *   │  16:9 video player (PlayerShell)    │ Episode list   │
+ *   ├─────────────────────────────────────┤ sidebar        │
+ *   │  Controls bar (below, not overlay)  │ (≥ 1024px)     │
+ *   └─────────────────────────────────────┴────────────────┘
  */
 const TvShowPlayer: React.FC<TvShowPlayerProps> = ({
   tv,
@@ -123,50 +204,21 @@ const TvShowPlayer: React.FC<TvShowPlayerProps> = ({
                 />
               );
             }}
+            renderControls={(controls: PlayerShellControlsContext) => (
+              <TvShowPlayerControls
+                {...controls}
+                seriesName={headerProps.seriesName}
+                episode={episode}
+              />
+            )}
             renderExtras={({ selectedSourceId }) => (
-              <>
-                <TvShowPlayerEpisodeSelection
-                  id={id}
-                  opened={episodeOpened}
-                  onClose={episodeHandlers.close}
-                  episodes={episodes}
-                  selectedSourceId={selectedSourceId}
-                />
-                {nextEpisode && nextEpisodeCountdown !== null && (
-                  <div
-                    className="pointer-events-auto fixed inset-x-4 bottom-6 z-95 mx-auto flex max-w-md flex-col gap-3 rounded-2xl border border-white/15 bg-black/85 p-4 text-white shadow-2xl backdrop-blur-xl"
-                    role="dialog"
-                    aria-live="assertive"
-                    aria-atomic="true"
-                    aria-label="Next episode"
-                  >
-                    <div>
-                      <p className="text-xs font-semibold tracking-[0.14em] text-white/55 uppercase">
-                        Up next
-                      </p>
-                      <p className="mt-1 text-sm font-medium">
-                        Season {nextEpisode.season} · Episode {nextEpisode.episode} starts in {nextEpisodeCountdown}s
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        className="min-h-11 flex-1 rounded-full bg-white px-4 text-sm font-semibold text-black"
-                        onClick={playNextEpisode}
-                      >
-                        Play now
-                      </button>
-                      <button
-                        type="button"
-                        className="min-h-11 rounded-full border border-white/20 px-4 text-sm font-semibold text-white"
-                        onClick={() => setNextEpisodeCountdown(null)}
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </>
+              <TvShowPlayerEpisodeSelection
+                id={id}
+                opened={episodeOpened}
+                onClose={episodeHandlers.close}
+                episodes={episodes}
+                selectedSourceId={selectedSourceId}
+              />
             )}
           />
 
@@ -195,6 +247,15 @@ const TvShowPlayer: React.FC<TvShowPlayerProps> = ({
           </div>
         )}
       </div>
+
+      {nextEpisode && nextEpisodeCountdown !== null && (
+        <NextEpisodeCountdownDialog
+          nextEpisode={nextEpisode}
+          countdown={nextEpisodeCountdown}
+          onPlayNow={playNextEpisode}
+          onCancel={() => setNextEpisodeCountdown(null)}
+        />
+      )}
     </div>
   );
 };

@@ -155,8 +155,8 @@ const AuthForms: React.FC = () => {
           <PiFlowerLotusFill className="size-5 shrink-0 text-fuchsia-200" aria-hidden="true" />
           <span>
             <span className="font-semibold text-fuchsia-50">Sync Your Anime:</span>{" "}
-            Link your AniList account in My Space (/space) to track watched episodes and receive
-            live episode notifications.
+            Link your AniList account in My Space to track watched episodes and receive live
+            episode notifications.
           </span>
         </Link>
       </div>

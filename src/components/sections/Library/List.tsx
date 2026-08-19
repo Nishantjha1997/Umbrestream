@@ -4,6 +4,7 @@ import { getWatchlist, removeAllWatchlist } from "@/actions/library";
 import { useQueryClient } from "@tanstack/react-query";
 import BackToTopButton from "@/components/ui/button/BackToTopButton";
 import ContentTypeSelection from "@/components/ui/other/ContentTypeSelection";
+import ServiceRetryState from "@/components/ui/feedback/ServiceRetryState";
 import useDiscoverFilters from "@/hooks/useDiscoverFilters";
 import useSupabaseUser from "@/hooks/useSupabaseUser";
 import { isEmpty } from "@/utils/helpers";
@@ -12,6 +13,7 @@ import { addToast, Button, Select, SelectItem, Spinner } from "@heroui/react";
 import { useDisclosure, useInViewport } from "@mantine/hooks";
 import { useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { Suspense, useEffect, useMemo, useState, useTransition } from "react";
+import Link from "next/link";
 import PosterCard from "@/components/media/PosterCard";
 import type { MediaSummary } from "@/types/media";
 import { getImageUrl, getLoadingLabel } from "@/utils/movies";
@@ -20,6 +22,14 @@ import ConfirmationModal from "@/components/ui/overlay/ConfirmationModal";
 
 type SortOption = "title" | "release_date" | "vote_average" | "created_at";
 type FilterType = "movie" | "tv" | "anime" | "all";
+
+/** Lowercase noun for copy ("No movies in your watchlist yet."). */
+const contentLabel = (content: FilterType) =>
+  content === "movie" ? "movies" : content === "tv" ? "TV shows" : content === "anime" ? "anime" : "titles";
+
+/** Title-case noun for button and confirmation labels ("Clear Movies?"). */
+const contentTitle = (content: FilterType) =>
+  content === "movie" ? "Movies" : content === "tv" ? "TV Shows" : content === "anime" ? "Anime" : "Everything";
 
 /**
  * A watchlist row is already flat — it is this app's own denormalized copy of
@@ -157,12 +167,11 @@ const LibraryList = () => {
 
   if (status === "error") {
     return (
-      <div className="flex h-[50vh] flex-col items-center justify-center gap-4">
-        <p className="text-danger">Failed to load watchlist</p>
-        <Button color="primary" onPress={() => refetch()}>
-          Try Again
-        </Button>
-      </div>
+      <ServiceRetryState
+        title="Couldn't load your watchlist"
+        description="Your saved titles didn't load. It's usually a temporary blip."
+        onRetry={() => void refetch()}
+      />
     );
   }
 
@@ -199,7 +208,7 @@ const LibraryList = () => {
               }}
               isLoading={clearWatchlistMutation.isPending || isPending}
             >
-              Clear {content === "movie" ? "Movies" : content === "tv" ? "TV Shows" : "Anime"} from Watchlist
+              Clear {contentTitle(content)} from Watchlist
             </Button>
           )}
         </div>
@@ -208,7 +217,6 @@ const LibraryList = () => {
             size="lg"
             variant="simple"
             className="absolute-center mt-[30vh]"
-            color={content === "movie" ? "primary" : content === "tv" ? "warning" : "secondary"}
           />
         ) : hasItems ? (
           <>
@@ -225,7 +233,6 @@ const LibraryList = () => {
                   size="lg"
                   variant="wave"
                   label={getLoadingLabel()}
-                  color={content === "movie" ? "primary" : content === "tv" ? "warning" : "secondary"}
                 />
               )}
               {!hasNextPage && !isFetchingNextPage && sortedWatchlist.length > 0 && (
@@ -236,10 +243,23 @@ const LibraryList = () => {
             </div>
           </>
         ) : (
-          <div className="flex h-[30vh] items-center justify-center">
-            <p className="text-default-500">
-              No {content === "movie" ? "movies" : "TV shows"} in your watchlist yet.
-            </p>
+          <div className="flex min-h-[30vh] items-center justify-center">
+            <div className="glass-panel flex min-h-48 w-full max-w-md flex-col items-center justify-center gap-3 rounded-(--radius-panel) border px-6 py-10 text-center">
+              <h3 className="text-lg font-semibold">Your watchlist is empty</h3>
+              <p className="text-default-500 max-w-sm text-sm">
+                No {contentLabel(content)} in your watchlist yet. Find something you like and tap
+                the bookmark to keep it here.
+              </p>
+              <Button
+                as={Link}
+                href={content === "anime" ? "/anime/discover" : "/browse"}
+                size="sm"
+                radius="full"
+                variant="flat"
+              >
+                Browse {contentLabel(content)}
+              </Button>
+            </div>
           </div>
         )}
       </div>
@@ -247,7 +267,7 @@ const LibraryList = () => {
       <BackToTopButton />
 
       <ConfirmationModal
-        title={`Clear ${content === "movie" ? "Movies" : "TV Shows"}?`}
+        title={`Clear ${contentTitle(content)}?`}
         isOpen={opened}
         onClose={close}
         onConfirm={confirmClearWatchlist}
@@ -255,8 +275,8 @@ const LibraryList = () => {
         isLoading={clearWatchlistMutation.isPending}
       >
         <p>
-          Are you sure you want to remove all {content === "movie" ? "movies" : "TV shows"} from
-          your watchlist? This action cannot be undone.
+          Are you sure you want to remove all {contentLabel(content)} from your watchlist? This
+          action cannot be undone.
         </p>
         <p className="text-default-500 text-sm">
           {sortedWatchlist.length} {sortedWatchlist.length === 1 ? "item" : "items"} will be

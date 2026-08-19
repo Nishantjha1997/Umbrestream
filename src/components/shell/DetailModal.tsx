@@ -38,12 +38,17 @@
 
 import { Close } from "@/utils/icons";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, type PropsWithChildren } from "react";
+import { useCallback, useEffect, useRef, useState, type PropsWithChildren } from "react";
 import { createPortal } from "react-dom";
 
 export default function DetailModal({ children }: PropsWithChildren) {
   const router = useRouter();
-  const close = () => router.back();
+  const close = useCallback(() => router.back(), [router]);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  // The element that had focus before the modal opened (the card the user
+  // clicked). Restored on unmount so keyboard users land back where they were
+  // — the page underneath stays mounted and scrolled, so this is stable.
+  const restoreFocusRef = useRef<Element | null>(null);
 
   // The portal target (`document.body`) doesn't exist during SSR/the first
   // render, so this mounts one tick late on purpose — there is nothing to
@@ -64,24 +69,52 @@ export default function DetailModal({ children }: PropsWithChildren) {
     };
   }, []);
 
+  // Dialog behavior: remember the opener, move focus to the close control,
+  // restore it when the modal unmounts, and treat Escape as "back" — the same
+  // semantic the scrim click and the X already have.
+  useEffect(() => {
+    restoreFocusRef.current = document.activeElement;
+    closeButtonRef.current?.focus();
+    return () => {
+      const restoreTo = restoreFocusRef.current;
+      if (restoreTo instanceof HTMLElement && restoreTo.isConnected) restoreTo.focus();
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") close();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [close]);
+
   if (!mounted) return null;
 
   return createPortal(
     <div className="fixed inset-0 z-80 overflow-y-auto md:flex md:items-center md:justify-center md:overflow-y-hidden md:p-8">
       {/* Desktop-only scrim. Phone has none — it's full-bleed, there is
-          nothing behind it to scrim. */}
+          nothing behind it to scrim. Kept out of the tab order; the X below
+          is the single focusable close control. */}
       <button
         type="button"
-        aria-label="Close"
+        tabIndex={-1}
+        aria-hidden="true"
         onClick={close}
         className="fixed inset-0 hidden md:block md:bg-[rgba(4,4,7,.7)] md:backdrop-blur-[8px]"
       />
-      <div className="relative min-h-dvh w-full bg-[#0a090d] md:min-h-0 md:max-h-full md:w-auto md:max-w-[940px] md:overflow-y-auto md:rounded-[18px] md:border md:border-white/10 md:bg-[#131217]">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Details"
+        className="relative min-h-dvh w-full bg-[#0a090d] md:min-h-0 md:max-h-full md:w-auto md:max-w-[940px] md:overflow-y-auto md:rounded-[18px] md:border md:border-white/10 md:bg-[#131217]"
+      >
         <button
+          ref={closeButtonRef}
           type="button"
           aria-label="Close"
           onClick={close}
-          className="glass-control safe-detail-close absolute z-10 flex size-11 items-center justify-center rounded-full"
+          className="glass-control safe-detail-close absolute z-10 flex size-11 items-center justify-center rounded-full focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:outline-none"
         >
           <Close size={22} />
         </button>
