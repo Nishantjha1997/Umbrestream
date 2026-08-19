@@ -303,30 +303,42 @@ function createRemoteAdapter(
       const activeBase = getBase();
       if (!activeBase || !request.anilistId || !request.episode) return [];
       const origins = allowedOrigins();
-      const audio: AudioVariant = request.preferredAudio === "dub" ? "dub" : "sub";
+      const primaryAudio: AudioVariant = request.preferredAudio === "dub" ? "dub" : "sub";
+      const secondaryAudio: AudioVariant = primaryAudio === "dub" ? "sub" : "dub";
+      const audioVariants: AudioVariant[] = [primaryAudio, secondaryAudio];
       try {
         const payload = await json(endpoint(activeBase, request.anilistId), signal);
+        const entries = providerEntries(payload);
+        const tasks: Promise<StreamCandidate[]>[] = [];
+        for (const [provider, providerData] of entries) {
+          for (const audio of audioVariants) {
+            const episode = listForAudio(providerData, audio).find((item) => {
+              const record = asRecord(item);
+              return record ? episodeNumber(record) === request.episode : false;
+            });
+            const episodeRecord = asRecord(episode);
+            if (!episodeRecord) continue;
+            tasks.push(
+              watchCandidates(
+                id,
+                activeBase,
+                provider,
+                request.anilistId,
+                audio,
+                episodeRecord,
+                request.episode,
+                origins,
+                signal,
+              ).catch(() => []),
+            );
+          }
+        }
+        const results = await Promise.allSettled(tasks);
         const candidates: StreamCandidate[] = [];
-        for (const [provider, providerData] of providerEntries(payload)) {
-          const episode = listForAudio(providerData, audio).find((item) => {
-            const record = asRecord(item);
-            return record ? episodeNumber(record) === request.episode : false;
-          });
-          const episodeRecord = asRecord(episode);
-          if (!episodeRecord) continue;
-          candidates.push(
-            ...(await watchCandidates(
-              id,
-              activeBase,
-              provider,
-              request.anilistId,
-              audio,
-              episodeRecord,
-              request.episode,
-              origins,
-              signal,
-            )),
-          );
+        for (const res of results) {
+          if (res.status === "fulfilled" && Array.isArray(res.value)) {
+            candidates.push(...res.value);
+          }
         }
         return candidates;
       } catch (err) {
