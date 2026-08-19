@@ -3,7 +3,7 @@
 import PlayerShell from "@/components/player/PlayerShell";
 import { siteConfig } from "@/config/site";
 import type { SourceRequest } from "@/lib/sources/types";
-import { useDisclosure, useDocumentTitle } from "@mantine/hooks";
+import { useDisclosure, useDocumentTitle, useMediaQuery } from "@mantine/hooks";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Episode, TvShowDetails } from "tmdb-ts";
 import type { AdjacentEpisode } from "@/lib/tv/adjacentEpisode";
