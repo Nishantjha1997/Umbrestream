@@ -37,7 +37,7 @@ const API_PROVIDERS = new Set([
 
 const IFRAME_ALLOW = "autoplay; encrypted-media; picture-in-picture; fullscreen; screen-wake-lock";
 const animeRemoteCache = new Map<string, { expiresAt: number; data: StreamCandidate[] }>();
-const DIRECT_WATCH_DEADLINE_MS = 25_000;
+const DIRECT_WATCH_DEADLINE_MS = 8_000;
 
 /** Resolves to { value } on success or null on timeout/rejection. */
 function withDeadline<T>(promise: Promise<T>, ms: number): Promise<{ value: T } | null> {
@@ -302,27 +302,32 @@ async function watchCandidates(
     ...(payload.bestStream ? [payload.bestStream] : []),
   ];
   const seen = new Set<string>();
-  return rawStreams.flatMap((raw, index) => {
-    const stream = asRecord(raw);
-    const streamUrl = safeUrl(stream?.url ?? stream?.file, origins);
-    if (!streamUrl || seen.has(streamUrl)) return [];
-    if (streamUrl.includes("play2.php") || streamUrl.includes("/b2/play")) return [];
+  const candidates: StreamCandidate[] = [];
+  for (let index = 0; index < rawStreams.length; index++) {
+    const stream = asRecord(rawStreams[index]);
+    const rawUrl = safeUrl(stream?.url ?? stream?.file, origins);
+    if (!rawUrl || seen.has(rawUrl)) continue;
+    if (rawUrl.includes("play2.php") || rawUrl.includes("/b2/play")) continue;
+    // Anivexa wraps some streams in redirect URLs on its own host. Resolve
+    // those to the final CDN URL here so the client never has to follow the
+    // hop (browser and proxy would both send the wrong Referer on it).
+    const streamUrl = await resolvePlaybackUrl(rawUrl, base, signal);
+    if (!streamUrl || seen.has(streamUrl)) continue;
     seen.add(streamUrl);
     const kind = streamKind(stream?.type, streamUrl);
-    if (!kind) return [];
+    if (!kind) continue;
     const providerId = `${api}:${provider}`;
     const quality = typeof stream?.quality === "string" || typeof stream?.quality === "number" ? ` · ${stream.quality}` : "";
-    const rawPlaybackUrl = streamUrl;
-    const finalStreamUrl = (kind === "hls" && (streamUrl.includes("animeapps.top") || streamUrl.includes("playeng")))
+    const finalStreamUrl = (kind === "hls" || kind === "mp4" || kind === "dash")
       ? toProxiedUrl(streamUrl)
       : streamUrl;
-    return [{
+    candidates.push({
       id: `${providerId}:${audio}:${episodeNumberValue}:${index}`,
       providerId,
       label: `${providerLabel(provider)} · ${audio === "sub" ? "Sub" : "Dub"}${quality}`,
       kind,
       url: finalStreamUrl,
-      providerOrigin: new URL(rawPlaybackUrl).origin,
+      providerOrigin: new URL(streamUrl).origin,
       providerTier: "stable",
       playerVariant: api,
       mediaType: "anime",
@@ -333,8 +338,31 @@ async function watchCandidates(
         : { resumable: true, subtitles: "native" },
       quality: Number(stream?.quality) || undefined,
       subtitleTracks: tracks(stream?.subtitles ?? payload.subtitles, origins),
-    } satisfies StreamCandidate];
-  });
+    } satisfies StreamCandidate);
+  }
+  return candidates;
+}
+
+/** Follows redirects that point back at the API host and returns the final URL. */
+async function resolvePlaybackUrl(url: string, base: URL, signal?: AbortSignal): Promise<string> {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return url;
+  }
+  if (parsed.host !== base.host) return url;
+  try {
+    const response = await fetch(parsed, { redirect: "manual", signal, headers: { Accept: "*/*" } });
+    const location = response.headers.get("location");
+    if (location) {
+      const resolved = safeUrl(location, new Set(["*"]));
+      if (resolved) return resolved;
+    }
+  } catch {
+    // Fall back to the wrapper URL on any failure.
+  }
+  return url;
 }
 
 function createRemoteAdapter(
@@ -367,7 +395,7 @@ function createRemoteAdapter(
     async resolve(request, signal) {
       const activeBase = getBase();
       if (!activeBase || !request.anilistId || !request.episode) return [];
-      const cacheKey = `${id}:${request.anilistId}:${request.episode}:${request.preferredAudio ?? "sub"}`;
+      const cacheKey = `${id}:${request.anilistId}:${request.episode}`;
       const cached = animeRemoteCache.get(cacheKey);
       if (cached && cached.expiresAt > Date.now() && cached.data.length > 0) {
         return cached.data;
@@ -377,37 +405,35 @@ function createRemoteAdapter(
       const primaryAudio: AudioVariant = request.preferredAudio === "dub" ? "dub" : "sub";
       try {
         if (id === "anivexa") {
-          // Fast path: hit /watch directly for the top providers instead of
-          // paying for the heavy /episodes scrape (8-24s on Render free tier).
-          // Each call gets its own deadline so a slow scraper (animegg) can't
-          // stall the whole batch.
+          // Fast path: hit /watch directly for the top providers for both sub and dub
           const directProviders = ["anibd", "reanime", "animegg", "kaa"];
-          const settled = await Promise.all(
-            directProviders.map((provider) =>
-              withDeadline(
-                watchCandidates(
-                  id,
-                  activeBase,
-                  provider,
-                  request.anilistId!,
-                  primaryAudio,
-                  { id: `watch/${provider}/${request.anilistId}/${primaryAudio}/${provider}-${request.episode}`, number: request.episode },
-                  request.episode!,
-                  origins,
-                  signal,
-                ).catch(() => []),
-                DIRECT_WATCH_DEADLINE_MS,
-              ),
-            ),
-          );
+          const directTasks: Promise<{ value: StreamCandidate[] } | null>[] = [];
+          for (const provider of directProviders) {
+            for (const audio of ["sub", "dub"] as const) {
+              directTasks.push(
+                withDeadline(
+                  watchCandidates(
+                    id,
+                    activeBase,
+                    provider,
+                    request.anilistId!,
+                    audio,
+                    { id: `watch/${provider}/${request.anilistId}/${audio}/${provider}-${request.episode}`, number: request.episode },
+                    request.episode!,
+                    origins,
+                    signal,
+                  ).catch(() => []),
+                  DIRECT_WATCH_DEADLINE_MS,
+                ),
+              );
+            }
+          }
+          const settled = await Promise.all(directTasks);
           const candidates: StreamCandidate[] = [];
           for (const outcome of settled) {
             if (outcome) candidates.push(...outcome.value);
           }
           if (candidates.length > 0) {
-            // Cache only when every provider answered, so a provider that got
-            // cut by the deadline is retried on the next request instead of
-            // being frozen out for the whole cache TTL.
             if (settled.every((outcome) => outcome)) {
               animeRemoteCache.set(cacheKey, { expiresAt: Date.now() + 300_000, data: candidates });
             }
