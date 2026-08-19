@@ -15,6 +15,7 @@ export interface PlayerSourceSheetProps {
   selectedSourceId: string;
   switchingSourceId?: string | null;
   hasPreference?: boolean;
+  loading?: boolean;
   onResetPreference?: () => void;
   /** Anime providers that are known by the product but not active for this request. */
   animeCatalog?: AnimeProviderCatalogEntry[];
@@ -29,6 +30,7 @@ export default function PlayerSourceSheet({
   selectedSourceId,
   switchingSourceId,
   hasPreference,
+  loading = false,
   onResetPreference,
   animeCatalog,
   onSelect,
@@ -165,20 +167,26 @@ export default function PlayerSourceSheet({
         .map((entry) => (
           <div
             key={`${entry.id}:${variant}`}
-            className="grid min-h-14 w-full grid-cols-[auto_1fr_auto] items-center gap-3 rounded-[13px] border border-white/7 bg-white/[0.015] p-3.5 opacity-75"
+            className="grid min-h-14 w-full grid-cols-[auto_1fr_auto] items-center gap-3 rounded-[13px] border border-white/7 bg-white/[0.015] p-3.5 opacity-65"
             aria-label={`${entry.label} ${variant === "dub" ? "Dub" : "Sub"} unavailable`}
           >
-            <span className="size-[7px] rounded-full bg-white/25" aria-hidden />
+            <span
+              className={cn(
+                "size-[7px] rounded-full",
+                loading ? "bg-amber-400/80 animate-pulse" : "bg-white/20",
+              )}
+              aria-hidden
+            />
             <span className="flex min-w-0 flex-col gap-0.5">
               <span className="truncate text-[13.5px] font-medium text-white/80">
                 {entry.label} {variant === "dub" ? "Dub" : "Sub"}
               </span>
               <span className="truncate text-[11px] text-white/38">
-                Additional source · waiting for a configured provider API
+                {loading ? "Searching streams..." : "No stream found for this episode"}
               </span>
             </span>
             <span className="text-right text-[9.5px] font-medium tracking-[.08em] text-white/35 uppercase">
-              Not connected
+              {loading ? "Checking" : "Unavailable"}
             </span>
           </div>
         ));
