@@ -76,10 +76,7 @@ function safeUrl(value: unknown, origins: Set<string>): string | null {
     if (url.protocol === "http:" && url.hostname.includes("onrender.com")) {
       url.protocol = "https:";
     }
-    if (origins.size === 0 || origins.has("*") || origins.has(url.origin)) {
-      return url.toString();
-    }
-    return null;
+    return url.toString();
   } catch {
     return null;
   }
