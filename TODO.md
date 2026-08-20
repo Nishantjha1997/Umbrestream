@@ -6,8 +6,8 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 
 - Branch: `codex/web-first-native-rebuild`
 - Baseline: `28bea93`
-- Active task: `SF-A1-003`
-- Next command: implement bounded cached/explicit/hedged resolution orchestration with cancellation, attempt tracking, and consent-based embed fallback; do not auto-switch a manually selected source.
+- Active task: `SF-A2-001`
+- Next command: add the Media3 data-source and media-source pipeline on top of the verified source contracts; keep per-request headers allowlisted and redirects bounded.
 - Reference policy: Media3 and Now in Android are approved architecture references; Aniyomi is pattern-only because it is archived; Dantotsu is excluded pending license/source verification.
 
 ## W0 — Governance and baseline
@@ -248,13 +248,13 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Commit: `53db743`
   - Completed: 2026-08-20
 
-- [ ] SF-A1-003 — Implement hedged multi-tier resolution engine
-  - Status: not started
+- [x] SF-A1-003 — Implement hedged multi-tier resolution engine
+    - Status: completed
   - Priority: P0
   - Depends on: SF-A1-002
-  - Evidence: —
-  - Commit: —
-  - Next action: cache validation, preference, bounded hedging, consent-based embed fallback
+  - Evidence: `ResolutionOrchestrator` validates the cache, preserves explicit/remembered source precedence without silent fallback, hedges up to two native resolvers at 350 ms, starts the cloud tier at 800 ms, enforces 4-second native and 6-second cloud budgets, tracks typed attempts, cancels losing work, and only permits consent-based iframe fallback; `ResolutionOrchestratorTest` covers fast native wins, manual failure protection, and Anime Dub compatibility; focused `:core:source:test`, full `scripts/verify.ps1`, and `git diff --check` passed
+  - Commit: `pending`
+  - Completed: 2026-08-21
 
 ## A2 — Media3 playback
 

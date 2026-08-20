@@ -26,6 +26,16 @@ class SourceResolverRegistry(resolvers: List<SourceResolver>) {
         (request.explicitSourceId == null || request.explicitSourceId == resolver.descriptor.id)
     }
 
+  fun isCompatible(source: ResolvedSource, request: PlaybackRequest): Boolean {
+    val descriptor = descriptor(source.providerId) ?: return false
+    if (!descriptor.supports(request)) return false
+    if (source.kind != descriptor.kind) return false
+    if (source.format !in descriptor.capabilities.formats) return false
+    if (source.audioVariant != null && source.audioVariant != request.audioVariant) return false
+    if (request.explicitSourceId != null && request.explicitSourceId != source.providerId) return false
+    return true
+  }
+
   fun idsFor(mediaType: MediaType): List<String> = resolversById.values
     .filter { mediaType in it.descriptor.supportedMediaTypes }
     .map { it.descriptor.id }

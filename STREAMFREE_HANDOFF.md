@@ -1408,5 +1408,31 @@ explicit source precedence narrows candidates, and unsafe header policy IDs do
 not leak transport headers. The full native verification script passes model,
 network, and source tests plus both debug APK assemblies and strict lint.
 
-Implementation commit: `53db743`. The
-next active task is `SF-A1-003`, bounded multi-tier resolution orchestration.
+Implementation commit: `53db743`.
+
+## 40. Native hedged resolution engine — 2026-08-21
+
+`native-android/core/source` now includes `ResolutionOrchestrator`, which is
+transport- and player-independent. It first validates a short-lived cached
+candidate, then honors an explicit URL/source choice or remembered device
+preference without silently switching. Automatic resolution starts one native
+resolver immediately, hedges a second compatible native resolver after 350 ms,
+and starts the cloud resolver after 800 ms. Native attempts have a four-second
+budget; the cloud tier receives a six-second budget. Completion attempts are
+typed, duplicate sources are removed, and losing coroutine work is cancelled
+after a usable result is accepted.
+
+Iframe/embed resolvers are never started during automatic direct resolution
+unless the caller explicitly opts into `allowEmbedFallback`. Anime audio
+compatibility is enforced for cached, remembered, and resolved sources, so a
+Dub request cannot be satisfied by a Sub source. `SourceResolverRegistry` now
+exposes the same compatibility predicate for cache and resolver results.
+
+`ResolutionOrchestratorTest` covers fast-native hedging, no silent fallback
+after manual failure, and Anime Dub preference preservation. Focused source
+tests and the complete `native-android/scripts/verify.ps1` gate passed,
+including both debug APK assemblies and strict lint. No provider adapter or
+Media3 player is connected yet; those are the next phase.
+
+Implementation commit: pending. The next active task is `SF-A2-001`, the
+Media3 data-source and media-source pipeline.
