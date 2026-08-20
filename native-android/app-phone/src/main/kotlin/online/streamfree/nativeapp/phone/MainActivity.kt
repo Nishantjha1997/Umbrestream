@@ -22,6 +22,7 @@ import online.streamfree.nativeapp.player.PreferencesPlaybackStore
 import online.streamfree.nativeapp.player.PreferencesSourcePreferenceStore
 import online.streamfree.nativeapp.source.SourceResolverRegistry
 import online.streamfree.nativeapp.source.StreamFreeSourceApiResolver
+import online.streamfree.nativeapp.source.StreamFreeEpisodeCatalogResolver
 import online.streamfree.nativeapp.source.ResolutionOrchestrator
 import online.streamfree.nativeapp.source.PlaybackRequest
 import online.streamfree.nativeapp.model.AudioVariant
@@ -38,6 +39,7 @@ class MainActivity : ComponentActivity() {
     WindowCompat.setDecorFitsSystemWindows(window, false)
     val sourceRegistry = SourceResolverRegistry(listOf(StreamFreeSourceApiResolver.production()))
     val sourceOrchestrator = ResolutionOrchestrator(sourceRegistry)
+    val episodeCatalogResolver = StreamFreeEpisodeCatalogResolver.production()
     val sourcePreferenceStore = PreferencesSourcePreferenceStore(this)
     val launchRequest = intent.toPlaybackRequest()
     playbackController = PlaybackSessionController(
@@ -57,6 +59,7 @@ class MainActivity : ComponentActivity() {
             onFullscreenChanged = ::setPlayerFullscreen,
             initialRequest = launchRequest,
             sourceOrchestrator = sourceOrchestrator,
+            episodeCatalogResolver = episodeCatalogResolver,
           )
         } else {
           PhoneHomeScreen(onOpenPlayer = { showPlayer = true })

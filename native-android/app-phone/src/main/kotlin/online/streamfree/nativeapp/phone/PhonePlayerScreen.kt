@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
@@ -71,8 +72,13 @@ import online.streamfree.nativeapp.player.PlaybackDisplayModeStore
 import online.streamfree.nativeapp.player.SourcePreferenceStore
 import online.streamfree.nativeapp.model.MediaType
 import online.streamfree.nativeapp.model.AudioVariant
+import online.streamfree.nativeapp.model.AdjacentEpisodeResolver
+import online.streamfree.nativeapp.model.EpisodeCatalog
+import online.streamfree.nativeapp.model.EpisodeDirection
+import online.streamfree.nativeapp.model.EpisodeRef
 import online.streamfree.nativeapp.source.ResolvedSource
 import online.streamfree.nativeapp.source.PlaybackRequest
+import online.streamfree.nativeapp.source.EpisodeCatalogResolver
 import online.streamfree.nativeapp.source.ResolutionOrchestrator
 import online.streamfree.nativeapp.source.ResolutionPreferences
 
@@ -123,6 +129,7 @@ fun PhonePlayerScreen(
   sourcePreferenceStore: SourcePreferenceStore,
   initialRequest: PlaybackRequest? = null,
   sourceOrchestrator: ResolutionOrchestrator? = null,
+  episodeCatalogResolver: EpisodeCatalogResolver? = null,
 ) {
   val context = LocalContext.current
   val scope = rememberCoroutineScope()
@@ -137,6 +144,7 @@ fun PhonePlayerScreen(
   var positionMs by remember { mutableLongStateOf(0L) }
   var durationMs by remember { mutableLongStateOf(0L) }
   var resolvedSourceCandidates by remember(sourceCandidates) { mutableStateOf(sourceCandidates) }
+  var episodeCatalog by remember { mutableStateOf<EpisodeCatalog?>(null) }
 
   LaunchedEffect(initialRequest, sourceOrchestrator) {
     val request = initialRequest ?: return@LaunchedEffect
@@ -149,6 +157,25 @@ fun PhonePlayerScreen(
     resolvedSourceCandidates = result.sources
     result.sources.firstOrNull()?.let { source ->
       controller.load(request, source)
+    }
+  }
+
+  LaunchedEffect(initialRequest, episodeCatalogResolver) {
+    val request = initialRequest ?: return@LaunchedEffect
+    val resolver = episodeCatalogResolver ?: return@LaunchedEffect
+    episodeCatalog = resolver.resolve(request)
+  }
+
+  fun playEpisode(request: PlaybackRequest) {
+    val orchestrator = sourceOrchestrator ?: return
+    scope.launch {
+      val rememberedSourceId = sourcePreferenceStore.get(request.mediaType, request.audioVariant)
+      val result = orchestrator.resolve(
+        request = request,
+        preferences = ResolutionPreferences(rememberedSourceId = rememberedSourceId),
+      )
+      resolvedSourceCandidates = result.sources
+      result.sources.firstOrNull()?.let { source -> controller.load(request, source) }
     }
   }
 
@@ -220,14 +247,26 @@ fun PhonePlayerScreen(
         },
       )
       if (!isFullscreen) {
-        PlaybackContextPanel(
-          state = state,
-          onExit = ::exitPlayer,
-          modifier = Modifier
-            .fillMaxWidth()
-            .navigationBarsPadding()
-            .padding(horizontal = 20.dp, vertical = 16.dp),
-        )
+        Column(modifier = Modifier.fillMaxWidth()) {
+          PlaybackContextPanel(
+            state = state,
+            onExit = ::exitPlayer,
+            modifier = Modifier
+              .fillMaxWidth()
+              .navigationBarsPadding()
+              .padding(horizontal = 20.dp, vertical = 16.dp),
+          )
+          val request = state.request
+          if (request?.mediaType == MediaType.Tv && episodeCatalog != null) {
+            EpisodeListPanel(
+              catalog = episodeCatalog!!,
+              current = request,
+              onEpisodeSelected = { ref ->
+                playEpisode(request.copy(season = ref.season, episode = ref.episode))
+              },
+            )
+          }
+        }
       }
     }
   }
@@ -264,6 +303,60 @@ fun PhonePlayerScreen(
       subtitles = state.source?.subtitles.orEmpty(),
       onDismiss = { showSettings = false },
     )
+  }
+}
+
+@Composable
+private fun EpisodeListPanel(
+  catalog: EpisodeCatalog,
+  current: PlaybackRequest,
+  onEpisodeSelected: (EpisodeRef) -> Unit,
+) {
+  val currentRef = current.season?.let { season ->
+    current.episode?.let { episode -> runCatching { EpisodeRef(season, episode) }.getOrNull() }
+  }
+  val previous = currentRef?.let {
+    AdjacentEpisodeResolver.resolve(it, catalog.seasons, EpisodeDirection.Previous)
+  }
+  val next = currentRef?.let {
+    AdjacentEpisodeResolver.resolve(it, catalog.seasons, EpisodeDirection.Next)
+  }
+  val currentSeason = current.season ?: catalog.seasons.firstOrNull()?.season ?: return
+  val episodes = catalog.episodesForSeason(currentSeason)
+
+  Column(
+    modifier = Modifier
+      .fillMaxWidth()
+      .padding(horizontal = 20.dp)
+      .heightIn(max = 320.dp),
+  ) {
+    Text("Season $currentSeason", style = MaterialTheme.typography.titleMedium, color = Color.White)
+    Row(
+      modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+      horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+      OutlinedButton(
+        onClick = { previous?.let(onEpisodeSelected) },
+        enabled = previous != null,
+        modifier = Modifier.weight(1f).sizeIn(minHeight = 48.dp),
+      ) { Text("Previous") }
+      OutlinedButton(
+        onClick = { next?.let(onEpisodeSelected) },
+        enabled = next != null,
+        modifier = Modifier.weight(1f).sizeIn(minHeight = 48.dp),
+      ) { Text("Next") }
+    }
+    LazyColumn(modifier = Modifier.fillMaxWidth()) {
+      items(episodes, key = { it.ref.episode }) { episode ->
+        val selected = episode.ref == currentRef
+        OutlinedButton(
+          onClick = { onEpisodeSelected(episode.ref) },
+          modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp).sizeIn(minHeight = 48.dp),
+        ) {
+          Text(if (selected) "Episode ${episode.ref.episode} · ${episode.title} · Playing" else "Episode ${episode.ref.episode} · ${episode.title}")
+        }
+      }
+    }
   }
 }
 

@@ -1654,6 +1654,21 @@ back to another provider.
 
 Without a valid playback request the apps keep their honest preview Home state
 and do not invent a title or source. The next implementation slice must expose
-the episode catalogue/list contract and connect it to the shared adjacent
-episode resolver and TV/phone controls. Iframe candidates remain discovery-only
-until the consent-based WebView fallback is implemented.
+the matching TV episode list/focus flow and connect automatic end-of-episode
+loading to the shared resolver. Iframe candidates remain discovery-only until
+the consent-based WebView fallback is implemented.
+
+## 48. Native TV episode catalogue and phone episode list — 2026-08-21
+
+`StreamFreeEpisodeCatalogResolver` now loads TV show season summaries and
+season episode payloads through the allowlisted `/api/tmdb` proxy. It filters
+season zero and episode zero, preserves episode titles/air dates/runtime when
+available, and runs its blocking transport on `Dispatchers.IO`.
+
+The phone player now loads this catalogue for a TV playback request and shows
+the current season's episode list below the framed player, with explicit
+Previous and Next controls. Selecting an episode re-resolves sources for the
+new request before loading Media3, preserving the same source/audio preference
+rules. Cross-season buttons use the shared `AdjacentEpisodeResolver`; no client
+increments episode numbers blindly. TV still needs its remote list/focus
+surface and automatic end-of-episode transition.

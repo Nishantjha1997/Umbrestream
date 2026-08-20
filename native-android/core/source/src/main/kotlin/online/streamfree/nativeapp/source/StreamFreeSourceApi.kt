@@ -8,6 +8,8 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import online.streamfree.nativeapp.model.AudioVariant
 import online.streamfree.nativeapp.model.MediaType
 import online.streamfree.nativeapp.network.HttpResponse
@@ -41,7 +43,11 @@ class StreamFreeSourceApiResolver(
   // replacing the user's choice with another provider.
   override fun acceptsSourceId(sourceId: String): Boolean = sourceId.isNotBlank()
 
-  override suspend fun resolve(request: PlaybackRequest): ResolutionResult {
+  override suspend fun resolve(request: PlaybackRequest): ResolutionResult = withContext(Dispatchers.IO) {
+    resolveBlocking(request)
+  }
+
+  private fun resolveBlocking(request: PlaybackRequest): ResolutionResult {
     val query = queryFor(request)
       ?: return ResolutionResult(
         sources = emptyList(),
