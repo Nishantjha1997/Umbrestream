@@ -6,8 +6,8 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 
 - Branch: `codex/web-first-native-rebuild`
 - Baseline: `28bea93`
-- Active task: `SF-A2-002`
-- Next command: add MediaSessionService ownership and lifecycle-safe playback persistence on top of the verified Media3 pipeline.
+- Active task: `SF-A2-003`
+- Next command: build the native phone player surface around the verified Media3 session, including framed playback, Fit/Fill, fullscreen lifecycle, gestures, tracks, and episode controls.
 - Reference policy: Media3 and Now in Android are approved architecture references; Aniyomi is pattern-only because it is archived; Dantotsu is excluded pending license/source verification.
 
 ## W0 — Governance and baseline
@@ -266,21 +266,21 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Commit: `6da512d`
   - Completed: 2026-08-21
 
-- [ ] SF-A2-002 — Implement MediaSessionService and playback persistence
-  - Status: not started
+- [x] SF-A2-002 — Implement MediaSessionService and playback persistence
+  - Status: completed
   - Priority: P0
   - Depends on: SF-A2-001
-  - Evidence: —
-  - Commit: —
-  - Next action: player ownership, StateFlow, resume, history, recovery
+  - Evidence: `core:player` now owns `PlaybackSessionController` with ExoPlayer and MediaSession lifecycle, a trusted-event reducer, versioned DataStore-backed progress records, 15-second/pause/terminal/destroy persistence, 85% completion marking, and separate Anime Sub/Dub identity keys; phone and TV expose thin MediaSessionService implementations; `PlaybackStateTest`, full `scripts/verify.ps1`, strict lint, APK assemblies, and `git diff --check` passed
+  - Commit: pending
+  - Completed: 2026-08-21
 
 - [ ] SF-A2-003 — Build native phone player UI parity
-  - Status: not started
+  - Status: in progress
   - Priority: P0
   - Depends on: SF-A2-002
   - Evidence: —
   - Commit: —
-  - Next action: framed stage, Fit/Fill, fullscreen, gestures, tracks, episodes, countdown
+  - Next action: inspect the existing phone Compose shell and add the framed stage, Fit/Fill, fullscreen lifecycle, gestures, tracks, episodes, and countdown around `PlaybackSessionController`
 
 ## A3 — Offline, auth, sync, and product parity
 

@@ -1466,3 +1466,39 @@ SF-A2-002 and SF-A2-003.
 
 Implementation commit: `6da512d`. The next active task is `SF-A2-002`,
 MediaSessionService ownership and playback persistence.
+
+## 42. Native MediaSession ownership and trusted playback persistence — 2026-08-21
+
+`native-android/core/player` now owns a single lifecycle-safe playback session
+per app process. `PlaybackSessionController` creates and releases ExoPlayer and
+Media3 `MediaSession` together, exposes a `StateFlow<PlaybackUiState>`, and
+reduces player callbacks through an explicit phase/trust reducer. Opening a
+source, buffering, or reaching ready state does not create watch history;
+trusted playback begins only after Media3 reports `isPlaying == true`.
+
+Progress is persisted through a versioned Preferences DataStore record keyed by
+media type, title, season, episode, audio variant, and source. The key is a
+SHA-256 digest of that identity, so Anime Sub and Dub positions remain separate.
+The controller writes trusted progress at a bounded 15-second interval, on
+pause, on playback error, on end, and during service teardown. A record is
+marked complete at 85% of a known duration and completed records resume from
+zero. Persistence is captured on the player thread before the final I/O write;
+the service never reads ExoPlayer state from a background thread.
+
+`StreamFreePlaybackService` is the shared MediaSessionService base. Phone and TV
+provide only their app-specific controller factory, keeping the service
+lifecycle and playback policy identical. Both manifests declare the required
+media-playback foreground permissions and the documented Media3 service intent.
+The service endpoints are intentionally exported for system/remote media
+controllers; the narrow `ExportedService` lint suppression is scoped only to
+these Media3 endpoints because adding a private binding permission would
+prevent the intended controller discovery.
+
+`PlaybackStateTest` covers trusted-versus-untrusted transitions and separate
+Sub/Dub persistence ordering. The complete `native-android/scripts/verify.ps1`
+gate passes core model/network/source/player tests, both debug APK assemblies,
+strict lint, and `git diff --check`. Provider adapters and the Compose player
+surface are not connected yet; the phone player UI is the next active task.
+
+Implementation commit: pending. The next active task is `SF-A2-003`, native
+phone player UI parity.

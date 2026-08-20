@@ -84,6 +84,7 @@ dependencies {
   implementation(project(":core:common"))
   implementation(project(":core:model"))
   implementation(project(":core:designsystem"))
+  implementation(project(":core:player"))
   implementation(libs.androidx.core.ktx)
   implementation(libs.androidx.activity.compose)
   implementation(libs.androidx.lifecycle.runtime.ktx)
