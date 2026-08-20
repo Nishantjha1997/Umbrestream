@@ -22,6 +22,8 @@
 # misc
 .DS_Store
 *.pem
+*.jks
+*.keystore
 *.bat
 
 # debug
@@ -40,3 +42,10 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .env*
+
+# Native Android generated state and signing material.
+/native-android/.gradle/
+/native-android/**/build/
+/native-android/local.properties
+/native-android/.idea/
+!/native-android/gradlew.bat

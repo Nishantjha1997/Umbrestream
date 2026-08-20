@@ -6,8 +6,8 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 
 - Branch: `codex/web-first-native-rebuild`
 - Baseline: `28bea93`
-- Active task: `SF-A0-001`
-- Next command: inventory the existing untracked `native-android` scaffold against the approved Gradle/module plan, preserve any valid work, and run its first deterministic Gradle configuration/test gate.
+- Active task: `SF-A0-002`
+- Next command: inspect the existing release certificate records and legacy package/signing artifacts before adding environment-only signing configuration; do not commit private keys.
 - Reference policy: Media3 and Now in Android are approved architecture references; Aniyomi is pattern-only because it is archived; Dantotsu is excluded pending license/source verification.
 
 ## W0 — Governance and baseline
@@ -214,13 +214,13 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 
 ## A0 — Native scaffold and migration
 
-- [ ] SF-A0-001 — Create `native-android` Gradle Kotlin DSL project
-  - Status: not started
+- [x] SF-A0-001 — Create `native-android` Gradle Kotlin DSL project
+  - Status: completed
   - Priority: P0
   - Depends on: SF-W3-004
-  - Evidence: —
-  - Commit: —
-  - Next action: add phone/TV apps, version catalog, core modules, static analysis, and tests
+  - Evidence: isolated JDK 17, Android API 37, Build Tools 36.0.0; AGP 9.3.1/Kotlin 2.4.10/Lifecycle 2.11/Core 1.19; Gradle 9.7.1 distribution and wrapper JAR SHA-256 verified; `scripts/verify.ps1` passed core unit test, phone/TV debug assembly, and phone/TV/design-system lint with warnings-as-errors; debug package IDs verified as `online.streamfree.app.debug` and `online.streamfree.tv.debug`; `git diff --check` passed
+  - Commit: pending
+  - Completed: 2026-08-20
 
 - [ ] SF-A0-002 — Preserve signing/package identities and migration contracts
   - Status: not started

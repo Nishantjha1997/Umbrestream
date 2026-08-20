@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.StreamFree" parent="android:style/Theme.DeviceDefault.NoActionBar">
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:colorAccent">#B99CFF</item>
+        <item name="android:windowBackground">#08070B</item>
+    </style>
+</resources>
