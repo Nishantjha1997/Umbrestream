@@ -1753,3 +1753,13 @@ Signed-out production smoke verification returned HTTP 200 with
 This is the first native shell slice, not a release claim: poster/image loading,
 persistent region settings, authenticated Continue Watching cursor loading,
 full details/search/library surfaces, and device execution remain open.
+
+Live source-contract smoke on 2026-08-21 returned HTTP 200 for a movie,
+multi-episode TV fixture, and anime Sub request. The API policy was
+`2026-08-reliability-v5`; the movie response contained seven labelled iframe
+candidates, TV seven, and anime six labelled Sub/Dub candidates. These live
+responses did not advertise native HLS/DASH/MP4 candidates, so today’s native
+production path will use the consented restricted WebView fallback. Media3
+direct playback remains implemented and contract-tested for when a validated
+direct candidate is returned; no direct-provider success is claimed from this
+smoke check.
