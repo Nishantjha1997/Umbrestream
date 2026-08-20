@@ -1597,8 +1597,10 @@ home root. The server and next actions are deliberately presentation hooks
 until native episode/source resolution is connected; they do not claim a
 provider is available.
 
-`:app-tv:compileDebugKotlin`, `:app-tv:lintDebug`, and `:core:player:test`
-pass. The full native gate was green before this UI-only slice; a final full
-gate will be rerun after the next combined player checkpoint.
+The combined `native-android/scripts/verify.ps1` gate also passes after this
+slice: all core model/network/source/player tests, both debug APK assemblies,
+and strict phone/TV/player/design-system lint are green. `git diff --check`
+also passes. This remains a scaffold gate: native provider/API resolution and
+episode navigation are not yet wired, so no release APK is approved yet.
 
 Implementation commit: `6a13e06`. `SF-A2-003` remains the active phone task.

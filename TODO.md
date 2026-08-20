@@ -286,7 +286,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Status: completed
   - Priority: P0
   - Depends on: SF-A2-002
-  - Evidence: TV playback is a distinct root mode that removes normal navigation from composition and focus, uses a full black stage, caps 10-foot safe margins at 720p/1080p/4K widths, exposes 64dp remote controls, requests deterministic initial Back focus, restores home on Back, and keeps Fit/Fill on the same PlayerView; `:app-tv:compileDebugKotlin`, `:app-tv:lintDebug`, `:core:player:test`, and `git diff --check` passed
+  - Evidence: TV playback is a distinct root mode that removes normal navigation from composition and focus, uses a full black stage, caps 10-foot safe margins at 720p/1080p/4K widths, exposes 64dp remote controls, requests deterministic initial Back focus, restores home on Back, and keeps Fit/Fill on the same PlayerView; the combined `scripts/verify.ps1` gate passed with all core tests, both debug APK assemblies, and strict phone/TV/player/design-system lint, plus `git diff --check`
   - Commit: `6a13e06`
   - Completed: 2026-08-21
 
