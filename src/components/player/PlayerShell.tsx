@@ -761,13 +761,18 @@ export default function PlayerShell({
   }, [attemptAutomaticFallback]);
 
   // External iframe failures are often silent because the provider is
-  // cross-origin. Give the current provider a short grace period, pause it
+  // cross-origin. Give the current provider the full grace period, pause it
   // while the tab is hidden, and then move to the next stable/direct source
   // automatically for a clean movie/TV launch. If no candidate remains,
   // retain the explicit recovery panel rather than claiming the provider is
   // offline.
   useEffect(() => {
     if (!selectedSource || !directSettled) return;
+    // An eventless cross-origin iframe can be visibly playing while remaining
+    // opaque to StreamFree. A timer cannot distinguish that healthy state from
+    // failure, so do not show a false warning or replace it. The persistent
+    // Source control and the provider's own resolver remain available.
+    if (selectedSource.kind === "iframe" && !selectedSource.capabilities.events) return;
     const sourceId = selectedSource.id;
     let remainingMs = PLAYBACK_RECOVERY_TIMEOUT_MS;
     let startedAt = performance.now();

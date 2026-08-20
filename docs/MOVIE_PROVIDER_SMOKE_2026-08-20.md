@@ -21,6 +21,6 @@ Fixture: TMDB `1212763` (`Evil Dead Burn`). Checks were performed from a real br
 - A clean default launch gets 30 seconds before automatic recovery; five seconds interrupted valid provider startup.
 - The certified automatic movie chain is Filmu → VidRift → VidKing.
 - Explicit or remembered source choices are never replaced automatically.
-- An eventless cross-origin source is never replaced solely because a timer elapsed. It receives a visible one-tap recovery prompt instead.
+- An eventless cross-origin source is never replaced or falsely warned solely because a timer elapsed. The persistent Source control and provider-owned multi-server resolver remain available.
 - Providers that were not playback-confirmed remain available for regional/manual recovery but cannot enter the silent automatic chain.
 - Provider availability is external and can vary by title, region, time, and network; this file is release evidence, not a guarantee.
