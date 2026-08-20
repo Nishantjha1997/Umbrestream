@@ -87,7 +87,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P0
   - Depends on: SF-W1-006
   - Evidence: shared keyboard activation and single-flight policy added across the sheet, shell, action buttons, and Movie/TV/Anime control bars; `scripts/check-source-sheet.mjs`; source-sheet test passed; ESLint zero warnings; TypeScript passed; production build passed; `git diff --check` passed
-  - Commit: `ec588af`
+  - Commit: `751ac00`
   - Completed: 2026-08-20
   - Next action: proceed with SF-W2-002
 
