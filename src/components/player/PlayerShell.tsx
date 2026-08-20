@@ -242,7 +242,7 @@ export default function PlayerShell({
     // before the route resumes. Restore the shell to a safe portrait state so
     // the next foreground frame cannot inherit a stale immersive lock.
     const restoreAfterBackground = () => {
-      if (document.visibilityState !== "hidden" && document.visibilityState !== "prerender") return;
+      if (document.visibilityState !== "hidden") return;
       setIsFullscreen(false);
       document.documentElement.classList.remove("player-fullscreen");
       setPlaybackOrientation(false);
@@ -267,10 +267,14 @@ export default function PlayerShell({
   }, [setPlaybackOrientation]);
 
   const toggleFullscreen = useCallback(async () => {
-    const entering = !document.fullscreenElement;
+    // `document.fullscreenElement` stays null in several Android WebViews
+    // even though the native bridge has put the shell into its fixed
+    // immersive fallback. Use the app state as the source of truth for the
+    // second tap so that fallback fullscreen can always be exited.
+    const entering = !isFullscreen && !document.fullscreenElement;
     try {
       if (entering) await playerRootRef.current?.requestFullscreen?.({ navigationUI: "hide" });
-      else await document.exitFullscreen();
+      else if (document.fullscreenElement) await document.exitFullscreen();
     } catch {
       // The fixed shell and native orientation bridge remain the fallback in WebView.
     }
@@ -282,7 +286,7 @@ export default function PlayerShell({
     setIsFullscreen(active);
     document.documentElement.classList.toggle("player-fullscreen", active);
     setPlaybackOrientation(active);
-  }, [setPlaybackOrientation]);
+  }, [isFullscreen, setPlaybackOrientation]);
 
   const endedEventVersionRef = useRef(0);
   useEffect(() => {
@@ -890,6 +894,19 @@ export default function PlayerShell({
       )}
 
       {renderHeader(headerContext)}
+
+      {isFullscreen && (
+        <div className="player-safe-header pointer-events-none absolute inset-x-0 top-0 z-45 flex justify-end px-3 py-2 sm:px-5">
+          <button
+            type="button"
+            onClick={() => void toggleFullscreen()}
+            aria-label="Exit full screen"
+            className="pointer-events-auto min-h-11 rounded-full border border-white/20 bg-black/70 px-4 py-2 text-xs font-semibold text-white/90 shadow-lg backdrop-blur-xl transition hover:bg-black/90 focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:outline-none"
+          >
+            Exit full screen
+          </button>
+        </div>
+      )}
 
       {!renderControls && (
         <div className="absolute right-4 bottom-5 z-45 flex items-center gap-2">

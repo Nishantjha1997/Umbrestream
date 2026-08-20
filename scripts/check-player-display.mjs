@@ -17,6 +17,8 @@ assert.match(shell, /className="player-shell-frame absolute inset-0 h-full w-ful
 assert.match(shell, /key=\{`\$\{selectedSource\.id\}:\$\{selectedSourceUrl\}`\}/);
 assert.doesNotMatch(shell, /key=\{`[^`]*displayMode/);
 assert.match(shell, /requestFullscreen\?\.\(\{ navigationUI: "hide" \}\)/);
+assert.match(shell, /const entering = !isFullscreen && !document\.fullscreenElement/);
+assert.match(shell, /aria-label="Exit full screen"/);
 assert.match(shell, /lockLandscape\?\.\(\)/);
 assert.match(shell, /lockPortrait\?\.\(\)/);
 assert.match(shell, /document\.addEventListener\("visibilitychange", restoreAfterBackground\)/);
