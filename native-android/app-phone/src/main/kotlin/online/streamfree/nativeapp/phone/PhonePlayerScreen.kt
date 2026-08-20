@@ -7,6 +7,7 @@ import android.content.Context
 import android.media.AudioManager
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -22,9 +23,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -76,10 +80,13 @@ import online.streamfree.nativeapp.model.AdjacentEpisodeResolver
 import online.streamfree.nativeapp.model.EpisodeCatalog
 import online.streamfree.nativeapp.model.EpisodeDirection
 import online.streamfree.nativeapp.model.EpisodeRef
+import online.streamfree.nativeapp.model.NativeHomeFeed
+import online.streamfree.nativeapp.model.NativeMediaSummary
 import online.streamfree.nativeapp.source.ResolvedSource
 import online.streamfree.nativeapp.source.PlaybackRequest
 import online.streamfree.nativeapp.source.EpisodeCatalogResolver
 import online.streamfree.nativeapp.source.EmbedSourcePolicy
+import online.streamfree.nativeapp.source.StreamFreeHomeFeedResolver
 import online.streamfree.nativeapp.source.ResolutionOrchestrator
 import online.streamfree.nativeapp.source.ResolutionPreferences
 import online.streamfree.nativeapp.source.SourceKind
@@ -87,39 +94,112 @@ import online.streamfree.nativeapp.source.SourceKind
 @Composable
 fun PhoneHomeScreen(
   onOpenPlayer: () -> Unit,
+  feedResolver: StreamFreeHomeFeedResolver? = null,
+  onOpenTitle: (PlaybackRequest) -> Unit = {},
 ) {
+  var feed by remember { mutableStateOf<NativeHomeFeed?>(null) }
+  var feedFailed by remember { mutableStateOf(false) }
+  LaunchedEffect(feedResolver) {
+    feed = feedResolver?.resolve()
+    feedFailed = feedResolver != null && feed == null
+  }
   Surface(
     modifier = Modifier.fillMaxSize(),
     color = MaterialTheme.colorScheme.background,
   ) {
-    Column(
-      modifier = Modifier
-        .fillMaxSize()
-        .safeDrawingPadding()
-        .padding(24.dp),
-      verticalArrangement = Arrangement.Center,
-      horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-      Text("StreamFree", style = MaterialTheme.typography.headlineMedium)
-      Text(
-        "Native playback foundation",
-        style = MaterialTheme.typography.bodyLarge,
-        modifier = Modifier.padding(top = 8.dp, bottom = 24.dp),
-      )
-      Button(
-        onClick = onOpenPlayer,
-        modifier = Modifier.sizeIn(minWidth = 180.dp, minHeight = 48.dp),
+    if (feedResolver == null || feedFailed) {
+      Column(
+        modifier = Modifier.fillMaxSize().safeDrawingPadding().padding(24.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
       ) {
-        Text("Open player")
+        Text("StreamFree", style = MaterialTheme.typography.headlineMedium)
+        Text(
+          if (feedFailed) "Home is temporarily unavailable. You can still open playback from a title link."
+          else "Loading your home…",
+          style = MaterialTheme.typography.bodyLarge,
+          modifier = Modifier.padding(top = 8.dp, bottom = 24.dp),
+        )
+        Button(onClick = onOpenPlayer, modifier = Modifier.sizeIn(minWidth = 180.dp, minHeight = 48.dp)) {
+          Text("Open player")
+        }
       }
-      Text(
-        "Provider source adapters will plug into this player without changing its playback shell.",
-        style = MaterialTheme.typography.bodySmall,
-        modifier = Modifier.padding(top = 20.dp),
-      )
+    } else if (feed == null) {
+      Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+        Text("Preparing your home…", style = MaterialTheme.typography.titleLarge)
+      }
+    } else {
+      PhoneHomeFeed(feed = feed!!, onOpenTitle = onOpenTitle)
     }
   }
 }
+
+@Composable
+private fun PhoneHomeFeed(feed: NativeHomeFeed, onOpenTitle: (PlaybackRequest) -> Unit) {
+  LazyColumn(
+    modifier = Modifier.fillMaxSize().safeDrawingPadding(),
+    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 20.dp, vertical = 24.dp),
+    verticalArrangement = Arrangement.spacedBy(20.dp),
+  ) {
+    item {
+      Text("StreamFree", style = MaterialTheme.typography.headlineMedium)
+      Text(
+        "${feed.region.countryName} · ${feed.provenance.replace('_', ' ')}",
+        style = MaterialTheme.typography.bodyMedium,
+        modifier = Modifier.padding(top = 4.dp),
+      )
+    }
+    feed.hero?.let { hero ->
+      item {
+        Card(
+          modifier = Modifier.fillMaxWidth().clickable { onOpenTitle(hero.media.toPlaybackRequest(hero.progress)) },
+        ) {
+          Column(modifier = Modifier.padding(20.dp)) {
+            Text(if (hero.intent == "resume") "Continue watching" else "Featured", style = MaterialTheme.typography.labelLarge)
+            Text(hero.media.title, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(top = 8.dp))
+            hero.progress?.let { Text("Season ${it.season}, episode ${it.episode}", modifier = Modifier.padding(top = 4.dp)) }
+            Text("Open player", style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(top = 16.dp))
+          }
+        }
+      }
+    }
+    items(feed.rows, key = { it.id }) { row ->
+      Column {
+        Text(row.title, style = MaterialTheme.typography.titleLarge)
+        LazyRow(
+          modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+          horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+          items(row.items, key = { "${it.mediaType}:${it.id}" }) { media ->
+            Card(
+              modifier = Modifier.widthIn(min = 148.dp, max = 180.dp).clickable {
+                onOpenTitle(media.toPlaybackRequest())
+              },
+            ) {
+              Column(modifier = Modifier.padding(14.dp)) {
+                Text(media.title, maxLines = 2, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.titleMedium)
+                media.year?.let { Text(it.toString(), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 8.dp)) }
+                media.rating?.let { Text("★ ${"%.1f".format(it)}", style = MaterialTheme.typography.bodySmall) }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+private fun NativeMediaSummary.toPlaybackRequest(progress: online.streamfree.nativeapp.model.NativeContinueProgress? = null): PlaybackRequest =
+  PlaybackRequest(
+    mediaType = mediaType,
+    titleId = id.toString(),
+    title = title,
+    tmdbId = id.takeIf { mediaType != online.streamfree.nativeapp.model.MediaType.Anime },
+    anilistId = id.takeIf { mediaType == online.streamfree.nativeapp.model.MediaType.Anime },
+    season = progress?.season,
+    episode = progress?.episode,
+    resumePositionMs = progress?.lastPositionMs ?: 0L,
+  )
 
 @Composable
 fun PhonePlayerScreen(

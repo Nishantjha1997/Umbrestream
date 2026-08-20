@@ -1732,3 +1732,24 @@ selection callbacks, and the remote player entry. The tests compile with
 `:app-tv:compileDebugAndroidTestKotlin`; execution is intentionally deferred to
 the connected phone/TV-emulator gate because no device is connected in this
 workspace.
+
+## 50. Native shared Home feed shell — 2026-08-21
+
+The native core now consumes the existing versioned `GET /api/mobile/home`
+contract through `StreamFreeHomeFeedResolver`. It validates the exact official
+API host, parses schema version 1, region/effective country, provenance, hero,
+Continue Watching progress when present, row kinds, and normalized media
+summaries. It can carry an app-owned Supabase bearer token and only a validated
+two-letter `X-StreamFree-Region` override; the network header boundary now
+allows that one product header alongside `Authorization`.
+
+Phone and TV Home screens no longer need to invent a title to enter playback.
+They load the shared regional/trending feed, display honest provenance and
+country context, expose the hero and row actions as touch/remote controls, and
+construct the same `PlaybackRequest` contract used by the source resolver.
+Signed-out production smoke verification returned HTTP 200 with
+`schemaVersion: 1`, India edge detection, and the expected regional row data.
+
+This is the first native shell slice, not a release claim: poster/image loading,
+persistent region settings, authenticated Continue Watching cursor loading,
+full details/search/library surfaces, and device execution remain open.

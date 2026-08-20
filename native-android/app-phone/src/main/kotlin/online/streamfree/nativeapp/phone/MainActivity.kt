@@ -8,6 +8,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.core.view.WindowCompat
@@ -23,6 +24,7 @@ import online.streamfree.nativeapp.player.PreferencesSourcePreferenceStore
 import online.streamfree.nativeapp.source.SourceResolverRegistry
 import online.streamfree.nativeapp.source.StreamFreeSourceApiResolver
 import online.streamfree.nativeapp.source.StreamFreeEpisodeCatalogResolver
+import online.streamfree.nativeapp.source.StreamFreeHomeFeedResolver
 import online.streamfree.nativeapp.source.ResolutionOrchestrator
 import online.streamfree.nativeapp.source.PlaybackRequest
 import online.streamfree.nativeapp.model.AudioVariant
@@ -40,6 +42,7 @@ class MainActivity : ComponentActivity() {
     val sourceRegistry = SourceResolverRegistry(listOf(StreamFreeSourceApiResolver.production()))
     val sourceOrchestrator = ResolutionOrchestrator(sourceRegistry)
     val episodeCatalogResolver = StreamFreeEpisodeCatalogResolver.production()
+    val homeFeedResolver = StreamFreeHomeFeedResolver.production()
     val sourcePreferenceStore = PreferencesSourcePreferenceStore(this)
     val launchRequest = intent.toPlaybackRequest()
     playbackController = PlaybackSessionController(
@@ -50,19 +53,27 @@ class MainActivity : ComponentActivity() {
     setContent {
       StreamFreeTheme {
         var showPlayer by rememberSaveable { mutableStateOf(launchRequest != null) }
+        var selectedRequest by remember { mutableStateOf(launchRequest) }
         if (showPlayer) {
           PhonePlayerScreen(
             controller = playbackController,
             displayModeStore = PreferencesPlaybackDisplayModeStore(this@MainActivity),
             sourcePreferenceStore = sourcePreferenceStore,
-            onExit = { showPlayer = false },
+            onExit = { showPlayer = false; selectedRequest = null },
             onFullscreenChanged = ::setPlayerFullscreen,
-            initialRequest = launchRequest,
+            initialRequest = selectedRequest,
             sourceOrchestrator = sourceOrchestrator,
             episodeCatalogResolver = episodeCatalogResolver,
           )
         } else {
-          PhoneHomeScreen(onOpenPlayer = { showPlayer = true })
+          PhoneHomeScreen(
+            onOpenPlayer = { showPlayer = true },
+            feedResolver = homeFeedResolver,
+            onOpenTitle = { request ->
+              selectedRequest = request
+              showPlayer = true
+            },
+          )
         }
       }
     }

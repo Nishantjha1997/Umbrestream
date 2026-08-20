@@ -19,6 +19,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.AlertDialog
@@ -55,6 +57,9 @@ import online.streamfree.nativeapp.model.AdjacentEpisodeResolver
 import online.streamfree.nativeapp.model.EpisodeCatalog
 import online.streamfree.nativeapp.model.EpisodeDirection
 import online.streamfree.nativeapp.model.EpisodeRef
+import online.streamfree.nativeapp.model.MediaType
+import online.streamfree.nativeapp.model.NativeHomeFeed
+import online.streamfree.nativeapp.model.NativeMediaSummary
 import online.streamfree.nativeapp.player.PlaybackDisplayMode
 import online.streamfree.nativeapp.player.PlaybackDisplayModeStore
 import online.streamfree.nativeapp.player.PlaybackPhase
@@ -67,36 +72,100 @@ import online.streamfree.nativeapp.source.ResolvedSource
 import online.streamfree.nativeapp.source.ResolutionOrchestrator
 import online.streamfree.nativeapp.source.ResolutionPreferences
 import online.streamfree.nativeapp.source.SourceKind
+import online.streamfree.nativeapp.source.StreamFreeHomeFeedResolver
 
 @Composable
-fun TvHomeScreen(onOpenPlayer: () -> Unit) {
+fun TvHomeScreen(
+  onOpenPlayer: () -> Unit,
+  feedResolver: StreamFreeHomeFeedResolver? = null,
+  onOpenTitle: (PlaybackRequest) -> Unit = {},
+) {
+  var feed by remember { mutableStateOf<NativeHomeFeed?>(null) }
+  var feedFailed by remember { mutableStateOf(false) }
+  LaunchedEffect(feedResolver) {
+    val resolved = feedResolver?.resolve()
+    feed = resolved
+    feedFailed = feedResolver != null && resolved == null
+  }
   Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-    Column(
-      modifier = Modifier
-        .fillMaxSize()
-        .padding(horizontal = 72.dp, vertical = 48.dp),
-      verticalArrangement = Arrangement.Center,
-      horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-      Text("StreamFree TV", style = MaterialTheme.typography.displaySmall)
-      Text(
-        "Remote-first native playback foundation",
-        style = MaterialTheme.typography.titleLarge,
-        modifier = Modifier.padding(top = 12.dp, bottom = 32.dp),
-      )
-      TvFocusButton(
-        text = "Open player",
-        onClick = onOpenPlayer,
-        contentDescription = "Open TV player",
-      )
-      Text(
-        "Playback mode removes normal navigation from the screen and remote focus.",
-        style = MaterialTheme.typography.bodyLarge,
-        modifier = Modifier.padding(top = 24.dp),
-      )
+    if (feedResolver == null || feedFailed) {
+      Column(
+        modifier = Modifier.fillMaxSize().padding(horizontal = 72.dp, vertical = 48.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+      ) {
+        Text("StreamFree TV", style = MaterialTheme.typography.displaySmall)
+        Text(
+          if (feedFailed) "Home is temporarily unavailable."
+          else "Loading your home…",
+          style = MaterialTheme.typography.titleLarge,
+          modifier = Modifier.padding(top = 12.dp, bottom = 32.dp),
+        )
+        TvFocusButton(text = "Open player", onClick = onOpenPlayer, contentDescription = "Open TV player")
+      }
+    } else if (feed == null) {
+      Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Text("Preparing your home…", style = MaterialTheme.typography.displaySmall)
+      }
+    } else {
+      TvHomeFeed(feed = feed!!, onOpenTitle = onOpenTitle)
     }
   }
 }
+
+@Composable
+private fun TvHomeFeed(feed: NativeHomeFeed, onOpenTitle: (PlaybackRequest) -> Unit) {
+  LazyColumn(
+    modifier = Modifier.fillMaxSize(),
+    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 72.dp, vertical = 48.dp),
+    verticalArrangement = Arrangement.spacedBy(24.dp),
+  ) {
+    item {
+      Text("StreamFree TV", style = MaterialTheme.typography.displaySmall)
+      Text("${feed.region.countryName} · ${feed.provenance.replace('_', ' ')}", style = MaterialTheme.typography.titleLarge)
+    }
+    feed.hero?.let { hero ->
+      item {
+        TvFocusButton(
+          text = "${if (hero.intent == "resume") "Resume" else "Featured"}: ${hero.media.title}",
+          onClick = { onOpenTitle(hero.media.toPlaybackRequest(hero.progress)) },
+          contentDescription = "Open ${hero.media.title}",
+          modifier = Modifier.widthIn(min = 460.dp, max = 720.dp),
+        )
+      }
+    }
+    items(feed.rows, key = { it.id }) { row ->
+      Column {
+        Text(row.title, style = MaterialTheme.typography.headlineSmall)
+        LazyRow(
+          modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
+          horizontalArrangement = Arrangement.spacedBy(18.dp),
+        ) {
+          items(row.items, key = { "${it.mediaType}:${it.id}" }) { media ->
+            TvFocusButton(
+              text = media.title,
+              onClick = { onOpenTitle(media.toPlaybackRequest()) },
+              contentDescription = "Open ${media.title}",
+              modifier = Modifier.widthIn(min = 240.dp, max = 360.dp),
+            )
+          }
+        }
+      }
+    }
+  }
+}
+
+private fun NativeMediaSummary.toPlaybackRequest(progress: online.streamfree.nativeapp.model.NativeContinueProgress? = null): PlaybackRequest =
+  PlaybackRequest(
+    mediaType = mediaType,
+    titleId = id.toString(),
+    title = title,
+    tmdbId = id.takeIf { mediaType != MediaType.Anime },
+    anilistId = id.takeIf { mediaType == MediaType.Anime },
+    season = progress?.season,
+    episode = progress?.episode,
+    resumePositionMs = progress?.lastPositionMs ?: 0L,
+  )
 
 @Composable
 fun TvPlayerScreen(

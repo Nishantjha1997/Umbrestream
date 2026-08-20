@@ -60,4 +60,12 @@ class SafeNetworkPolicyTest {
     }
     assertTrue(AppOwnedHeaders.validate(mapOf("Accept" to "application/json")).size == 1)
   }
+
+  @Test
+  fun `allows authenticated native feed region header`() {
+    val headers = AppOwnedHeaders.validate(
+      mapOf("Authorization" to "Bearer token", "X-StreamFree-Region" to "IN"),
+    )
+    assertEquals("IN", headers["X-StreamFree-Region"])
+  }
 }

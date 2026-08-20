@@ -274,13 +274,21 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Commit: `bc219cb`
   - Completed: 2026-08-21
 
-- [ ] SF-A2-003 — Build native phone player UI parity
-  - Status: in progress
+- [x] SF-A2-003 — Build native phone player UI parity
+  - Status: completed
   - Priority: P0
   - Depends on: SF-A2-002
   - Evidence: phone Compose player shell now owns a black 16:9 cinema stage around the existing `Player` instance, lifecycle-aware state collection, persistent Fit/Fill `resizeMode` changes without remounting, explicit landscape fullscreen and portrait restoration, first-Back fullscreen exit, double-tap seek, brightness/volume vertical gestures, accessible 48dp controls, an honest no-source state, an explicit resolver-backed server sheet with format/quality/audio/caption labels, separate anime Sub/Dub groups with audio carried into source switching, explicit movie/TV/Anime Sub/Anime Dub source-preference storage, controller-level cancellation/position-preserving source switching, a compact Media3 settings sheet for speed and resolver-provided subtitle tracks, a production `/api/player/sources` resolver that validates API/source HTTPS hosts, preserves explicit provider/audio selection, parses direct HLS/DASH/MP4 plus labelled embeds/subtitles, and is registered in both native apps, request-driven intent launch state that resolves and loads the first compatible source while honoring remembered provider scope, and a blocking-safe TMDB episode catalogue resolver with a phone Season list plus Previous/Next controls driven by `AdjacentEpisodeResolver`. The mixed API resolver now accepts validated iframe outputs separately from Media3 playback; approved iframe candidates are presented in the source sheet and can be intentionally opened in a restricted WebView, while direct candidates remain on Media3. TV exposes the same embed consent path, remote source sheet, shared episode catalogue, cross-season Next resolution, and 10-second Play now/Cancel end countdown. Focused source/network/model tests, both app compiles, strict phone/TV lint, and `git diff --check` pass.
+  - Commit: `62948ab`, `e072d6d`, `6b8b05a`
+  - Completed: 2026-08-21
+
+- [ ] SF-A2-007 — Wire native shared Home feed shell
+  - Status: in progress
+  - Priority: P0
+  - Depends on: SF-A2-003
+  - Evidence: `StreamFreeHomeFeedResolver` strictly parses the versioned `/api/mobile/home` contract, carries optional bearer and validated `X-StreamFree-Region` headers, and has region/provenance/hero/row tests; phone and TV Home now load the shared feed, display region/provenance and rows, and launch request-driven playback intents; production `/api/mobile/home` returned HTTP 200 with schemaVersion 1 and the expected India regional feed; core tests, app compilation, lint, and `git diff --check` pass
   - Commit: —
-  - Next action: execute the new Compose UI tests on the connected phone and TV emulator, then run the full native verification gate.
+  - Next action: add feed Home UI tests, persistent region override, poster loading/error retry, and authenticated Continue Watching wiring before moving to offline/auth work.
 
 - [x] SF-A2-004 — Build independent native TV playback shell foundation
   - Status: completed

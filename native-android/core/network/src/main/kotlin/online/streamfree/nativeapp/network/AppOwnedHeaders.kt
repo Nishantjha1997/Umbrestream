@@ -5,6 +5,7 @@ object AppOwnedHeaders {
     "accept",
     "accept-language",
     "authorization",
+    "x-streamfree-region",
     "origin",
     "referer",
     "user-agent",
