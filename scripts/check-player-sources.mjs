@@ -102,6 +102,14 @@ assert.equal(
 assert.equal((await resolveOne("vidking", fixtures.movie)).capabilities.subtitles, "none");
 assert.equal((await resolveOne("cinezo", fixtures.movie)).capabilities.subtitles, "native");
 assert.equal((await resolveOne("vidlink-native", fixtures.movie)).providerId, "vidlink");
+assert.equal(
+  (await resolveOne("vidrift", fixtures.movie)).url,
+  "https://embed.vidrift.in/embed/movie/1212763",
+);
+assert.equal(
+  (await resolveOne("vidrift", fixtures.tv)).url,
+  "https://embed.vidrift.in/embed/tv/97546/1/1",
+);
 
 const orderedIds = (request) =>
   adapters

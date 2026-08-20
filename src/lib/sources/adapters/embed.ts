@@ -249,15 +249,15 @@ const definitions: EmbedDefinition[] = [
   {
     id: "vidrift",
     label: "Vidrift",
-    origin: "https://vidrift.in",
+    origin: "https://embed.vidrift.in",
     tier: "experimental",
     priorities: { movie: 40, tv: 40 },
     requirements: movieAndTvRequirements,
     build: (request) =>
       movieOrTv(
         request,
-        (id) => `https://vidrift.in/embed/movie/${id}`,
-        (id, season, episode) => `https://vidrift.in/embed/tv/${id}/${season}/${episode}`,
+        (id) => `https://embed.vidrift.in/embed/movie/${id}`,
+        (id, season, episode) => `https://embed.vidrift.in/embed/tv/${id}/${season}/${episode}`,
       ),
     capabilities: { ads: true, subtitles: "unverified" },
   },
@@ -556,13 +556,13 @@ const quarantinedAnimeDefinitions: EmbedDefinition[] = [
     id: "vidrift-anime",
     providerId: "vidrift",
     label: "Vidrift Anime",
-    origin: "https://vidrift.in",
+    origin: "https://embed.vidrift.in",
     tier: "experimental",
     priorities: { anime: 40 },
     requirements: { anime: ["animeTmdbId", "episode"] },
     build: (request) =>
       request.animeTmdbId && request.episode
-        ? `https://vidrift.in/embed/anime/${request.animeTmdbId}/${request.episode}`
+        ? `https://embed.vidrift.in/embed/tv/${request.animeTmdbId}/1/${request.episode}`
         : null,
     capabilities: { ads: true, subtitles: "unverified" },
     audioVariant: "sub",
