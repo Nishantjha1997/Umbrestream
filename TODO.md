@@ -6,8 +6,8 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 
 - Branch: `codex/web-first-native-rebuild`
 - Baseline: `28bea93`
-- Active task: `SF-P0-002`
-- Next command: deploy the desktop playback startup correction to a preview, verify a clean movie player remains URL-clean and swaps from a blank default to VidKing within five seconds, then promote production.
+- Active task: `SF-A0-001`
+- Next command: inventory the existing Android wrapper and release configuration, then create the tracked native Kotlin/Compose scaffold without disturbing the signed legacy apps.
 - Reference policy: Media3 and Now in Android are approved architecture references; Aniyomi is pattern-only because it is archived; Dantotsu is excluded pending license/source verification.
 
 ## W0 — Governance and baseline
@@ -159,35 +159,36 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Deployment: `https://umbrestream-7pgcc3jjy-nishants-projects-7d9628b2.vercel.app` (`READY`)
   - Completed: 2026-08-20
 
-- [ ] SF-P0-002 — Restore responsive desktop playback startup
-  - Status: in progress
+- [x] SF-P0-002 — Restore responsive desktop playback startup
+  - Status: completed
   - Priority: P0
   - Depends on: SF-P0-001
-  - Evidence: production reproduction on `https://streamfree.online/movie/1212763/player` showed the app self-appended `?src=filmu`, then displayed a manual recovery prompt after the 20-second grace period; this made normal reloads look like manual choices and prevented automatic recovery
-  - Commit: —
-  - Next action: validate the URL-intent correction and five-second clean-launch recovery on preview, then deploy production
+  - Evidence: reproduction isolated product-default URL pollution; `src` now persists only deliberate manual/prompt-accepted choices, and reset/automatic paths clear it; live deployment `dpl_9J7xBsqHKnkMcSXAZs77bKX52P8d` is `READY` and aliases `streamfree.online`; production source API reports policy `2026-08-reliability-v2`, `fallbackMode: automatic`, `timeoutMs: 5000`; browser clean-launch URL remains `/movie/1212763/player` without `src`; source contracts, ESLint, TypeScript, Vercel production build, and `git diff --check` pass
+  - Commit: `1c8087e`, `c7f57fa`
+  - Deployment: `dpl_9J7xBsqHKnkMcSXAZs77bKX52P8d` (`READY`)
+  - Completed: 2026-08-20
 
 - [x] SF-W3-003 — Update exact APK download headers and security checks
   - Status: completed
   - Priority: P0
   - Depends on: SF-W3-001
   - Evidence: Vercel APK headers are derived from the two signed active manifests; `scripts/check-download-headers.mjs`, update-manifest validation, release-artifact validation, ESLint, TypeScript, and `git diff --check` pass; Android promo now targets the active phone release rather than obsolete `v1.3`
-  - Commit: pending (manifest-derived headers in this changeset)
+  - Commit: `f9396b3`
   - Completed: 2026-08-20
 
-- [ ] SF-W3-004 — Commit, push, deploy, and certify Web Phase W3
-  - Status: not started
+- [x] SF-W3-004 — Commit, push, deploy, and certify Web Phase W3
+  - Status: completed
   - Priority: P0
   - Depends on: SF-W3-002, SF-W3-003
-  - Evidence: —
-  - Commit: —
-  - Deployment: —
-  - Next action: run full web gate and record rollback deployment
+  - Evidence: W3 commits `3f6a202`, `f9396b3`, and P0 desktop correction `1c8087e`/`c7f57fa` are pushed; Vercel production build and TypeScript passed; deployment `dpl_9J7xBsqHKnkMcSXAZs77bKX52P8d` is Ready and aliases `streamfree.online`; live player policy and APK HTTP header checks passed
+  - Commit: pending (W3 release checkpoint in this changeset)
+  - Deployment: `dpl_9J7xBsqHKnkMcSXAZs77bKX52P8d` (`READY`)
+  - Completed: 2026-08-20
 
 ## A0 — Native scaffold and migration
 
 - [ ] SF-A0-001 — Create `native-android` Gradle Kotlin DSL project
-  - Status: not started
+  - Status: in progress
   - Priority: P0
   - Depends on: SF-W3-004
   - Evidence: —

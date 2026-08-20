@@ -1204,3 +1204,27 @@ live-browser result for a previously selected server (show recovery choices rath
 while deterministically proving the clean product-default behavior. Strict ESLint, TypeScript, the complete player
 source contract, and `git diff --check` passed. The next active task is W3-003, which audits the active APK download
 filenames, headers, and release-artifact checks.
+
+## 34. Desktop playback-startup correction and W3 production checkpoint — 2026-08-20
+
+The desktop player incident exposed a second URL-intent bug. `PlayerShell` was writing the product-selected Filmu
+default into `?src=filmu`. On a reload, that application-generated value was indistinguishable from a deliberate
+server selection and therefore correctly—but undesirably—disabled automatic recovery. The result was a blank Filmu
+stage followed by a 20-second manual recovery prompt.
+
+The shared policy is now `2026-08-reliability-v2` with a five-second clean-launch grace period. Automatic/default
+selection and Reset to recommended clear `src`; only manual selections and recovery accepted in the visible prompt
+remain shareable source URLs. A reset also re-enables automatic movie/TV recovery. The deterministic source runner
+asserts the URL-intent contract and the five-second policy. This does not silently replace a genuinely remembered
+or URL-selected provider.
+
+Production deployment `dpl_9J7xBsqHKnkMcSXAZs77bKX52P8d` is `READY` at
+`https://umbrestream-dq2d4bb4h-nishants-projects-7d9628b2.vercel.app` and aliases
+`https://streamfree.online`. Live `/api/player/sources` reports `fallbackMode: automatic`, `timeoutMs: 5000`, and
+the new policy version. A browser clean launch remained URL-clean (`/movie/1212763/player`, no `src`). The current
+test profile has a prior source preference and continued to show the correct consent panel, as designed.
+
+W3 is also complete. APK response rules are now generated from the signed active manifests through
+`src/lib/releases/downloadHeaders.ts`; the contract test verifies exact Vercel paths, attachment filenames, Android
+APK MIME type, and `nosniff`. The Android promo was corrected from obsolete `v1.3` to active `v1.3.3`. Live HTTP
+headers for the phone and TV APKs passed. Relevant commits are `1c8087e`, `c7f57fa`, and `f9396b3`.
