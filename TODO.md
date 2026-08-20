@@ -280,7 +280,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Depends on: SF-A2-002
   - Evidence: phone Compose player shell now owns a black 16:9 cinema stage around the existing `Player` instance, lifecycle-aware state collection, persistent Fit/Fill `resizeMode` changes without remounting, explicit landscape fullscreen and portrait restoration, first-Back fullscreen exit, double-tap seek, brightness/volume vertical gestures, accessible 48dp controls, an honest no-source state, an explicit resolver-backed server sheet with format/quality/audio/caption labels, separate anime Sub/Dub groups with audio carried into source switching, explicit movie/TV/Anime Sub/Anime Dub source-preference storage, controller-level cancellation/position-preserving source switching, and a compact Media3 settings sheet for speed and resolver-provided subtitle tracks; focused checks and the full `scripts/verify.ps1` gate passed after preference work, including all core tests, both debug APK assemblies, and strict phone/TV/player/design-system lint
   - Commit: —
-  - Next action: wire the shell to authenticated episode/source resolution, then add episode list/next controls, subtitle/audio/speed actions, and deterministic UI tests
+  - Next action: wire the shell to authenticated episode/source resolution, then add episode list/next controls and deterministic UI tests
 
 ## A3 — Offline, auth, sync, and product parity
 

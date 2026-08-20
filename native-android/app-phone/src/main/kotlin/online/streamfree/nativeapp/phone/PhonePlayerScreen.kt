@@ -53,6 +53,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.ui.AspectRatioFrameLayout
@@ -368,6 +369,9 @@ private fun PlayerOverlay(
         text = state.request?.titleId ?: "Select an episode",
         style = MaterialTheme.typography.labelLarge,
         color = Color.White,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+        modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
       )
       OutlinedButton(
         onClick = { onFullscreenChanged(!isFullscreen) },
@@ -441,6 +445,9 @@ private fun PlayerOverlay(
           text = playbackStatus(state),
           color = Color.White,
           style = MaterialTheme.typography.labelMedium,
+          maxLines = 1,
+          overflow = TextOverflow.Ellipsis,
+          modifier = Modifier.weight(1f).padding(horizontal = 4.dp),
         )
         Button(
           onClick = onTogglePlayback,

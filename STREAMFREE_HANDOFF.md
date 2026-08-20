@@ -1575,3 +1575,8 @@ Media3 track parameters without reloading the source. If the source has no
 resolved subtitle tracks, the sheet says so rather than presenting fake
 options. Focused phone compile/lint and the native verification gate remain
 green.
+
+The latest phone layout pass constrains long title/status text with ellipsis and
+weighted slots so the server, Fit/Fill, settings, and play controls remain
+reachable on narrow phone widths. `:app-phone:compileDebugKotlin`,
+`:app-phone:lintDebug`, and `:core:player:test` pass after that change.
