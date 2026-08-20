@@ -245,7 +245,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P0
   - Depends on: SF-A1-001
   - Evidence: `core:source` adds typed playback requests, provider descriptors/capabilities, HLS/DASH/MP4/embed formats, normalized resolved sources/subtitle tracks, resolution attempts/outcomes, resolver registry, provider header registry, explicit-source narrowing, and separate Anime Sub/Dub compatibility; `SourceContractsTest` passed; full `scripts/verify.ps1` passed with network/model/source tests, phone/TV debug assembly, and strict lint; `git diff --check` passed
-  - Commit: pending
+  - Commit: `53db743`
   - Completed: 2026-08-20
 
 - [ ] SF-A1-003 — Implement hedged multi-tier resolution engine

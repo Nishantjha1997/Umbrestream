@@ -1408,5 +1408,5 @@ explicit source precedence narrows candidates, and unsafe header policy IDs do
 not leak transport headers. The full native verification script passes model,
 network, and source tests plus both debug APK assemblies and strict lint.
 
-Implementation is included in the next source-contract checkpoint commit. The
+Implementation commit: `53db743`. The
 next active task is `SF-A1-003`, bounded multi-tier resolution orchestration.
