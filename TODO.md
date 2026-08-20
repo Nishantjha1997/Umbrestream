@@ -223,12 +223,13 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Completed: 2026-08-20
 
 - [ ] SF-A0-002 — Preserve signing/package identities and migration contracts
-  - Status: not started
+  - Status: in progress
   - Priority: P0
   - Depends on: SF-A0-001
   - Evidence: —
   - Commit: —
-  - Next action: port environment signing and define versioned guest-data migration
+  - Last completed step: canonical native phone/TV scaffold passed reproducible debug assembly and lint gates
+  - Next action: inventory `release/signing-certificates.json`, legacy Gradle signing blocks, and any local keystore candidates; record only public fingerprints and define environment-only release signing inputs
 
 ## A1 — Core networking and source resolution
 
