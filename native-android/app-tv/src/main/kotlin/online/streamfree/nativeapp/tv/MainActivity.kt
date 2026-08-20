@@ -17,6 +17,7 @@ import online.streamfree.nativeapp.player.PreferencesPlaybackDisplayModeStore
 import online.streamfree.nativeapp.player.PreferencesPlaybackStore
 import online.streamfree.nativeapp.source.SourceResolverRegistry
 import online.streamfree.nativeapp.source.StreamFreeSourceApiResolver
+import online.streamfree.nativeapp.source.StreamFreeEpisodeCatalogResolver
 import online.streamfree.nativeapp.source.ResolutionOrchestrator
 import online.streamfree.nativeapp.source.PlaybackRequest
 import online.streamfree.nativeapp.model.AudioVariant
@@ -32,6 +33,7 @@ class MainActivity : ComponentActivity() {
     enableEdgeToEdge()
     val sourceRegistry = SourceResolverRegistry(listOf(StreamFreeSourceApiResolver.production()))
     val sourceOrchestrator = ResolutionOrchestrator(sourceRegistry)
+    val episodeCatalogResolver = StreamFreeEpisodeCatalogResolver.production()
     val sourcePreferenceStore = PreferencesSourcePreferenceStore(this)
     val launchRequest = intent.toPlaybackRequest()
     playbackController = PlaybackSessionController(
@@ -50,6 +52,7 @@ class MainActivity : ComponentActivity() {
             sourcePreferenceStore = sourcePreferenceStore,
             initialRequest = launchRequest,
             sourceOrchestrator = sourceOrchestrator,
+            episodeCatalogResolver = episodeCatalogResolver,
           )
         } else {
           TvHomeScreen(onOpenPlayer = { showPlayer = true })

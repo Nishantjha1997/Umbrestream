@@ -1670,5 +1670,23 @@ the current season's episode list below the framed player, with explicit
 Previous and Next controls. Selecting an episode re-resolves sources for the
 new request before loading Media3, preserving the same source/audio preference
 rules. Cross-season buttons use the shared `AdjacentEpisodeResolver`; no client
-increments episode numbers blindly. TV still needs its remote list/focus
-surface and automatic end-of-episode transition.
+increments episode numbers blindly.
+
+The TV player now receives the same catalogue resolver, filters iframe/embed
+candidates out of the Media3 path, exposes a remote-focusable `Choose a server`
+dialog for validated direct sources, and uses the shared resolver for its Next
+button. When trusted Media3 playback reaches `Ended`, TV presents a 10-second
+`Play now`/`Cancel` countdown and carries the current playback request into the
+next valid episode, including cross-season transitions. Countdown cancellation
+is reset only when a new episode request becomes active, preventing repeated
+prompts for the same episode.
+
+The native iframe/WebView fallback is still intentionally not implemented: an
+embed candidate must not be sent to Media3 or presented as a direct stream.
+The next implementation slice is deterministic Compose UI coverage followed by
+the consent-based WebView fallback and its provider-safe navigation policy.
+
+Focused validation for this slice passed:
+`git diff --check`, `:core:model:test`, `:core:source:test`,
+`:app-phone:compileDebugKotlin`, `:app-tv:compileDebugKotlin`,
+`:app-phone:lintDebug`, and `:app-tv:lintDebug`.

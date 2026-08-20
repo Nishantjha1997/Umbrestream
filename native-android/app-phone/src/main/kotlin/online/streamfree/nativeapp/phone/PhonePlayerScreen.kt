@@ -154,8 +154,8 @@ fun PhonePlayerScreen(
       request = request,
       preferences = ResolutionPreferences(rememberedSourceId = rememberedSourceId),
     )
-    resolvedSourceCandidates = result.sources
-    result.sources.firstOrNull()?.let { source ->
+    resolvedSourceCandidates = result.sources.filter { it.kind != online.streamfree.nativeapp.source.SourceKind.Iframe }
+    resolvedSourceCandidates.firstOrNull()?.let { source ->
       controller.load(request, source)
     }
   }
@@ -174,8 +174,8 @@ fun PhonePlayerScreen(
         request = request,
         preferences = ResolutionPreferences(rememberedSourceId = rememberedSourceId),
       )
-      resolvedSourceCandidates = result.sources
-      result.sources.firstOrNull()?.let { source -> controller.load(request, source) }
+      resolvedSourceCandidates = result.sources.filter { it.kind != online.streamfree.nativeapp.source.SourceKind.Iframe }
+      resolvedSourceCandidates.firstOrNull()?.let { source -> controller.load(request, source) }
     }
   }
 

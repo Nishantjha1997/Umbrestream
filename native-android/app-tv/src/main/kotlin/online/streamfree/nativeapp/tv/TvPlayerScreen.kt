@@ -13,12 +13,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
@@ -46,15 +49,23 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import online.streamfree.nativeapp.model.AdjacentEpisodeResolver
+import online.streamfree.nativeapp.model.EpisodeCatalog
+import online.streamfree.nativeapp.model.EpisodeDirection
+import online.streamfree.nativeapp.model.EpisodeRef
 import online.streamfree.nativeapp.player.PlaybackDisplayMode
 import online.streamfree.nativeapp.player.PlaybackDisplayModeStore
 import online.streamfree.nativeapp.player.PlaybackPhase
 import online.streamfree.nativeapp.player.PlaybackSessionController
 import online.streamfree.nativeapp.player.SourcePreferenceStore
 import online.streamfree.nativeapp.source.PlaybackRequest
+import online.streamfree.nativeapp.source.EpisodeCatalogResolver
+import online.streamfree.nativeapp.source.ResolvedSource
 import online.streamfree.nativeapp.source.ResolutionOrchestrator
 import online.streamfree.nativeapp.source.ResolutionPreferences
+import online.streamfree.nativeapp.source.SourceKind
 
 @Composable
 fun TvHomeScreen(onOpenPlayer: () -> Unit) {
@@ -94,6 +105,7 @@ fun TvPlayerScreen(
   sourcePreferenceStore: SourcePreferenceStore,
   initialRequest: PlaybackRequest? = null,
   sourceOrchestrator: ResolutionOrchestrator? = null,
+  episodeCatalogResolver: EpisodeCatalogResolver? = null,
 ) {
   val displayMode by displayModeStore.mode.collectAsStateWithLifecycle(
     initialValue = PlaybackDisplayMode.Fit,
@@ -102,6 +114,11 @@ fun TvPlayerScreen(
   val firstControl = remember { FocusRequester() }
   val scope = androidx.compose.runtime.rememberCoroutineScope()
   var isOverlayVisible by rememberSaveable { mutableStateOf(true) }
+  var showSourcePicker by rememberSaveable { mutableStateOf(false) }
+  var resolvedSources by remember { mutableStateOf<List<ResolvedSource>>(emptyList()) }
+  var episodeCatalog by remember { mutableStateOf<EpisodeCatalog?>(null) }
+  var nextCountdown by remember { mutableStateOf<Int?>(null) }
+  var countdownCancelled by rememberSaveable { mutableStateOf(false) }
 
   LaunchedEffect(initialRequest, sourceOrchestrator) {
     val request = initialRequest ?: return@LaunchedEffect
@@ -111,7 +128,58 @@ fun TvPlayerScreen(
       request = request,
       preferences = ResolutionPreferences(rememberedSourceId = rememberedSourceId),
     )
-    result.sources.firstOrNull()?.let { source -> controller.load(request, source) }
+    resolvedSources = result.sources.filter { it.kind != SourceKind.Iframe }
+    resolvedSources.firstOrNull()?.let { source -> controller.load(request, source) }
+  }
+
+  LaunchedEffect(initialRequest, episodeCatalogResolver) {
+    val request = initialRequest ?: return@LaunchedEffect
+    val resolver = episodeCatalogResolver ?: return@LaunchedEffect
+    episodeCatalog = resolver.resolve(request)
+  }
+
+  LaunchedEffect(state.request?.season, state.request?.episode) {
+    countdownCancelled = false
+    nextCountdown = null
+  }
+
+  fun playEpisode(request: PlaybackRequest) {
+    val orchestrator = sourceOrchestrator ?: return
+    scope.launch {
+      val rememberedSourceId = sourcePreferenceStore.get(request.mediaType, request.audioVariant)
+      val result = orchestrator.resolve(
+        request = request,
+        preferences = ResolutionPreferences(rememberedSourceId = rememberedSourceId),
+      )
+      resolvedSources = result.sources.filter { it.kind != SourceKind.Iframe }
+      resolvedSources.firstOrNull()?.let { source -> controller.load(request, source) }
+    }
+  }
+
+  val nextEpisode = state.request?.let { request ->
+    val season = request.season
+    val episode = request.episode
+    val catalog = episodeCatalog
+    if (season == null || episode == null || catalog == null) null else {
+      runCatching { EpisodeRef(season, episode) }.getOrNull()?.let {
+        AdjacentEpisodeResolver.resolve(it, catalog.seasons, EpisodeDirection.Next)
+      }
+    }
+  }
+
+  LaunchedEffect(state.phase, state.request, episodeCatalog, countdownCancelled) {
+    if (state.phase != PlaybackPhase.Ended || nextEpisode == null || countdownCancelled) {
+      if (state.phase != PlaybackPhase.Ended) nextCountdown = null
+      return@LaunchedEffect
+    }
+    for (remaining in 10 downTo 1) {
+      nextCountdown = remaining
+      delay(1_000L)
+    }
+    nextCountdown = null
+    state.request?.let { request ->
+      playEpisode(request.copy(season = nextEpisode.season, episode = nextEpisode.episode))
+    }
   }
 
   LaunchedEffect(Unit) { firstControl.requestFocus() }
@@ -195,7 +263,7 @@ fun TvPlayerScreen(
           )
           TvFocusButton(
             text = "Servers",
-            onClick = { isOverlayVisible = true },
+            onClick = { showSourcePicker = true },
             contentDescription = "Choose playback server",
             modifier = Modifier.weight(1f),
           )
@@ -217,14 +285,108 @@ fun TvPlayerScreen(
           )
           TvFocusButton(
             text = "Next",
-            onClick = { isOverlayVisible = true },
+            onClick = {
+              val request = state.request
+              val next = nextEpisode
+              if (request != null && next != null) {
+                countdownCancelled = true
+                nextCountdown = null
+                playEpisode(request.copy(season = next.season, episode = next.episode))
+              }
+            },
             contentDescription = "Play next episode",
             modifier = Modifier.weight(1f),
+            enabled = nextEpisode != null,
           )
         }
       }
     }
+    if (nextCountdown != null && nextEpisode != null) {
+      Row(
+        modifier = Modifier
+          .align(Alignment.BottomCenter)
+          .padding(bottom = safeMargin)
+          .background(Color.Black.copy(alpha = 0.92f))
+          .padding(horizontal = 20.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+      ) {
+        Text("Next episode in ${nextCountdown}s", color = Color.White, style = MaterialTheme.typography.titleMedium)
+        TvFocusButton(
+          text = "Play now",
+          onClick = {
+            val request = state.request
+            if (request != null) {
+              countdownCancelled = true
+              nextCountdown = null
+              playEpisode(request.copy(season = nextEpisode.season, episode = nextEpisode.episode))
+            }
+          },
+          contentDescription = "Play next episode now",
+          modifier = Modifier.sizeIn(minWidth = 150.dp),
+        )
+        TvFocusButton(
+          text = "Cancel",
+          onClick = {
+            countdownCancelled = true
+            nextCountdown = null
+          },
+          contentDescription = "Cancel next episode",
+          modifier = Modifier.sizeIn(minWidth = 140.dp),
+        )
+      }
+    }
   }
+
+  if (showSourcePicker) {
+    TvSourcePickerDialog(
+      sources = resolvedSources,
+      selectedProviderId = state.source?.providerId,
+      onDismiss = { showSourcePicker = false },
+      onSelected = { source ->
+        state.request?.let { request ->
+          scope.launch {
+            sourcePreferenceStore.set(request.mediaType, request.audioVariant, source.providerId)
+          }
+          controller.switchSource(request, source)
+        }
+        showSourcePicker = false
+      },
+    )
+  }
+}
+
+@Composable
+private fun TvSourcePickerDialog(
+  sources: List<ResolvedSource>,
+  selectedProviderId: String?,
+  onDismiss: () -> Unit,
+  onSelected: (ResolvedSource) -> Unit,
+) {
+  AlertDialog(
+    onDismissRequest = onDismiss,
+    title = { Text("Choose a server") },
+    text = {
+      if (sources.isEmpty()) {
+        Text("No native direct sources are available for this episode yet. Embed sources need the consent-based web fallback.")
+      } else {
+        androidx.compose.foundation.lazy.LazyColumn(
+          modifier = Modifier.fillMaxWidth().heightIn(max = 500.dp),
+          verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+          items(sources, key = { "${it.providerId}:${it.playbackUrl}" }) { source ->
+            OutlinedButton(
+              onClick = { onSelected(source) },
+              modifier = Modifier.fillMaxWidth().sizeIn(minHeight = 64.dp),
+            ) {
+              Text(if (source.providerId == selectedProviderId) "${source.label} · Selected" else source.label)
+            }
+          }
+        }
+      }
+    },
+    confirmButton = { OutlinedButton(onClick = onDismiss) { Text("Close") } },
+  )
 }
 
 @Composable
@@ -233,10 +395,12 @@ private fun TvFocusButton(
   onClick: () -> Unit,
   contentDescription: String,
   modifier: Modifier = Modifier,
+  enabled: Boolean = true,
 ) {
   var focused by remember { mutableStateOf(false) }
   Button(
     onClick = onClick,
+    enabled = enabled,
     modifier = modifier
       .sizeIn(minWidth = 128.dp, minHeight = 64.dp)
       .onFocusChanged { focused = it.isFocused }
