@@ -8,11 +8,15 @@ import okhttp3.Request
 import java.net.SocketTimeoutException
 import java.util.concurrent.TimeUnit
 
+interface StreamFreeHttpTransport {
+  fun get(url: String, headers: Map<String, String> = emptyMap()): HttpResponse
+}
+
 class StreamFreeHttpClient(
   private val policy: SafeUrlPolicy,
   private val metrics: NetworkMetrics = NoopNetworkMetrics,
   client: OkHttpClient? = null,
-) {
+) : StreamFreeHttpTransport {
   private val validator = SafeUrlValidator(policy)
   private val client = client ?: OkHttpClient.Builder()
     .cookieJar(CookieJar.NO_COOKIES)
@@ -29,7 +33,7 @@ class StreamFreeHttpClient(
     .callTimeout(20, TimeUnit.SECONDS)
     .build()
 
-  fun get(url: String, headers: Map<String, String> = emptyMap()): HttpResponse {
+  override fun get(url: String, headers: Map<String, String>): HttpResponse {
     var current = validator.validate(url)
     var redirectCount = 0
     val visited = mutableSetOf(current.toString())

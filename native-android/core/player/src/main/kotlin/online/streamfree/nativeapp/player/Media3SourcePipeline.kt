@@ -39,8 +39,8 @@ class Media3SourcePipeline(
     require(Media3PlaybackContracts.isNativePlayable(source.format)) {
       "Iframe sources require the separate consent-based WebView fallback"
     }
-    val descriptor = registry.descriptor(source.providerId)
-      ?: throw IllegalArgumentException("Unknown source provider: ${source.providerId}")
+    val descriptor = registry.descriptor(source.contractId)
+      ?: throw IllegalArgumentException("Unknown source contract: ${source.contractId}")
     require(registry.isCompatible(source, request)) {
       "Source is incompatible with its provider contract: ${source.providerId}"
     }

@@ -6,6 +6,9 @@ import online.streamfree.nativeapp.network.AppOwnedHeaders
 interface SourceResolver {
   val descriptor: ProviderDescriptor
 
+  /** A resolver can expose several stable provider IDs through one API call. */
+  fun acceptsSourceId(sourceId: String): Boolean = sourceId == descriptor.id
+
   suspend fun resolve(request: PlaybackRequest): ResolutionResult
 }
 
@@ -23,11 +26,11 @@ class SourceResolverRegistry(resolvers: List<SourceResolver>) {
   fun compatible(request: PlaybackRequest): List<SourceResolver> = resolversById.values
     .filter { resolver ->
       resolver.descriptor.supports(request) &&
-        (request.explicitSourceId == null || request.explicitSourceId == resolver.descriptor.id)
+        (request.explicitSourceId == null || resolver.acceptsSourceId(request.explicitSourceId))
     }
 
   fun isCompatible(source: ResolvedSource, request: PlaybackRequest): Boolean {
-    val descriptor = descriptor(source.providerId) ?: return false
+    val descriptor = descriptor(source.contractId) ?: return false
     if (!descriptor.supports(request)) return false
     if (source.kind != descriptor.kind) return false
     if (source.format !in descriptor.capabilities.formats) return false

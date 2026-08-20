@@ -1604,3 +1604,25 @@ also passes. This remains a scaffold gate: native provider/API resolution and
 episode navigation are not yet wired, so no release APK is approved yet.
 
 Implementation commit: `6a13e06`. `SF-A2-003` remains the active phone task.
+
+## 45. Native production source API contract — 2026-08-21
+
+The native source layer now has `StreamFreeSourceApiResolver`, which consumes
+the production `/api/player/sources` contract through the safe app-owned HTTP
+transport. It builds media-type and external-ID query parameters, carries
+anime Sub/Dub and resume context, optionally sends an app-owned bearer token,
+and never accepts an API URL outside the exact StreamFree HTTPS hosts.
+
+Every returned source URL and subtitle URL is validated against a separate,
+explicit source-host allowlist. Provider IDs are normalized for stable local
+preferences, labels/quality/audio/subtitle metadata are retained, and an
+explicit provider request filters the response rather than silently selecting a
+different provider. Native HLS, DASH, and MP4 sources map to Media3 formats;
+iframe sources are retained as labelled candidates but are intentionally not
+sent to Media3 until the planned consent-based WebView fallback exists.
+
+`ResolvedSource.contractId` separates the source's visible provider ID from the
+contract that validates it. Both phone and TV now register the production
+resolver with their Media3 pipeline. Focused network/source/player tests and
+both app compile checks pass. The full `native-android/scripts/verify.ps1`
+gate remains the release-level check and must be rerun after the next UI slice.

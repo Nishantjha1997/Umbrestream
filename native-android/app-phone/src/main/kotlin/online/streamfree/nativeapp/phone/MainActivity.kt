@@ -20,6 +20,7 @@ import online.streamfree.nativeapp.player.PreferencesPlaybackDisplayModeStore
 import online.streamfree.nativeapp.player.PreferencesPlaybackStore
 import online.streamfree.nativeapp.player.PreferencesSourcePreferenceStore
 import online.streamfree.nativeapp.source.SourceResolverRegistry
+import online.streamfree.nativeapp.source.StreamFreeSourceApiResolver
 
 @UnstableApi
 class MainActivity : ComponentActivity() {
@@ -30,9 +31,10 @@ class MainActivity : ComponentActivity() {
     super.onCreate(savedInstanceState)
     enableEdgeToEdge()
     WindowCompat.setDecorFitsSystemWindows(window, false)
+    val sourceRegistry = SourceResolverRegistry(listOf(StreamFreeSourceApiResolver.production()))
     playbackController = PlaybackSessionController(
       context = this,
-      sourcePipeline = Media3SourcePipeline(this, SourceResolverRegistry(emptyList())),
+      sourcePipeline = Media3SourcePipeline(this, sourceRegistry),
       store = PreferencesPlaybackStore(this),
     )
     setContent {

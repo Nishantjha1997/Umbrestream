@@ -59,6 +59,11 @@ data class ProviderDescriptor(
 data class PlaybackRequest(
   val mediaType: MediaType,
   val titleId: String,
+  val title: String? = null,
+  val tmdbId: Int? = null,
+  val anilistId: Int? = null,
+  val malId: Int? = null,
+  val animeTmdbId: Int? = null,
   val season: Int? = null,
   val episode: Int? = null,
   val audioVariant: AudioVariant? = null,
@@ -67,6 +72,10 @@ data class PlaybackRequest(
 ) {
   init {
     require(titleId.isNotBlank()) { "Playback title ID cannot be blank" }
+    require(tmdbId == null || tmdbId > 0) { "TMDB ID must be positive" }
+    require(anilistId == null || anilistId > 0) { "AniList ID must be positive" }
+    require(malId == null || malId > 0) { "MAL ID must be positive" }
+    require(animeTmdbId == null || animeTmdbId > 0) { "Anime TMDB ID must be positive" }
     require(season == null || season >= 0) { "Season cannot be negative" }
     require(episode == null || episode > 0) { "Episode must be positive" }
     require(resumePositionMs >= 0L) { "Resume position cannot be negative" }
@@ -87,6 +96,8 @@ data class ResolvedSource(
   val playbackUrl: String,
   val kind: SourceKind,
   val format: StreamFormat,
+  /** Contract used to validate and render this source. Defaults to providerId for local adapters. */
+  val contractId: String = providerId,
   val audioVariant: AudioVariant? = null,
   val quality: Int? = null,
   val headerPolicyId: String? = null,
@@ -94,6 +105,7 @@ data class ResolvedSource(
 ) {
   init {
     require(providerId.isNotBlank()) { "Resolved source provider ID cannot be blank" }
+    require(contractId.isNotBlank()) { "Resolved source contract ID cannot be blank" }
     require(label.isNotBlank()) { "Resolved source label cannot be blank" }
     require(playbackUrl.startsWith("https://")) { "Resolved source URLs must use HTTPS" }
     require(quality == null || quality > 0) { "Resolved source quality must be positive" }

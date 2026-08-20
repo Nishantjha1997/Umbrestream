@@ -4,6 +4,7 @@ object AppOwnedHeaders {
   private val allowedNames = setOf(
     "accept",
     "accept-language",
+    "authorization",
     "origin",
     "referer",
     "user-agent",
