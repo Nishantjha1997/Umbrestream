@@ -114,7 +114,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P1
   - Depends on: SF-W2-002, SF-W2-003
   - Evidence: authenticated Vercel preview `dpl_Dsyy177yZV8giEjNQhKjKNgVVm8Q` READY; desktop, 390x844 mobile, and 820x1180 tablet checks passed; Movie/TV/Anime player controls and Sub/Dub groups verified; source-picker click/Enter/Space/selection/focus checks passed; Fit/Fill iframe non-remount check passed; fullscreen exit check passed; browser console errors `[]`; removal contract checks passed
-  - Commit: `PENDING_W2_004`
+  - Commit: `d13c0b6`
   - Completed: 2026-08-20
   - Next action: proceed with SF-W2-005
 
