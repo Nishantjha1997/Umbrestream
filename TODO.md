@@ -155,8 +155,8 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P0
   - Depends on: SF-W2-005
   - Evidence: production API returns movie sources; live browser reproduced Filmu blank, Cinezo unresolved, VidLink provider rejection, and VidKing direct resolution; automatic movie/TV recovery now handles trusted errors and 20-second silent-provider timeouts; source-policy checks, ESLint, and TypeScript pass
-  - Commit: —
-  - Next action: commit implementation, deploy production, and verify clean movie playback automatically reaches the working fallback without changing manual preferences
+  - Commit: `b27d2fb` (implementation checkpoint)
+  - Next action: deploy production and verify clean movie playback automatically reaches the working fallback without changing manual preferences
 
 - [ ] SF-W3-003 — Update exact APK download headers and security checks
   - Status: not started
