@@ -1,7 +1,7 @@
 import type { MediaType } from "@/types/title";
 import type { AudioVariant, PlayerSource } from "./types";
 
-export const PLAYBACK_POLICY_VERSION = "2026-08-reliability-v4";
+export const PLAYBACK_POLICY_VERSION = "2026-08-reliability-v5";
 // Real fixture checks show that a healthy provider can need 25–26 seconds to
 // resolve its internal server and expose playable media. Thirty seconds keeps
 // recovery useful without tearing down a legitimate slow startup.
@@ -166,8 +166,11 @@ const AUTOMATIC_PROVIDER_ORDER: Record<"movie" | "tv", readonly string[]> = {
   // order. Providers that rendered a blank, unrelated, or stalled player in
   // the current fixture matrix remain manually selectable but are excluded
   // from silent recovery.
-  movie: ["vidrift", "vidking", "filmu"],
-  tv: ["vidking", "cinezo", "vidlink", "vidlink-native", "filmu"],
+  // Event-capable providers come before the final eventless VidRift safety
+  // net, so a clean launch can continue recovering without interrupting a
+  // provider that may already be playing invisibly to the parent page.
+  movie: ["filmu", "videasy", "vidking", "vidrift"],
+  tv: ["vidking", "videasy", "cinezo", "vidlink", "vidlink-native", "filmu", "vidrift"],
 };
 
 function automaticSourceRank(source: PlayerSource): number {

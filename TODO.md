@@ -178,12 +178,12 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Completed: 2026-08-20
 
 - [ ] SF-P0-004 — Audit every movie/TV provider embed contract against primary documentation
-  - Status: in progress
+  - Status: in progress — implementation and local release gates complete; preview/live browser verification pending
   - Priority: P0
   - Depends on: SF-P0-003
-  - Evidence: —
+  - Evidence: official VidKing, VidLink, Cinezo, VidRift, and Videasy documentation audited; Videasy movie/TV playback visibly advanced on its documented player; unsupported Cinezo resume metadata removed; undocumented/nonresponsive VidBolt and VidSrc quarantined; `npm run test:player-sources` passes for 14 active adapters; targeted ESLint, TypeScript, production build, and `git diff --check` pass
   - Commit: —
-  - Next action: inventory adapters, locate each provider's official documentation or repository, verify movie/TV URL templates and supported query parameters, add fixtures, then browser-smoke every corrected provider
+  - Next action: commit and deploy a preview, inspect `/api/player/sources`, smoke Videasy inside StreamFree, confirm quarantined providers are absent, then promote the verified deployment
 
 - [ ] SF-P0-005 — Repair phone portrait movie-player composition and control collisions
   - Status: not started

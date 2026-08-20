@@ -88,33 +88,13 @@ const movieOrTv = (
 
 const definitions: EmbedDefinition[] = [
   {
-    id: "vidsrc",
-    label: "VidSrc",
-    origin: "https://vidsrc.rip",
-    // Keep this user-selectable as an experimental fallback. It has no
-    // verified playback event contract and must not outrank stable providers.
-    tier: "experimental",
-    priorities: { movie: 70, tv: 70 },
-    requirements: movieAndTvRequirements,
-    build: (request) =>
-      movieOrTv(
-        request,
-        (id) => `https://vidsrc.rip/embed/movie/${id}`,
-        (id, season, episode) => `https://vidsrc.rip/embed/tv/${id}/${season}/${episode}`,
-      ),
-    capabilities: {
-      ads: true,
-      subtitles: "unverified",
-    },
-  },
-  {
     id: "cinezo",
     label: "Cinezo",
     origin: "https://player.cinezo.live",
     tier: "stable",
     // The movie shell rendered but media remained at 00:00 in the current
     // fixture, so it stays behind the three playback-confirmed choices.
-    priorities: { movie: 30, tv: 2 },
+    priorities: { movie: 30, tv: 3 },
     requirements: movieAndTvRequirements,
     build: (request) => {
       const base = movieOrTv(
@@ -138,8 +118,6 @@ const definitions: EmbedDefinition[] = [
       recommended: true,
       events: true,
       eventProtocol: "cinezo",
-      resumable: true,
-      resumeParam: "startAt",
       subtitles: "native",
     },
   },
@@ -150,7 +128,7 @@ const definitions: EmbedDefinition[] = [
     tier: "stable",
     variant: "jw",
     // Current browser verification was blocked before playable media.
-    priorities: { movie: 40, tv: 3 },
+    priorities: { movie: 40, tv: 4 },
     requirements: movieAndTvRequirements,
     build: (request) => {
       const base = movieOrTv(
@@ -187,7 +165,7 @@ const definitions: EmbedDefinition[] = [
     tier: "stable",
     variant: "native",
     // Current fixture exposed controls but remained at 00:00 after Play.
-    priorities: { movie: 41, tv: 4 },
+    priorities: { movie: 41, tv: 5 },
     requirements: movieAndTvRequirements,
     build: (request) => {
       const base = movieOrTv(
@@ -263,38 +241,37 @@ const definitions: EmbedDefinition[] = [
     capabilities: { recommended: true, fast: true, ads: true, subtitles: "native" },
   },
   {
-    id: "vidbolt",
-    label: "Vidbolt",
-    origin: "https://vidbolt.xyz",
-    tier: "experimental",
-    priorities: { movie: 50, tv: 50 },
-    requirements: movieAndTvRequirements,
-    build: (request) =>
-      movieOrTv(
-        request,
-        (id) => `https://vidbolt.xyz/movie/${id}`,
-        (id, season, episode) => `https://vidbolt.xyz/tv/${id}/${season}/${episode}`,
-      ),
-    capabilities: { ads: true, subtitles: "unverified" },
-  },
-  {
     id: "videasy",
     label: "Videasy",
     origin: "https://player.videasy.to",
-    tier: "experimental",
-    priorities: { movie: 60, tv: 60 },
+    // The provider documents player.videasy.net, which currently redirects to
+    // player.videasy.to. Use the final player origin so postMessage validation
+    // remains exact and does not reject the documented progress events.
+    tier: "stable",
+    priorities: { movie: 4, tv: 2 },
     requirements: movieAndTvRequirements,
-    build: (request) =>
-      movieOrTv(
+    build: (request) => {
+      const base = movieOrTv(
         request,
         (id) => `https://player.videasy.to/movie/${id}`,
         (id, season, episode) => `https://player.videasy.to/tv/${id}/${season}/${episode}`,
-      ),
+      );
+      if (!base) return null;
+      return createUrl(base, {
+        color: request.mediaType === "tv" ? "f5a524" : "006fee",
+        progress: seconds(request),
+        nextEpisode: request.mediaType === "tv" ? true : undefined,
+        episodeSelector: request.mediaType === "tv" ? true : undefined,
+      });
+    },
     capabilities: {
+      recommended: true,
+      fast: true,
       events: true,
       eventProtocol: "videasy",
       resumable: true,
-      subtitles: "unverified",
+      resumeParam: "progress",
+      subtitles: "native",
       ads: true,
     },
   },
@@ -318,7 +295,6 @@ const definitions: EmbedDefinition[] = [
       recommended: true,
       events: true,
       eventProtocol: "filmu",
-      resumable: true,
       subtitles: "unverified",
       ads: true,
     },

@@ -113,6 +113,16 @@ assert.equal(
   (await resolveOne("vidrift", fixtures.tv)).url,
   "https://embed.vidrift.in/embed/tv/97546/1/1",
 );
+assert.equal(
+  (await resolveOne("videasy", fixtures.movie)).url,
+  "https://player.videasy.to/movie/1212763?color=006fee&progress=137",
+);
+assert.equal(
+  (await resolveOne("videasy", fixtures.tv)).url,
+  "https://player.videasy.to/tv/97546/1/1?color=f5a524&progress=137&nextEpisode=true&episodeSelector=true",
+);
+assert.equal((await resolveOne("videasy", fixtures.movie)).capabilities.resumeParam, "progress");
+assert.equal((await resolveOne("cinezo", fixtures.movie)).capabilities.resumable, undefined);
 
 const orderedIds = (request) =>
   adapters
@@ -124,23 +134,18 @@ assert.deepEqual(orderedIds(fixtures.movie), [
   "filmu",
   "vidrift",
   "vidking",
+  "videasy",
   "cinezo",
   "vidlink",
   "vidlink-native",
-  "vidbolt",
-  "videasy",
-  "vidsrc",
 ]);
-// TV ordering is intentionally unchanged by this movie-only incident patch.
 assert.deepEqual(orderedIds(fixtures.tv), [
   "vidking",
+  "videasy",
   "cinezo",
   "vidlink",
   "vidlink-native",
   "vidrift",
-  "vidbolt",
-  "videasy",
-  "vidsrc",
   "filmu",
 ]);
 assert.deepEqual(orderedIds(fixtures.anime), [
@@ -167,10 +172,10 @@ assert.equal(findPreferredSource(instantMovie, { rememberedId: "cinezo" })?.id, 
 assert.equal(findNextFallbackSource(instantMovie, "filmu", ["filmu"])?.id, "vidrift");
 assert.equal(
   findNextAutomaticFallbackSource(instantMovie, "filmu", ["filmu"])?.id,
-  "vidrift",
+  "videasy",
 );
 assert.equal(
-  findNextAutomaticFallbackSource(instantMovie, "vidrift", ["filmu", "vidrift"])?.id,
+  findNextAutomaticFallbackSource(instantMovie, "videasy", ["filmu", "videasy"])?.id,
   "vidking",
 );
 assert.equal(
@@ -184,9 +189,9 @@ assert.equal(
   "eventless VidRift must never be replaced solely because a timer elapsed",
 );
 assert.equal(
-  findNextAutomaticFallbackSource(instantMovie, "vidking", ["filmu", "vidrift", "vidking"]),
-  null,
-  "uncertified providers must not enter the automatic recovery chain",
+  findNextAutomaticFallbackSource(instantMovie, "vidking", ["filmu", "videasy", "vidking"])?.id,
+  "vidrift",
+  "VidRift is the final eventless safety net after event-capable providers",
 );
 assert.equal(
   shouldUseAutomaticRecovery({ mediaType: "movie" }),
