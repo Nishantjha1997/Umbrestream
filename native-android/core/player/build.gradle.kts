@@ -34,7 +34,7 @@ dependencies {
   implementation(project(":core:model"))
   implementation(project(":core:network"))
   api(project(":core:source"))
-  implementation(libs.androidx.media3.common)
+  api(libs.androidx.media3.common)
   implementation(libs.androidx.media3.datasource.okhttp)
   implementation(libs.androidx.media3.exoplayer)
   implementation(libs.androidx.media3.exoplayer.hls)

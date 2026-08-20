@@ -1502,3 +1502,31 @@ surface are not connected yet; the phone player UI is the next active task.
 
 Implementation commit: `bc219cb`. The next active task is `SF-A2-003`, native
 phone player UI parity.
+
+## 43. Native phone player shell and display modes — 2026-08-21
+
+The phone app now has a visible Compose playback shell around the existing
+Media3 `Player` interface. Playback is framed in a black 16:9 cinema stage by
+default; the `Fit`/`Fill` choice changes the same `PlayerView` resize mode and
+is persisted through a separate versioned Preferences DataStore key. The
+provider view is never remounted for a display-mode change, so a later source
+adapter can preserve the current item and position.
+
+The shell provides an explicit fullscreen action, landscape orientation on
+entry, immersive system bars, portrait restoration on exit/background/route
+leave, and first-Back fullscreen exit. Touch controls use 48dp minimum targets
+and include double-tap 10-second seek plus left brightness/right volume
+vertical gestures. The status/controls distinguish playing, paused, preparing,
+error, and no-source states; the context copy does not claim playback before a
+source is actually resolved.
+
+This is intentionally a UI foundation, not a provider integration: the current
+phone home action opens the shell preview while the resolver registry remains
+empty. The next slice must connect authenticated episode/source resolution and
+add the source sheet, Anime Sub/Dub controls, episode navigation, tracks,
+speed, and deterministic Compose tests.
+
+Focused `:core:player:test`, `:app-phone:compileDebugKotlin`, and
+`:app-phone:lintDebug` passed. Full phone+TV verification is the release
+checkpoint for this slice. Implementation commit: pending. `SF-A2-003` remains
+the active task.

@@ -33,8 +33,9 @@ class PlaybackSessionController(
   private var persistenceJob: Job? = null
 
   val state: StateFlow<PlaybackUiState> = _state.asStateFlow()
-  val player: ExoPlayer = ExoPlayer.Builder(context.applicationContext).build()
-  val mediaSession: MediaSession = MediaSession.Builder(context.applicationContext, player).build()
+  private val exoPlayer: ExoPlayer = ExoPlayer.Builder(context.applicationContext).build()
+  val player: Player = exoPlayer
+  val mediaSession: MediaSession = MediaSession.Builder(context.applicationContext, exoPlayer).build()
 
   init {
     player.addListener(this)
@@ -56,7 +57,7 @@ class PlaybackSessionController(
           else -> saved?.positionMs ?: 0L
         }
         val mediaSource = sourcePipeline.createMediaSource(request, source)
-        player.setMediaSource(mediaSource)
+        exoPlayer.setMediaSource(mediaSource)
         player.seekTo(startPosition)
         reduce(PlaybackEvent.SourceLoaded(request, source, startPosition))
         player.prepare()
@@ -89,7 +90,7 @@ class PlaybackSessionController(
     }
     persistenceJob?.cancel()
     player.removeListener(this)
-    player.release()
+    exoPlayer.release()
     mediaSession.release()
     scope.coroutineContext.cancel()
   }
