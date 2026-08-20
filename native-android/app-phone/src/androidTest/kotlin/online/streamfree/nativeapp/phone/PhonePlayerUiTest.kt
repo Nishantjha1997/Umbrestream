@@ -118,4 +118,29 @@ class PhonePlayerUiTest {
     composeRule.onNodeWithText("Trending in India").assertIsDisplayed()
     composeRule.onNodeWithText("Fight Club").assertIsDisplayed()
   }
+
+  @Test
+  fun homeFeedExposesRegionOverrideAction() {
+    var opened = false
+    val feed = NativeHomeFeed(
+      region = NativeHomeRegion("IN", "IN", "India", "edge"),
+      provenance = "signed_out",
+      hero = null,
+      rows = emptyList(),
+      generatedAt = "now",
+    )
+
+    composeRule.setContent {
+      StreamFreeTheme {
+        PhoneHomeFeed(
+          feed = feed,
+          onRegionChange = { opened = true },
+          onOpenTitle = {},
+        )
+      }
+    }
+
+    composeRule.onNodeWithText("Automatic").assertIsDisplayed().performClick()
+    assertEquals(true, opened)
+  }
 }

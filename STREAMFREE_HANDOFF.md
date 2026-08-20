@@ -1763,6 +1763,14 @@ The phone/TV Compose Android-test suites also cover regional Home row rendering
 in addition to the source-sheet/provider-selection checks. They compile, but
 still require a connected phone or TV emulator for execution.
 
+The Home region control is now persistent on both native clients. Phone users get
+a touch-sized `Automatic`/country action; TV users get a remote-focusable
+`Region:` action. Both use the same validated two-letter country-code store backed
+by Preferences DataStore, send the override as `X-StreamFree-Region`, and reload
+the feed after selecting a country or resetting to automatic. The override is only
+a recommendation input; it does not alter playback provider selection or claim
+that upstream content is available in that country.
+
 Live source-contract smoke on 2026-08-21 returned HTTP 200 for a movie,
 multi-episode TV fixture, and anime Sub request. The API policy was
 `2026-08-reliability-v5`; the movie response contained seven labelled iframe

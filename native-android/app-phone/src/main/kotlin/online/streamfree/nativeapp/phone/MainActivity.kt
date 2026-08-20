@@ -21,6 +21,7 @@ import online.streamfree.nativeapp.player.PlaybackSessionController
 import online.streamfree.nativeapp.player.PreferencesPlaybackDisplayModeStore
 import online.streamfree.nativeapp.player.PreferencesPlaybackStore
 import online.streamfree.nativeapp.player.PreferencesSourcePreferenceStore
+import online.streamfree.nativeapp.player.PreferencesRegionPreferenceStore
 import online.streamfree.nativeapp.source.SourceResolverRegistry
 import online.streamfree.nativeapp.source.StreamFreeSourceApiResolver
 import online.streamfree.nativeapp.source.StreamFreeEpisodeCatalogResolver
@@ -44,6 +45,7 @@ class MainActivity : ComponentActivity() {
     val episodeCatalogResolver = StreamFreeEpisodeCatalogResolver.production()
     val homeFeedResolver = StreamFreeHomeFeedResolver.production()
     val sourcePreferenceStore = PreferencesSourcePreferenceStore(this)
+    val regionPreferenceStore = PreferencesRegionPreferenceStore(this)
     val launchRequest = intent.toPlaybackRequest()
     playbackController = PlaybackSessionController(
       context = this,
@@ -69,6 +71,7 @@ class MainActivity : ComponentActivity() {
           PhoneHomeScreen(
             onOpenPlayer = { showPlayer = true },
             feedResolver = homeFeedResolver,
+            regionPreferenceStore = regionPreferenceStore,
             onOpenTitle = { request ->
               selectedRequest = request
               showPlayer = true

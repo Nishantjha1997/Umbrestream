@@ -34,6 +34,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -65,6 +66,7 @@ import online.streamfree.nativeapp.player.PlaybackDisplayModeStore
 import online.streamfree.nativeapp.player.PlaybackPhase
 import online.streamfree.nativeapp.player.PlaybackSessionController
 import online.streamfree.nativeapp.player.SourcePreferenceStore
+import online.streamfree.nativeapp.player.RegionPreferenceStore
 import online.streamfree.nativeapp.source.PlaybackRequest
 import online.streamfree.nativeapp.source.EpisodeCatalogResolver
 import online.streamfree.nativeapp.source.EmbedSourcePolicy
@@ -78,15 +80,24 @@ import online.streamfree.nativeapp.source.StreamFreeHomeFeedResolver
 fun TvHomeScreen(
   onOpenPlayer: () -> Unit,
   feedResolver: StreamFreeHomeFeedResolver? = null,
+  regionPreferenceStore: RegionPreferenceStore? = null,
   onOpenTitle: (PlaybackRequest) -> Unit = {},
 ) {
   var feed by remember { mutableStateOf<NativeHomeFeed?>(null) }
   var feedFailed by remember { mutableStateOf(false) }
-  LaunchedEffect(feedResolver) {
-    val resolved = feedResolver?.resolve()
-    feed = resolved
-    feedFailed = feedResolver != null && resolved == null
+  var regionOverride by remember { mutableStateOf<String?>(null) }
+  var showRegionDialog by rememberSaveable { mutableStateOf(false) }
+  val homeScope = rememberCoroutineScope()
+  fun reloadHome() {
+    homeScope.launch {
+      val override = regionPreferenceStore?.get()
+      regionOverride = override
+      val resolved = feedResolver?.resolve(regionOverrideValue = override)
+      feed = resolved
+      feedFailed = feedResolver != null && resolved == null
+    }
   }
+  LaunchedEffect(feedResolver, regionPreferenceStore) { reloadHome() }
   Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
     if (feedResolver == null || feedFailed) {
       Column(
@@ -108,21 +119,60 @@ fun TvHomeScreen(
         Text("Preparing your home…", style = MaterialTheme.typography.displaySmall)
       }
     } else {
-      TvHomeFeed(feed = feed!!, onOpenTitle = onOpenTitle)
+      TvHomeFeed(
+        feed = feed!!,
+        regionOverride = regionOverride,
+        onRegionChange = { showRegionDialog = true },
+        onOpenTitle = onOpenTitle,
+      )
     }
+  }
+  if (showRegionDialog) {
+    TvRegionChooserDialog(
+      selected = regionOverride,
+      onDismiss = { showRegionDialog = false },
+      onSelected = { selected ->
+        homeScope.launch {
+          if (selected == null) regionPreferenceStore?.clear() else regionPreferenceStore?.set(selected)
+          showRegionDialog = false
+          reloadHome()
+        }
+      },
+    )
   }
 }
 
 @Composable
-internal fun TvHomeFeed(feed: NativeHomeFeed, onOpenTitle: (PlaybackRequest) -> Unit) {
+internal fun TvHomeFeed(
+  feed: NativeHomeFeed,
+  regionOverride: String? = null,
+  onRegionChange: (() -> Unit)? = null,
+  onOpenTitle: (PlaybackRequest) -> Unit,
+) {
   LazyColumn(
     modifier = Modifier.fillMaxSize(),
     contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 72.dp, vertical = 48.dp),
     verticalArrangement = Arrangement.spacedBy(24.dp),
   ) {
     item {
-      Text("StreamFree TV", style = MaterialTheme.typography.displaySmall)
-      Text("${feed.region.countryName} · ${feed.provenance.replace('_', ' ')}", style = MaterialTheme.typography.titleLarge)
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+      ) {
+        Column {
+          Text("StreamFree TV", style = MaterialTheme.typography.displaySmall)
+          Text("${feed.region.countryName} · ${feed.provenance.replace('_', ' ')}", style = MaterialTheme.typography.titleLarge)
+        }
+        if (onRegionChange != null) {
+          TvFocusButton(
+            text = "Region: ${regionOverride ?: "Automatic"}",
+            onClick = onRegionChange,
+            contentDescription = "Choose recommendation region",
+            modifier = Modifier.widthIn(min = 260.dp, max = 380.dp),
+          )
+        }
+      }
     }
     feed.hero?.let { hero ->
       item {
@@ -153,6 +203,40 @@ internal fun TvHomeFeed(feed: NativeHomeFeed, onOpenTitle: (PlaybackRequest) -> 
       }
     }
   }
+}
+
+@Composable
+private fun TvRegionChooserDialog(
+  selected: String?,
+  onDismiss: () -> Unit,
+  onSelected: (String?) -> Unit,
+) {
+  AlertDialog(
+    onDismissRequest = onDismiss,
+    title = { Text("Choose recommendation region") },
+    text = {
+      Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text("Automatic uses your current network region. A choice only changes recommendations.")
+        listOf("IN", "US", "GB", "CA", "AU", "JP", "DE", "FR").forEach { country ->
+          TvFocusButton(
+            text = if (country == selected) "$country · Selected" else country,
+            onClick = { onSelected(country) },
+            contentDescription = "Use $country recommendations",
+            modifier = Modifier.fillMaxWidth(),
+          )
+        }
+        TvFocusButton(
+          text = "Reset to automatic",
+          onClick = { onSelected(null) },
+          contentDescription = "Reset recommendation region to automatic",
+          modifier = Modifier.fillMaxWidth(),
+        )
+      }
+    },
+    confirmButton = {
+      TvFocusButton(text = "Close", onClick = onDismiss, contentDescription = "Close region chooser")
+    },
+  )
 }
 
 private fun NativeMediaSummary.toPlaybackRequest(progress: online.streamfree.nativeapp.model.NativeContinueProgress? = null): PlaybackRequest =

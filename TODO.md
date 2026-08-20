@@ -6,8 +6,8 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 
 - Branch: `codex/web-first-native-rebuild`
 - Baseline: `28bea93`
-- Active task: `SF-A2-003`
-- Next command: add deterministic native UI tests around source selection, embed consent, Back/focus, and TV episode controls; keep release/device/provider testing gated until those tests pass.
+- Active task: `SF-A2-007`
+- Next command: wire authenticated Continue Watching cursor loading into the shared native Home feed; keep device/provider/release testing gated until the native product surfaces are complete.
 - Reference policy: Media3 and Now in Android are approved architecture references; Aniyomi is pattern-only because it is archived; Dantotsu is excluded pending license/source verification.
 
 ## W0 — Governance and baseline
@@ -286,9 +286,9 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Status: in progress
   - Priority: P0
   - Depends on: SF-A2-003
-  - Evidence: `StreamFreeHomeFeedResolver` strictly parses the versioned `/api/mobile/home` contract, carries optional bearer and validated `X-StreamFree-Region` headers, and has region/provenance/hero/row tests; phone and TV Home now load the shared feed, display region/provenance and rows, launch request-driven playback intents, and render bounded trusted TMDB/AniList artwork with loading/failure states; phone/TV Compose Android tests cover regional row rendering; production `/api/mobile/home` returned HTTP 200 with schemaVersion 1 and the expected India regional feed; core tests, app compilation, Android-test compilation, strict lint, and `git diff --check` pass
+  - Evidence: `StreamFreeHomeFeedResolver` strictly parses the versioned `/api/mobile/home` contract, carries optional bearer and validated `X-StreamFree-Region` headers, and has region/provenance/hero/row tests; phone and TV Home now load the shared feed, display provenance and rows, launch request-driven playback intents, render bounded trusted TMDB/AniList artwork with loading/failure states, persist a validated country override in DataStore, and reload the feed after changing/resetting the override; phone/TV Compose Android tests cover regional row rendering and the region action; production `/api/mobile/home` returned HTTP 200 with schemaVersion 1 and the expected India regional feed; core tests, app compilation, Android-test compilation, strict lint, and `git diff --check` pass
   - Commit: —
-  - Next action: add feed Home UI tests, persistent region override, and authenticated Continue Watching wiring before moving to offline/auth work.
+  - Next action: add authenticated Continue Watching cursor loading and verify the private/public feed split before moving to offline/auth work.
 
 - [x] SF-A2-004 — Build independent native TV playback shell foundation
   - Status: completed

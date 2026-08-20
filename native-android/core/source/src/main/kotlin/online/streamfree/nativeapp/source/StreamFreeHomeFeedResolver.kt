@@ -31,11 +31,14 @@ class StreamFreeHomeFeedResolver(
   private val validator = SafeUrlValidator(API_POLICY)
   private val apiBase = validator.validate(apiBaseUrl).toString().trimEnd('/')
 
-  suspend fun resolve(): NativeHomeFeed? = withContext(Dispatchers.IO) {
+  suspend fun resolve(
+    bearerTokenValue: String? = bearerToken(),
+    regionOverrideValue: String? = regionOverride(),
+  ): NativeHomeFeed? = withContext(Dispatchers.IO) {
     val headers = buildMap {
       put("Accept", "application/json")
-      bearerToken()?.trim()?.takeIf(String::isNotEmpty)?.let { put("Authorization", "Bearer $it") }
-      regionOverride()?.trim()?.uppercase()?.takeIf { REGION_PATTERN.matches(it) }?.let {
+      bearerTokenValue?.trim()?.takeIf(String::isNotEmpty)?.let { put("Authorization", "Bearer $it") }
+      regionOverrideValue?.trim()?.uppercase()?.takeIf { REGION_PATTERN.matches(it) }?.let {
         put("X-StreamFree-Region", it)
       }
     }

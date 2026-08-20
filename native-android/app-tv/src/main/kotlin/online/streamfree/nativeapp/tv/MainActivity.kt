@@ -25,6 +25,7 @@ import online.streamfree.nativeapp.source.PlaybackRequest
 import online.streamfree.nativeapp.model.AudioVariant
 import online.streamfree.nativeapp.model.MediaType
 import online.streamfree.nativeapp.player.PreferencesSourcePreferenceStore
+import online.streamfree.nativeapp.player.PreferencesRegionPreferenceStore
 
 @UnstableApi
 class MainActivity : ComponentActivity() {
@@ -38,6 +39,7 @@ class MainActivity : ComponentActivity() {
     val episodeCatalogResolver = StreamFreeEpisodeCatalogResolver.production()
     val homeFeedResolver = StreamFreeHomeFeedResolver.production()
     val sourcePreferenceStore = PreferencesSourcePreferenceStore(this)
+    val regionPreferenceStore = PreferencesRegionPreferenceStore(this)
     val launchRequest = intent.toPlaybackRequest()
     playbackController = PlaybackSessionController(
       context = this,
@@ -62,6 +64,7 @@ class MainActivity : ComponentActivity() {
           TvHomeScreen(
             onOpenPlayer = { showPlayer = true },
             feedResolver = homeFeedResolver,
+            regionPreferenceStore = regionPreferenceStore,
             onOpenTitle = { request ->
               selectedRequest = request
               showPlayer = true

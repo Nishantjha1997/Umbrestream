@@ -1,5 +1,10 @@
 package online.streamfree.nativeapp.model
 
+fun normalizeRegionCode(value: String?): String? = value
+  ?.trim()
+  ?.uppercase()
+  ?.takeIf { it.matches(Regex("[A-Z]{2}")) }
+
 data class NativeMediaSummary(
   val mediaType: MediaType,
   val id: Int,

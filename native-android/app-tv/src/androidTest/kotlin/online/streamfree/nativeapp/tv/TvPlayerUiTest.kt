@@ -88,4 +88,29 @@ class TvPlayerUiTest {
     composeRule.onNodeWithText("Trending series").assertIsDisplayed()
     composeRule.onNodeWithText("The Last Kingdom").assertIsDisplayed()
   }
+
+  @Test
+  fun homeFeedExposesRemoteRegionOverrideAction() {
+    var opened = false
+    val feed = NativeHomeFeed(
+      region = NativeHomeRegion("US", "US", "United States", "edge"),
+      provenance = "cold_start",
+      hero = null,
+      rows = emptyList(),
+      generatedAt = "now",
+    )
+
+    composeRule.setContent {
+      StreamFreeTheme {
+        TvHomeFeed(
+          feed = feed,
+          onRegionChange = { opened = true },
+          onOpenTitle = {},
+        )
+      }
+    }
+
+    composeRule.onNodeWithText("Region: Automatic").assertIsDisplayed().performClick()
+    assertEquals(true, opened)
+  }
 }

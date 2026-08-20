@@ -30,6 +30,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -77,6 +78,7 @@ import online.streamfree.nativeapp.player.PlaybackSessionController
 import online.streamfree.nativeapp.player.PlaybackUiState
 import online.streamfree.nativeapp.player.PlaybackDisplayModeStore
 import online.streamfree.nativeapp.player.SourcePreferenceStore
+import online.streamfree.nativeapp.player.RegionPreferenceStore
 import online.streamfree.nativeapp.model.MediaType
 import online.streamfree.nativeapp.model.AudioVariant
 import online.streamfree.nativeapp.model.AdjacentEpisodeResolver
@@ -98,14 +100,24 @@ import online.streamfree.nativeapp.source.SourceKind
 fun PhoneHomeScreen(
   onOpenPlayer: () -> Unit,
   feedResolver: StreamFreeHomeFeedResolver? = null,
+  regionPreferenceStore: RegionPreferenceStore? = null,
   onOpenTitle: (PlaybackRequest) -> Unit = {},
 ) {
   var feed by remember { mutableStateOf<NativeHomeFeed?>(null) }
   var feedFailed by remember { mutableStateOf(false) }
-  LaunchedEffect(feedResolver) {
-    feed = feedResolver?.resolve()
-    feedFailed = feedResolver != null && feed == null
+  var regionOverride by remember { mutableStateOf<String?>(null) }
+  var showRegionDialog by rememberSaveable { mutableStateOf(false) }
+  val homeScope = rememberCoroutineScope()
+  fun reloadHome() {
+    homeScope.launch {
+      val override = regionPreferenceStore?.get()
+      regionOverride = override
+      val resolved = feedResolver?.resolve(regionOverrideValue = override)
+      feed = resolved
+      feedFailed = feedResolver != null && resolved == null
+    }
   }
+  LaunchedEffect(feedResolver, regionPreferenceStore) { reloadHome() }
   Surface(
     modifier = Modifier.fillMaxSize(),
     color = MaterialTheme.colorScheme.background,
@@ -132,25 +144,57 @@ fun PhoneHomeScreen(
         Text("Preparing your home…", style = MaterialTheme.typography.titleLarge)
       }
     } else {
-      PhoneHomeFeed(feed = feed!!, onOpenTitle = onOpenTitle)
+      PhoneHomeFeed(
+        feed = feed!!,
+        regionOverride = regionOverride,
+        onRegionChange = { showRegionDialog = true },
+        onOpenTitle = onOpenTitle,
+      )
     }
+  }
+  if (showRegionDialog) {
+    RegionChooserDialog(
+      selected = regionOverride,
+      onDismiss = { showRegionDialog = false },
+      onSelected = { selected ->
+        homeScope.launch {
+          if (selected == null) regionPreferenceStore?.clear() else regionPreferenceStore?.set(selected)
+          showRegionDialog = false
+          reloadHome()
+        }
+      },
+    )
   }
 }
 
 @Composable
-internal fun PhoneHomeFeed(feed: NativeHomeFeed, onOpenTitle: (PlaybackRequest) -> Unit) {
+internal fun PhoneHomeFeed(
+  feed: NativeHomeFeed,
+  regionOverride: String? = null,
+  onRegionChange: (() -> Unit)? = null,
+  onOpenTitle: (PlaybackRequest) -> Unit,
+) {
   LazyColumn(
     modifier = Modifier.fillMaxSize().safeDrawingPadding(),
     contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 20.dp, vertical = 24.dp),
     verticalArrangement = Arrangement.spacedBy(20.dp),
   ) {
     item {
-      Text("StreamFree", style = MaterialTheme.typography.headlineMedium)
-      Text(
-        "${feed.region.countryName} · ${feed.provenance.replace('_', ' ')}",
-        style = MaterialTheme.typography.bodyMedium,
-        modifier = Modifier.padding(top = 4.dp),
-      )
+      Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+        Column {
+          Text("StreamFree", style = MaterialTheme.typography.headlineMedium)
+          Text(
+            "${feed.region.countryName} · ${feed.provenance.replace('_', ' ')}",
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.padding(top = 4.dp),
+          )
+        }
+        if (onRegionChange != null) {
+          OutlinedButton(onClick = onRegionChange, modifier = Modifier.sizeIn(minHeight = 48.dp)) {
+            Text(regionOverride ?: "Automatic")
+          }
+        }
+      }
     }
     feed.hero?.let { hero ->
       item {
@@ -204,6 +248,33 @@ internal fun PhoneHomeFeed(feed: NativeHomeFeed, onOpenTitle: (PlaybackRequest) 
       }
     }
   }
+}
+
+@Composable
+private fun RegionChooserDialog(
+  selected: String?,
+  onDismiss: () -> Unit,
+  onSelected: (String?) -> Unit,
+) {
+  AlertDialog(
+    onDismissRequest = onDismiss,
+    title = { Text("Choose region") },
+    text = {
+      Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text("Automatic uses your current network region. A choice only changes recommendations.")
+        listOf("IN", "US", "GB", "CA", "AU", "JP", "DE", "FR").forEach { country ->
+          OutlinedButton(
+            onClick = { onSelected(country) },
+            modifier = Modifier.fillMaxWidth().sizeIn(minHeight = 48.dp),
+          ) { Text(if (country == selected) "$country · Selected" else country) }
+        }
+        OutlinedButton(onClick = { onSelected(null) }, modifier = Modifier.fillMaxWidth().sizeIn(minHeight = 48.dp)) {
+          Text("Reset to automatic")
+        }
+      }
+    },
+    confirmButton = { OutlinedButton(onClick = onDismiss) { Text("Close") } },
+  )
 }
 
 private fun NativeMediaSummary.toPlaybackRequest(progress: online.streamfree.nativeapp.model.NativeContinueProgress? = null): PlaybackRequest =
