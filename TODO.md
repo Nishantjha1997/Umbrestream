@@ -237,7 +237,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P0
   - Depends on: SF-A0-002
   - Evidence: `core:network` adds `StreamFreeHttpClient`, HTTPS-only `SafeUrlValidator`, approved-host/subdomain policy, `SafeDns` private/link-local/multicast/reserved-address rejection, three-redirect maximum with validated loop detection, no-cookie OkHttp dispatcher/timeouts, app-owned header allowlist, response-size bound, typed failures, host-only metrics, and policy unit tests; full `scripts/verify.ps1` passed with network tests, core tests, phone/TV debug assembly, and strict lint; `git diff --check` passed
-  - Commit: pending
+  - Commit: `2b7cfb1`
   - Completed: 2026-08-20
 
 - [ ] SF-A1-002 — Implement normalized source contracts and resolver registry

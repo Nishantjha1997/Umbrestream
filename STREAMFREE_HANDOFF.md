@@ -1381,5 +1381,7 @@ script passes the networking and model unit tests, both debug APK assemblies,
 and strict lint. No provider scraper, source resolver, or Media3 player is
 connected yet; those remain downstream tasks.
 
+Implementation commit: `2b7cfb1`.
+
 The next active task is `SF-A1-002`, normalized source contracts and provider
 descriptor registration.
