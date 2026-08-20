@@ -9,6 +9,7 @@ import { fallbackChain, register, resolveAll } from "../src/lib/sources/registry
 import { selectDefaultSource } from "../src/lib/sources/selectDefault.ts";
 import {
   findNextFallbackSource,
+  findNextAutomaticFallbackSource,
   findPreferredSource,
   PLAYBACK_POLICY,
 } from "../src/lib/sources/playbackPolicy.ts";
@@ -151,9 +152,17 @@ assert(
 assert.equal(instantMovie[0].id, "filmu");
 assert(instantMovie.every((source) => source.availability === "unverified"));
 assert.equal(PLAYBACK_POLICY.timeoutMs, 20_000);
-assert.equal(PLAYBACK_POLICY.fallbackMode, "prompt");
+assert.equal(PLAYBACK_POLICY.fallbackMode, "automatic");
 assert.equal(findPreferredSource(instantMovie, { rememberedId: "cinezo" })?.id, "cinezo");
 assert.equal(findNextFallbackSource(instantMovie, "filmu", ["filmu"])?.id, "cinezo");
+assert.equal(
+  findNextAutomaticFallbackSource(instantMovie, "filmu", ["filmu"])?.id,
+  "vidking",
+);
+assert.equal(
+  findNextAutomaticFallbackSource(instantMovie, "vidking", ["filmu", "vidking"])?.id,
+  "cinezo",
+);
 
 const cinezoMovie = { ...(await resolveOne("cinezo", fixtures.movie)), availability: "unverified" };
 const filmuMovie = { ...(await resolveOne("filmu", fixtures.movie)), availability: "unverified" };

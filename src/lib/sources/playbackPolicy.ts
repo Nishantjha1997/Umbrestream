@@ -3,7 +3,8 @@ import type { AudioVariant, PlayerSource } from "./types";
 
 export const PLAYBACK_POLICY_VERSION = "2026-08-reliability-v1";
 export const PLAYBACK_RECOVERY_TIMEOUT_MS = 20_000;
-export const PLAYBACK_FALLBACK_MODE = "prompt" as const;
+export type PlaybackFallbackMode = "prompt" | "automatic";
+export const PLAYBACK_FALLBACK_MODE: PlaybackFallbackMode = "automatic";
 
 export const PLAYBACK_POLICY = Object.freeze({
   version: PLAYBACK_POLICY_VERSION,
@@ -114,6 +115,58 @@ export function findNextFallbackSource(
         sourceMatchesAudio(source, audioVariant) &&
         (source.providerTier === "stable" || source.providerTier === "direct"),
     ) ?? null
+  );
+}
+
+const AUTOMATIC_PROVIDER_ORDER: Record<"movie" | "tv", readonly string[]> = {
+  // Keep Filmu as the displayed movie recommendation, but prefer the source
+  // that has most recently reached a playable state when the clean default
+  // launch needs recovery. The order is deliberately separate from the
+  // source-sheet order so manual choices remain predictable.
+  movie: ["vidking", "cinezo", "vidlink", "vidlink-native", "filmu"],
+  tv: ["vidking", "cinezo", "vidlink", "vidlink-native", "filmu"],
+};
+
+function automaticSourceRank(source: PlayerSource): number {
+  if (source.providerTier === "direct") return 0;
+  const order = AUTOMATIC_PROVIDER_ORDER[source.mediaType as "movie" | "tv"];
+  const providerIndex = order?.findIndex(
+    (provider) => provider === source.id || provider === source.providerId,
+  );
+  return providerIndex !== undefined && providerIndex >= 0
+    ? providerIndex + 1
+    : 100 + source.priority;
+}
+
+/**
+ * Selects the next stable/direct candidate for a clean movie/TV launch.
+ *
+ * This never runs for anime, never includes experimental embeds, and never
+ * changes a remembered or explicit source. It only defines the order used by
+ * the player's automatic recovery loop after the normal 20-second grace
+ * period.
+ */
+export function findNextAutomaticFallbackSource(
+  sources: PlayerSource[],
+  currentSourceId: string | null | undefined,
+  attemptedSourceIds: Iterable<string>,
+  audioVariant?: AudioVariant | null,
+): PlayerSource | null {
+  const current = sources.find((source) => source.id === currentSourceId);
+  if (!current || (current.mediaType !== "movie" && current.mediaType !== "tv")) return null;
+
+  const attempted = new Set(attemptedSourceIds);
+  if (currentSourceId) attempted.add(currentSourceId);
+
+  return (
+    sources
+      .filter(
+        (source) =>
+          !attempted.has(source.id) &&
+          sourceMatchesAudio(source, audioVariant) &&
+          (source.providerTier === "stable" || source.providerTier === "direct"),
+      )
+      .sort((a, b) => automaticSourceRank(a) - automaticSourceRank(b))[0] ?? null
   );
 }
 

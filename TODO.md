@@ -154,9 +154,9 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Status: in progress
   - Priority: P0
   - Depends on: SF-W2-005
-  - Evidence: production API returns movie sources; live browser reproduced Filmu blank, Cinezo unresolved, VidLink provider rejection, and VidKing direct resolution; user requested Arise-style automatic working-source discovery
+  - Evidence: production API returns movie sources; live browser reproduced Filmu blank, Cinezo unresolved, VidLink provider rejection, and VidKing direct resolution; automatic movie/TV recovery now handles trusted errors and 20-second silent-provider timeouts; source-policy checks, ESLint, and TypeScript pass
   - Commit: —
-  - Next action: add bounded automatic failover for default movie/TV playback, preserve explicit manual choices, test fallback to VidKing, and deploy production
+  - Next action: commit implementation, deploy production, and verify clean movie playback automatically reaches the working fallback without changing manual preferences
 
 - [ ] SF-W3-003 — Update exact APK download headers and security checks
   - Status: not started

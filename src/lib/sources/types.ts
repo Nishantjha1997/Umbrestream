@@ -1,6 +1,7 @@
 import type { MediaType } from "@/types/title";
 
 export type AudioVariant = "sub" | "dub";
+export type PlaybackFallbackMode = "prompt" | "automatic";
 export type SubtitleSupport = "native" | "unverified" | "none";
 export type ProviderTier = "direct" | "stable" | "experimental";
 export type PlayerEventProtocol = "native" | "vidlink" | "vidking" | "cinezo" | "filmu" | "videasy";
@@ -95,7 +96,7 @@ export interface SourceResolutionResponse {
   defaultId: string | null;
   policy?: {
     version: string;
-    fallbackMode: "prompt";
+    fallbackMode: PlaybackFallbackMode;
     timeoutMs: number;
   };
   errors: SourceResolutionError[];

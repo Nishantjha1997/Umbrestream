@@ -8,7 +8,8 @@
  * one iframe or native `<video>`, synchronously, from the same public
  * adapter registry TV already used (`createPublicEmbedSources`) — no
  * `/api/player/sources` round trip on the critical path, no provider
- * preflight before mounting, no automatic fallback switching. The embedded
+ * preflight before mounting, with bounded automatic fallback for clean
+ * movie/TV launches. The embedded
  * provider owns playback and fullscreen entirely; Umbra never inspects or
  * intercepts it.
  *
@@ -26,7 +27,7 @@
  * one notification slot (`PlayerNotificationSlot`) and nothing is ever
  * hidden by media query.
  *
- * **Explicit fullscreen, no fallback chain.** The player opens in a
+ * **Explicit fullscreen, bounded automatic fallback.** The player opens in a
  * borderless 16:9 cinema stage and becomes a fixed viewport only after the
  * user chooses Full screen. It is portalled past `template.tsx`'s animated
  * wrapper for the same containing-block reason `DetailModal.tsx` is — any
@@ -36,7 +37,8 @@
  * StreamFree chrome yields to provider controls after three idle seconds and
  * can be restored from a small left-edge reveal target. There is no
  * `webkitEnterFullscreen` → `requestFullscreen` → cinema-mode cascade to
- * silently cancel.
+ * silently cancel. Explicit and remembered source choices remain
+ * user-controlled during recovery.
  */
 
 import NativePlayer from "@/components/player/NativePlayer";
@@ -53,6 +55,7 @@ import { legacySourceId } from "@/lib/sources/legacy";
 import { isSourceActivationKey } from "@/lib/player/sourceInteraction";
 import {
   clearPlaybackPreference,
+  findNextAutomaticFallbackSource,
   findNextFallbackSource,
   findPreferredSource,
   PLAYBACK_RECOVERY_TIMEOUT_MS,
@@ -419,6 +422,36 @@ export default function PlayerShell({
     [directRequestKey, resumeOverride, selectedSource],
   );
 
+  // Automatic failover is enabled only for a clean movie/TV launch. A source
+  // in the URL or a remembered device preference is a user decision and must
+  // never be silently replaced. This ref is initialized before URL
+  // synchronization can write the recommended source into `src`.
+  const automaticFallbackRequestKeyRef = useRef<string | null>(null);
+  const automaticFallbackEnabledRef = useRef(false);
+  const automaticFailureHandlerRef = useRef<((sourceId: string) => boolean) | null>(null);
+  useEffect(() => {
+    if (!selectedSource || !directSettled) return;
+    if (automaticFallbackRequestKeyRef.current === directRequestKey) return;
+
+    const remembered = readPlaybackPreference(
+      window.localStorage,
+      request.mediaType,
+      preferredAudio,
+    );
+    automaticFallbackRequestKeyRef.current = directRequestKey;
+    automaticFallbackEnabledRef.current =
+      (request.mediaType === "movie" || request.mediaType === "tv") &&
+      !sourceParam &&
+      !remembered;
+  }, [
+    directRequestKey,
+    directSettled,
+    preferredAudio,
+    request.mediaType,
+    selectedSource,
+    sourceParam,
+  ]);
+
   // Keep `?src=` a stable provider id. Never blocks the mount above — the
   // stage below renders from `selectedSource` on the same render regardless
   // of whether the URL has caught up yet.
@@ -510,11 +543,13 @@ export default function PlayerShell({
         });
       }
     } else if (events.lastEvent === "error") {
-      setRecoveryPrompt({
-        requestKey: directRequestKey,
-        sourceId: selectedSource.id,
-        reason: "error",
-      });
+      if (!automaticFailureHandlerRef.current?.(selectedSource.id)) {
+        setRecoveryPrompt({
+          requestKey: directRequestKey,
+          sourceId: selectedSource.id,
+          reason: "error",
+        });
+      }
     }
   }, [
     directRequestKey,
@@ -534,47 +569,6 @@ export default function PlayerShell({
     nativeErrorState !== null && nativeErrorState.sourceId === selectedSource?.id
       ? nativeErrorState.message
       : null;
-
-  // Only sources that declare postMessage support get the "can't confirm
-  // playback" nudge — for a source that never claimed to send events,
-  // Umbra was never going to hear from it, and that is not a fault to flag.
-  useEffect(() => {
-    if (!selectedSource) return;
-    const sourceId = selectedSource.id;
-    let remainingMs = PLAYBACK_RECOVERY_TIMEOUT_MS;
-    let startedAt = performance.now();
-    let timer: number | null = null;
-
-    const showPrompt = () => {
-      if (confirmedReadyRef.current) return;
-      setRecoveryPrompt({ requestKey: directRequestKey, sourceId, reason: "timeout" });
-      trackUmbraEvent("player_recovery_prompted", {
-        mediaType: request.mediaType,
-        provider: selectedSource.providerId,
-        reason: selectedSource.capabilities.events ? "unconfirmed" : "eventless",
-        audio: selectedSource.audioVariant ?? "none",
-      });
-    };
-    const startTimer = () => {
-      startedAt = performance.now();
-      timer = window.setTimeout(showPrompt, remainingMs);
-    };
-    const handleVisibility = () => {
-      if (document.hidden) {
-        if (timer !== null) window.clearTimeout(timer);
-        remainingMs = Math.max(0, remainingMs - (performance.now() - startedAt));
-      } else if (!confirmedReadyRef.current) {
-        startTimer();
-      }
-    };
-
-    if (!document.hidden) startTimer();
-    document.addEventListener("visibilitychange", handleVisibility);
-    return () => {
-      if (timer !== null) window.clearTimeout(timer);
-      document.removeEventListener("visibilitychange", handleVisibility);
-    };
-  }, [directRequestKey, request.mediaType, selectedSource]);
 
   useEffect(() => {
     if (!sourceFeedback) return;
@@ -605,7 +599,7 @@ export default function PlayerShell({
   }, [request.mediaType, revealChrome]);
 
   const switchSource = useCallback(
-    (id: string, reason: "manual" | "recovery" | "reset" = "manual") => {
+    (id: string, reason: "manual" | "recovery" | "automatic" | "reset" = "manual") => {
       const nextSource = sources.find((source) => source.id === id);
       if (!nextSource) return;
 
@@ -613,6 +607,8 @@ export default function PlayerShell({
         if (reason === "reset") {
           clearPlaybackPreference(window.localStorage, request.mediaType, preferredAudio);
           setRememberedSourceId(null);
+          automaticFallbackEnabledRef.current =
+            request.mediaType === "movie" || request.mediaType === "tv";
         }
         closeSource();
         revealChrome();
@@ -650,6 +646,7 @@ export default function PlayerShell({
       }
 
       if (reason === "manual") {
+        automaticFallbackEnabledRef.current = false;
         writePlaybackPreference(
           window.localStorage,
           request.mediaType,
@@ -664,17 +661,18 @@ export default function PlayerShell({
           toProvider: nextSource.providerId,
           audio: nextSource.audioVariant ?? "none",
         });
-      } else if (reason === "recovery") {
+      } else if (reason === "recovery" || reason === "automatic") {
         setAttemptedState((current) => {
           const ids = current.requestKey === directRequestKey ? new Set(current.ids) : new Set<string>();
           if (selectedSource) ids.add(selectedSource.id);
           return { requestKey: directRequestKey, ids };
         });
-        trackUmbraEvent("player_recovery_accepted", {
+        trackUmbraEvent(reason === "automatic" ? "player_auto_fallback" : "player_recovery_accepted", {
           mediaType: request.mediaType,
           fromProvider: selectedSource?.providerId ?? "unknown",
           toProvider: nextSource.providerId,
           audio: nextSource.audioVariant ?? "none",
+          reason: reason === "automatic" ? "timeout" : "prompt_accepted",
         });
       } else {
         clearPlaybackPreference(window.localStorage, request.mediaType, preferredAudio);
@@ -690,12 +688,18 @@ export default function PlayerShell({
       // The selected iframe already changed above; URL persistence is
       // intentionally non-blocking. A failed History API update must never
       // undo a user's server choice.
-      void setSourceParam(id, { history: "replace", shallow: true, scroll: false }).catch(() => {
-        if (selectionVersionRef.current !== selectionVersion) return;
-        const nextUrl = new URL(window.location.href);
-        nextUrl.searchParams.set("src", id);
-        window.history.replaceState(window.history.state, "", nextUrl);
-      });
+      // Keep automatic recovery session-scoped. Writing its result into the
+      // URL would make a future reload look like an explicit user choice and
+      // disable recovery on the next launch. Manual/reset selections remain
+      // deep-linkable and sticky as before.
+      if (reason !== "automatic") {
+        void setSourceParam(id, { history: "replace", shallow: true, scroll: false }).catch(() => {
+          if (selectionVersionRef.current !== selectionVersion) return;
+          const nextUrl = new URL(window.location.href);
+          nextUrl.searchParams.set("src", id);
+          window.history.replaceState(window.history.state, "", nextUrl);
+        });
+      }
     },
     [
       directRequestKey,
@@ -743,6 +747,84 @@ export default function PlayerShell({
         : null,
     [activeRecovery, attemptedSourceIds, preferredAudio, selectedSource, sources],
   );
+
+  const attemptAutomaticFallback = useCallback(
+    (sourceId: string): boolean => {
+      if (!automaticFallbackEnabledRef.current) return false;
+      const automaticFallback = findNextAutomaticFallbackSource(
+        sources,
+        sourceId,
+        attemptedSourceIds,
+        selectedSource?.audioVariant ?? preferredAudio,
+      );
+      if (!automaticFallback) return false;
+      setRecoveryPrompt(null);
+      switchSource(automaticFallback.id, "automatic");
+      return true;
+    },
+    [attemptedSourceIds, preferredAudio, selectedSource, sources, switchSource],
+  );
+
+  useEffect(() => {
+    automaticFailureHandlerRef.current = attemptAutomaticFallback;
+    return () => {
+      automaticFailureHandlerRef.current = null;
+    };
+  }, [attemptAutomaticFallback]);
+
+  // External iframe failures are often silent because the provider is
+  // cross-origin. Give the current provider the full grace period, pause it
+  // while the tab is hidden, and then move to the next stable/direct source
+  // automatically for a clean movie/TV launch. If no candidate remains,
+  // retain the explicit recovery panel rather than claiming the provider is
+  // offline.
+  useEffect(() => {
+    if (!selectedSource || !directSettled) return;
+    const sourceId = selectedSource.id;
+    let remainingMs = PLAYBACK_RECOVERY_TIMEOUT_MS;
+    let startedAt = performance.now();
+    let timer: number | null = null;
+
+    const showPrompt = () => {
+      if (confirmedReadyRef.current) return;
+      if (attemptAutomaticFallback(sourceId)) return;
+
+      setRecoveryPrompt({ requestKey: directRequestKey, sourceId, reason: "timeout" });
+      trackUmbraEvent("player_recovery_prompted", {
+        mediaType: request.mediaType,
+        provider: selectedSource.providerId,
+        reason: selectedSource.capabilities.events ? "unconfirmed" : "eventless",
+        audio: selectedSource.audioVariant ?? "none",
+      });
+    };
+    const startTimer = () => {
+      startedAt = performance.now();
+      timer = window.setTimeout(showPrompt, remainingMs);
+    };
+    const handleVisibility = () => {
+      if (document.hidden) {
+        if (timer !== null) window.clearTimeout(timer);
+        remainingMs = Math.max(0, remainingMs - (performance.now() - startedAt));
+      } else if (!confirmedReadyRef.current) {
+        startTimer();
+      }
+    };
+
+    if (!document.hidden) startTimer();
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => {
+      if (timer !== null) window.clearTimeout(timer);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, [
+    attemptedSourceIds,
+    directRequestKey,
+    directSettled,
+    preferredAudio,
+    request.mediaType,
+    selectedSource,
+    attemptAutomaticFallback,
+  ]);
 
   const declineRecovery = useCallback(() => {
     if (!selectedSource) return;
@@ -864,12 +946,14 @@ export default function PlayerShell({
             startAt={events.currentTime || request.startAt}
             onReady={() => setConfirmedReadySourceId(selectedSource.id)}
             onError={(message) => {
-              setNativeErrorState({ sourceId: selectedSource.id, message });
-              setRecoveryPrompt({
-                requestKey: directRequestKey,
-                sourceId: selectedSource.id,
-                reason: "error",
-              });
+              if (!automaticFailureHandlerRef.current?.(selectedSource.id)) {
+                setNativeErrorState({ sourceId: selectedSource.id, message });
+                setRecoveryPrompt({
+                  requestKey: directRequestKey,
+                  sourceId: selectedSource.id,
+                  reason: "error",
+                });
+              }
             }}
             onEvent={(event, currentTime, duration) =>
               events.reportNativeEvent({
