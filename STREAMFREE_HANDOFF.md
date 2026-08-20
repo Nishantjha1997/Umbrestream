@@ -1523,13 +1523,16 @@ source is actually resolved.
 This is intentionally a UI foundation, not a provider integration: the current
 phone home action opens the shell preview while the resolver registry remains
 empty. The next slice must connect authenticated episode/source resolution and
-add the source sheet, Anime Sub/Dub controls, episode navigation, tracks,
-speed, and deterministic Compose tests.
+connect authenticated episode/source resolution, then add episode navigation,
+tracks, speed, and deterministic Compose tests. The source sheet and Anime
+Sub/Dub grouping are now implemented.
 
 Focused `:core:player:test`, `:app-phone:compileDebugKotlin`, and
 `:app-phone:lintDebug` passed. The full `native-android/scripts/verify.ps1`
-checkpoint also passed: all core tests, both debug APK assemblies, and strict
-phone/TV/library lint. Implementation commit: `796bc61`. `SF-A2-003` remains
+checkpoint also passed after source preferences: all core tests, both debug
+APK assemblies, and strict phone/TV/player/design-system lint. Implementation
+commit: `796bc61` plus follow-up source-picker/preference commits through
+`8a796a8`. `SF-A2-003` remains
 the active task.
 
 The controller now cancels an older asynchronous load before starting a new
@@ -1562,5 +1565,5 @@ independent scopes: Movie, TV, Anime Sub, and Anime Dub. The player sheet writes
 the selected provider only after an explicit user selection; resolver fallback
 and playback failure paths never write this preference. The preference store
 validates stable provider IDs and supports clear/reset semantics for the
-recommended default. `:core:player:test`, phone compilation, and strict phone
-lint pass.
+recommended default. `:core:player:test`, phone compilation, strict phone
+lint, and the full `scripts/verify.ps1` gate pass after this work.
