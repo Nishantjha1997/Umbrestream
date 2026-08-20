@@ -197,6 +197,13 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({ data, isTooltipDisabled
     >
       <IconButton
         onPress={handleBookmark}
+        onClick={(event) => {
+          // The bookmark control is also rendered by preview/card surfaces.
+          // Consume the activation on the control itself so a parent Link can
+          // never interpret removal as a request to open or play the title.
+          event.preventDefault();
+          event.stopPropagation();
+        }}
         icon={isSaved ? <BsBookmarkCheckFill size={20} /> : <BsBookmarkFill size={20} />}
         variant={isSaved ? "shadow" : "faded"}
         color="warning"

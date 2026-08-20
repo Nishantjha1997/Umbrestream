@@ -235,6 +235,31 @@ export default function PlayerShell({
   }, [isFullscreen]);
 
   useEffect(() => {
+    if (!isFullscreen) return;
+
+    // Mobile browsers and WebViews can suspend or tear down fullscreen while
+    // the app is backgrounded without emitting a reliable fullscreenchange
+    // before the route resumes. Restore the shell to a safe portrait state so
+    // the next foreground frame cannot inherit a stale immersive lock.
+    const restoreAfterBackground = () => {
+      if (document.visibilityState !== "hidden" && document.visibilityState !== "prerender") return;
+      setIsFullscreen(false);
+      document.documentElement.classList.remove("player-fullscreen");
+      setPlaybackOrientation(false);
+      if (document.fullscreenElement === playerRootRef.current) {
+        void document.exitFullscreen?.().catch(() => undefined);
+      }
+    };
+
+    document.addEventListener("visibilitychange", restoreAfterBackground);
+    window.addEventListener("pagehide", restoreAfterBackground);
+    return () => {
+      document.removeEventListener("visibilitychange", restoreAfterBackground);
+      window.removeEventListener("pagehide", restoreAfterBackground);
+    };
+  }, [isFullscreen, setPlaybackOrientation]);
+
+  useEffect(() => {
     return () => {
       document.documentElement.classList.remove("player-fullscreen");
       setPlaybackOrientation(false);

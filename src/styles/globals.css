@@ -354,6 +354,7 @@
 .player-shell,
 .player-shell iframe,
 .player-shell video { background:#000; }
+.player-shell { isolation:isolate; contain:layout paint; }
 .player-shell-frame { display:block; border:0!important; outline:0; object-fit:contain; transform:none; transform-origin:center; transition:transform .24s ease; }
 .player-shell-fill .player-shell-frame,
 .player-shell-fill video { object-fit:cover!important; transform:scale(1.12); transform-origin:center; }

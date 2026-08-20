@@ -6,8 +6,8 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 
 - Branch: `codex/web-first-native-rebuild`
 - Baseline: `28bea93`
-- Active task: `SF-W2-002`
-- Next command: inspect the shared player stage and certify framed playback, Fit/Fill, fullscreen lifecycle, and episode context across movie, TV, and anime.
+- Active task: `SF-W2-004`
+- Next command: build the browser/accessibility matrix around the source sheet, player controls, and removal controls; record any environment-limited checks explicitly.
 - Reference policy: Media3 and Now in Android are approved architecture references; Aniyomi is pattern-only because it is archived; Dantotsu is excluded pending license/source verification.
 
 ## W0 — Governance and baseline
@@ -92,12 +92,30 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Next action: proceed with SF-W2-002
 
 - [ ] SF-W2-002 — Certify framed playback, Fit/Fill, fullscreen, and episode context
-  - Status: not started
+  - Status: completed
   - Priority: P0
   - Depends on: SF-W2-001
-  - Evidence: —
+  - Evidence: background/pagehide recovery added; player stage is isolated and black-backed; Fit/Fill remains class-only and source-key independent; `scripts/check-player-display.mjs`; player display checks passed; ESLint zero warnings; TypeScript passed; `git diff --check` passed
+  - Commit: `PENDING_W2_PLAYER_GROUP`
+  - Completed: 2026-08-20
+  - Next action: proceed with SF-W2-003
+
+- [x] SF-W2-003 — Certify Continue Watching and Watchlist remove/Undo
+  - Status: completed
+  - Priority: P0
+  - Depends on: SF-W2-001
+  - Evidence: action-level click consumption added to BookmarkButton and HistoryItemActions; optimistic cache update and Undo/rollback retained; `scripts/check-removal-interactions.mjs`; removal checks passed; ESLint zero warnings; TypeScript passed; `git diff --check` passed
+  - Commit: `PENDING_W2_PLAYER_GROUP`
+  - Completed: 2026-08-20
+  - Next action: proceed with SF-W2-004
+
+- [ ] SF-W2-004 — Add Playwright matrix and accessibility scans
+  - Status: in progress
+  - Priority: P1
+  - Depends on: SF-W2-002, SF-W2-003
+  - Evidence: browser harness is available for live UI verification; local first-route compile succeeded but local browser navigation exceeded the harness timeout during cold compilation
   - Commit: —
-  - Next action: test movie, TV, anime Sub/Dub on desktop/mobile/tablet
+  - Next action: validate production and preview flows at desktop, mobile, and tablet viewports; capture source-sheet, Fit/Fill, removal, focus, and ARIA evidence
 
 - [ ] SF-W2-003 — Certify Continue Watching and Watchlist remove/Undo
   - Status: not started

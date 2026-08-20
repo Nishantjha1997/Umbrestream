@@ -184,6 +184,10 @@ const HistoryItemActions: React.FC<HistoryItemActionsProps> = ({
       {!completed && (
         <IconButton
           onPress={handleComplete}
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+          }}
           icon={<Check size={14} />}
           variant="faded"
           color="success"
@@ -194,6 +198,12 @@ const HistoryItemActions: React.FC<HistoryItemActionsProps> = ({
       )}
       <IconButton
         onPress={handleRemove}
+        onClick={(event) => {
+          // Keep remove/complete actions independent from the resume Link
+          // that surrounds several Continue Watching surfaces.
+          event.preventDefault();
+          event.stopPropagation();
+        }}
         icon={<Trash size={14} />}
         variant="faded"
         color="danger"
