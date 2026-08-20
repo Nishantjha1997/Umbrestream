@@ -1527,6 +1527,7 @@ add the source sheet, Anime Sub/Dub controls, episode navigation, tracks,
 speed, and deterministic Compose tests.
 
 Focused `:core:player:test`, `:app-phone:compileDebugKotlin`, and
-`:app-phone:lintDebug` passed. Full phone+TV verification is the release
-checkpoint for this slice. Implementation commit: pending. `SF-A2-003` remains
+`:app-phone:lintDebug` passed. The full `native-android/scripts/verify.ps1`
+checkpoint also passed: all core tests, both debug APK assemblies, and strict
+phone/TV/library lint. Implementation commit: `796bc61`. `SF-A2-003` remains
 the active task.
