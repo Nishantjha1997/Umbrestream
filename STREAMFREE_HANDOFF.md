@@ -1554,3 +1554,5 @@ labelled `Other` group when the resolver returns mixed variants. Choosing a
 Sub or Dub source updates the compatible `PlaybackRequest.audioVariant` before
 the controller switch, preserving the episode and position context. The UI
 does not manufacture an audio option when the resolver did not return one.
+Focused player tests, phone compile, and strict phone lint pass after this
+grouping change.
