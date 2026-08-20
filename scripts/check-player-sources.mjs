@@ -8,6 +8,7 @@ import { legacySourceId } from "../src/lib/sources/legacy.ts";
 import { fallbackChain, register, resolveAll } from "../src/lib/sources/registry.ts";
 import { selectDefaultSource } from "../src/lib/sources/selectDefault.ts";
 import {
+  canAutomaticallyRecoverSource,
   findNextFallbackSource,
   findNextAutomaticFallbackSource,
   findPreferredSource,
@@ -121,17 +122,16 @@ const orderedIds = (request) =>
 
 assert.deepEqual(orderedIds(fixtures.movie), [
   "filmu",
+  "vidrift",
+  "vidking",
   "cinezo",
   "vidlink",
   "vidlink-native",
-  "vidking",
-  "vidrift",
   "vidbolt",
   "videasy",
   "vidsrc",
 ]);
-// VidKing is the verified TV default. Experimental VidSrc is listed after the
-// stable providers; Filmu remains the final TV candidate on this fixture.
+// TV ordering is intentionally unchanged by this movie-only incident patch.
 assert.deepEqual(orderedIds(fixtures.tv), [
   "vidking",
   "cinezo",
@@ -161,17 +161,32 @@ assert(
 );
 assert.equal(instantMovie[0].id, "filmu");
 assert(instantMovie.every((source) => source.availability === "unverified"));
-assert.equal(PLAYBACK_POLICY.timeoutMs, 5_000);
+assert.equal(PLAYBACK_POLICY.timeoutMs, 30_000);
 assert.equal(PLAYBACK_POLICY.fallbackMode, "automatic");
 assert.equal(findPreferredSource(instantMovie, { rememberedId: "cinezo" })?.id, "cinezo");
-assert.equal(findNextFallbackSource(instantMovie, "filmu", ["filmu"])?.id, "cinezo");
+assert.equal(findNextFallbackSource(instantMovie, "filmu", ["filmu"])?.id, "vidrift");
 assert.equal(
   findNextAutomaticFallbackSource(instantMovie, "filmu", ["filmu"])?.id,
+  "vidrift",
+);
+assert.equal(
+  findNextAutomaticFallbackSource(instantMovie, "vidrift", ["filmu", "vidrift"])?.id,
   "vidking",
 );
 assert.equal(
-  findNextAutomaticFallbackSource(instantMovie, "vidking", ["filmu", "vidking"])?.id,
-  "cinezo",
+  canAutomaticallyRecoverSource(instantMovie.find((source) => source.id === "filmu")),
+  true,
+  "trusted stable Filmu can recover after the full grace period",
+);
+assert.equal(
+  canAutomaticallyRecoverSource(instantMovie.find((source) => source.id === "vidrift")),
+  false,
+  "eventless VidRift must never be replaced solely because a timer elapsed",
+);
+assert.equal(
+  findNextAutomaticFallbackSource(instantMovie, "vidking", ["filmu", "vidrift", "vidking"]),
+  null,
+  "uncertified providers must not enter the automatic recovery chain",
 );
 assert.equal(
   shouldUseAutomaticRecovery({ mediaType: "movie" }),

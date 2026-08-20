@@ -1,11 +1,11 @@
 import type { MediaType } from "@/types/title";
 import type { AudioVariant, PlayerSource } from "./types";
 
-export const PLAYBACK_POLICY_VERSION = "2026-08-reliability-v2";
-// A blank cross-origin embed cannot be inspected safely. Five seconds keeps
-// the initial product-default launch responsive while still giving a normal
-// provider bootstrap a brief chance to emit a trusted playback event.
-export const PLAYBACK_RECOVERY_TIMEOUT_MS = 5_000;
+export const PLAYBACK_POLICY_VERSION = "2026-08-reliability-v4";
+// Real fixture checks show that a healthy provider can need 25–26 seconds to
+// resolve its internal server and expose playable media. Thirty seconds keeps
+// recovery useful without tearing down a legitimate slow startup.
+export const PLAYBACK_RECOVERY_TIMEOUT_MS = 30_000;
 export type PlaybackFallbackMode = "prompt" | "automatic";
 export const PLAYBACK_FALLBACK_MODE: PlaybackFallbackMode = "automatic";
 
@@ -162,11 +162,11 @@ export function sourceParamForPlaybackSwitch(
 }
 
 const AUTOMATIC_PROVIDER_ORDER: Record<"movie" | "tv", readonly string[]> = {
-  // Keep Filmu as the displayed movie recommendation, but prefer the source
-  // that has most recently reached a playable state when the clean default
-  // launch needs recovery. The order is deliberately separate from the
-  // source-sheet order so manual choices remain predictable.
-  movie: ["vidking", "cinezo", "vidlink", "vidlink-native", "filmu"],
+  // This is a release-certified recovery allowlist, not merely a preference
+  // order. Providers that rendered a blank, unrelated, or stalled player in
+  // the current fixture matrix remain manually selectable but are excluded
+  // from silent recovery.
+  movie: ["vidrift", "vidking", "filmu"],
   tv: ["vidking", "cinezo", "vidlink", "vidlink-native", "filmu"],
 };
 
@@ -178,15 +178,30 @@ function automaticSourceRank(source: PlayerSource): number {
   );
   return providerIndex !== undefined && providerIndex >= 0
     ? providerIndex + 1
-    : 100 + source.priority;
+    : Number.POSITIVE_INFINITY;
+}
+
+/**
+ * A timeout can only justify an automatic switch when the current source has
+ * a trusted event contract. Eventless cross-origin frames may already be
+ * playing, and replacing them based only on elapsed wall time would interrupt
+ * valid playback. They receive the visible one-tap recovery prompt instead.
+ */
+export function canAutomaticallyRecoverSource(
+  source: PlayerSource | null | undefined,
+): boolean {
+  return Boolean(
+    source?.capabilities.events &&
+      (source.providerTier === "stable" || source.providerTier === "direct"),
+  );
 }
 
 /**
  * Selects the next stable/direct candidate for a clean movie/TV launch.
  *
  * This never runs for anime, never includes experimental embeds, and never
- * changes a remembered or explicit source. It only defines the order used by
- * the player's automatic recovery loop after the normal 20-second grace
+ * changes a remembered or explicit source. It only defines the allowlisted
+ * order used by the player's automatic recovery loop after the normal grace
  * period.
  */
 export function findNextAutomaticFallbackSource(
@@ -207,7 +222,8 @@ export function findNextAutomaticFallbackSource(
         (source) =>
           !attempted.has(source.id) &&
           sourceMatchesAudio(source, audioVariant) &&
-          (source.providerTier === "stable" || source.providerTier === "direct"),
+          (source.providerTier === "stable" || source.providerTier === "direct") &&
+          Number.isFinite(automaticSourceRank(source)),
       )
       .sort((a, b) => automaticSourceRank(a) - automaticSourceRank(b))[0] ?? null
   );

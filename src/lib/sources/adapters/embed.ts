@@ -112,8 +112,9 @@ const definitions: EmbedDefinition[] = [
     label: "Cinezo",
     origin: "https://player.cinezo.live",
     tier: "stable",
-    // Cinezo is the verified movie default and a stable TV fallback.
-    priorities: { movie: 2, tv: 2 },
+    // The movie shell rendered but media remained at 00:00 in the current
+    // fixture, so it stays behind the three playback-confirmed choices.
+    priorities: { movie: 30, tv: 2 },
     requirements: movieAndTvRequirements,
     build: (request) => {
       const base = movieOrTv(
@@ -148,8 +149,8 @@ const definitions: EmbedDefinition[] = [
     origin: "https://vidlink.pro",
     tier: "stable",
     variant: "jw",
-    // VidLink remains a stable fallback for both movies and TV.
-    priorities: { movie: 3, tv: 3 },
+    // Current browser verification was blocked before playable media.
+    priorities: { movie: 40, tv: 3 },
     requirements: movieAndTvRequirements,
     build: (request) => {
       const base = movieOrTv(
@@ -185,8 +186,8 @@ const definitions: EmbedDefinition[] = [
     origin: "https://vidlink.pro",
     tier: "stable",
     variant: "native",
-    // The native VidLink variant is a second stable fallback.
-    priorities: { movie: 4, tv: 4 },
+    // Current fixture exposed controls but remained at 00:00 after Play.
+    priorities: { movie: 41, tv: 4 },
     requirements: movieAndTvRequirements,
     build: (request) => {
       const base = movieOrTv(
@@ -217,10 +218,9 @@ const definitions: EmbedDefinition[] = [
     label: "VidKing",
     origin: "https://www.vidking.net",
     tier: "stable",
-    // TV: 1st — the only checked TV fixture that reached a playable media
-    // state after the Filmu-first outage (TV_PLAYER_ROLLBACK_HANDOFF.md).
-    // Movies use the stable providers above before reaching experimental fallbacks.
-    priorities: { movie: 5, tv: 1 },
+    // Verified playable, but its internal source negotiation needed roughly
+    // 26 seconds in the current movie fixture. Keep it as a certified backup.
+    priorities: { movie: 3, tv: 1 },
     requirements: movieAndTvRequirements,
     build: (request) => {
       const base = movieOrTv(
@@ -238,7 +238,6 @@ const definitions: EmbedDefinition[] = [
       });
     },
     capabilities: {
-      fast: true,
       events: true,
       eventProtocol: "vidking",
       resumable: true,
@@ -250,8 +249,10 @@ const definitions: EmbedDefinition[] = [
     id: "vidrift",
     label: "Vidrift",
     origin: "https://embed.vidrift.in",
-    tier: "experimental",
-    priorities: { movie: 40, tv: 40 },
+    // VidRift resolved a playable movie and TV episode in the current matrix,
+    // and its own player automatically tries several internal servers.
+    tier: "stable",
+    priorities: { movie: 2, tv: 40 },
     requirements: movieAndTvRequirements,
     build: (request) =>
       movieOrTv(
@@ -259,7 +260,7 @@ const definitions: EmbedDefinition[] = [
         (id) => `https://embed.vidrift.in/embed/movie/${id}`,
         (id, season, episode) => `https://embed.vidrift.in/embed/tv/${id}/${season}/${episode}`,
       ),
-    capabilities: { ads: true, subtitles: "unverified" },
+    capabilities: { recommended: true, fast: true, ads: true, subtitles: "native" },
   },
   {
     id: "vidbolt",
@@ -302,10 +303,9 @@ const definitions: EmbedDefinition[] = [
     label: "Filmu",
     origin: "https://embed.filmu.in",
     tier: "stable",
-    // TV: 2nd. Filmu's outer HTML loads but its TV iframe has been observed
-    // to expose no playable media on some titles — never default TV to it
-    // again without VidKing checked first (TV_PLAYER_ROLLBACK_HANDOFF.md).
-    // Filmu remains available for manual recovery, but is not the automatic default.
+    // Movie default by product decision. Its release fixture rendered the
+    // correct player UI after about 12 seconds, so recovery must not interrupt
+    // that startup. TV remains a late manual option because coverage varies.
     priorities: { movie: 1, tv: 90 },
     requirements: movieAndTvRequirements,
     build: (request) =>

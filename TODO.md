@@ -6,8 +6,8 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 
 - Branch: `codex/web-first-native-rebuild`
 - Baseline: `28bea93`
-- Active task: `SF-A0-001`
-- Next command: inventory the existing Android wrapper and release configuration, then create the tracked native Kotlin/Compose scaffold without disturbing the signed legacy apps.
+- Active task: `SF-P0-003`
+- Next command: deploy the movie reliability preview, verify real Filmu playback and automatic/manual recovery in the browser, then promote the exact artifact to production.
 - Reference policy: Media3 and Now in Android are approved architecture references; Aniyomi is pattern-only because it is archived; Dantotsu is excluded pending license/source verification.
 
 ## W0 — Governance and baseline
@@ -168,6 +168,14 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Deployment: `dpl_9J7xBsqHKnkMcSXAZs77bKX52P8d` (`READY`)
   - Completed: 2026-08-20
 
+- [ ] SF-P0-003 — Restore reliable first-click movie playback
+  - Status: in progress
+  - Priority: P0
+  - Depends on: SF-P0-002
+  - Evidence: source contracts pass; TypeScript passes; targeted ESLint passes; production build passes; Filmu UI rendered in about 12s; VidRift visibly played; VidKing visibly played after about 26s; movie route client-fetch/dynamic-import waterfall removed; provider matrix recorded in `docs/MOVIE_PROVIDER_SMOKE_2026-08-20.md`
+  - Commit: —
+  - Next action: deploy preview, verify actual Filmu playback plus source selection and recovery timing, then promote the tested deployment
+
 - [x] SF-W3-003 — Update exact APK download headers and security checks
   - Status: completed
   - Priority: P0
@@ -188,7 +196,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 ## A0 — Native scaffold and migration
 
 - [ ] SF-A0-001 — Create `native-android` Gradle Kotlin DSL project
-  - Status: in progress
+  - Status: not started
   - Priority: P0
   - Depends on: SF-W3-004
   - Evidence: —

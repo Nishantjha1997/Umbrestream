@@ -54,6 +54,7 @@ import { ANIME_PROVIDER_CATALOG } from "@/lib/sources/animeCatalog";
 import { legacySourceId } from "@/lib/sources/legacy";
 import { isSourceActivationKey } from "@/lib/player/sourceInteraction";
 import {
+  canAutomaticallyRecoverSource,
   clearPlaybackPreference,
   findNextAutomaticFallbackSource,
   findNextFallbackSource,
@@ -736,6 +737,8 @@ export default function PlayerShell({
   const attemptAutomaticFallback = useCallback(
     (sourceId: string): boolean => {
       if (!automaticFallbackEnabledRef.current) return false;
+      const currentSource = sources.find((source) => source.id === sourceId);
+      if (!canAutomaticallyRecoverSource(currentSource)) return false;
       const automaticFallback = findNextAutomaticFallbackSource(
         sources,
         sourceId,
