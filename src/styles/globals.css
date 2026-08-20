@@ -220,11 +220,12 @@
 }
 
 /* Player chrome yields the provider's complete control surface after idle.
-   The small left-edge reveal target stays clear of the provider's common
-   top-right server/region menus and respects phone cutouts. */
+   The small center-left reveal target stays clear of StreamFree's Back
+   control, provider top-right server menus, and phone cutouts. */
 .player-controls-reveal {
-  top: max(0.5rem, env(safe-area-inset-top));
+  top: 50%;
   left: max(0.5rem, env(safe-area-inset-left));
+  transform: translateY(-50%);
 }
 
 .player-source-feedback {

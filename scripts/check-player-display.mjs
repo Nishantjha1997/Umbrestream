@@ -39,6 +39,7 @@ assert.doesNotMatch(styles, /transform:scale\(/);
 assert.match(styles, /\.player-shell-fill video \{ object-fit:cover!important; transform:none!important; \}/);
 assert.match(styles, /\.player-shell-fit video \{ object-fit:contain!important; transform:none!important; \}/);
 assert.match(styles, /\.player-shell-fullscreen \.player-content-header/);
+assert.match(styles, /\.player-controls-reveal \{[\s\S]*top: 50%;[\s\S]*transform: translateY\(-50%\)/);
 assert.match(styles, /\.player-shell \{ isolation:isolate; contain:layout paint; \}/);
 
 assert.match(movie, /mediaType: "movie"/);
