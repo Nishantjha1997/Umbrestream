@@ -6,8 +6,8 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 
 - Branch: `codex/web-first-native-rebuild`
 - Baseline: `28bea93`
-- Active task: `SF-W2-005`
-- Next command: run the complete deterministic gate, commit the W2 checkpoint, deploy production, and verify the production alias and smoke routes.
+- Active task: `SF-W3-001`
+- Next command: audit web/native bundles and player-only dependencies, capture a reproducible performance baseline, and identify verified bottlenecks.
 - Reference policy: Media3 and Now in Android are approved architecture references; Aniyomi is pattern-only because it is archived; Dantotsu is excluded pending license/source verification.
 
 ## W0 — Governance and baseline
@@ -91,7 +91,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Completed: 2026-08-20
   - Next action: proceed with SF-W2-002
 
-- [ ] SF-W2-002 — Certify framed playback, Fit/Fill, fullscreen, and episode context
+- [x] SF-W2-002 — Certify framed playback, Fit/Fill, fullscreen, and episode context
   - Status: completed
   - Priority: P0
   - Depends on: SF-W2-001
@@ -118,30 +118,15 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Completed: 2026-08-20
   - Next action: proceed with SF-W2-005
 
-- [ ] SF-W2-003 — Certify Continue Watching and Watchlist remove/Undo
-  - Status: not started
-  - Priority: P0
-  - Depends on: SF-W2-001
-  - Evidence: —
-  - Commit: —
-  - Next action: verify removal consumes every activation path and never navigates
-
-- [ ] SF-W2-004 — Add Playwright matrix and accessibility scans
-  - Status: not started
-  - Priority: P1
-  - Depends on: SF-W2-002, SF-W2-003
-  - Evidence: —
-  - Commit: —
-  - Next action: desktop 1440×900, phone 390×844, tablet 820×1180
-
-- [ ] SF-W2-005 — Commit, push, deploy, and verify Web Phase W2
-  - Status: in progress
+- [x] SF-W2-005 — Commit, push, deploy, and verify Web Phase W2
+  - Status: completed
   - Priority: P0
   - Depends on: SF-W2-004
-  - Evidence: preview deployment `dpl_Dsyy177yZV8giEjNQhKjKNgVVm8Q` READY; final production gate pending
-  - Commit: —
-  - Deployment: —
-  - Next action: run phase gate and production player smoke tests
+  - Evidence: deterministic gate passed; preview `dpl_Dsyy177yZV8giEjNQhKjKNgVVm8Q` READY; production `dpl_33qEKaZ6fQStVARn1gpQmfXUp5w4` READY and aliased to `streamfree.online`; live route/source smoke passed; production browser source-picker/fullscreen smoke passed
+  - Commit: `PENDING_W2_CHECKPOINT`
+  - Deployment: `dpl_33qEKaZ6fQStVARn1gpQmfXUp5w4` (`READY`)
+  - Completed: 2026-08-20
+  - Next action: proceed with SF-W3-001
 
 ## W3 — Performance, PWA, downloads, and security
 

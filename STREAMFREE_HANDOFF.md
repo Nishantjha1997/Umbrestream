@@ -1123,3 +1123,41 @@ iframe stream extraction, open proxy, or unlicensed code was added.
 Next phase is W2 player and interaction certification: deterministic source-sheet tests, framed
 playback/Fit-Fill/fullscreen checks, Continue Watching/watchlist removal and Undo checks, and the
 Playwright/accessibility matrix. Native Android work remains blocked behind completion of the web phases.
+
+## 31. Web-first rebuild W2 production checkpoint — 2026-08-20
+
+W2 player and interaction certification is complete on branch `codex/web-first-native-rebuild`.
+The implementation commits are `751ac00` (shared source-control keyboard activation), `41a858d`
+(player lifecycle, fullscreen fallback exit, and guarded removal actions), `2cd65a1` (fullscreen
+exit control), and `d13c0b6` (browser matrix checkpoint). The task state is recorded in `TODO.md`.
+
+Source-picker reliability now covers pointer, touch, Enter, and Space activation across the shared
+sheet, shell, action-button wrapper, and Movie/TV/Anime control bars. Selection is single-flight,
+updates the source URL exactly once, closes the panel, and restores focus to the opener. Mobile uses
+the bottom drawer; tablet and desktop use the portal dialog. Continue Watching and Watchlist actions
+consume their own click events before parent resume links, while optimistic removal, Undo, and rollback
+remain in place.
+
+The player stage remains a black, isolated 16:9 surface. Fit/Fill changes only the stage class and
+device-local preference; the iframe identity and source URL do not change. Fullscreen now restores
+portrait/normal document state on exit, route cleanup, background/pagehide, and WebView fallback exit,
+and keeps an in-stage Exit full screen control available when the external control bar is hidden.
+
+Validation passed: strict authored lint, TypeScript, all deterministic playback/home/history/native
+state/manifest/artifact/leak checks, `git diff --check`, and a Vercel preview build. Preview deployment
+`dpl_Dsyy177yZV8giEjNQhKjKNgVVm8Q` returned `READY`. Browser verification covered the Movie, TV, and
+Anime player flows at desktop, 390x844 mobile, and 820x1180 tablet sizes, including source picker
+click/Enter/Space, source selection/focus restoration, Fit/Fill iframe non-remounting, fullscreen
+entry/exit, anime Sub/Dub context and separate source groups. Preview browser console errors were empty.
+
+Production deployment `dpl_33qEKaZ6fQStVARn1gpQmfXUp5w4` returned `READY` and is aliased to
+`https://streamfree.online`. Production HTTP smoke checks returned 200 for `/`, `/anime/discover`,
+`/browse`, `/robots.txt`, `/sitemap.xml`, `/api/mobile/config`, and movie/TV/anime source contracts.
+Live defaults remain Filmu for movies, VidKing for TV, and audio-matched anime defaults for Sub/Dub.
+Production browser smoke reconfirmed the source picker and fullscreen exit control with no console errors.
+
+The remaining web limitation is a signed-in mutation pass for real Continue Watching/Watchlist removal
+and Undo; deterministic optimistic/rollback coverage is green. External provider availability remains
+unreliable by nature and is represented as consent-based recovery rather than a guarantee. Next phase is
+W3 performance, PWA freshness, download/update hygiene, and security review; native Android work remains
+behind the web phases.
