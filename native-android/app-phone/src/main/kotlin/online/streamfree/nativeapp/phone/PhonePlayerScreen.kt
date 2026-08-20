@@ -21,8 +21,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
@@ -60,6 +65,7 @@ import online.streamfree.nativeapp.player.PlaybackPhase
 import online.streamfree.nativeapp.player.PlaybackSessionController
 import online.streamfree.nativeapp.player.PlaybackUiState
 import online.streamfree.nativeapp.player.PlaybackDisplayModeStore
+import online.streamfree.nativeapp.source.ResolvedSource
 
 @Composable
 fun PhoneHomeScreen(
@@ -104,6 +110,7 @@ fun PhonePlayerScreen(
   displayModeStore: PlaybackDisplayModeStore,
   onExit: () -> Unit,
   onFullscreenChanged: (Boolean) -> Unit,
+  sourceCandidates: List<ResolvedSource> = emptyList(),
 ) {
   val context = LocalContext.current
   val scope = rememberCoroutineScope()
@@ -113,6 +120,7 @@ fun PhonePlayerScreen(
   )
   val lifecycleOwner = LocalLifecycleOwner.current
   var isFullscreen by rememberSaveable { mutableStateOf(false) }
+  var showSourcePicker by rememberSaveable { mutableStateOf(false) }
   var positionMs by remember { mutableLongStateOf(0L) }
   var durationMs by remember { mutableLongStateOf(0L) }
 
@@ -174,6 +182,8 @@ fun PhonePlayerScreen(
         onSeek = { controller.player.seekTo(it) },
         onSwipe = { x, dragAmount -> adjustPlaybackWindow(context, x, dragAmount) },
         onExit = ::exitPlayer,
+        sourceCount = sourceCandidates.size,
+        onOpenSources = { showSourcePicker = true },
         onDisplayModeChanged = { mode -> scope.launch { displayModeStore.set(mode) } },
         onFullscreenChanged = { fullscreen ->
           isFullscreen = fullscreen
@@ -192,6 +202,18 @@ fun PhonePlayerScreen(
       }
     }
   }
+
+  if (showSourcePicker) {
+    SourcePickerSheet(
+      sources = sourceCandidates,
+      selectedProviderId = state.source?.providerId,
+      onDismiss = { showSourcePicker = false },
+      onSourceSelected = { source ->
+        state.request?.let { request -> controller.switchSource(request, source) }
+        showSourcePicker = false
+      },
+    )
+  }
 }
 
 @Composable
@@ -206,6 +228,8 @@ private fun PlayerCinemaStage(
   onSeek: (Long) -> Unit,
   onSwipe: (Float, Float) -> Unit,
   onExit: () -> Unit,
+  sourceCount: Int,
+  onOpenSources: () -> Unit,
   onDisplayModeChanged: (PlaybackDisplayMode) -> Unit,
   onFullscreenChanged: (Boolean) -> Unit,
 ) {
@@ -260,6 +284,8 @@ private fun PlayerCinemaStage(
       onTogglePlayback = onTogglePlayback,
       onSeek = onSeek,
       onExit = onExit,
+      sourceCount = sourceCount,
+      onOpenSources = onOpenSources,
       onDisplayModeChanged = onDisplayModeChanged,
       onFullscreenChanged = onFullscreenChanged,
     )
@@ -276,6 +302,8 @@ private fun PlayerOverlay(
   onTogglePlayback: () -> Unit,
   onSeek: (Long) -> Unit,
   onExit: () -> Unit,
+  sourceCount: Int,
+  onOpenSources: () -> Unit,
   onDisplayModeChanged: (PlaybackDisplayMode) -> Unit,
   onFullscreenChanged: (Boolean) -> Unit,
 ) {
@@ -351,6 +379,14 @@ private fun PlayerOverlay(
         verticalAlignment = Alignment.CenterVertically,
       ) {
         Button(
+          onClick = onOpenSources,
+          modifier = Modifier
+            .sizeIn(minWidth = 84.dp, minHeight = 48.dp)
+            .semantics { contentDescription = "Choose playback server" },
+        ) {
+          Text(if (sourceCount > 0) "Server $sourceCount" else "Server")
+        }
+        Button(
           onClick = {
             onDisplayModeChanged(
               if (displayMode == PlaybackDisplayMode.Fit) PlaybackDisplayMode.Fill else PlaybackDisplayMode.Fit,
@@ -374,6 +410,78 @@ private fun PlayerOverlay(
       }
     }
   }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SourcePickerSheet(
+  sources: List<ResolvedSource>,
+  selectedProviderId: String?,
+  onDismiss: () -> Unit,
+  onSourceSelected: (ResolvedSource) -> Unit,
+) {
+  ModalBottomSheet(onDismissRequest = onDismiss) {
+    Column(
+      modifier = Modifier
+        .fillMaxWidth()
+        .navigationBarsPadding()
+        .padding(horizontal = 20.dp, vertical = 8.dp),
+    ) {
+      Text("Choose a server", style = MaterialTheme.typography.headlineSmall)
+      Text(
+        "Only sources resolved for this episode are shown. Choosing one will preserve the current position when supported.",
+        style = MaterialTheme.typography.bodyMedium,
+        modifier = Modifier.padding(top = 8.dp, bottom = 12.dp),
+      )
+      if (sources.isEmpty()) {
+        Text(
+          "No compatible sources are available yet. Try again after the episode resolver returns.",
+          style = MaterialTheme.typography.bodyLarge,
+          modifier = Modifier.padding(bottom = 24.dp),
+        )
+      } else {
+        LazyColumn(modifier = Modifier.fillMaxWidth()) {
+          items(
+            items = sources,
+            key = { source -> "${source.providerId}:${source.playbackUrl}" },
+          ) { source ->
+            Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+              Button(
+                onClick = { onSourceSelected(source) },
+                modifier = Modifier
+                  .fillMaxWidth()
+                  .sizeIn(minHeight = 56.dp)
+                  .semantics {
+                    contentDescription = "Use ${source.label} server"
+                  },
+              ) {
+                Text(
+                  if (source.providerId == selectedProviderId) {
+                    "${source.label} · Selected"
+                  } else {
+                    source.label
+                  },
+                )
+              }
+              Text(
+                sourceSummary(source),
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(top = 4.dp, start = 4.dp),
+              )
+            }
+            HorizontalDivider()
+          }
+        }
+      }
+    }
+  }
+}
+
+private fun sourceSummary(source: ResolvedSource): String = buildString {
+  append(source.format.name.uppercase())
+  source.quality?.let { append(" · ${it}p") }
+  source.audioVariant?.let { append(" · ${it.name}") }
+  if (source.subtitles.isNotEmpty()) append(" · captions")
 }
 
 @Composable

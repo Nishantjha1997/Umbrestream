@@ -1539,3 +1539,12 @@ context. This is the handoff point for the future source sheet: provider
 changes are explicit and serialized rather than racing multiple player
 mounts. `:core:player:test` and `:app-phone:compileDebugKotlin` passed after
 this change; the full APK/lint gate remains the next release checkpoint.
+
+The phone shell now exposes an explicit server sheet. It only renders the
+resolver-provided `ResolvedSource` list, labels native format, quality, audio
+variant, and captions, marks the selected provider, and presents a truthful
+empty state when the registry has not returned a compatible source. Selecting
+a row closes the sheet once and calls the controller's serialized
+position-preserving `switchSource` path. Focused player tests, phone compile,
+and strict phone lint pass. Anime Sub/Dub grouping, episode navigation, and
+real resolver wiring remain before `SF-A2-003` can complete.
