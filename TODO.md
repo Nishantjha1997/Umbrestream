@@ -6,8 +6,8 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 
 - Branch: `codex/web-first-native-rebuild`
 - Baseline: `28bea93`
-- Active task: `SF-P0-004`
-- Next command: inventory every movie/TV adapter and verify each URL template and supported query parameter against primary provider documentation or its official source repository.
+- Active task: `SF-P0-005`
+- Next command: repair shared iframe display-mode ownership, remove inline mobile overlay collisions, add a 44px external mobile toolbar, and extend the player-display regression contract.
 - Reference policy: Media3 and Now in Android are approved architecture references; Aniyomi is pattern-only because it is archived; Dantotsu is excluded pending license/source verification.
 
 ## W0 — Governance and baseline
@@ -177,21 +177,22 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Deployment: `dpl_6AD7fG4ygMfMH2kMCRZih4y2NcVX` (`READY`, aliases `streamfree.online`)
   - Completed: 2026-08-20
 
-- [ ] SF-P0-004 — Audit every movie/TV provider embed contract against primary documentation
-  - Status: in progress — implementation and local release gates complete; preview/live browser verification pending
+- [x] SF-P0-004 — Audit every movie/TV provider embed contract against primary documentation
+  - Status: completed
   - Priority: P0
   - Depends on: SF-P0-003
   - Evidence: official VidKing, VidLink, Cinezo, VidRift, and Videasy documentation audited; Videasy direct movie/TV playback visibly advanced, but its release-preview embed later timed out and is conservatively excluded from silent recovery; unsupported Cinezo resume metadata removed; undocumented/nonresponsive VidBolt and VidSrc quarantined; `npm run test:player-sources` passes for 14 active adapters; targeted ESLint, TypeScript, production build, and `git diff --check` pass
-  - Commit: —
-  - Next action: commit and deploy a preview, inspect `/api/player/sources`, smoke Videasy inside StreamFree, confirm quarantined providers are absent, then promote the verified deployment
+  - Commit: `9495054`, `f059a0d`
+  - Deployment: `dpl_333xriThZmWkL3sVPua9Vq4yc86f` (`READY` preview; final production promotion will include the portrait-player follow-up)
+  - Completed: 2026-08-20
 
 - [ ] SF-P0-005 — Repair phone portrait movie-player composition and control collisions
-  - Status: not started
+  - Status: in progress
   - Priority: P0
   - Depends on: SF-P0-003
   - Evidence: —
   - Commit: —
-  - Next action: reproduce at 390×844 and Android WebView dimensions, capture the StreamFree/provider ownership boundary, center the 16:9 stage, reserve overlay safe zones, and verify Fit/Fill/source/fullscreen controls without iframe remounting
+  - Next action: prevent Fill from transforming cross-origin iframe controls, hide inline mobile overlay chrome, add an external Back/Details action, enforce 44px controls, reserve fullscreen safe zones, and verify at 390×844 without iframe remounting
 
 - [x] SF-W3-003 — Update exact APK download headers and security checks
   - Status: completed
