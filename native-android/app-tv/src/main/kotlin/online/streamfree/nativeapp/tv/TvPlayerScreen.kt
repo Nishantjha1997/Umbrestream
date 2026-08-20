@@ -51,6 +51,10 @@ import online.streamfree.nativeapp.player.PlaybackDisplayMode
 import online.streamfree.nativeapp.player.PlaybackDisplayModeStore
 import online.streamfree.nativeapp.player.PlaybackPhase
 import online.streamfree.nativeapp.player.PlaybackSessionController
+import online.streamfree.nativeapp.player.SourcePreferenceStore
+import online.streamfree.nativeapp.source.PlaybackRequest
+import online.streamfree.nativeapp.source.ResolutionOrchestrator
+import online.streamfree.nativeapp.source.ResolutionPreferences
 
 @Composable
 fun TvHomeScreen(onOpenPlayer: () -> Unit) {
@@ -87,6 +91,9 @@ fun TvPlayerScreen(
   controller: PlaybackSessionController,
   displayModeStore: PlaybackDisplayModeStore,
   onExit: () -> Unit,
+  sourcePreferenceStore: SourcePreferenceStore,
+  initialRequest: PlaybackRequest? = null,
+  sourceOrchestrator: ResolutionOrchestrator? = null,
 ) {
   val displayMode by displayModeStore.mode.collectAsStateWithLifecycle(
     initialValue = PlaybackDisplayMode.Fit,
@@ -95,6 +102,17 @@ fun TvPlayerScreen(
   val firstControl = remember { FocusRequester() }
   val scope = androidx.compose.runtime.rememberCoroutineScope()
   var isOverlayVisible by rememberSaveable { mutableStateOf(true) }
+
+  LaunchedEffect(initialRequest, sourceOrchestrator) {
+    val request = initialRequest ?: return@LaunchedEffect
+    val orchestrator = sourceOrchestrator ?: return@LaunchedEffect
+    val rememberedSourceId = sourcePreferenceStore.get(request.mediaType, request.audioVariant)
+    val result = orchestrator.resolve(
+      request = request,
+      preferences = ResolutionPreferences(rememberedSourceId = rememberedSourceId),
+    )
+    result.sources.firstOrNull()?.let { source -> controller.load(request, source) }
+  }
 
   LaunchedEffect(Unit) { firstControl.requestFocus() }
   DisposableEffect(Unit) {

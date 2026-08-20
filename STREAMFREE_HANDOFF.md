@@ -1640,3 +1640,20 @@ can share exactly the same rule.
 The resolver is tested for specials, gaps, duplicate metadata, cross-season
 navigation, and true boundaries. It is not yet connected to a native episode
 catalogue or UI; that remains part of the request-driven episode launch slice.
+
+## 47. Request-driven native playback launch — 2026-08-21
+
+Phone and TV activities now accept a narrow intent contract for a playback
+request: `mediaType`, `titleId`/external IDs, optional season/episode, `audio`,
+`sourceId`, and `resumePositionMs`. The request is parsed into the shared
+`PlaybackRequest`, resolved through the production source API orchestrator, and
+the first compatible candidate is loaded into the existing Media3 controller.
+Remembered provider preferences are passed to the orchestrator by media type
+and anime audio scope; a remembered provider failure does not silently fall
+back to another provider.
+
+Without a valid playback request the apps keep their honest preview Home state
+and do not invent a title or source. The next implementation slice must expose
+the episode catalogue/list contract and connect it to the shared adjacent
+episode resolver and TV/phone controls. Iframe candidates remain discovery-only
+until the consent-based WebView fallback is implemented.

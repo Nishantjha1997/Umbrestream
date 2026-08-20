@@ -72,6 +72,9 @@ import online.streamfree.nativeapp.player.SourcePreferenceStore
 import online.streamfree.nativeapp.model.MediaType
 import online.streamfree.nativeapp.model.AudioVariant
 import online.streamfree.nativeapp.source.ResolvedSource
+import online.streamfree.nativeapp.source.PlaybackRequest
+import online.streamfree.nativeapp.source.ResolutionOrchestrator
+import online.streamfree.nativeapp.source.ResolutionPreferences
 
 @Composable
 fun PhoneHomeScreen(
@@ -118,6 +121,8 @@ fun PhonePlayerScreen(
   onFullscreenChanged: (Boolean) -> Unit,
   sourceCandidates: List<ResolvedSource> = emptyList(),
   sourcePreferenceStore: SourcePreferenceStore,
+  initialRequest: PlaybackRequest? = null,
+  sourceOrchestrator: ResolutionOrchestrator? = null,
 ) {
   val context = LocalContext.current
   val scope = rememberCoroutineScope()
@@ -131,6 +136,21 @@ fun PhonePlayerScreen(
   var showSettings by rememberSaveable { mutableStateOf(false) }
   var positionMs by remember { mutableLongStateOf(0L) }
   var durationMs by remember { mutableLongStateOf(0L) }
+  var resolvedSourceCandidates by remember(sourceCandidates) { mutableStateOf(sourceCandidates) }
+
+  LaunchedEffect(initialRequest, sourceOrchestrator) {
+    val request = initialRequest ?: return@LaunchedEffect
+    val orchestrator = sourceOrchestrator ?: return@LaunchedEffect
+    val rememberedSourceId = sourcePreferenceStore.get(request.mediaType, request.audioVariant)
+    val result = orchestrator.resolve(
+      request = request,
+      preferences = ResolutionPreferences(rememberedSourceId = rememberedSourceId),
+    )
+    resolvedSourceCandidates = result.sources
+    result.sources.firstOrNull()?.let { source ->
+      controller.load(request, source)
+    }
+  }
 
   LaunchedEffect(controller.player) {
     while (isActive) {
@@ -190,7 +210,7 @@ fun PhonePlayerScreen(
         onSeek = { controller.player.seekTo(it) },
         onSwipe = { x, dragAmount -> adjustPlaybackWindow(context, x, dragAmount) },
         onExit = ::exitPlayer,
-        sourceCount = sourceCandidates.size,
+        sourceCount = resolvedSourceCandidates.size,
         onOpenSources = { showSourcePicker = true },
         onOpenSettings = { showSettings = true },
         onDisplayModeChanged = { mode -> scope.launch { displayModeStore.set(mode) } },
@@ -214,7 +234,7 @@ fun PhonePlayerScreen(
 
   if (showSourcePicker) {
     SourcePickerSheet(
-      sources = sourceCandidates,
+      sources = resolvedSourceCandidates,
       selectedProviderId = state.source?.providerId,
       onDismiss = { showSourcePicker = false },
       onSourceSelected = { source ->
