@@ -79,8 +79,10 @@ import online.streamfree.nativeapp.model.EpisodeRef
 import online.streamfree.nativeapp.source.ResolvedSource
 import online.streamfree.nativeapp.source.PlaybackRequest
 import online.streamfree.nativeapp.source.EpisodeCatalogResolver
+import online.streamfree.nativeapp.source.EmbedSourcePolicy
 import online.streamfree.nativeapp.source.ResolutionOrchestrator
 import online.streamfree.nativeapp.source.ResolutionPreferences
+import online.streamfree.nativeapp.source.SourceKind
 
 @Composable
 fun PhoneHomeScreen(
@@ -144,7 +146,21 @@ fun PhonePlayerScreen(
   var positionMs by remember { mutableLongStateOf(0L) }
   var durationMs by remember { mutableLongStateOf(0L) }
   var resolvedSourceCandidates by remember(sourceCandidates) { mutableStateOf(sourceCandidates) }
+  var activeEmbedSource by remember { mutableStateOf<ResolvedSource?>(null) }
+  var pendingEmbedSource by remember { mutableStateOf<ResolvedSource?>(null) }
   var episodeCatalog by remember { mutableStateOf<EpisodeCatalog?>(null) }
+
+  fun applyResolvedSources(sources: List<ResolvedSource>) {
+    val usable = sources.filter { it.kind == SourceKind.NativeDirect || EmbedSourcePolicy.isEligible(it) }
+    resolvedSourceCandidates = usable
+    val direct = usable.firstOrNull { it.kind == SourceKind.NativeDirect }
+    if (direct != null) {
+      activeEmbedSource = null
+      pendingEmbedSource = null
+    } else {
+      pendingEmbedSource = usable.firstOrNull(EmbedSourcePolicy::isEligible)
+    }
+  }
 
   LaunchedEffect(initialRequest, sourceOrchestrator) {
     val request = initialRequest ?: return@LaunchedEffect
@@ -154,8 +170,8 @@ fun PhonePlayerScreen(
       request = request,
       preferences = ResolutionPreferences(rememberedSourceId = rememberedSourceId),
     )
-    resolvedSourceCandidates = result.sources.filter { it.kind != online.streamfree.nativeapp.source.SourceKind.Iframe }
-    resolvedSourceCandidates.firstOrNull()?.let { source ->
+    applyResolvedSources(result.sources)
+    resolvedSourceCandidates.firstOrNull { it.kind == SourceKind.NativeDirect }?.let { source ->
       controller.load(request, source)
     }
   }
@@ -174,8 +190,11 @@ fun PhonePlayerScreen(
         request = request,
         preferences = ResolutionPreferences(rememberedSourceId = rememberedSourceId),
       )
-      resolvedSourceCandidates = result.sources.filter { it.kind != online.streamfree.nativeapp.source.SourceKind.Iframe }
-      resolvedSourceCandidates.firstOrNull()?.let { source -> controller.load(request, source) }
+      applyResolvedSources(result.sources)
+      resolvedSourceCandidates.firstOrNull { it.kind == SourceKind.NativeDirect }?.let { source ->
+        activeEmbedSource = null
+        controller.load(request, source)
+      }
     }
   }
 
@@ -207,7 +226,9 @@ fun PhonePlayerScreen(
   }
 
   BackHandler {
-    if (isFullscreen) {
+    if (activeEmbedSource != null) {
+      activeEmbedSource = null
+    } else if (isFullscreen) {
       isFullscreen = false
       onFullscreenChanged(false)
     } else {
@@ -237,6 +258,7 @@ fun PhonePlayerScreen(
         onSeek = { controller.player.seekTo(it) },
         onSwipe = { x, dragAmount -> adjustPlaybackWindow(context, x, dragAmount) },
         onExit = ::exitPlayer,
+        embedSource = activeEmbedSource,
         sourceCount = resolvedSourceCandidates.size,
         onOpenSources = { showSourcePicker = true },
         onOpenSettings = { showSettings = true },
@@ -250,6 +272,11 @@ fun PhonePlayerScreen(
         Column(modifier = Modifier.fillMaxWidth()) {
           PlaybackContextPanel(
             state = state,
+            embedSource = pendingEmbedSource,
+            onUseEmbed = { source ->
+              pendingEmbedSource = null
+              activeEmbedSource = source
+            },
             onExit = ::exitPlayer,
             modifier = Modifier
               .fillMaxWidth()
@@ -290,7 +317,15 @@ fun PhonePlayerScreen(
               source.providerId,
             )
           }
-          controller.switchSource(requestWithAudio, source)
+          if (EmbedSourcePolicy.isEligible(source)) {
+            controller.pause()
+            activeEmbedSource = source
+            pendingEmbedSource = null
+          } else {
+            activeEmbedSource = null
+            pendingEmbedSource = null
+            controller.switchSource(requestWithAudio, source)
+          }
         }
         showSourcePicker = false
       },
@@ -372,6 +407,7 @@ private fun PlayerCinemaStage(
   onSeek: (Long) -> Unit,
   onSwipe: (Float, Float) -> Unit,
   onExit: () -> Unit,
+  embedSource: ResolvedSource?,
   sourceCount: Int,
   onOpenSources: () -> Unit,
   onOpenSettings: () -> Unit,
@@ -402,24 +438,28 @@ private fun PlayerCinemaStage(
         }
       },
   ) {
-    AndroidView(
-      modifier = Modifier.fillMaxSize(),
-      factory = { context ->
-        PlayerView(context).apply {
-          useController = false
-          keepScreenOn = true
-          setShutterBackgroundColor(android.graphics.Color.BLACK)
-          setShowBuffering(PlayerView.SHOW_BUFFERING_WHEN_PLAYING)
-        }
-      },
-      update = { playerView ->
-        playerView.player = controller.player
-        playerView.resizeMode = when (displayMode) {
-          PlaybackDisplayMode.Fit -> AspectRatioFrameLayout.RESIZE_MODE_FIT
-          PlaybackDisplayMode.Fill -> AspectRatioFrameLayout.RESIZE_MODE_ZOOM
-        }
-      },
-    )
+    if (embedSource != null) {
+      EmbedPlaybackView(source = embedSource, modifier = Modifier.fillMaxSize())
+    } else {
+      AndroidView(
+        modifier = Modifier.fillMaxSize(),
+        factory = { context ->
+          PlayerView(context).apply {
+            useController = false
+            keepScreenOn = true
+            setShutterBackgroundColor(android.graphics.Color.BLACK)
+            setShowBuffering(PlayerView.SHOW_BUFFERING_WHEN_PLAYING)
+          }
+        },
+        update = { playerView ->
+          playerView.player = controller.player
+          playerView.resizeMode = when (displayMode) {
+            PlaybackDisplayMode.Fit -> AspectRatioFrameLayout.RESIZE_MODE_FIT
+            PlaybackDisplayMode.Fill -> AspectRatioFrameLayout.RESIZE_MODE_ZOOM
+          }
+        },
+      )
+    }
     PlayerOverlay(
       state = state,
       displayMode = displayMode,
@@ -743,6 +783,8 @@ private fun sourceSummary(source: ResolvedSource): String = buildString {
 @Composable
 private fun PlaybackContextPanel(
   state: PlaybackUiState,
+  embedSource: ResolvedSource?,
+  onUseEmbed: (ResolvedSource) -> Unit,
   onExit: () -> Unit,
   modifier: Modifier = Modifier,
 ) {
@@ -752,6 +794,18 @@ private fun PlaybackContextPanel(
       style = MaterialTheme.typography.bodyMedium,
       color = Color.White,
     )
+    if (embedSource != null) {
+      Text(
+        "Direct playback is unavailable for this episode. ${embedSource.label} can open in a restricted external player.",
+        style = MaterialTheme.typography.bodySmall,
+        color = Color.White,
+        modifier = Modifier.padding(top = 10.dp),
+      )
+      OutlinedButton(
+        onClick = { onUseEmbed(embedSource) },
+        modifier = Modifier.padding(top = 8.dp).sizeIn(minHeight = 48.dp),
+      ) { Text("Use ${embedSource.label}") }
+    }
     if (state.errorMessage != null) {
       Text(
         text = "Playback needs attention: ${state.errorMessage}",

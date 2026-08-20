@@ -9,6 +9,9 @@ interface SourceResolver {
   /** A resolver can expose several stable provider IDs through one API call. */
   fun acceptsSourceId(sourceId: String): Boolean = sourceId == descriptor.id
 
+  /** A discovery resolver may return more than one playback kind. */
+  fun acceptsOutputKind(kind: SourceKind): Boolean = kind == descriptor.kind
+
   suspend fun resolve(request: PlaybackRequest): ResolutionResult
 }
 
@@ -30,9 +33,10 @@ class SourceResolverRegistry(resolvers: List<SourceResolver>) {
     }
 
   fun isCompatible(source: ResolvedSource, request: PlaybackRequest): Boolean {
-    val descriptor = descriptor(source.contractId) ?: return false
+    val resolver = resolversById[source.contractId] ?: return false
+    val descriptor = resolver.descriptor
     if (!descriptor.supports(request)) return false
-    if (source.kind != descriptor.kind) return false
+    if (!resolver.acceptsOutputKind(source.kind)) return false
     if (source.format !in descriptor.capabilities.formats) return false
     if (request.audioVariant != null && source.audioVariant != request.audioVariant) return false
     if (request.explicitSourceId != null && request.explicitSourceId != source.providerId) return false

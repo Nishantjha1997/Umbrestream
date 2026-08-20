@@ -6,10 +6,33 @@ import online.streamfree.nativeapp.model.MediaType
 import online.streamfree.nativeapp.network.HttpResponse
 import online.streamfree.nativeapp.network.StreamFreeHttpTransport
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class StreamFreeSourceApiResolverTest {
+
+  @Test
+  fun `mixed api resolver accepts validated embed output without making it media3 playable`() {
+    val source = ResolvedSource(
+      providerId = "vidking",
+      label = "VidKing",
+      playbackUrl = "https://www.vidking.net/embed/movie/550",
+      kind = SourceKind.Iframe,
+      format = StreamFormat.Embed,
+      contractId = "streamfree-api",
+    )
+    val registry = SourceResolverRegistry(listOf(StreamFreeSourceApiResolver(FakeTransport("{}"))))
+
+    assertTrue(registry.isCompatible(source, PlaybackRequest(MediaType.Movie, "550", tmdbId = 550)))
+    assertTrue(EmbedSourcePolicy.isEligible(source))
+  }
+
+  @Test
+  fun `embed policy rejects unsafe and unrelated hosts`() {
+    assertFalse(EmbedSourcePolicy.isAllowedUrl("http://www.vidking.net/embed/movie/550"))
+    assertFalse(EmbedSourcePolicy.isAllowedUrl("https://evil.example/embed/movie/550"))
+  }
   @Test
   fun `maps only approved direct and embed sources and preserves anime audio`() = runBlocking {
     val transport = FakeTransport(

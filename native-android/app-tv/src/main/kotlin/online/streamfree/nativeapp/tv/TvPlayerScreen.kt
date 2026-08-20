@@ -62,6 +62,7 @@ import online.streamfree.nativeapp.player.PlaybackSessionController
 import online.streamfree.nativeapp.player.SourcePreferenceStore
 import online.streamfree.nativeapp.source.PlaybackRequest
 import online.streamfree.nativeapp.source.EpisodeCatalogResolver
+import online.streamfree.nativeapp.source.EmbedSourcePolicy
 import online.streamfree.nativeapp.source.ResolvedSource
 import online.streamfree.nativeapp.source.ResolutionOrchestrator
 import online.streamfree.nativeapp.source.ResolutionPreferences
@@ -116,9 +117,22 @@ fun TvPlayerScreen(
   var isOverlayVisible by rememberSaveable { mutableStateOf(true) }
   var showSourcePicker by rememberSaveable { mutableStateOf(false) }
   var resolvedSources by remember { mutableStateOf<List<ResolvedSource>>(emptyList()) }
+  var activeEmbedSource by remember { mutableStateOf<ResolvedSource?>(null) }
+  var pendingEmbedSource by remember { mutableStateOf<ResolvedSource?>(null) }
   var episodeCatalog by remember { mutableStateOf<EpisodeCatalog?>(null) }
   var nextCountdown by remember { mutableStateOf<Int?>(null) }
   var countdownCancelled by rememberSaveable { mutableStateOf(false) }
+
+  fun applyResolvedSources(sources: List<ResolvedSource>) {
+    val usable = sources.filter { it.kind == SourceKind.NativeDirect || EmbedSourcePolicy.isEligible(it) }
+    resolvedSources = usable
+    if (usable.any { it.kind == SourceKind.NativeDirect }) {
+      activeEmbedSource = null
+      pendingEmbedSource = null
+    } else {
+      pendingEmbedSource = usable.firstOrNull(EmbedSourcePolicy::isEligible)
+    }
+  }
 
   LaunchedEffect(initialRequest, sourceOrchestrator) {
     val request = initialRequest ?: return@LaunchedEffect
@@ -128,8 +142,8 @@ fun TvPlayerScreen(
       request = request,
       preferences = ResolutionPreferences(rememberedSourceId = rememberedSourceId),
     )
-    resolvedSources = result.sources.filter { it.kind != SourceKind.Iframe }
-    resolvedSources.firstOrNull()?.let { source -> controller.load(request, source) }
+    applyResolvedSources(result.sources)
+    resolvedSources.firstOrNull { it.kind == SourceKind.NativeDirect }?.let { source -> controller.load(request, source) }
   }
 
   LaunchedEffect(initialRequest, episodeCatalogResolver) {
@@ -151,8 +165,8 @@ fun TvPlayerScreen(
         request = request,
         preferences = ResolutionPreferences(rememberedSourceId = rememberedSourceId),
       )
-      resolvedSources = result.sources.filter { it.kind != SourceKind.Iframe }
-      resolvedSources.firstOrNull()?.let { source -> controller.load(request, source) }
+      applyResolvedSources(result.sources)
+      resolvedSources.firstOrNull { it.kind == SourceKind.NativeDirect }?.let { source -> controller.load(request, source) }
     }
   }
 
@@ -186,7 +200,9 @@ fun TvPlayerScreen(
   DisposableEffect(Unit) {
     onDispose { controller.pause() }
   }
-  BackHandler { onExit() }
+  BackHandler {
+    if (activeEmbedSource != null) activeEmbedSource = null else onExit()
+  }
 
   BoxWithConstraints(
     modifier = Modifier
@@ -194,24 +210,28 @@ fun TvPlayerScreen(
       .background(Color.Black),
   ) {
     val safeMargin = (maxWidth * 0.04f).coerceIn(32.dp, 84.dp)
-    AndroidView(
-      modifier = Modifier.fillMaxSize(),
-      factory = { context ->
-        PlayerView(context).apply {
-          useController = false
-          keepScreenOn = true
-          setShutterBackgroundColor(android.graphics.Color.BLACK)
-          setShowBuffering(PlayerView.SHOW_BUFFERING_WHEN_PLAYING)
-        }
-      },
-      update = { playerView ->
-        playerView.player = controller.player
-        playerView.resizeMode = when (displayMode) {
-          PlaybackDisplayMode.Fit -> AspectRatioFrameLayout.RESIZE_MODE_FIT
-          PlaybackDisplayMode.Fill -> AspectRatioFrameLayout.RESIZE_MODE_ZOOM
-        }
-      },
-    )
+    if (activeEmbedSource != null) {
+      EmbedPlaybackView(source = activeEmbedSource!!, modifier = Modifier.fillMaxSize())
+    } else {
+      AndroidView(
+        modifier = Modifier.fillMaxSize(),
+        factory = { context ->
+          PlayerView(context).apply {
+            useController = false
+            keepScreenOn = true
+            setShutterBackgroundColor(android.graphics.Color.BLACK)
+            setShowBuffering(PlayerView.SHOW_BUFFERING_WHEN_PLAYING)
+          }
+        },
+        update = { playerView ->
+          playerView.player = controller.player
+          playerView.resizeMode = when (displayMode) {
+            PlaybackDisplayMode.Fit -> AspectRatioFrameLayout.RESIZE_MODE_FIT
+            PlaybackDisplayMode.Fill -> AspectRatioFrameLayout.RESIZE_MODE_ZOOM
+          }
+        },
+      )
+    }
     if (isOverlayVisible) {
       Column(
         modifier = Modifier
@@ -267,6 +287,17 @@ fun TvPlayerScreen(
             contentDescription = "Choose playback server",
             modifier = Modifier.weight(1f),
           )
+          pendingEmbedSource?.let { source ->
+            TvFocusButton(
+              text = "Use embed",
+              onClick = {
+                pendingEmbedSource = null
+                activeEmbedSource = source
+              },
+              contentDescription = "Use the approved embedded player",
+              modifier = Modifier.weight(1f),
+            )
+          }
           TvFocusButton(
             text = displayMode.name,
             onClick = {
@@ -348,7 +379,15 @@ fun TvPlayerScreen(
           scope.launch {
             sourcePreferenceStore.set(request.mediaType, request.audioVariant, source.providerId)
           }
-          controller.switchSource(request, source)
+          if (EmbedSourcePolicy.isEligible(source)) {
+            controller.pause()
+            activeEmbedSource = source
+            pendingEmbedSource = null
+          } else {
+            activeEmbedSource = null
+            pendingEmbedSource = null
+            controller.switchSource(request, source)
+          }
         }
         showSourcePicker = false
       },
@@ -379,7 +418,13 @@ private fun TvSourcePickerDialog(
               onClick = { onSelected(source) },
               modifier = Modifier.fillMaxWidth().sizeIn(minHeight = 64.dp),
             ) {
-              Text(if (source.providerId == selectedProviderId) "${source.label} · Selected" else source.label)
+              Text(
+                buildString {
+                  append(if (source.providerId == selectedProviderId) "${source.label} · Selected" else source.label)
+                  append(" · ")
+                  append(if (EmbedSourcePolicy.isEligible(source)) "Embedded player" else source.format.name.uppercase())
+                },
+              )
             }
           }
         }

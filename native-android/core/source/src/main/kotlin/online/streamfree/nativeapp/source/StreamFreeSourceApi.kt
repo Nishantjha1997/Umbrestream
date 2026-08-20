@@ -43,6 +43,8 @@ class StreamFreeSourceApiResolver(
   // replacing the user's choice with another provider.
   override fun acceptsSourceId(sourceId: String): Boolean = sourceId.isNotBlank()
 
+  override fun acceptsOutputKind(kind: SourceKind): Boolean = kind == SourceKind.NativeDirect || kind == SourceKind.Iframe
+
   override suspend fun resolve(request: PlaybackRequest): ResolutionResult = withContext(Dispatchers.IO) {
     resolveBlocking(request)
   }

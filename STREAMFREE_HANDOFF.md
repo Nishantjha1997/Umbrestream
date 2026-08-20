@@ -1690,3 +1690,36 @@ Focused validation for this slice passed:
 `git diff --check`, `:core:model:test`, `:core:source:test`,
 `:app-phone:compileDebugKotlin`, `:app-tv:compileDebugKotlin`,
 `:app-phone:lintDebug`, and `:app-tv:lintDebug`.
+
+## 49. Native direct/embed playback boundary — 2026-08-21
+
+The production source API is a mixed discovery resolver: it can return native
+HLS/DASH/MP4 candidates and provider iframe candidates in the same response.
+The resolver registry now models that explicitly through `acceptsOutputKind`;
+iframe candidates are validated and retained for the fallback surface without
+ever becoming Media3 inputs.
+
+Both native apps now expose a consent-based embed path. Direct candidates stay
+on the Media3 `PlayerView`. An intentionally selected or confirmed embed opens
+inside a black, full-stage WebView with JavaScript enabled only for that
+provider page, file/content access disabled, mixed content disabled, Safe
+Browsing enabled where available, popups/multiple windows disabled, and no
+`addJavascriptInterface`. Main-frame navigation is limited to the original
+approved embed host and approved HTTPS provider host policy; unsupported or
+unsafe URLs are rejected before loading.
+
+The source picker labels embed entries as `Embedded player`; if no direct
+candidate exists, the player shows a truthful confirmation action rather than
+silently opening a third-party page. Android Back exits the embedded surface
+before leaving playback. `EmbedSourcePolicy` has unit coverage for accepted
+VidKing output and rejected HTTP/unrelated hosts.
+
+Validation passed after this slice:
+`:core:source:test`, `:app-phone:compileDebugKotlin`,
+`:app-tv:compileDebugKotlin`, `:app-phone:lintDebug`,
+`:app-tv:lintDebug`, and `git diff --check`.
+
+Remaining gate: deterministic Compose interaction tests for source selection,
+embed consent, Back/focus restoration, and TV episode controls. No signed APK,
+physical-phone test, real-provider smoke test, or production deployment is
+approved by this native scaffold checkpoint.
