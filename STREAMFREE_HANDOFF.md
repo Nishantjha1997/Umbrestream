@@ -5,7 +5,7 @@ This is the current handoff document for another developer or AI agent taking ov
 StreamFree project. Read this file before changing production, playback, Android builds, or
 the Vercel deployment.
 
-Last updated: 2026-08-17
+Last updated: 2026-08-20
 
 ## 1. Product identity and live state
 
@@ -14,12 +14,12 @@ Last updated: 2026-08-17
   Vercel project casually; the public brand is already StreamFree.
 - Git repository: https://github.com/Nishantjha1997/Umbrestream
 - Baseline branch: main
-- Active implementation branch: `codex/streamfree-worldclass-hardening`
+- Active implementation branch: `codex/web-first-native-rebuild`
 - Production domain: https://streamfree.online
 - Vercel project: umbrestream
 - Production baseline commit recorded before this hardening branch: `2f234a6`.
-- This branch has not been deployed or published as production. Vercel status must be rechecked
-  after the final test gate; do not infer production status from the dashboard's last deployment.
+- The current web playback work on this branch is deployed to production. Always recheck the
+  exact deployment and public aliases before announcing later changes.
 - Creator branding: **Nishant**. The site and app splash screens use the signature
   Created with love by Nishant.
 
@@ -1228,3 +1228,31 @@ W3 is also complete. APK response rules are now generated from the signed active
 `src/lib/releases/downloadHeaders.ts`; the contract test verifies exact Vercel paths, attachment filenames, Android
 APK MIME type, and `nosniff`. The Android promo was corrected from obsolete `v1.3` to active `v1.3.3`. Live HTTP
 headers for the phone and TV APKs passed. Relevant commits are `1c8087e`, `c7f57fa`, and `f9396b3`.
+
+## 35. Movie reliability v4 and production runtime hotfix — 2026-08-20
+
+The movie policy is now `2026-08-reliability-v4` with a 30-second startup grace period. The source
+sheet remains Filmu-first, while the certified automatic recovery chain is Filmu → VidRift → VidKing.
+Eventless iframe providers no longer arm a failure timer because StreamFree cannot validate their
+playback events; this prevents a working VidRift stream from being interrupted or falsely labelled
+unavailable. Movie metadata and resume history are server-fetched before the browser-only player
+controller loads, removing the previous client metadata waterfall without server-rendering browser APIs.
+
+Browser evidence for TMDB movie `1212763` showed VidRift progress advancing from `0:10` to `1:09`
+beyond the 30-second boundary with no recovery warning. The source dialog opened and closed while
+playback continued and restored focus to the source control. Production recovery from an unconfirmed
+Filmu start reached VidRift playback and advanced through `0:23`. Filmu remains the product default,
+but its stream was intermittent for this fixture and must not be described as guaranteed.
+
+Production deployment `dpl_EmipeRin38S6BijyJXeKVzdqLcVM` first published the v4 playback policy. A
+post-deploy log scan then found detail-page SSR failures caused by `ShareButton` reading bare `location`
+and analytics inserts rejected by Supabase RLS. Commit `01ec5a8` fixes canonical share URLs without a
+browser global and adds a cookie-free server-only Supabase admin client for analytics writes. Exact
+preview fixtures `/movie/315162`, `/tv/60059`, and `/movie/1212763/player?src=vidrift` passed with no
+browser errors or analytics RLS logs. The hotfix is live in production deployment
+`dpl_6AD7fG4ygMfMH2kMCRZih4y2NcVX`, which is `READY` and aliases `https://streamfree.online`.
+
+The next P0 work is tracked as `SF-P0-004` and `SF-P0-005`: audit every movie/TV embed URL against
+primary provider documentation and repair the 390×844/Android portrait player composition and control
+collisions. Preserve provider-owned iframe boundaries; StreamFree may size and clip its shell but must
+not claim control over layout rendered inside a cross-origin provider.

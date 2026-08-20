@@ -6,8 +6,8 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 
 - Branch: `codex/web-first-native-rebuild`
 - Baseline: `28bea93`
-- Active task: `SF-P0-003`
-- Next command: deploy the server-rendering/analytics hotfix preview, reproduce `/movie/315162` and `/tv/60059`, verify analytics writes, promote it, then start the provider-contract and phone portrait-player audits.
+- Active task: `SF-P0-004`
+- Next command: inventory every movie/TV adapter and verify each URL template and supported query parameter against primary provider documentation or its official source repository.
 - Reference policy: Media3 and Now in Android are approved architecture references; Aniyomi is pattern-only because it is archived; Dantotsu is excluded pending license/source verification.
 
 ## W0 — Governance and baseline
@@ -168,17 +168,17 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Deployment: `dpl_9J7xBsqHKnkMcSXAZs77bKX52P8d` (`READY`)
   - Completed: 2026-08-20
 
-- [ ] SF-P0-003 — Restore reliable first-click movie playback
-  - Status: in progress
+- [x] SF-P0-003 — Restore reliable first-click movie playback
+  - Status: completed
   - Priority: P0
   - Depends on: SF-P0-002
-  - Evidence: source contracts, TypeScript, targeted ESLint, production build, and `git diff --check` pass; Filmu received the full 30-second startup window; VidRift visibly advanced from `0:10` through `1:09` without a false eventless-provider warning; source picker opened/closed with focus restoration while playback continued; production deployment `dpl_EmipeRin38S6BijyJXeKVzdqLcVM` is `READY` and aliases `streamfree.online`; live API reports policy `2026-08-reliability-v4`, timeout `30000`, and order Filmu → VidRift → VidKing; production recovery reached VidRift playback at `0:23`; post-deploy logs exposed a separate detail-page SSR `location` crash and analytics RLS rejection, with local regression fixes passing the new production-runtime contract and full build
-  - Commit: `50e7069`, `0dcc868`, `0f49516`; runtime hotfix pending
-  - Deployment: `dpl_EmipeRin38S6BijyJXeKVzdqLcVM` (`READY`)
-  - Next action: deploy and certify the SSR/analytics hotfix, then close the task
+  - Evidence: source contracts, TypeScript, targeted ESLint, production build, and `git diff --check` pass; Filmu received the full 30-second startup window; VidRift visibly advanced from `0:10` through `1:09` without a false eventless-provider warning; source picker opened/closed with focus restoration while playback continued; live API reports policy `2026-08-reliability-v4`, timeout `30000`, and order Filmu → VidRift → VidKing; production recovery reached VidRift playback at `0:23`; exact hotfix preview fixtures `/movie/315162`, `/tv/60059`, and `/movie/1212763/player?src=vidrift` passed with no browser errors or analytics RLS rejection; production detail fixture passed without the former `location` crash
+  - Commit: `50e7069`, `0dcc868`, `0f49516`, `01ec5a8`
+  - Deployment: `dpl_6AD7fG4ygMfMH2kMCRZih4y2NcVX` (`READY`, aliases `streamfree.online`)
+  - Completed: 2026-08-20
 
 - [ ] SF-P0-004 — Audit every movie/TV provider embed contract against primary documentation
-  - Status: not started
+  - Status: in progress
   - Priority: P0
   - Depends on: SF-P0-003
   - Evidence: —
