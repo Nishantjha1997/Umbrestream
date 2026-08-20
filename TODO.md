@@ -253,7 +253,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P0
   - Depends on: SF-A1-002
   - Evidence: `ResolutionOrchestrator` validates the cache, preserves explicit/remembered source precedence without silent fallback, hedges up to two native resolvers at 350 ms, starts the cloud tier at 800 ms, enforces 4-second native and 6-second cloud budgets, tracks typed attempts, cancels losing work, and only permits consent-based iframe fallback; `ResolutionOrchestratorTest` covers fast native wins, manual failure protection, and Anime Dub compatibility; focused `:core:source:test`, full `scripts/verify.ps1`, and `git diff --check` passed
-  - Commit: `pending`
+  - Commit: `6cb0058`
   - Completed: 2026-08-21
 
 ## A2 — Media3 playback

@@ -1434,5 +1434,5 @@ tests and the complete `native-android/scripts/verify.ps1` gate passed,
 including both debug APK assemblies and strict lint. No provider adapter or
 Media3 player is connected yet; those are the next phase.
 
-Implementation commit: pending. The next active task is `SF-A2-001`, the
+Implementation commit: `6cb0058`. The next active task is `SF-A2-001`, the
 Media3 data-source and media-source pipeline.
