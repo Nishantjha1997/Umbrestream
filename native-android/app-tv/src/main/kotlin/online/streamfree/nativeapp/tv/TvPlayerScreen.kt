@@ -396,7 +396,7 @@ fun TvPlayerScreen(
 }
 
 @Composable
-private fun TvSourcePickerDialog(
+internal fun TvSourcePickerDialog(
   sources: List<ResolvedSource>,
   selectedProviderId: String?,
   onDismiss: () -> Unit,

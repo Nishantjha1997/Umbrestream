@@ -688,7 +688,7 @@ private fun PlayerSettingsSheet(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SourcePickerSheet(
+internal fun SourcePickerSheet(
   sources: List<ResolvedSource>,
   selectedProviderId: String?,
   onDismiss: () -> Unit,

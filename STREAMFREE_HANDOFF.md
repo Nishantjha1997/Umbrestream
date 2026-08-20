@@ -1723,3 +1723,12 @@ Remaining gate: deterministic Compose interaction tests for source selection,
 embed consent, Back/focus restoration, and TV episode controls. No signed APK,
 physical-phone test, real-provider smoke test, or production deployment is
 approved by this native scaffold checkpoint.
+
+Compose Android-test coverage is now checked into both app modules. The phone
+suite covers direct/embed labels, embedded selection callbacks, and separate
+Anime Sub/Dub group headings. The TV suite covers embedded-provider labeling,
+selection callbacks, and the remote player entry. The tests compile with
+`:app-phone:compileDebugAndroidTestKotlin` and
+`:app-tv:compileDebugAndroidTestKotlin`; execution is intentionally deferred to
+the connected phone/TV-emulator gate because no device is connected in this
+workspace.
