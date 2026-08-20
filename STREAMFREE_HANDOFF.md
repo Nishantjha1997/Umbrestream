@@ -1531,3 +1531,11 @@ Focused `:core:player:test`, `:app-phone:compileDebugKotlin`, and
 checkpoint also passed: all core tests, both debug APK assemblies, and strict
 phone/TV/library lint. Implementation commit: `796bc61`. `SF-A2-003` remains
 the active task.
+
+The controller now cancels an older asynchronous load before starting a new
+one and exposes `switchSource(request, source)`, which captures the current
+player position and reloads the selected compatible source with that resume
+context. This is the handoff point for the future source sheet: provider
+changes are explicit and serialized rather than racing multiple player
+mounts. `:core:player:test` and `:app-phone:compileDebugKotlin` passed after
+this change; the full APK/lint gate remains the next release checkpoint.

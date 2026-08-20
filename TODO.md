@@ -278,7 +278,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Status: in progress
   - Priority: P0
   - Depends on: SF-A2-002
-  - Evidence: phone Compose player shell now owns a black 16:9 cinema stage around the existing `Player` instance, lifecycle-aware state collection, persistent Fit/Fill `resizeMode` changes without remounting, explicit landscape fullscreen and portrait restoration, first-Back fullscreen exit, double-tap seek, brightness/volume vertical gestures, accessible 48dp controls, and a clear no-source state; `:core:player:test`, `:app-phone:compileDebugKotlin`, and `:app-phone:lintDebug` passed
+  - Evidence: phone Compose player shell now owns a black 16:9 cinema stage around the existing `Player` instance, lifecycle-aware state collection, persistent Fit/Fill `resizeMode` changes without remounting, explicit landscape fullscreen and portrait restoration, first-Back fullscreen exit, double-tap seek, brightness/volume vertical gestures, accessible 48dp controls, a clear no-source state, and controller-level cancellation/position-preserving source switching; `:core:player:test`, `:app-phone:compileDebugKotlin`, and `:app-phone:lintDebug` passed
   - Commit: —
   - Next action: wire the shell to authenticated episode/source resolution, then add the source sheet, Anime Sub/Dub controls, episode list/next controls, subtitle/audio/speed actions, and deterministic UI tests
 

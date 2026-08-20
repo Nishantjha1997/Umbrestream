@@ -31,6 +31,7 @@ class PlaybackSessionController(
   private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
   private val _state = MutableStateFlow(PlaybackUiState())
   private var persistenceJob: Job? = null
+  private var loadJob: Job? = null
 
   val state: StateFlow<PlaybackUiState> = _state.asStateFlow()
   private val exoPlayer: ExoPlayer = ExoPlayer.Builder(context.applicationContext).build()
@@ -48,7 +49,8 @@ class PlaybackSessionController(
   }
 
   fun load(request: PlaybackRequest, source: ResolvedSource) {
-    scope.launch {
+    loadJob?.cancel()
+    loadJob = scope.launch {
       try {
         val saved = store.get(progressKey(request))
         val startPosition = when {
@@ -70,6 +72,11 @@ class PlaybackSessionController(
     }
   }
 
+  fun switchSource(request: PlaybackRequest, source: ResolvedSource) {
+    val resumePosition = player.currentPosition.coerceAtLeast(0L)
+    load(request.copy(resumePositionMs = resumePosition), source)
+  }
+
   fun pause() {
     player.pause()
   }
@@ -89,6 +96,7 @@ class PlaybackSessionController(
       if (pendingRecord != null) store.save(pendingRecord)
     }
     persistenceJob?.cancel()
+    loadJob?.cancel()
     player.removeListener(this)
     exoPlayer.release()
     mediaSession.release()
