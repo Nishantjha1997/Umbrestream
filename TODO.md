@@ -167,13 +167,13 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Commit: —
   - Next action: validate the URL-intent correction and five-second clean-launch recovery on preview, then deploy production
 
-- [ ] SF-W3-003 — Update exact APK download headers and security checks
-  - Status: not started
+- [x] SF-W3-003 — Update exact APK download headers and security checks
+  - Status: completed
   - Priority: P0
   - Depends on: SF-W3-001
-  - Evidence: current header rules target old filenames
-  - Commit: —
-  - Next action: derive headers from active manifest targets and verify responses
+  - Evidence: Vercel APK headers are derived from the two signed active manifests; `scripts/check-download-headers.mjs`, update-manifest validation, release-artifact validation, ESLint, TypeScript, and `git diff --check` pass; Android promo now targets the active phone release rather than obsolete `v1.3`
+  - Commit: pending (manifest-derived headers in this changeset)
+  - Completed: 2026-08-20
 
 - [ ] SF-W3-004 — Commit, push, deploy, and certify Web Phase W3
   - Status: not started

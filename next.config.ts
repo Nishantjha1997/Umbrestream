@@ -1,5 +1,7 @@
 import withPWAInit from "@ducanh2912/next-pwa";
+import { createOfficialApkHeaderRules } from "./src/lib/releases/downloadHeaders";
 import { NextConfig } from "next/dist/server/config";
+const officialApkHeaderRules = createOfficialApkHeaderRules();
 
 const withPWA = withPWAInit({
   dest: "public",
@@ -108,23 +110,7 @@ const nextConfig: NextConfig = {
     ].join("; ");
 
     return [
-      ...[
-        {
-          source: "/downloads/StreamFree-Android-v1.3.3.apk",
-          filename: "StreamFree-Android-v1.3.3.apk",
-        },
-        {
-          source: "/downloads/StreamFree-TV-v1.2.3.apk",
-          filename: "StreamFree-TV-v1.2.3.apk",
-        },
-      ].map(({ source, filename }) => ({
-        source,
-        headers: [
-          { key: "Content-Type", value: "application/vnd.android.package-archive" },
-          { key: "Content-Disposition", value: `attachment; filename="${filename}"` },
-          { key: "X-Content-Type-Options", value: "nosniff" },
-        ],
-      })),
+      ...officialApkHeaderRules,
       {
         source: "/:path*",
         headers: [
