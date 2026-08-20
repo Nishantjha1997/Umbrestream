@@ -65,6 +65,8 @@ import online.streamfree.nativeapp.player.PlaybackPhase
 import online.streamfree.nativeapp.player.PlaybackSessionController
 import online.streamfree.nativeapp.player.PlaybackUiState
 import online.streamfree.nativeapp.player.PlaybackDisplayModeStore
+import online.streamfree.nativeapp.model.MediaType
+import online.streamfree.nativeapp.model.AudioVariant
 import online.streamfree.nativeapp.source.ResolvedSource
 
 @Composable
@@ -209,7 +211,14 @@ fun PhonePlayerScreen(
       selectedProviderId = state.source?.providerId,
       onDismiss = { showSourcePicker = false },
       onSourceSelected = { source ->
-        state.request?.let { request -> controller.switchSource(request, source) }
+        state.request?.let { request ->
+          val requestWithAudio = if (request.mediaType == MediaType.Anime && source.audioVariant != null) {
+            request.copy(audioVariant = source.audioVariant)
+          } else {
+            request
+          }
+          controller.switchSource(requestWithAudio, source)
+        }
         showSourcePicker = false
       },
     )
@@ -420,6 +429,19 @@ private fun SourcePickerSheet(
   onDismiss: () -> Unit,
   onSourceSelected: (ResolvedSource) -> Unit,
 ) {
+  val hasAudioGroups = sources.any { it.audioVariant != null }
+  val sourceGroups = buildList {
+    if (hasAudioGroups) {
+      listOf(AudioVariant.Sub, AudioVariant.Dub).forEach { variant ->
+        val variantSources = sources.filter { it.audioVariant == variant }
+        if (variantSources.isNotEmpty()) add(variant.name to variantSources)
+      }
+      val unlabeled = sources.filter { it.audioVariant == null }
+      if (unlabeled.isNotEmpty()) add("Other" to unlabeled)
+    } else if (sources.isNotEmpty()) {
+      add("Servers" to sources)
+    }
+  }
   ModalBottomSheet(onDismissRequest = onDismiss) {
     Column(
       modifier = Modifier
@@ -441,35 +463,44 @@ private fun SourcePickerSheet(
         )
       } else {
         LazyColumn(modifier = Modifier.fillMaxWidth()) {
-          items(
-            items = sources,
-            key = { source -> "${source.providerId}:${source.playbackUrl}" },
-          ) { source ->
-            Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
-              Button(
-                onClick = { onSourceSelected(source) },
-                modifier = Modifier
-                  .fillMaxWidth()
-                  .sizeIn(minHeight = 56.dp)
-                  .semantics {
-                    contentDescription = "Use ${source.label} server"
-                  },
-              ) {
-                Text(
-                  if (source.providerId == selectedProviderId) {
-                    "${source.label} · Selected"
-                  } else {
-                    source.label
-                  },
-                )
-              }
+          sourceGroups.forEach { (groupName, groupSources) ->
+            item(key = "heading:$groupName") {
               Text(
-                sourceSummary(source),
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.padding(top = 4.dp, start = 4.dp),
+                text = if (hasAudioGroups) "$groupName servers" else groupName,
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(top = 8.dp, bottom = 4.dp),
               )
             }
-            HorizontalDivider()
+            items(
+              items = groupSources,
+              key = { source -> "${source.providerId}:${source.playbackUrl}" },
+            ) { source ->
+              Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+                Button(
+                  onClick = { onSourceSelected(source) },
+                  modifier = Modifier
+                    .fillMaxWidth()
+                    .sizeIn(minHeight = 56.dp)
+                    .semantics {
+                      contentDescription = "Use ${source.label} ${groupName.lowercase()} server"
+                    },
+                ) {
+                  Text(
+                    if (source.providerId == selectedProviderId) {
+                      "${source.label} · Selected"
+                    } else {
+                      source.label
+                    },
+                  )
+                }
+                Text(
+                  sourceSummary(source),
+                  style = MaterialTheme.typography.bodySmall,
+                  modifier = Modifier.padding(top = 4.dp, start = 4.dp),
+                )
+              }
+              HorizontalDivider()
+            }
           }
         }
       }

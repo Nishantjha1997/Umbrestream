@@ -1548,3 +1548,9 @@ a row closes the sheet once and calls the controller's serialized
 position-preserving `switchSource` path. Focused player tests, phone compile,
 and strict phone lint pass. Anime Sub/Dub grouping, episode navigation, and
 real resolver wiring remain before `SF-A2-003` can complete.
+
+Anime sources in the sheet are grouped as `Sub servers`, `Dub servers`, and a
+labelled `Other` group when the resolver returns mixed variants. Choosing a
+Sub or Dub source updates the compatible `PlaybackRequest.audioVariant` before
+the controller switch, preserving the episode and position context. The UI
+does not manufacture an audio option when the resolver did not return one.
