@@ -138,7 +138,7 @@ fun PhoneHomeScreen(
 }
 
 @Composable
-private fun PhoneHomeFeed(feed: NativeHomeFeed, onOpenTitle: (PlaybackRequest) -> Unit) {
+internal fun PhoneHomeFeed(feed: NativeHomeFeed, onOpenTitle: (PlaybackRequest) -> Unit) {
   LazyColumn(
     modifier = Modifier.fillMaxSize().safeDrawingPadding(),
     contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 20.dp, vertical = 24.dp),

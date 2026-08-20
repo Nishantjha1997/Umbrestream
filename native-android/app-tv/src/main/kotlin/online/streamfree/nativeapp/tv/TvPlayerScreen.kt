@@ -114,7 +114,7 @@ fun TvHomeScreen(
 }
 
 @Composable
-private fun TvHomeFeed(feed: NativeHomeFeed, onOpenTitle: (PlaybackRequest) -> Unit) {
+internal fun TvHomeFeed(feed: NativeHomeFeed, onOpenTitle: (PlaybackRequest) -> Unit) {
   LazyColumn(
     modifier = Modifier.fillMaxSize(),
     contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 72.dp, vertical = 48.dp),

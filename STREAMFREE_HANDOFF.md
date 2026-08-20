@@ -1759,6 +1759,10 @@ loader that accepts only HTTPS `image.tmdb.org`, `s4.anilist.co`, and
 `img.anili.st` hosts, refuses redirects, caps the response at 4 MiB, and
 surfaces loading/failure states instead of leaving blank layout holes.
 
+The phone/TV Compose Android-test suites also cover regional Home row rendering
+in addition to the source-sheet/provider-selection checks. They compile, but
+still require a connected phone or TV emulator for execution.
+
 Live source-contract smoke on 2026-08-21 returned HTTP 200 for a movie,
 multi-episode TV fixture, and anime Sub request. The API policy was
 `2026-08-reliability-v5`; the movie response contained seven labelled iframe

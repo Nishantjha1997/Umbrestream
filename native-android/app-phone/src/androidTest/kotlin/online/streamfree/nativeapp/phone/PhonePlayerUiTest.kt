@@ -8,6 +8,11 @@ import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import java.util.concurrent.atomic.AtomicReference
 import online.streamfree.nativeapp.designsystem.StreamFreeTheme
+import online.streamfree.nativeapp.model.MediaType
+import online.streamfree.nativeapp.model.NativeHomeFeed
+import online.streamfree.nativeapp.model.NativeHomeRegion
+import online.streamfree.nativeapp.model.NativeHomeRow
+import online.streamfree.nativeapp.model.NativeMediaSummary
 import online.streamfree.nativeapp.source.ResolvedSource
 import online.streamfree.nativeapp.source.SourceKind
 import online.streamfree.nativeapp.source.StreamFormat
@@ -86,5 +91,31 @@ class PhonePlayerUiTest {
 
     composeRule.onNodeWithText("Sub servers").assertIsDisplayed()
     composeRule.onNodeWithText("Dub servers").assertIsDisplayed()
+  }
+
+  @Test
+  fun homeFeedRendersRegionHeroAndRowTitles() {
+    val media = NativeMediaSummary(
+      mediaType = MediaType.Movie,
+      id = 550,
+      href = "/movie/550",
+      title = "Fight Club",
+      posterUrl = "https://image.tmdb.org/t/p/w500/poster.jpg",
+    )
+    val feed = NativeHomeFeed(
+      region = NativeHomeRegion("IN", "IN", "India", "edge"),
+      provenance = "signed_out",
+      hero = null,
+      rows = listOf(NativeHomeRow("trending", "Trending in India", "trending", listOf(media))),
+      generatedAt = "now",
+    )
+
+    composeRule.setContent {
+      StreamFreeTheme { PhoneHomeFeed(feed = feed, onOpenTitle = {}) }
+    }
+
+    composeRule.onNodeWithText("India · signed out").assertIsDisplayed()
+    composeRule.onNodeWithText("Trending in India").assertIsDisplayed()
+    composeRule.onNodeWithText("Fight Club").assertIsDisplayed()
   }
 }

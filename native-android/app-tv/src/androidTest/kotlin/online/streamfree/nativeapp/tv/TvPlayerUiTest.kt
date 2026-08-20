@@ -8,6 +8,11 @@ import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import java.util.concurrent.atomic.AtomicReference
 import online.streamfree.nativeapp.designsystem.StreamFreeTheme
+import online.streamfree.nativeapp.model.MediaType
+import online.streamfree.nativeapp.model.NativeHomeFeed
+import online.streamfree.nativeapp.model.NativeHomeRegion
+import online.streamfree.nativeapp.model.NativeHomeRow
+import online.streamfree.nativeapp.model.NativeMediaSummary
 import online.streamfree.nativeapp.source.ResolvedSource
 import online.streamfree.nativeapp.source.SourceKind
 import online.streamfree.nativeapp.source.StreamFormat
@@ -56,5 +61,31 @@ class TvPlayerUiTest {
 
     composeRule.onNodeWithText("Open player").assertIsDisplayed().performClick()
     assertEquals(true, opened)
+  }
+
+  @Test
+  fun homeFeedRendersRegionalRowAndTitleAction() {
+    val media = NativeMediaSummary(
+      mediaType = MediaType.Tv,
+      id = 1399,
+      href = "/tv/1399",
+      title = "The Last Kingdom",
+      posterUrl = "https://image.tmdb.org/t/p/w500/poster.jpg",
+    )
+    val feed = NativeHomeFeed(
+      region = NativeHomeRegion("US", "US", "United States", "edge"),
+      provenance = "cold_start",
+      hero = null,
+      rows = listOf(NativeHomeRow("regional-tv", "Trending series", "regional_tv", listOf(media))),
+      generatedAt = "now",
+    )
+
+    composeRule.setContent {
+      StreamFreeTheme { TvHomeFeed(feed = feed, onOpenTitle = {}) }
+    }
+
+    composeRule.onNodeWithText("United States · cold start").assertIsDisplayed()
+    composeRule.onNodeWithText("Trending series").assertIsDisplayed()
+    composeRule.onNodeWithText("The Last Kingdom").assertIsDisplayed()
   }
 }

@@ -286,7 +286,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Status: in progress
   - Priority: P0
   - Depends on: SF-A2-003
-  - Evidence: `StreamFreeHomeFeedResolver` strictly parses the versioned `/api/mobile/home` contract, carries optional bearer and validated `X-StreamFree-Region` headers, and has region/provenance/hero/row tests; phone and TV Home now load the shared feed, display region/provenance and rows, launch request-driven playback intents, and render bounded trusted TMDB/AniList artwork with loading/failure states; production `/api/mobile/home` returned HTTP 200 with schemaVersion 1 and the expected India regional feed; core tests, app compilation, strict lint, and `git diff --check` pass
+  - Evidence: `StreamFreeHomeFeedResolver` strictly parses the versioned `/api/mobile/home` contract, carries optional bearer and validated `X-StreamFree-Region` headers, and has region/provenance/hero/row tests; phone and TV Home now load the shared feed, display region/provenance and rows, launch request-driven playback intents, and render bounded trusted TMDB/AniList artwork with loading/failure states; phone/TV Compose Android tests cover regional row rendering; production `/api/mobile/home` returned HTTP 200 with schemaVersion 1 and the expected India regional feed; core tests, app compilation, Android-test compilation, strict lint, and `git diff --check` pass
   - Commit: —
   - Next action: add feed Home UI tests, persistent region override, and authenticated Continue Watching wiring before moving to offline/auth work.
 
