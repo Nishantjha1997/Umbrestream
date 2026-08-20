@@ -153,8 +153,8 @@ is scripts/check-player-sources.mjs, run with npm run test:player-sources.
 
 | Media | First provider | Fallbacks currently included |
 |---|---|---|
-| Movie | Filmu | Videasy, VidKing, VidRift automatic recovery candidates; Cinezo, VidLink, and VidLink Classic remain manual alternatives |
-| TV | VidKing | Videasy, Cinezo, VidLink, VidLink Classic, Filmu, and VidRift |
+| Movie | Filmu | VidKing and VidRift automatic recovery candidates; Videasy, Cinezo, VidLink, and VidLink Classic remain manual alternatives |
+| TV | VidKing | Cinezo, VidLink, VidLink Classic, Filmu, and VidRift automatic candidates; Videasy remains a manual alternative |
 | Anime | VidNest AnimePahe Sub | VidNest AnimePahe Dub, Cinezo Sub/Dub, AniLink Sub/Dub |
 
 These are public embed adapters. Provider availability can change independently of StreamFree.
@@ -181,15 +181,17 @@ If a provider is replaced:
   provider-owned documentation. Videasy's canonical `.net` URL redirects to
   `player.videasy.to`; the final `.to` origin is intentionally stored because trusted
   `postMessage` validation must match the iframe document origin.
-- Videasy is a stable, event-capable movie/TV fallback and uses its documented `progress`,
-  `nextEpisode`, and `episodeSelector` parameters. Its movie and TV fixtures visibly advanced.
+- Videasy is a documented, event-capable movie/TV manual fallback and uses its documented
+  `progress`, `nextEpisode`, and `episodeSelector` parameters. Its direct movie and TV fixtures
+  visibly advanced earlier in the audit, but its release-preview iframe later timed out; it is
+  therefore excluded from silent automatic recovery until it passes repeated embedded smokes.
 - Cinezo does not document a `startAt` parameter, so the adapter no longer claims resume support.
 - Filmu remains the explicit movie product default, but unsupported resume metadata was removed.
 - VidBolt and VidSrc were removed from the public picker after their fixtures produced no usable
   player and no provider-owned contract could be verified. They can return only after documented
   URLs and real playback pass the release matrix.
-- Automatic clean-launch recovery uses Filmu → Videasy → VidKing → VidRift for movies and
-  VidKing → Videasy → Cinezo → VidLink → VidLink Classic → Filmu → VidRift for TV. Eventless
+- Automatic clean-launch recovery uses Filmu → VidKing → VidRift for movies and
+  VidKing → Cinezo → VidLink → VidLink Classic → Filmu → VidRift for TV. Eventless
   VidRift remains the final safety net so a visibly playing opaque iframe is never replaced by a
   timer that cannot observe it.
 

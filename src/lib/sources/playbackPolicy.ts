@@ -169,8 +169,11 @@ const AUTOMATIC_PROVIDER_ORDER: Record<"movie" | "tv", readonly string[]> = {
   // Event-capable providers come before the final eventless VidRift safety
   // net, so a clean launch can continue recovering without interrupting a
   // provider that may already be playing invisibly to the parent page.
-  movie: ["filmu", "videasy", "vidking", "vidrift"],
-  tv: ["vidking", "videasy", "cinezo", "vidlink", "vidlink-native", "filmu", "vidrift"],
+  // Videasy has a documented contract and remains a useful manual backup,
+  // but its release-preview iframe timed out during the final live gate. Do
+  // not silently route users into an intermittently unavailable provider.
+  movie: ["filmu", "vidking", "vidrift"],
+  tv: ["vidking", "cinezo", "vidlink", "vidlink-native", "filmu", "vidrift"],
 };
 
 function automaticSourceRank(source: PlayerSource): number {

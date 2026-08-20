@@ -172,7 +172,7 @@ assert.equal(findPreferredSource(instantMovie, { rememberedId: "cinezo" })?.id, 
 assert.equal(findNextFallbackSource(instantMovie, "filmu", ["filmu"])?.id, "vidrift");
 assert.equal(
   findNextAutomaticFallbackSource(instantMovie, "filmu", ["filmu"])?.id,
-  "videasy",
+  "vidking",
 );
 assert.equal(
   findNextAutomaticFallbackSource(instantMovie, "videasy", ["filmu", "videasy"])?.id,

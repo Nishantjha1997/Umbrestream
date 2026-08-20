@@ -181,7 +181,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Status: in progress — implementation and local release gates complete; preview/live browser verification pending
   - Priority: P0
   - Depends on: SF-P0-003
-  - Evidence: official VidKing, VidLink, Cinezo, VidRift, and Videasy documentation audited; Videasy movie/TV playback visibly advanced on its documented player; unsupported Cinezo resume metadata removed; undocumented/nonresponsive VidBolt and VidSrc quarantined; `npm run test:player-sources` passes for 14 active adapters; targeted ESLint, TypeScript, production build, and `git diff --check` pass
+  - Evidence: official VidKing, VidLink, Cinezo, VidRift, and Videasy documentation audited; Videasy direct movie/TV playback visibly advanced, but its release-preview embed later timed out and is conservatively excluded from silent recovery; unsupported Cinezo resume metadata removed; undocumented/nonresponsive VidBolt and VidSrc quarantined; `npm run test:player-sources` passes for 14 active adapters; targeted ESLint, TypeScript, production build, and `git diff --check` pass
   - Commit: —
   - Next action: commit and deploy a preview, inspect `/api/player/sources`, smoke Videasy inside StreamFree, confirm quarantined providers are absent, then promote the verified deployment
 
