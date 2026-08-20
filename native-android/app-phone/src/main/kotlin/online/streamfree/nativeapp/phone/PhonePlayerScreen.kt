@@ -40,6 +40,8 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -74,6 +76,8 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import online.streamfree.nativeapp.designsystem.StreamFreeArtwork
+import online.streamfree.nativeapp.auth.AuthResult
+import online.streamfree.nativeapp.auth.AuthSessionManager
 import online.streamfree.nativeapp.player.PlaybackDisplayMode
 import online.streamfree.nativeapp.player.PlaybackPhase
 import online.streamfree.nativeapp.player.PlaybackSessionController
@@ -105,22 +109,33 @@ fun PhoneHomeScreen(
   onOpenPlayer: () -> Unit,
   feedResolver: StreamFreeHomeFeedResolver? = null,
   regionPreferenceStore: RegionPreferenceStore? = null,
+  authManager: AuthSessionManager? = null,
   onOpenTitle: (PlaybackRequest) -> Unit = {},
 ) {
   var feed by remember { mutableStateOf<NativeHomeFeed?>(null) }
   var feedFailed by remember { mutableStateOf(false) }
   var regionOverride by remember { mutableStateOf<String?>(null) }
   var loadingContinue by remember { mutableStateOf(false) }
+  var accountEmail by remember { mutableStateOf<String?>(null) }
+  var showAuthDialog by rememberSaveable { mutableStateOf(false) }
+  var authEmail by rememberSaveable { mutableStateOf("") }
+  var authPassword by rememberSaveable { mutableStateOf("") }
+  var authError by remember { mutableStateOf<String?>(null) }
+  var authBusy by remember { mutableStateOf(false) }
   var showRegionDialog by rememberSaveable { mutableStateOf(false) }
   val homeScope = rememberCoroutineScope()
   fun reloadHome() {
     homeScope.launch {
       val override = regionPreferenceStore?.get()
       regionOverride = override
-      val resolved = feedResolver?.resolve(regionOverrideValue = override)
+      val token = authManager?.accessToken()
+      val resolved = feedResolver?.resolve(bearerTokenValue = token, regionOverrideValue = override)
       feed = resolved
       feedFailed = feedResolver != null && resolved == null
     }
+  }
+  LaunchedEffect(authManager) {
+    authManager?.session?.collect { accountEmail = it?.email }
   }
   fun loadMoreContinue(cursor: String) {
     if (loadingContinue || feedResolver == null) return
@@ -166,6 +181,19 @@ fun PhoneHomeScreen(
         feed = feed!!,
         regionOverride = regionOverride,
         onRegionChange = { showRegionDialog = true },
+        accountEmail = accountEmail,
+        onAccountAction = {
+          if (accountEmail == null) {
+            authError = null
+            showAuthDialog = true
+          } else {
+            homeScope.launch {
+              authManager?.signOut()
+              accountEmail = null
+              reloadHome()
+            }
+          }
+        },
         onLoadMore = { row ->
           if (row.kind == "continue") row.nextCursor?.let(::loadMoreContinue)
         },
@@ -186,6 +214,58 @@ fun PhoneHomeScreen(
       },
     )
   }
+  if (showAuthDialog) {
+    AlertDialog(
+      onDismissRequest = { if (!authBusy) showAuthDialog = false },
+      title = { Text("Sign in to sync") },
+      text = {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+          Text("Use your StreamFree account to sync Continue Watching and history.")
+          OutlinedTextField(
+            value = authEmail,
+            onValueChange = { authEmail = it; authError = null },
+            label = { Text("Email") },
+            singleLine = true,
+            enabled = !authBusy,
+          )
+          OutlinedTextField(
+            value = authPassword,
+            onValueChange = { authPassword = it; authError = null },
+            label = { Text("Password") },
+            singleLine = true,
+            enabled = !authBusy,
+            visualTransformation = PasswordVisualTransformation(),
+          )
+          authError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+        }
+      },
+      confirmButton = {
+        Button(
+          enabled = !authBusy && authEmail.isNotBlank() && authPassword.isNotBlank(),
+          onClick = {
+            homeScope.launch {
+              authBusy = true
+              authError = null
+              when (val result = authManager?.signIn(authEmail, authPassword)) {
+                is AuthResult.Success -> {
+                  accountEmail = result.session.email ?: authEmail.trim()
+                  showAuthDialog = false
+                  authPassword = ""
+                  reloadHome()
+                }
+                is AuthResult.Failure -> authError = result.message
+                null -> authError = "Account services are unavailable."
+              }
+              authBusy = false
+            }
+          },
+        ) { Text(if (authBusy) "Signing in…" else "Sign in") }
+      },
+      dismissButton = {
+        OutlinedButton(enabled = !authBusy, onClick = { showAuthDialog = false }) { Text("Cancel") }
+      },
+    )
+  }
 }
 
 @Composable
@@ -193,6 +273,8 @@ internal fun PhoneHomeFeed(
   feed: NativeHomeFeed,
   regionOverride: String? = null,
   onRegionChange: (() -> Unit)? = null,
+  accountEmail: String? = null,
+  onAccountAction: (() -> Unit)? = null,
   onLoadMore: (NativeHomeRow) -> Unit = {},
   onOpenTitle: (PlaybackRequest) -> Unit,
 ) {
@@ -211,9 +293,16 @@ internal fun PhoneHomeFeed(
             modifier = Modifier.padding(top = 4.dp),
           )
         }
-        if (onRegionChange != null) {
-          OutlinedButton(onClick = onRegionChange, modifier = Modifier.sizeIn(minHeight = 48.dp)) {
-            Text(regionOverride ?: "Automatic")
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+          if (onRegionChange != null) {
+            OutlinedButton(onClick = onRegionChange, modifier = Modifier.sizeIn(minHeight = 48.dp)) {
+              Text(regionOverride ?: "Automatic")
+            }
+          }
+          if (onAccountAction != null) {
+            OutlinedButton(onClick = onAccountAction, modifier = Modifier.sizeIn(minHeight = 48.dp)) {
+              Text(accountEmail?.let { "Sign out" } ?: "Sign in")
+            }
           }
         }
       }

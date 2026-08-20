@@ -5,11 +5,16 @@ import okhttp3.Dispatcher
 import okhttp3.Headers
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import java.net.SocketTimeoutException
 import java.util.concurrent.TimeUnit
 
 interface StreamFreeHttpTransport {
   fun get(url: String, headers: Map<String, String> = emptyMap()): HttpResponse
+
+  /** Mutating calls are opt-in; fake/read-only transports do not need to implement them. */
+  fun post(url: String, body: ByteArray, headers: Map<String, String> = emptyMap()): HttpResponse =
+    throw UnsupportedOperationException("POST is not supported by this transport")
 }
 
 class StreamFreeHttpClient(
@@ -102,6 +107,53 @@ class StreamFreeHttpClient(
         record(current, code, startedAt, "success")
         return HttpResponse(current.toString(), code, responseBody.headers.toMultimap().mapValues { it.value.last() }, bytes)
       }
+    }
+  }
+
+  override fun post(url: String, body: ByteArray, headers: Map<String, String>): HttpResponse {
+    val current = validator.validate(url)
+    val safeHeaders = AppOwnedHeaders.validate(headers)
+    val requestHeaders = Headers.Builder().apply {
+      safeHeaders.forEach { (name, value) -> add(name, value) }
+    }.build()
+    val request = Request.Builder()
+      .url(current)
+      .headers(requestHeaders)
+      .post(body.toRequestBody())
+      .build()
+    val startedAt = System.nanoTime()
+    val response = try {
+      client.newCall(request).execute()
+    } catch (error: SocketTimeoutException) {
+      record(current, null, startedAt, "timeout")
+      throw NetworkFailure.Timeout(current.host, error)
+    } catch (error: NetworkFailure) {
+      record(current, null, startedAt, "rejected")
+      throw error
+    } catch (error: Exception) {
+      record(current, null, startedAt, "transport_error")
+      throw NetworkFailure.Transport(current.host, error)
+    }
+
+    response.use { responseBody ->
+      val code = responseBody.code
+      if (code in setOf(301, 302, 303, 307, 308)) {
+        record(current, code, startedAt, "redirect_rejected")
+        throw NetworkFailure.RedirectLimit(current.host)
+      }
+      val bodySource = responseBody.body
+      val declaredLength = bodySource.contentLength()
+      if (declaredLength > policy.maxResponseBytes) {
+        record(current, code, startedAt, "response_too_large")
+        throw NetworkFailure.ResponseTooLarge(current.host)
+      }
+      val bytes = bodySource.source().readByteArray(policy.maxResponseBytes + 1L)
+      if (bytes.size.toLong() > policy.maxResponseBytes) {
+        record(current, code, startedAt, "response_too_large")
+        throw NetworkFailure.ResponseTooLarge(current.host)
+      }
+      record(current, code, startedAt, if (code in 200..299) "success" else "http_error")
+      return HttpResponse(current.toString(), code, responseBody.headers.toMultimap().mapValues { it.value.last() }, bytes)
     }
   }
 

@@ -12,6 +12,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import online.streamfree.nativeapp.designsystem.StreamFreeTheme
+import online.streamfree.nativeapp.auth.AuthSessionManager
+import online.streamfree.nativeapp.auth.EncryptedAuthSessionStore
+import online.streamfree.nativeapp.auth.SupabaseAuthClient
 import online.streamfree.nativeapp.player.Media3SourcePipeline
 import online.streamfree.nativeapp.player.PlaybackSessionController
 import online.streamfree.nativeapp.player.PreferencesPlaybackDisplayModeStore
@@ -40,6 +43,7 @@ class MainActivity : ComponentActivity() {
     val homeFeedResolver = StreamFreeHomeFeedResolver.production()
     val sourcePreferenceStore = PreferencesSourcePreferenceStore(this)
     val regionPreferenceStore = PreferencesRegionPreferenceStore(this)
+    val authManager = AuthSessionManager(SupabaseAuthClient(), EncryptedAuthSessionStore(this))
     val launchRequest = intent.toPlaybackRequest()
     playbackController = PlaybackSessionController(
       context = this,
@@ -65,6 +69,7 @@ class MainActivity : ComponentActivity() {
             onOpenPlayer = { showPlayer = true },
             feedResolver = homeFeedResolver,
             regionPreferenceStore = regionPreferenceStore,
+            authManager = authManager,
             onOpenTitle = { request ->
               selectedRequest = request
               showPlayer = true

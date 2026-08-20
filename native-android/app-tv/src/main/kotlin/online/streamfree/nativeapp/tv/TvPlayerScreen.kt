@@ -29,6 +29,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -49,6 +50,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -67,6 +69,8 @@ import online.streamfree.nativeapp.model.NativeHomeRow
 import online.streamfree.nativeapp.model.NativeMediaSummary
 import online.streamfree.nativeapp.model.mergeContinueWatchingPage
 import online.streamfree.nativeapp.player.PlaybackDisplayMode
+import online.streamfree.nativeapp.auth.AuthResult
+import online.streamfree.nativeapp.auth.AuthSessionManager
 import online.streamfree.nativeapp.player.PlaybackDisplayModeStore
 import online.streamfree.nativeapp.player.PlaybackPhase
 import online.streamfree.nativeapp.player.PlaybackSessionController
@@ -86,22 +90,33 @@ fun TvHomeScreen(
   onOpenPlayer: () -> Unit,
   feedResolver: StreamFreeHomeFeedResolver? = null,
   regionPreferenceStore: RegionPreferenceStore? = null,
+  authManager: AuthSessionManager? = null,
   onOpenTitle: (PlaybackRequest) -> Unit = {},
 ) {
   var feed by remember { mutableStateOf<NativeHomeFeed?>(null) }
   var feedFailed by remember { mutableStateOf(false) }
   var regionOverride by remember { mutableStateOf<String?>(null) }
   var loadingContinue by remember { mutableStateOf(false) }
+  var accountEmail by remember { mutableStateOf<String?>(null) }
+  var showAuthDialog by rememberSaveable { mutableStateOf(false) }
+  var authEmail by rememberSaveable { mutableStateOf("") }
+  var authPassword by rememberSaveable { mutableStateOf("") }
+  var authError by remember { mutableStateOf<String?>(null) }
+  var authBusy by remember { mutableStateOf(false) }
   var showRegionDialog by rememberSaveable { mutableStateOf(false) }
   val homeScope = rememberCoroutineScope()
   fun reloadHome() {
     homeScope.launch {
       val override = regionPreferenceStore?.get()
       regionOverride = override
-      val resolved = feedResolver?.resolve(regionOverrideValue = override)
+      val token = authManager?.accessToken()
+      val resolved = feedResolver?.resolve(bearerTokenValue = token, regionOverrideValue = override)
       feed = resolved
       feedFailed = feedResolver != null && resolved == null
     }
+  }
+  LaunchedEffect(authManager) {
+    authManager?.session?.collect { accountEmail = it?.email }
   }
   fun loadMoreContinue(cursor: String) {
     if (loadingContinue || feedResolver == null) return
@@ -142,6 +157,19 @@ fun TvHomeScreen(
         feed = feed!!,
         regionOverride = regionOverride,
         onRegionChange = { showRegionDialog = true },
+        accountEmail = accountEmail,
+        onAccountAction = {
+          if (accountEmail == null) {
+            authError = null
+            showAuthDialog = true
+          } else {
+            homeScope.launch {
+              authManager?.signOut()
+              accountEmail = null
+              reloadHome()
+            }
+          }
+        },
         onLoadMore = { row ->
           if (row.kind == "continue") row.nextCursor?.let(::loadMoreContinue)
         },
@@ -162,6 +190,59 @@ fun TvHomeScreen(
       },
     )
   }
+  if (showAuthDialog) {
+    AlertDialog(
+      onDismissRequest = { if (!authBusy) showAuthDialog = false },
+      title = { Text("Sign in to sync") },
+      text = {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+          Text("Use your StreamFree account to sync Continue Watching and history.")
+          OutlinedTextField(
+            value = authEmail,
+            onValueChange = { authEmail = it; authError = null },
+            label = { Text("Email") },
+            singleLine = true,
+            enabled = !authBusy,
+          )
+          OutlinedTextField(
+            value = authPassword,
+            onValueChange = { authPassword = it; authError = null },
+            label = { Text("Password") },
+            singleLine = true,
+            enabled = !authBusy,
+            visualTransformation = PasswordVisualTransformation(),
+          )
+          authError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+        }
+      },
+      confirmButton = {
+        TvFocusButton(
+          text = if (authBusy) "Signing in…" else "Sign in",
+          onClick = {
+            homeScope.launch {
+              authBusy = true
+              authError = null
+              when (val result = authManager?.signIn(authEmail, authPassword)) {
+                is AuthResult.Success -> {
+                  accountEmail = result.session.email ?: authEmail.trim()
+                  showAuthDialog = false
+                  authPassword = ""
+                  reloadHome()
+                }
+                is AuthResult.Failure -> authError = result.message
+                null -> authError = "Account services are unavailable."
+              }
+              authBusy = false
+            }
+          },
+          contentDescription = "Sign in to StreamFree",
+        )
+      },
+      dismissButton = {
+        TvFocusButton(text = "Cancel", onClick = { showAuthDialog = false }, contentDescription = "Cancel sign in")
+      },
+    )
+  }
 }
 
 @Composable
@@ -169,6 +250,8 @@ internal fun TvHomeFeed(
   feed: NativeHomeFeed,
   regionOverride: String? = null,
   onRegionChange: (() -> Unit)? = null,
+  accountEmail: String? = null,
+  onAccountAction: (() -> Unit)? = null,
   onLoadMore: (NativeHomeRow) -> Unit = {},
   onOpenTitle: (PlaybackRequest) -> Unit,
 ) {
@@ -187,13 +270,23 @@ internal fun TvHomeFeed(
           Text("StreamFree TV", style = MaterialTheme.typography.displaySmall)
           Text("${feed.region.countryName} · ${feed.provenance.replace('_', ' ')}", style = MaterialTheme.typography.titleLarge)
         }
-        if (onRegionChange != null) {
-          TvFocusButton(
-            text = "Region: ${regionOverride ?: "Automatic"}",
-            onClick = onRegionChange,
-            contentDescription = "Choose recommendation region",
-            modifier = Modifier.widthIn(min = 260.dp, max = 380.dp),
-          )
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+          if (onRegionChange != null) {
+            TvFocusButton(
+              text = "Region: ${regionOverride ?: "Automatic"}",
+              onClick = onRegionChange,
+              contentDescription = "Choose recommendation region",
+              modifier = Modifier.widthIn(min = 260.dp, max = 380.dp),
+            )
+          }
+          if (onAccountAction != null) {
+            TvFocusButton(
+              text = accountEmail?.let { "Sign out" } ?: "Sign in",
+              onClick = onAccountAction,
+              contentDescription = accountEmail?.let { "Sign out of StreamFree" } ?: "Sign in to StreamFree",
+              modifier = Modifier.widthIn(min = 220.dp, max = 300.dp),
+            )
+          }
         }
       }
     }

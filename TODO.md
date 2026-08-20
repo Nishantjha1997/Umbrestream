@@ -6,8 +6,8 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 
 - Branch: `codex/web-first-native-rebuild`
 - Baseline: `28bea93`
-- Active task: `SF-A2-007`
-- Next command: wire authenticated Continue Watching cursor loading into the shared native Home feed; keep device/provider/release testing gated until the native product surfaces are complete.
+- Active task: `SF-A3-002`
+- Next command: add the native AniList/MAL account-link handoff on top of the secure StreamFree session; keep device/provider/release testing gated until the native auth surfaces are complete.
 - Reference policy: Media3 and Now in Android are approved architecture references; Aniyomi is pattern-only because it is archived; Dantotsu is excluded pending license/source verification.
 
 ## W0 — Governance and baseline
@@ -317,12 +317,12 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Next action: separate LRU and persistent download caches
 
 - [ ] SF-A3-002 — Add AniList and MAL secure linking
-  - Status: not started
+  - Status: in progress
   - Priority: P1
   - Depends on: SF-A2-003
-  - Evidence: —
-  - Commit: —
-  - Next action: backend broker, App Links, encrypted token handling
+  - Evidence: new `core:auth` module fetches only the official runtime Supabase URL/publishable key, rejects insecure/path-bearing config, performs password and refresh-token calls against the validated Supabase origin, never accepts service-role/provider secrets, and stores only AES-GCM ciphertext in DataStore with a non-exportable Android Keystore key; phone and TV Home expose sign-in/sign-out, refresh sessions before expiry, and pass the bearer token into the shared Home feed; auth/config/network tests, app compilation, Android-test compilation, strict lint, and `git diff --check` pass
+  - Commit: `pending`
+  - Next action: implement provider-link handoff for existing web AniList/MAL OAuth routes using a one-time, expiring app callback; do not put AniList/MAL client secrets in the APK.
 
 - [ ] SF-A3-003 — Add scrobbling and new-episode notifications
   - Status: not started

@@ -87,6 +87,7 @@ dependencies {
   implementation(project(":core:model"))
   implementation(project(":core:designsystem"))
   implementation(project(":core:player"))
+  implementation(project(":core:auth"))
   implementation(libs.androidx.core.ktx)
   implementation(libs.androidx.activity.compose)
   implementation(libs.androidx.lifecycle.runtime.ktx)

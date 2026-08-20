@@ -1788,10 +1788,32 @@ items. The merge and encoded-request behavior are covered by model/source tests;
 web cursor ordering and malformed-cursor checks are covered by the existing
 Continue Watching script.
 
-The native entry points still construct the production resolver without an auth
-token because secure native session linking is the next A3 task. This means the
-contract is ready, but authenticated multi-page execution has not been claimed
-until native auth is implemented and exercised on the connected phone.
+The native entry points do not bake a token into resolver construction; Home now
+passes a current token explicitly when the secure session manager has one.
+Authenticated multi-page execution remains device-gated, and provider-linked
+AniList/MAL OAuth is still open for the next A3 step.
+
+## 52. Native account session foundation — 2026-08-21
+
+The native clients now include `core:auth`. It fetches the client-safe Supabase
+URL and publishable key only from the official `/api/mobile/config` endpoint,
+requires an exact HTTPS origin with no path/query/fragment, and then uses the
+validated Supabase origin for password sign-in, refresh, and logout. The APK does
+not contain a service-role key, AniList secret, MAL secret, or OAuth encryption
+key. The network layer supports bounded, non-redirecting JSON POSTs for this
+purpose and keeps the `apikey` header inside the app-owned header allowlist.
+
+`EncryptedAuthSessionStore` encrypts the access token, refresh token, expiry, and
+non-sensitive account identifiers with AES-GCM. The key is generated in Android
+Keystore under `streamfree.auth.session.v1`; only the ciphertext is persisted in
+Preferences DataStore. `AuthSessionManager` refreshes before expiry, clears an
+invalid session, and feeds the current bearer token to native Home.
+
+Phone and TV Home now expose sign-in/sign-out controls and reload the shared feed
+after a successful session change. Auth endpoint parsing, invalid credential
+handling, runtime-config rejection, and expiry-window behavior are covered by
+unit tests. This is not yet AniList/MAL linking: the next safe step is an
+expiring, one-time app callback handoff to the already server-side OAuth routes.
 
 Live source-contract smoke on 2026-08-21 returned HTTP 200 for a movie,
 multi-episode TV fixture, and anime Sub request. The API policy was
