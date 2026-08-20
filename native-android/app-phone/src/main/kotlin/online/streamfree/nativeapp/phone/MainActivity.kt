@@ -17,6 +17,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.media3.common.util.UnstableApi
 import online.streamfree.nativeapp.designsystem.StreamFreeTheme
 import online.streamfree.nativeapp.auth.AuthSessionManager
+import online.streamfree.nativeapp.auth.AnimeNotificationClient
 import online.streamfree.nativeapp.auth.EncryptedAuthSessionStore
 import online.streamfree.nativeapp.auth.SupabaseAuthClient
 import online.streamfree.nativeapp.player.Media3SourcePipeline
@@ -77,6 +78,7 @@ class MainActivity : ComponentActivity() {
             feedResolver = homeFeedResolver,
             regionPreferenceStore = regionPreferenceStore,
             authManager = authManager,
+            notificationClient = AnimeNotificationClient(),
             onOpenTitle = { request ->
               selectedRequest = request
               showPlayer = true

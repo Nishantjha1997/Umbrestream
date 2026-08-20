@@ -1852,3 +1852,20 @@ production path will use the consented restricted WebView fallback. Media3
 direct playback remains implemented and contract-tested for when a validated
 direct candidate is returned; no direct-provider success is claimed from this
 smoke check.
+
+## 54. Aired-episode notification sync — 2026-08-21
+
+The shared `src/lib/anime/notifications.ts` contract now determines the latest
+episode from AniList’s `airingSchedule(notYetAired:false)` rather than using
+the media’s total `episodes` field. It filters future airings, creates only the
+newest pending notification per watched title, ignores finished titles, and
+preserves the existing idempotent `(user_id, anilist_id, episode)` storage key.
+The browser `/api/anime/notifications` route and bearer-authenticated
+`/api/mobile/anime-notifications` route use the same implementation.
+
+The native `core:auth` module includes `AnimeNotificationClient`; signed-in
+phone and TV Home surfaces show an unread episode banner and can mark all
+alerts read. This is foreground/in-app delivery only. Background WorkManager
+delivery, Android notification permission/channel UX, and the 85% AniList/MAL
+progress scrobbler remain open in `SF-A3-003`; no push or background
+notification capability is claimed yet.

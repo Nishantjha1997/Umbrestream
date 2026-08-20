@@ -73,7 +73,9 @@ import online.streamfree.nativeapp.model.NativeMediaSummary
 import online.streamfree.nativeapp.model.mergeContinueWatchingPage
 import online.streamfree.nativeapp.player.PlaybackDisplayMode
 import online.streamfree.nativeapp.auth.AuthResult
+import online.streamfree.nativeapp.auth.AnimeNotificationClient
 import online.streamfree.nativeapp.auth.AuthSessionManager
+import online.streamfree.nativeapp.auth.NativeAnimeNotifications
 import online.streamfree.nativeapp.auth.NativeAnimeProvider
 import online.streamfree.nativeapp.player.PlaybackDisplayModeStore
 import online.streamfree.nativeapp.player.PlaybackPhase
@@ -95,6 +97,7 @@ fun TvHomeScreen(
   feedResolver: StreamFreeHomeFeedResolver? = null,
   regionPreferenceStore: RegionPreferenceStore? = null,
   authManager: AuthSessionManager? = null,
+  notificationClient: AnimeNotificationClient? = null,
   onOpenTitle: (PlaybackRequest) -> Unit = {},
 ) {
   var feed by remember { mutableStateOf<NativeHomeFeed?>(null) }
@@ -108,6 +111,7 @@ fun TvHomeScreen(
   var authError by remember { mutableStateOf<String?>(null) }
   var authBusy by remember { mutableStateOf(false) }
   var linkMessage by remember { mutableStateOf<String?>(null) }
+  var animeNotifications by remember { mutableStateOf<NativeAnimeNotifications?>(null) }
   val context = LocalContext.current
   var showRegionDialog by rememberSaveable { mutableStateOf(false) }
   val homeScope = rememberCoroutineScope()
@@ -123,6 +127,13 @@ fun TvHomeScreen(
   }
   LaunchedEffect(authManager) {
     authManager?.session?.collect { accountEmail = it?.email }
+  }
+  LaunchedEffect(accountEmail, authManager, notificationClient) {
+    if (accountEmail == null || authManager == null || notificationClient == null) {
+      animeNotifications = null
+    } else {
+      animeNotifications = authManager.accessToken()?.let { notificationClient.load(it) }
+    }
   }
   fun loadMoreContinue(cursor: String) {
     if (loadingContinue || feedResolver == null) return
@@ -190,6 +201,18 @@ fun TvHomeScreen(
         },
         onLinkAnime = ::openAnimeLink,
         linkMessage = linkMessage,
+        animeNotifications = animeNotifications,
+        onMarkAnimeNotificationsRead = {
+          homeScope.launch {
+            val token = authManager?.accessToken()
+            if (token != null && notificationClient?.markAllRead(token) == true) {
+              animeNotifications = animeNotifications?.copy(
+                notifications = animeNotifications?.notifications.orEmpty().map { it.copy(readAt = "read") },
+                unreadCount = 0,
+              )
+            }
+          }
+        },
         onLoadMore = { row ->
           if (row.kind == "continue") row.nextCursor?.let(::loadMoreContinue)
         },
@@ -274,6 +297,8 @@ internal fun TvHomeFeed(
   onAccountAction: (() -> Unit)? = null,
   onLinkAnime: ((NativeAnimeProvider) -> Unit)? = null,
   linkMessage: String? = null,
+  animeNotifications: NativeAnimeNotifications? = null,
+  onMarkAnimeNotificationsRead: (() -> Unit)? = null,
   onLoadMore: (NativeHomeRow) -> Unit = {},
   onOpenTitle: (PlaybackRequest) -> Unit,
 ) {
@@ -327,6 +352,17 @@ internal fun TvHomeFeed(
           }
         }
         linkMessage?.let { Text(it, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 8.dp)) }
+        if (animeNotifications != null && animeNotifications.unreadCount > 0) {
+          Column(modifier = Modifier.padding(top = 16.dp)) {
+            Text("${animeNotifications.unreadCount} new anime episode${if (animeNotifications.unreadCount == 1) "" else "s"}", style = MaterialTheme.typography.titleLarge)
+            animeNotifications.notifications.firstOrNull()?.let { notification ->
+              Text("${notification.title} · Episode ${notification.episode}", style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+            onMarkAnimeNotificationsRead?.let { onRead ->
+              TvFocusButton(text = "Mark anime notifications read", onClick = onRead, contentDescription = "Mark anime episode notifications as read", modifier = Modifier.padding(top = 8.dp))
+            }
+          }
+        }
       }
     }
     feed.hero?.let { hero ->

@@ -332,6 +332,14 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Commit: —
   - Next action: idempotent 85% sync, WorkManager retry, FCM controls
 
+- [x] SF-A3-003a — Harden aired-episode notification sync and native in-app alerts
+  - Status: completed
+  - Priority: P1
+  - Depends on: none
+  - Evidence: shared AniList past-airing schedule resolver no longer treats total `episodes` as aired; future and finished-title false positives are covered by `scripts/check-anime-notifications.mjs`; browser and bearer-native notification routes share the sync/read contract; native notification client and signed-in phone/TV Home banners parse and mark alerts read; web TypeScript, targeted ESLint, `:core:auth:test`, both app Kotlin compilation, Android-test Kotlin compilation, and `git diff --check` pass
+  - Commit: `pending`
+  - Completed: 2026-08-21
+
 - [ ] SF-A3-004 — Complete native Home/details/library/settings/onboarding parity
   - Status: not started
   - Priority: P1
