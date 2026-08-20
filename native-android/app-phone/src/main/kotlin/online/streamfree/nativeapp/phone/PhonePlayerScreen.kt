@@ -57,6 +57,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
+import androidx.media3.common.C
+import androidx.media3.common.Player
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -125,6 +127,7 @@ fun PhonePlayerScreen(
   val lifecycleOwner = LocalLifecycleOwner.current
   var isFullscreen by rememberSaveable { mutableStateOf(false) }
   var showSourcePicker by rememberSaveable { mutableStateOf(false) }
+  var showSettings by rememberSaveable { mutableStateOf(false) }
   var positionMs by remember { mutableLongStateOf(0L) }
   var durationMs by remember { mutableLongStateOf(0L) }
 
@@ -188,6 +191,7 @@ fun PhonePlayerScreen(
         onExit = ::exitPlayer,
         sourceCount = sourceCandidates.size,
         onOpenSources = { showSourcePicker = true },
+        onOpenSettings = { showSettings = true },
         onDisplayModeChanged = { mode -> scope.launch { displayModeStore.set(mode) } },
         onFullscreenChanged = { fullscreen ->
           isFullscreen = fullscreen
@@ -232,6 +236,14 @@ fun PhonePlayerScreen(
       },
     )
   }
+
+  if (showSettings) {
+    PlayerSettingsSheet(
+      player = controller.player,
+      subtitles = state.source?.subtitles.orEmpty(),
+      onDismiss = { showSettings = false },
+    )
+  }
 }
 
 @Composable
@@ -248,6 +260,7 @@ private fun PlayerCinemaStage(
   onExit: () -> Unit,
   sourceCount: Int,
   onOpenSources: () -> Unit,
+  onOpenSettings: () -> Unit,
   onDisplayModeChanged: (PlaybackDisplayMode) -> Unit,
   onFullscreenChanged: (Boolean) -> Unit,
 ) {
@@ -304,6 +317,7 @@ private fun PlayerCinemaStage(
       onExit = onExit,
       sourceCount = sourceCount,
       onOpenSources = onOpenSources,
+      onOpenSettings = onOpenSettings,
       onDisplayModeChanged = onDisplayModeChanged,
       onFullscreenChanged = onFullscreenChanged,
     )
@@ -322,6 +336,7 @@ private fun PlayerOverlay(
   onExit: () -> Unit,
   sourceCount: Int,
   onOpenSources: () -> Unit,
+  onOpenSettings: () -> Unit,
   onDisplayModeChanged: (PlaybackDisplayMode) -> Unit,
   onFullscreenChanged: (Boolean) -> Unit,
 ) {
@@ -414,6 +429,14 @@ private fun PlayerOverlay(
         ) {
           Text(displayMode.name)
         }
+        Button(
+          onClick = onOpenSettings,
+          modifier = Modifier
+            .sizeIn(minWidth = 72.dp, minHeight = 48.dp)
+            .semantics { contentDescription = "Open playback settings" },
+        ) {
+          Text("More")
+        }
         Text(
           text = playbackStatus(state),
           color = Color.White,
@@ -425,6 +448,79 @@ private fun PlayerOverlay(
         ) {
           Text(if (isPlaying) "Pause" else "Play")
         }
+      }
+    }
+  }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun PlayerSettingsSheet(
+  player: Player,
+  subtitles: List<online.streamfree.nativeapp.source.SubtitleTrack>,
+  onDismiss: () -> Unit,
+) {
+  val currentSpeed = player.playbackParameters.speed
+  ModalBottomSheet(onDismissRequest = onDismiss) {
+    Column(
+      modifier = Modifier
+        .fillMaxWidth()
+        .navigationBarsPadding()
+        .padding(horizontal = 20.dp, vertical = 8.dp),
+    ) {
+      Text("Playback settings", style = MaterialTheme.typography.headlineSmall)
+      Text("Speed", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 16.dp))
+      Row(
+        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+      ) {
+        listOf(0.75f, 1f, 1.25f, 1.5f, 2f).forEach { speed ->
+          OutlinedButton(
+            onClick = { player.setPlaybackSpeed(speed) },
+            modifier = Modifier.sizeIn(minWidth = 56.dp, minHeight = 48.dp),
+          ) {
+            Text(if (speed == currentSpeed) "${speed}x ·" else "${speed}x")
+          }
+        }
+      }
+      Text("Subtitles", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 20.dp))
+      OutlinedButton(
+        onClick = {
+          player.trackSelectionParameters = player.trackSelectionParameters
+            .buildUpon()
+            .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, true)
+            .build()
+        },
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(top = 8.dp)
+          .sizeIn(minHeight = 48.dp),
+      ) {
+        Text("Subtitles off")
+      }
+      subtitles.forEach { subtitle ->
+        OutlinedButton(
+          onClick = {
+            player.trackSelectionParameters = player.trackSelectionParameters
+              .buildUpon()
+              .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, false)
+              .setPreferredTextLanguage(subtitle.languageTag)
+              .build()
+          },
+          modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp)
+            .sizeIn(minHeight = 48.dp),
+        ) {
+          Text(subtitle.languageTag)
+        }
+      }
+      if (subtitles.isEmpty()) {
+        Text(
+          "No subtitle tracks were returned for this source.",
+          style = MaterialTheme.typography.bodyMedium,
+          modifier = Modifier.padding(top = 12.dp, bottom = 20.dp),
+        )
       }
     }
   }

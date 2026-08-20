@@ -1567,3 +1567,11 @@ and playback failure paths never write this preference. The preference store
 validates stable provider IDs and supports clear/reset semantics for the
 recommended default. `:core:player:test`, phone compilation, strict phone
 lint, and the full `scripts/verify.ps1` gate pass after this work.
+
+The player shell also has a compact settings sheet for playback speed
+(`0.75x` through `2x`) and Media3 text-track selection. Speed changes use the
+existing player instance; subtitle enable/disable and language selection update
+Media3 track parameters without reloading the source. If the source has no
+resolved subtitle tracks, the sheet says so rather than presenting fake
+options. Focused phone compile/lint and the native verification gate remain
+green.
