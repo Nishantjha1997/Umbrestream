@@ -295,7 +295,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P0
   - Depends on: SF-A2-002
   - Evidence: `AdjacentEpisodeResolver` ignores season zero and episode zero specials, removes duplicate episode metadata, sorts valid seasons/episodes, crosses season boundaries in both directions, and returns null only at true catalogue boundaries; `:core:model:test` and `git diff --check` pass
-  - Commit: —
+  - Commit: `918c810`
   - Completed: 2026-08-21
 
 ## A3 — Offline, auth, sync, and product parity
