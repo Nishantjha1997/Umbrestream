@@ -12,6 +12,7 @@ import {
   findNextAutomaticFallbackSource,
   findPreferredSource,
   PLAYBACK_POLICY,
+  sourceParamForPlaybackSwitch,
   shouldUseAutomaticRecovery,
 } from "../src/lib/sources/playbackPolicy.ts";
 
@@ -160,7 +161,7 @@ assert(
 );
 assert.equal(instantMovie[0].id, "filmu");
 assert(instantMovie.every((source) => source.availability === "unverified"));
-assert.equal(PLAYBACK_POLICY.timeoutMs, 20_000);
+assert.equal(PLAYBACK_POLICY.timeoutMs, 5_000);
 assert.equal(PLAYBACK_POLICY.fallbackMode, "automatic");
 assert.equal(findPreferredSource(instantMovie, { rememberedId: "cinezo" })?.id, "cinezo");
 assert.equal(findNextFallbackSource(instantMovie, "filmu", ["filmu"])?.id, "cinezo");
@@ -196,6 +197,26 @@ assert.equal(
   shouldUseAutomaticRecovery({ mediaType: "tv", rememberedSourceId: "vidking" }),
   false,
   "a remembered source must never be silently replaced",
+);
+assert.equal(
+  sourceParamForPlaybackSwitch("vidking", "manual"),
+  "vidking",
+  "a manual source selection should remain shareable",
+);
+assert.equal(
+  sourceParamForPlaybackSwitch("cinezo", "recovery"),
+  "cinezo",
+  "a recovery accepted in the visible prompt should remain shareable",
+);
+assert.equal(
+  sourceParamForPlaybackSwitch("vidking", "automatic"),
+  null,
+  "automatic recovery must not turn itself into a manual source",
+);
+assert.equal(
+  sourceParamForPlaybackSwitch("filmu", "reset"),
+  null,
+  "reset must return to a clean product-default launch",
 );
 
 const cinezoMovie = { ...(await resolveOne("cinezo", fixtures.movie)), availability: "unverified" };

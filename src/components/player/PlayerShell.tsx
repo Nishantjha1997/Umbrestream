@@ -60,7 +60,9 @@ import {
   findPreferredSource,
   PLAYBACK_RECOVERY_TIMEOUT_MS,
   readPlaybackPreference,
+  sourceParamForPlaybackSwitch,
   shouldUseAutomaticRecovery,
+  type PlaybackSourceSwitchReason,
   withResumePosition,
   writePlaybackPreference,
 } from "@/lib/sources/playbackPolicy";
@@ -458,33 +460,9 @@ export default function PlayerShell({
     selectedSource,
   ]);
 
-  // Keep `?src=` a stable provider id. Never blocks the mount above — the
-  // stage below renders from `selectedSource` on the same render regardless
-  // of whether the URL has caught up yet.
-  //
-  // Gated on `directSettled`: writing an *auto-picked* source into `?src=`
-  // makes `selectDefaultSource`'s `requestedId` branch treat it as an
-  // explicit choice on every future render, permanently outranking a
-  // higher-priority direct source that resolves a moment later. Waiting for
-  // the direct-source fetch to settle first means whatever we sync is
-  // already the correct final default. An explicit id already in the URL on
-  // mount is honored immediately regardless — `selectedSource` picks it via
-  // `requestedId` before this effect ever runs, so there's nothing to wait
-  // for in that case.
-  useEffect(() => {
-    if (selectedSourceOverride?.requestKey === directRequestKey) return;
-    if (!directSettled) return;
-    if (selectedSource && sourceParam !== selectedSource.id) {
-      void setSourceParam(selectedSource.id);
-    }
-  }, [
-    directRequestKey,
-    directSettled,
-    selectedSource,
-    selectedSourceOverride,
-    setSourceParam,
-    sourceParam,
-  ]);
+  // Do not write the recommended/default source to `?src=`. That URL value
+  // is reserved for an actual server choice: persisting our own Filmu default
+  // made the next load look manual and prevented automatic recovery.
 
   // Once the shallow URL update is observable through nuqs, the query string
   // becomes the source of truth again. Until then the request-scoped override
@@ -605,7 +583,7 @@ export default function PlayerShell({
   }, [request.mediaType, revealChrome]);
 
   const switchSource = useCallback(
-    (id: string, reason: "manual" | "recovery" | "automatic" | "reset" = "manual") => {
+    (id: string, reason: PlaybackSourceSwitchReason = "manual") => {
       const nextSource = sources.find((source) => source.id === id);
       if (!nextSource) return;
 
@@ -615,6 +593,7 @@ export default function PlayerShell({
           setRememberedSourceId(null);
           automaticFallbackEnabledRef.current =
             request.mediaType === "movie" || request.mediaType === "tv";
+          void setSourceParam(null, { history: "replace", shallow: true, scroll: false });
         }
         closeSource();
         revealChrome();
@@ -693,19 +672,17 @@ export default function PlayerShell({
 
       // The selected iframe already changed above; URL persistence is
       // intentionally non-blocking. A failed History API update must never
-      // undo a user's server choice.
-      // Keep automatic recovery session-scoped. Writing its result into the
-      // URL would make a future reload look like an explicit user choice and
-      // disable recovery on the next launch. Manual/reset selections remain
-      // deep-linkable and sticky as before.
-      if (reason !== "automatic") {
-        void setSourceParam(id, { history: "replace", shallow: true, scroll: false }).catch(() => {
+      // undo a user's server choice. Defaults, resets, and automatic recovery
+      // deliberately clear `src`; recovery accepted from the visible prompt
+      // remains a conscious, deep-linkable server decision.
+      const nextSourceParam = sourceParamForPlaybackSwitch(id, reason);
+      void setSourceParam(nextSourceParam, { history: "replace", shallow: true, scroll: false }).catch(() => {
           if (selectionVersionRef.current !== selectionVersion) return;
           const nextUrl = new URL(window.location.href);
-          nextUrl.searchParams.set("src", id);
+          if (nextSourceParam) nextUrl.searchParams.set("src", nextSourceParam);
+          else nextUrl.searchParams.delete("src");
           window.history.replaceState(window.history.state, "", nextUrl);
         });
-      }
     },
     [
       directRequestKey,
@@ -779,7 +756,7 @@ export default function PlayerShell({
   }, [attemptAutomaticFallback]);
 
   // External iframe failures are often silent because the provider is
-  // cross-origin. Give the current provider the full grace period, pause it
+  // cross-origin. Give the current provider a short grace period, pause it
   // while the tab is hidden, and then move to the next stable/direct source
   // automatically for a clean movie/TV launch. If no candidate remains,
   // retain the explicit recovery panel rather than claiming the provider is

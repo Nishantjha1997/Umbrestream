@@ -6,8 +6,8 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 
 - Branch: `codex/web-first-native-rebuild`
 - Baseline: `28bea93`
-- Active task: `SF-W3-003`
-- Next command: inspect active APK manifests and download routes, make release headers derive from their verified filenames, then run the release-artifact and production-header checks.
+- Active task: `SF-P0-002`
+- Next command: deploy the desktop playback startup correction to a preview, verify a clean movie player remains URL-clean and swaps from a blank default to VidKing within five seconds, then promote production.
 - Reference policy: Media3 and Now in Android are approved architecture references; Aniyomi is pattern-only because it is archived; Dantotsu is excluded pending license/source verification.
 
 ## W0 — Governance and baseline
@@ -155,12 +155,20 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P0
   - Depends on: SF-W2-005
   - Evidence: production deployment `https://umbrestream-7pgcc3jjy-nishants-projects-7d9628b2.vercel.app` returned `Ready` and aliased `streamfree.online`; live source API reports `fallbackMode: automatic`, `timeoutMs: 20000`, `defaultId: filmu`, and VidRift `https://embed.vidrift.in/embed/movie/1212763`; corrected VidRift browser player selected Direct 1 and reached `0:32 / 82:54`; deterministic clean-launch policy verifies automatic movie/TV recovery and manual URL/remembered-source protection; automatic ordering, trusted-error recovery, timeout handling, ESLint, TypeScript, and source contracts pass
-  - Commit: `b27d2fb` (automatic failover), `1e2815c` (VidRift host correction), `4f6734f` (initial-query correction), pending (clean-launch contract in this changeset)
+  - Commit: `b27d2fb` (automatic failover), `1e2815c` (VidRift host correction), `4f6734f` (initial-query correction), `465c834` (clean-launch contract)
   - Deployment: `https://umbrestream-7pgcc3jjy-nishants-projects-7d9628b2.vercel.app` (`READY`)
   - Completed: 2026-08-20
 
-- [ ] SF-W3-003 — Update exact APK download headers and security checks
+- [ ] SF-P0-002 — Restore responsive desktop playback startup
   - Status: in progress
+  - Priority: P0
+  - Depends on: SF-P0-001
+  - Evidence: production reproduction on `https://streamfree.online/movie/1212763/player` showed the app self-appended `?src=filmu`, then displayed a manual recovery prompt after the 20-second grace period; this made normal reloads look like manual choices and prevented automatic recovery
+  - Commit: —
+  - Next action: validate the URL-intent correction and five-second clean-launch recovery on preview, then deploy production
+
+- [ ] SF-W3-003 — Update exact APK download headers and security checks
+  - Status: not started
   - Priority: P0
   - Depends on: SF-W3-001
   - Evidence: current header rules target old filenames

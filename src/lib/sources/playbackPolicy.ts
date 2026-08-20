@@ -1,8 +1,11 @@
 import type { MediaType } from "@/types/title";
 import type { AudioVariant, PlayerSource } from "./types";
 
-export const PLAYBACK_POLICY_VERSION = "2026-08-reliability-v1";
-export const PLAYBACK_RECOVERY_TIMEOUT_MS = 20_000;
+export const PLAYBACK_POLICY_VERSION = "2026-08-reliability-v2";
+// A blank cross-origin embed cannot be inspected safely. Five seconds keeps
+// the initial product-default launch responsive while still giving a normal
+// provider bootstrap a brief chance to emit a trusted playback event.
+export const PLAYBACK_RECOVERY_TIMEOUT_MS = 5_000;
 export type PlaybackFallbackMode = "prompt" | "automatic";
 export const PLAYBACK_FALLBACK_MODE: PlaybackFallbackMode = "automatic";
 
@@ -141,6 +144,21 @@ export function shouldUseAutomaticRecovery({
     !initialSourceId &&
     !rememberedSourceId
   );
+}
+
+export type PlaybackSourceSwitchReason = "manual" | "recovery" | "automatic" | "reset";
+
+/**
+ * Only a deliberate server choice belongs in a shareable `src` URL. The
+ * product default and an automatic recovery are implementation decisions,
+ * not user intent; persisting either would accidentally disable automatic
+ * recovery on the next page load.
+ */
+export function sourceParamForPlaybackSwitch(
+  sourceId: string,
+  reason: PlaybackSourceSwitchReason,
+): string | null {
+  return reason === "automatic" || reason === "reset" ? null : sourceId;
 }
 
 const AUTOMATIC_PROVIDER_ORDER: Record<"movie" | "tv", readonly string[]> = {
