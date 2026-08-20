@@ -6,8 +6,8 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 
 - Branch: `codex/web-first-native-rebuild`
 - Baseline: `28bea93`
-- Active task: `SF-A1-002`
-- Next command: define normalized playback/source contracts, provider descriptors, app-owned header policies, and Sub/Dub capability before registering resolvers.
+- Active task: `SF-A1-003`
+- Next command: implement bounded cached/explicit/hedged resolution orchestration with cancellation, attempt tracking, and consent-based embed fallback; do not auto-switch a manually selected source.
 - Reference policy: Media3 and Now in Android are approved architecture references; Aniyomi is pattern-only because it is archived; Dantotsu is excluded pending license/source verification.
 
 ## W0 — Governance and baseline
@@ -241,12 +241,12 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Completed: 2026-08-20
 
 - [ ] SF-A1-002 — Implement normalized source contracts and resolver registry
-  - Status: not started
+  - Status: completed
   - Priority: P0
   - Depends on: SF-A1-001
-  - Evidence: —
-  - Commit: —
-  - Next action: models, provider descriptors, header policies, Sub/Dub capability
+  - Evidence: `core:source` adds typed playback requests, provider descriptors/capabilities, HLS/DASH/MP4/embed formats, normalized resolved sources/subtitle tracks, resolution attempts/outcomes, resolver registry, provider header registry, explicit-source narrowing, and separate Anime Sub/Dub compatibility; `SourceContractsTest` passed; full `scripts/verify.ps1` passed with network/model/source tests, phone/TV debug assembly, and strict lint; `git diff --check` passed
+  - Commit: pending
+  - Completed: 2026-08-20
 
 - [ ] SF-A1-003 — Implement hedged multi-tier resolution engine
   - Status: not started

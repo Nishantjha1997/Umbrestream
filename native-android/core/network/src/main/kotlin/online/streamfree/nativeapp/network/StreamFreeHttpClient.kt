@@ -2,6 +2,7 @@ package online.streamfree.nativeapp.network
 
 import okhttp3.CookieJar
 import okhttp3.Dispatcher
+import okhttp3.Headers
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.net.SocketTimeoutException
@@ -33,12 +34,15 @@ class StreamFreeHttpClient(
     var redirectCount = 0
     val visited = mutableSetOf(current.toString())
     val safeHeaders = AppOwnedHeaders.validate(headers)
+    val requestHeaders = Headers.Builder().apply {
+      safeHeaders.forEach { (name, value) -> add(name, value) }
+    }.build()
 
     while (true) {
       val startedAt = System.nanoTime()
       val request = Request.Builder()
         .url(current)
-        .headers(safeHeaders)
+        .headers(requestHeaders)
         .get()
         .build()
 

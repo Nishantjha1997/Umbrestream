@@ -1385,3 +1385,28 @@ Implementation commit: `2b7cfb1`.
 
 The next active task is `SF-A1-002`, normalized source contracts and provider
 descriptor registration.
+
+## 39. Native source contracts and resolver registry — 2026-08-20
+
+`native-android/core/source` now provides the transport-independent source
+contract. `PlaybackRequest` carries media/episode/audio/manual-source/resume
+intent. `ProviderDescriptor` advertises media types, formats, quality,
+Sub/Dub, subtitle, resume, host, and header-policy capabilities. `ResolvedSource`
+normalizes HTTPS playback URLs without exposing provider-specific response
+shapes. Resolution attempts have typed outcomes and failure categories.
+
+`SourceResolverRegistry` rejects duplicate IDs, filters by media/audio
+compatibility, and narrows to an explicit source when the user selected one.
+`ProviderHeaderRegistry` reuses the network boundary’s app-owned header
+allowlist, so source adapters cannot introduce cookies or authorization tokens.
+No provider is labelled stable or exposed as working by this contract-only
+phase; actual adapters will be added only after their source/API contracts are
+verified.
+
+`SourceContractsTest` proves Anime Sub and Dub candidates remain separate,
+explicit source precedence narrows candidates, and unsafe header policy IDs do
+not leak transport headers. The full native verification script passes model,
+network, and source tests plus both debug APK assemblies and strict lint.
+
+Implementation is included in the next source-contract checkpoint commit. The
+next active task is `SF-A1-003`, bounded multi-tier resolution orchestration.

@@ -12,6 +12,8 @@ until migration, signing, updater, and device-release gates pass.
   contract, ownership, and presentation foundations.
 - `core:network` owns HTTPS-only transport, approved-host validation, safe DNS,
   bounded redirects/responses, app-owned headers, and typed failures.
+- `core:source` owns normalized playback requests, provider capabilities,
+  resolver selection, header-policy registration, and Sub/Dub separation.
 
 No native scaffold APK is a publishable release. Signing, migration data,
 networking, Media3, and release assembly are added in later tracked tasks.

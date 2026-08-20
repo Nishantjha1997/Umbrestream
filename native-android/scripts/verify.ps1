@@ -44,6 +44,7 @@ try {
   & $wrapper `
     :core:model:test `
     :core:network:test `
+    :core:source:test `
     :app-phone:assembleDebug `
     :app-tv:assembleDebug `
     :app-phone:lintDebug `
