@@ -1,157 +1,279 @@
-# StreamFree (Umbrestream) Master Engineering Handover & Action Plan
+# StreamFree Web-First Native Android Rebuild Plan
 
-**Project:** StreamFree (Umbrestream)  
-**Production URL:** [https://streamfree.online](https://streamfree.online)  
-**Vercel Project:** `umbrestream`  
-**GitHub Repository:** `Nishantjha1997/Umbrestream` (Branch: `main`)  
-**Active Cloudflare Edge Proxy:** `https://streamfree-proxy.nishantjha31.workers.dev`  
-**AniList Client ID:** `47128` | **Redirect URI:** `https://streamfree.online/api/auth/anilist/callback`  
+**Approved:** 2026-08-20
+**Branch:** `codex/web-first-native-rebuild`
+**Production:** `https://streamfree.online`
+**Vercel project:** `umbrestream`
+**Repository:** `Nishantjha1997/Umbrestream`
 
----
+This is the single canonical implementation plan. `TODO.md` is the live task board. Superseded plans were removed with owner approval because they conflicted with the repository and contained unsupported provider-evasion assumptions.
 
-## 1. Background & Problem Statement: Why Cloudflare Blocks Our Streams
+## 1. Execution rules
 
-### The Problem:
-When StreamFree's scraping backend (hosted on Render/AWS/Vercel) attempts to resolve video streams from 3rd-party anime providers (AniBD, Senshi, ReAnime, Miruro, MKissa, etc.), the providers' security layers (**Cloudflare / DDoS-Guard**) identify our server requests as originating from **Datacenter IP Ranges (Datacenter ASNs)**. As a result, requests are challenged with CAPTCHAs or rejected with **HTTP 403 Forbidden**.
+1. Update `TODO.md` whenever task state changes; only one task is `in progress` unless tasks are explicitly independent.
+2. Every completed task records commands, evidence, date, and commit hash.
+3. Stage only task-owned paths. Never use `git add .`, `git add -A`, destructive reset, or checkout commands.
+4. Commit and push each completed web phase. Deploy that phase to Vercel production only after its deterministic gate passes.
+5. Record deployment URL, status, commit, smoke checks, and rollback deployment in `TODO.md` and `STREAMFREE_HANDOFF.md`.
+6. Never commit credentials, `.env` files, private keystores, signing passwords, access tokens, raw provider URLs, or debug APKs.
+7. Real-provider smoke tests run after deterministic tests and are recorded separately so third-party outages do not make CI nondeterministic.
 
-### The Goal:
-Replicate the ad-free, native playback of top native Android clients (*Anilili*, *CloudStream*, *Aniyomi*):
-- Extract the raw `.m3u8` or `.mp4` video manifest directly.
-- Feed it into our custom `NativePlayer.tsx` (`hls.js`) with native quality selection, multi-audio tracks, subtitles, and PiP.
-- Completely bypass ad-heavy 3rd-party `<iframe>` embeds.
+## 2. Verified baseline — first implementation action
 
----
+Baseline commit: `28bea93` (`feat(ux): site-wide refinement phases 1.4-3.4`). At audit time `main` matched `origin/main`; only `.zcode/` was untracked.
 
-## 2. The 3-Hack Architecture: Cloudflare & CORS Evasion Strategies
+### Web
 
-To bypass Cloudflare blocking and browser CORS restrictions, we formulated 3 distinct architectural hacks:
+- Gemini's rollout landed below-player controls, detail SSR, route skeletons, honest retry states, Home first-paint work, contrast/a11y improvements, compact Anime Mode, and PWA refinements.
+- `pnpm run typecheck`: passes.
+- `pnpm run lint`: exits zero with one warning because `animeRemote.ts` does not use its `origins` safety input.
+- `pnpm run build`: fails prerendering `/anime/discover` with a missing React Server Consumer Manifest module.
+- `pnpm run test:player-sources`: fails because runtime policy includes `vidsrc` while the fixture does not.
+- `pnpm run test:anime-integrations`: cannot start because the Node runner cannot resolve `@/utils`.
+- Runtime QA from the former Gemini plan was not completed.
+- No production deployment from this state was certified during the audit.
 
+### Android
+
+- Phone is generated from `mobile/app.js`; package `online.streamfree.app`, version `1.3.3`, code `7`.
+- TV is generated from `tv/app.js`; package `online.streamfree.tv`, version `1.2.3`, code `6`.
+- Web React UI does not automatically enter either APK.
+- Phone has Fit/Fill and a source sheet but lacks current episode-context parity and continuous resume persistence.
+- TV has a countdown, but its Java plugin maps `lockPortrait` to landscape and `exitPlayerImmersive` to immersive=true; its API 30+ exit path also keeps system bars hidden.
+- Android tests are placeholder Capacitor tests under `com.getcapacitor.myapp`.
+- APK download headers in `next.config.ts` point to old filenames.
+- Public certificate fingerprints may remain in Git; private keys and passwords may not.
+
+## 3. Fixed product/security decisions
+
+1. Fix, test, and deploy web before Android implementation.
+2. Long-term Android uses Kotlin, Jetpack Compose, and AndroidX Media3.
+3. Use a staged migration so the current signed Capacitor apps remain rollback inputs until cutover.
+4. Preserve package IDs and signing identities.
+5. Native networking avoids browser CORS but does not guarantee access, quality, availability, ad-free playback, or download rights.
+6. Provider integrations must be permitted, exact-host allowlisted, cancellable, testable, observable, and replaceable.
+7. Do not implement hidden-iframe stream sniffing, all-host extensions, CAPTCHA/DRM bypass, or an open proxy.
+8. Show quality only when verified from a manifest or track. Manual source selections are never silently replaced.
+9. Offline downloads are enabled only when the provider contract and applicable rights permit them.
+
+## 4. Web phases
+
+### W0 — Governance and baseline
+
+- Create the implementation branch.
+- Replace conflicting plans with this file and reset `TODO.md`.
+- Ignore `.zcode/` after confirming it is agent-local state.
+- Record baseline Git/Vercel state, manifests, APK hashes, packages, versions, and certificate pins.
+- Commit and push the documentation checkpoint; do not deploy because no product code changes.
+
+### W1 — Release blockers
+
+#### W1.1 Production build
+
+1. Remove generated `.next` and run a clean build.
+2. If `/anime/discover` still fails, replace its unnecessary `next/dynamic` Server Component boundary with a direct client import while retaining `<Suspense>` for `useSearchParams`.
+3. Audit `/discover`, `/search`, `/browse`, `/library`, and `/space/history` for the same pattern.
+4. Do not mask failures with `STREAMFREE_SKIP_NEXT_TYPECHECK`.
+5. Require two consecutive clean production builds.
+
+#### W1.2 Anime URL/origin policy
+
+1. Enforce configured HTTPS origins in `animeRemote.ts`.
+2. Reject credentials, HTTP, unsupported ports, localhost, private/reserved IP literals, fragments, and non-allowlisted redirects.
+3. Validate final streams, manifests, subtitles, redirects, and iframe URLs.
+4. Permit subdomains only when the provider configuration intentionally covers them.
+5. Keep raw provider URLs out of analytics and user-facing diagnostics.
+
+#### W1.3 Source contract
+
+1. Keep Filmu as movie default.
+2. Keep `vidsrc` only as a labelled fallback if it remains approved.
+3. Define exact movie, TV, anime Sub, and anime Dub ordering.
+4. Test explicit URL choice, remembered preference, product default, and compatible fallback precedence.
+5. Update fixtures to match product intent—not simply current output.
+
+#### W1.4 Test infrastructure and strict gates
+
+1. Use an alias-aware runner for source policy tests.
+2. Cover URL policy, redirect, timeout, normalization, dedupe, audio compatibility, and quality labels.
+3. Make lint fail on warnings.
+4. Include all deterministic source/anime checks in `pnpm run verify`.
+
+Gate:
+
+```powershell
+pnpm run lint -- --max-warnings=0
+pnpm run typecheck
+pnpm run test:player-sources
+pnpm run test:anime-integrations
+pnpm run build
+git diff --check
 ```
-┌──────────────────────────────────────────────────────────────────────────────────┐
-│                             CLOUDFLARE EVASION HACKS                             │
-├──────────────────────────────────────────────────────────────────────────────────┤
-│ HACK 1: Invisible Iframe postMessage Sniffer                                     │
-│   ↳ Loads embed in 1x1 hidden iframe on client IP -> captures postMessage m3u8   │
-│                                                                                  │
-│ HACK 2: Cloudflare Edge Worker Reverse Proxy (★ IMPLEMENTED)                     │
-│   ↳ Routes requests through Cloudflare's own Edge ASN -> bypasses CF 403 + CORS  │
-│                                                                                  │
-│ HACK 3: StreamFree Companion Browser Extension (Contingency)                     │
-│   ↳ 1-click Chrome extension with all-origin permissions -> 100% unrestricted    │
-│                                                                                  │
-│ HACK 4: Android Capacitor Native HTTP (Mobile APK Plan)                          │
-│   ↳ Executes OkHttp natively from user's cellular/residential phone IP           │
-└──────────────────────────────────────────────────────────────────────────────────┘
+
+Commit, push, deploy production, confirm Vercel `Ready`, and smoke-test `/`, `/anime/discover`, and representative player routes.
+
+### W2 — Player and interaction certification
+
+1. Add deterministic provider mocks for movie, TV, anime Sub, and anime Dub.
+2. Open source sheet by click, tap, Enter, Space, and accessible activation.
+3. Close by close button, Escape, backdrop, Android Back, and TV Back where applicable.
+4. Make the full source row interactive, emit one selection, and restore invoking focus.
+5. Keep StreamFree controls below the provider viewport.
+6. Start web/phone playback framed; fullscreen remains explicit.
+7. Preserve source/audio/episode context through previous/next navigation.
+8. Keep the TV next-episode countdown at 10 seconds with Play now/Cancel.
+9. Change Fit/Fill without remounting direct playback.
+10. Verify Watchlist and Continue Watching removal consumes pointer/touch/keyboard events, never navigates, and supports Undo/rollback.
+11. Record history only after trusted playback.
+12. Add Playwright coverage for desktop 1440×900, phone 390×844, and tablet 820×1180.
+
+Gate: component/Playwright/a11y checks and production build pass; commit, push, deploy, confirm `Ready`, and smoke-test production players.
+
+### W3 — Performance, PWA, downloads, and security
+
+1. Measure route bundles and Core Web Vitals before/after.
+2. Keep player-only dependencies out of Home.
+3. Prefer direct Server Component imports where dynamic boundaries add fragility without meaningful savings.
+4. Prioritize only LCP artwork and provide correct responsive image `sizes`.
+5. Verify Network First HTML/API behavior and immutable hashed-asset caching.
+6. Verify update-ready prompt and no stale player after deployment.
+7. Update exact APK headers to current manifest filenames.
+8. Verify security headers do not break trusted playback.
+9. Constrain proxy use to approved hosts; no arbitrary URL proxy.
+
+Gate: full `pnpm run verify`, browser QA, Lighthouse/a11y, commit, push, production deployment, `Ready`, smoke checks, and rollback metadata.
+
+## 5. Native Android project
+
+Create a new shared Gradle root while keeping existing Capacitor projects until native cutover:
+
+```text
+native-android/
+├── app-phone/
+├── app-tv/
+├── core/
+│   ├── common/
+│   ├── model/
+│   ├── network/
+│   ├── database/
+│   ├── datastore/
+│   ├── source/
+│   ├── player/
+│   ├── designsystem/
+│   └── testing/
+├── data/
+│   ├── metadata/
+│   ├── playback/
+│   ├── history/
+│   ├── library/
+│   ├── auth/
+│   ├── tracker/
+│   └── notifications/
+├── provider/
+│   ├── anivexa/
+│   ├── miruro/
+│   └── embed-fallback/
+├── feature/
+│   ├── home/
+│   ├── anime/
+│   ├── details/
+│   ├── player/
+│   ├── downloads/
+│   ├── library/
+│   ├── auth/
+│   ├── settings/
+│   └── onboarding/
+└── benchmark/
 ```
 
-### Deep Dive into Each Hack:
+Use Kotlin DSL, version catalog, Compose, Coroutines/Flow, Hilt, OkHttp, Retrofit where appropriate, Kotlin serialization, Room, DataStore, WorkManager, Media3, static analysis, and unit/instrumentation tests.
 
-#### ★ Hack 2: Cloudflare Edge Worker Proxy *(Currently Implemented & Active)*
-- **Why we chose it first:** Zero friction for users (no extension or APK required), 100% serverless, free (100k requests/day), and fast (<150ms edge latency).
-- **How it works:** 
-  1. We deployed a custom proxy worker to `https://streamfree-proxy.nishantjha31.workers.dev`.
-  2. Because the request originates from **within Cloudflare’s own internal ASN**, Cloudflare’s anti-bot algorithms treat it as trusted edge traffic rather than an external datacenter scraper.
-  3. The worker injects `Access-Control-Allow-Origin: *` headers, allowing the browser to read the payload without CORS errors.
-- **Code Implementation:**
-  - Utility: [`src/utils/proxy.ts`](file:///c:/Users/HP_5C/OneDrive/Desktop/Stream/Umbrestream/src/utils/proxy.ts) (`proxiedFetch`, `toProxiedUrl`).
-  - Automatic Failover: [`src/lib/sources/adapters/animeRemote.ts`](file:///c:/Users/HP_5C/OneDrive/Desktop/Stream/Umbrestream/src/lib/sources/adapters/animeRemote.ts) automatically falls back to `proxiedFetch` whenever direct Render/proxy calls fail.
+## 6. Android phases
 
-#### Hack 1: Invisible `<iframe>` postMessage Sniffer *(Fallback for Web)*
-- **Concept:** If a provider completely locks down their API, we mount an invisible `1x1` pixel `<iframe>` pointing to the provider's embed player.
-- **Why it works:** Browser iframes run directly on the user's residential IP (bypassing CORS). Many player engines (JWPlayer, Video.js, Plyr) broadcast player events and `.m3u8` URLs via `window.parent.postMessage()`. We listen on `window.addEventListener('message')` to extract the stream URL and transfer it into `NativePlayer.tsx`.
-- **When to use:** If Cloudflare Worker IPs are ever rate-limited by a specific target domain.
+### A0 — Scaffold and migration safety
 
-#### Hack 3: StreamFree Companion Web Extension *(The Ultimate Nuclear Option)*
-- **Concept:** A lightweight Chrome/Firefox extension with `"host_permissions": ["<all_urls>"]`.
-- **Why it works:** Web extensions run with elevated browser privileges that completely bypass CORS and originate from the user's home IP with real browser TLS fingerprints.
-- **When to use:** If providers deploy aggressive Turnstile CAPTCHAs that block all cloud proxies.
+1. Create phone/TV modules and shared cores.
+2. Preserve `online.streamfree.app` and `online.streamfree.tv` plus environment-based signing.
+3. Define versioned migration data for guest history, watchlist, source/audio preferences, onboarding, and region.
+4. If required, ship a final signed hybrid bridge build before native cutover; never read WebView SQLite internals directly.
 
-#### Hack 4: Android Mobile Native Scraping (`ANDROID_APK_PLAN.md`)
-- **Concept:** Inside the Android Capacitor app, `@capacitor/http` makes native Android `OkHttp` calls directly over 4G/5G/Wi-Fi, bypassing browser CORS and cloud IP bans entirely.
+### A1 — Safe networking and source resolution
 
----
+Create `StreamFreeHttpClient`, `SafeUrlValidator`, `SafeDns`, `RedirectPolicy`, `ProviderHeaderRegistry`, `ConnectivityMonitor`, typed errors, and metrics.
 
-## 3. What Has Been Completed So Far
+Rules: HTTPS only; maximum three validated redirects; reject loopback/private/link-local/multicast/reserved/unauthorized hosts; app-owned header policies only; no cookie/token leakage; bound timeout/size/concurrency; no raw source URLs in analytics.
 
-1. **Cloudflare Edge Worker Proxy Deployed:**
-   - Active worker live at `https://streamfree-proxy.nishantjha31.workers.dev`.
-   - Verified via edge IP check (`2a06:98c0:3600::103`) and live Anivexa payload delivery with CORS headers.
-   - Integrated into `src/utils/proxy.ts` and `src/lib/sources/adapters/animeRemote.ts`.
-2. **TV Player Layout Overhaul (Unified with Anime Player):**
-   - Refactored `src/components/sections/TV/Player/Player.tsx` and `EpisodeSelection.tsx`.
-   - Desktop: Dedicated, always-visible **Episodes Sidebar** on the right.
-   - Mobile: Clean, glassmorphic **inline episode grid** below player controls.
-3. **Anime Player Header UX Refinements:**
-   - Watchlist bookmarking button with toast notification undo.
-   - Dynamic 10-point AniList score badge (e.g. ⭐ `8.5`).
-   - Direct tracker links for AniList (**AL**) and MyAnimeList (**MAL**).
-4. **AniList OAuth Hardening & Fallbacks:**
-   - Added AES-256 encryption key fallbacks in `src/lib/anime/oauth.ts`.
-   - User configured AniList Developer Redirect URI to `https://streamfree.online/api/auth/anilist/callback`.
-5. **Android Native APK Blueprint:**
-   - Full implementation blueprint written in [`ANDROID_APK_PLAN.md`](./ANDROID_APK_PLAN.md).
+Define `PlaybackRequest`, `ResolvedSource`, `SubtitleTrack`, `ProviderDescriptor`, `SourceCapabilities`, `ResolutionAttempt`, `ResolutionResult`, and `AnimeSourceResolver`.
 
----
+Resolution algorithm:
 
-## 4. Immediate Action Items & Task Backlog for DeepSeek
+1. Validate a short-lived cached candidate.
+2. Start explicit/remembered provider first.
+3. Hedge one compatible native resolver after 350 ms; maximum two direct resolutions.
+4. Start approved cloud API hedge after 800 ms.
+5. Native tier budget four seconds; cloud tier six seconds.
+6. Offer embed fallback after direct failure or explicit choice.
+7. Preserve Sub/Dub/manual selection; cancel unnecessary work after enough candidates.
+8. Show only actually resolved sources and verified quality.
 
-### Task 1: Push the Type Error Fix for Vercel
-In `src/components/sections/TV/Player/Player.tsx`, `useMediaQuery` was added to `@mantine/hooks` import to resolve the Vercel build failure.
-**Action:** Stage, commit, and push this fix to `main`:
-```bash
-git add src/components/sections/TV/Player/Player.tsx
-git commit -m "fix(tv-player): add useMediaQuery to @mantine/hooks import"
-git push origin main
+### A2 — Media3 playback
+
+Add ExoPlayer, HLS, DASH, OkHttp data source, Session, UI Compose, and offline components.
+
+```text
+OkHttpDataSource.Factory
+  -> ResolvingDataSource.Factory
+  -> ProviderHeaderRegistry
+  -> DefaultMediaSourceFactory
+  -> ExoPlayer / MediaSessionService
 ```
 
----
+Requirements: per-request allowlisted headers for manifests/chunks, no redirect leakage, normalized format metadata, playback `StateFlow`, progress persistence every 15 seconds/pause/background/exit, trusted history, resume through compatible source change, typed recovery, and consent-based fallback.
 
-### Task 2: Enable & Verify AniList OAuth ("Sync your anime lists" button)
-**Current Issue:** The "Connect" button under "Sync your anime lists" on `/space` currently appears disabled ("Unavailable") because the failed deployment hasn't deployed the new OAuth fallbacks yet.
+### A3 — Native phone player UI
 
-**Action & Verification Steps:**
-1. Once Task 1 deploys to Vercel, visit `https://streamfree.online/space`.
-2. Verify that `/api/anime/accounts` returns `providers.anilist.configured = true`.
-3. The button will now show active **"Connect"**.
-4. Click **Connect** -> authorize with AniList -> verify redirect back to `/space?anime_connected=anilist` with the green **"Connected as [Username]"** badge.
+1. Framed 16:9 stage; fullscreen explicit.
+2. Native Fit/Fill without recreating ExoPlayer.
+3. Landscape fullscreen, portrait restoration, first Back exits fullscreen.
+4. Source, Sub/Dub, previous/next, and episode list below the stage.
+5. Double-tap seek, brightness/volume gestures, speed, quality, audio, subtitles, and subtitle delay.
+6. PiP, MediaSession controls, trusted intro/outro skip, and 10-second next countdown.
+7. 48dp touch targets, TalkBack semantics, reduced motion, safe areas.
 
----
+### A4 — Caching/downloads
 
-### Task 3: Add Prominent `/space` ("My Space") Entry Points on UI
-Users need easy access to `/space` to connect their AniList account, customize playback settings, and view watch history.
+Separate bounded streaming LRU from persistent Media3 `DownloadService` storage. Support Wi-Fi-only, storage limits, pause/resume/remove, foreground notifications, and offline playback only for permitted stable sources. Never bypass DRM.
 
-**Files to Modify:**
-1. **Desktop Header & Rail (`src/components/shell/desktop/Header.tsx`, `Rail.tsx`):**
-   - Add a direct link/button to `/space` ("My Space") with an icon (e.g. `FiCompass` or `FiUser`).
-2. **Mobile Tab Bar (`src/components/shell/phone/TabBar.tsx`):**
-   - Ensure "My Space" is easily accessible in the primary mobile navigation bar.
-3. **User Profile / Auth (`src/app/auth/` or Profile components):**
-   - Add a prominent callout banner:
-     > 💡 **Sync Your Anime:** Link your AniList account in [My Space](/space) to automatically track watched episodes and get live new episode notifications.
+### A5 — AniList, MAL, sync, notifications
 
----
+1. Keep provider secrets out of APK.
+2. Use StreamFree backend broker and verified Android App Links for AniList.
+3. Implement MAL against current documented native OAuth/PKCE behavior.
+4. Encrypt tokens server-side or in Android Keystore as appropriate.
+5. Idempotently scrobble at trusted end or at least 85% with reliable duration; WorkManager retries.
+6. Add server-side airing checks, FCM, per-title controls, quiet hours, and detail-page deep links without autoplay.
 
-### Task 4: Verify Cloudflare Worker Failover on Anime Streams
-1. Test anime stream resolution on `https://streamfree.online/anime/21/player/1`.
-2. Inspect network tab to verify that `animeRemote.ts` resolves streams via `streamfree-proxy.nishantjha31.workers.dev` when direct calls encounter 403s.
-3. Confirm video plays inside `NativePlayer.tsx` (ad-free with quality/audio options).
+### A6 — Product parity and TV
 
----
+Build native Anime Mode, Home, details, search, Continue Watching, library, history, settings, onboarding, and updater. Keep remove/Undo non-navigating, region/history-aware feeds, honest source states, and tasteful Nishant branding outside player/a11y metadata. TV shares the core with deterministic D-pad focus, immersive playback, countdown, and 720p/1080p/4K sizing.
 
-### Task 5: Contingency Execution (If Hack 2 Ever Fails)
-If Cloudflare Worker proxy is challenged by a provider:
-1. **For Web:** Implement Hack 1 (Hidden iframe sniffer) or Hack 3 (Browser Extension).
-2. **For Mobile:** Follow [`ANDROID_APK_PLAN.md`](./ANDROID_APK_PLAN.md) to implement client-side `@capacitor/http` scrapers.
+### A7 — Release
 
----
+Recommended sequence:
 
-## 5. Key Reference Files
+- Hybrid migration/parity phone `1.3.4` code `8` if guest export is required.
+- Full native phone `1.4.0` code `9`.
+- Native TV `1.3.0` code `7` after emulator and physical acceptance.
 
-| File Path | Description |
-| :--- | :--- |
-| [`src/lib/sources/adapters/animeRemote.ts`](file:///c:/Users/HP_5C/OneDrive/Desktop/Stream/Umbrestream/src/lib/sources/adapters/animeRemote.ts) | Remote anime provider resolver with Cloudflare proxy failover |
-| [`src/utils/proxy.ts`](file:///c:/Users/HP_5C/OneDrive/Desktop/Stream/Umbrestream/src/utils/proxy.ts) | Universal Cloudflare Edge Worker proxy fetcher |
-| [`src/lib/anime/oauth.ts`](file:///c:/Users/HP_5C/OneDrive/Desktop/Stream/Umbrestream/src/lib/anime/oauth.ts) | AniList / MAL OAuth encryption & URI management |
-| [`src/components/sections/Settings/AnimeConnections.tsx`](file:///c:/Users/HP_5C/OneDrive/Desktop/Stream/Umbrestream/src/components/sections/Settings/AnimeConnections.tsx) | UI for linking AniList / MAL accounts on `/space` |
-| [`src/components/sections/TV/Player/Player.tsx`](file:///c:/Users/HP_5C/OneDrive/Desktop/Stream/Umbrestream/src/components/sections/TV/Player/Player.tsx) | TV player shell with desktop sidebar & mobile inline grid |
-| [`ANDROID_APK_PLAN.md`](file:///c:/Users/HP_5C/OneDrive/Desktop/Stream/Umbrestream/ANDROID_APK_PLAN.md) | Master plan for Android APK client-side stream scraping |
+```powershell
+native-android\gradlew.bat test
+native-android\gradlew.bat lintRelease
+native-android\gradlew.bat :app-phone:assembleRelease
+native-android\gradlew.bat :app-tv:assembleRelease
+```
+
+Verify packages, versions, non-debuggable state, v2/v3 signatures, certificate pins, hashes, sizes, manifests, MIME/headers, upgrade behavior, updater validation, and tampered-APK rejection. Physical phone testing is required; TV emulator is required and physical TV remains final acceptance.
+
+## 7. Completion definition
+
+Complete only when web production and tests, browser/player/remove/PWA behavior, native resolver/Media3 tests, phone hardware, TV emulator, signed artifacts, updater, manifests/hashes/downloads, rollback artifacts, and `STREAMFREE_HANDOFF.md` all pass and the worktree is clean.

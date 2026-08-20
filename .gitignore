@@ -8,6 +8,7 @@
 
 # testing
 /coverage
+/.zcode/
 
 # next.js
 /.next/
