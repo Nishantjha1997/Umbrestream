@@ -35,7 +35,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P0
   - Depends on: SF-W0-002
   - Evidence: moved generated `.next` outside the repository; direct client import plus CSS-only server-safe skeletons; fresh `next build --webpack` passed for all 38 routes
-  - Commit: pending W1 phase commit
+  - Commit: `375f93b`
   - Completed: 2026-08-20
 
 - [x] SF-W1-002 — Enforce anime source URL and redirect policy
@@ -43,7 +43,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P0
   - Depends on: SF-W1-001
   - Evidence: `src/lib/sources/urlPolicy.ts`; exact HTTPS origins and intentional wildcard subdomains; credentials, HTTP, fragments, nonstandard ports, private/reserved literals, and untrusted redirects rejected; anime integration contract passed
-  - Commit: pending W1 phase commit
+  - Commit: `375f93b`
   - Completed: 2026-08-20
 
 - [x] SF-W1-003 — Reconcile movie/TV/anime provider ordering
@@ -51,7 +51,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P0
   - Depends on: SF-W1-002
   - Evidence: Filmu remains movie default; VidKing remains TV default; VidSrc is explicitly experimental and ordered after stable providers; anime catalog candidates are deduplicated and remain within selected Sub/Dub; player source contract passed
-  - Commit: pending W1 phase commit
+  - Commit: `375f93b`
   - Completed: 2026-08-20
 
 - [x] SF-W1-004 — Repair anime integration test runner and aliases
@@ -59,7 +59,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P0
   - Depends on: SF-W1-002
   - Evidence: adapter test uses portable explicit TypeScript imports; URL, provider, audio, subtitle, dedupe, allowlist, and fallback assertions pass with Node’s strip-types runner
-  - Commit: pending W1 phase commit
+  - Commit: `375f93b`
   - Completed: 2026-08-20
 
 - [x] SF-W1-005 — Make lint and verify strict
@@ -67,7 +67,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P0
   - Depends on: SF-W1-003, SF-W1-004
   - Evidence: lint uses `--max-warnings=0`; `package.json` verify includes web, playback, anime, native state, manifest, type, build, artifact, and leak checks; direct equivalent gate passed; `git diff --check` passed
-  - Commit: pending W1 phase commit
+  - Commit: `375f93b`
   - Completed: 2026-08-20
 
 - [ ] SF-W1-006 — Commit, push, deploy, and verify Web Phase W1
