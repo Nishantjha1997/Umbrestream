@@ -140,12 +140,23 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Next action: proceed with SF-W3-002
 
 - [ ] SF-W3-002 — Verify service-worker freshness and update-ready flow
-  - Status: in progress
+  - Status: completed
   - Priority: P0
   - Depends on: SF-W3-001
-  - Evidence: —
+  - Evidence: generated worker passed message-based `SKIP_WAITING` check, precaches 0 APKs, uses Network First for pages/API and Cache First for hashed JS; `PwaUpdateNotice` now calls `registration.update()` and observes late `updatefound`; `scripts/check-pwa-contract.mjs`; ESLint, TypeScript, PWA contract, and `git diff --check` passed
+  - Commit: pending
+  - Completed: 2026-08-20
+  - Next action: proceed with SF-P0-001
+
+## P0 — Live production playback incident
+
+- [ ] SF-P0-001 — Restore movie playback with automatic stable-source failover
+  - Status: in progress
+  - Priority: P0
+  - Depends on: SF-W2-005
+  - Evidence: production API returns movie sources; live browser reproduced Filmu blank, Cinezo unresolved, VidLink provider rejection, and VidKing direct resolution; user requested Arise-style automatic working-source discovery
   - Commit: —
-  - Next action: test generated worker message activation, production `/sw.js`, and update notice behavior
+  - Next action: add bounded automatic failover for default movie/TV playback, preserve explicit manual choices, test fallback to VidKing, and deploy production
 
 - [ ] SF-W3-003 — Update exact APK download headers and security checks
   - Status: not started

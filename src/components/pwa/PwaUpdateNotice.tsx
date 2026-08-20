@@ -20,25 +20,42 @@ export default function PwaUpdateNotice() {
       if (disposed) return;
       setRegistration(next);
       const showReady = () => {
+        if (disposed) return;
         setReady(true);
         if (reportedReadyRef.current) return;
         reportedReadyRef.current = true;
         trackUmbraEvent("pwa_update_ready", {});
       };
-      if (next.waiting) showReady();
-      const installing = next.installing;
-      installing?.addEventListener("statechange", () => {
-        if (installing.state === "installed" && navigator.serviceWorker.controller) {
-          showReady();
-        }
-      });
+
+      const watchInstalling = () => {
+        if (next.waiting) showReady();
+        const installing = next.installing;
+        if (!installing) return;
+        const handleStateChange = () => {
+          if (installing.state === "installed" && navigator.serviceWorker.controller) {
+            showReady();
+          }
+        };
+        installing.addEventListener("statechange", handleStateChange);
+      };
+
+      next.addEventListener("updatefound", watchInstalling);
+      watchInstalling();
+      // The PWA plugin registers on startup, but the first registration can
+      // race this component. An explicit update makes the notice reliable on
+      // long-lived tabs without caching HTML/API navigations more aggressively.
+      void next.update().catch(() => undefined);
+
+      return () => next.removeEventListener("updatefound", watchInstalling);
     };
 
+    let cleanup: (() => void) | undefined;
     navigator.serviceWorker.getRegistration().then((next) => {
-      if (next) observe(next);
+      if (next) cleanup = observe(next);
     });
     return () => {
       disposed = true;
+      cleanup?.();
     };
   }, []);
 
