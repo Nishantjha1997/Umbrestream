@@ -135,7 +135,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P1
   - Depends on: SF-W2-005
   - Evidence: `scripts/check-performance-contract.mjs`; standalone ESLint and TypeScript passed; production webpack build passed with explicit local Next typecheck bypass after standalone typecheck; 116 JS chunks / 4,745,850 bytes; HLS, DASH, lightbox, and query devtools remain split; movie/anime player route entries are dynamically loaded; generated worker precaches 0 APKs
-  - Commit: pending
+  - Commit: `cb15448`
   - Completed: 2026-08-20
   - Next action: proceed with SF-W3-002
 
