@@ -18,6 +18,7 @@ import online.streamfree.nativeapp.player.Media3SourcePipeline
 import online.streamfree.nativeapp.player.PlaybackSessionController
 import online.streamfree.nativeapp.player.PreferencesPlaybackDisplayModeStore
 import online.streamfree.nativeapp.player.PreferencesPlaybackStore
+import online.streamfree.nativeapp.player.PreferencesSourcePreferenceStore
 import online.streamfree.nativeapp.source.SourceResolverRegistry
 
 @UnstableApi
@@ -41,6 +42,7 @@ class MainActivity : ComponentActivity() {
           PhonePlayerScreen(
             controller = playbackController,
             displayModeStore = PreferencesPlaybackDisplayModeStore(this@MainActivity),
+            sourcePreferenceStore = PreferencesSourcePreferenceStore(this@MainActivity),
             onExit = { showPlayer = false },
             onFullscreenChanged = ::setPlayerFullscreen,
           )

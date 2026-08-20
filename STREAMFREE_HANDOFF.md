@@ -1556,3 +1556,11 @@ the controller switch, preserving the episode and position context. The UI
 does not manufacture an audio option when the resolver did not return one.
 Focused player tests, phone compile, and strict phone lint pass after this
 grouping change.
+
+Intentional source choices now have their own DataStore boundary with four
+independent scopes: Movie, TV, Anime Sub, and Anime Dub. The player sheet writes
+the selected provider only after an explicit user selection; resolver fallback
+and playback failure paths never write this preference. The preference store
+validates stable provider IDs and supports clear/reset semantics for the
+recommended default. `:core:player:test`, phone compilation, and strict phone
+lint pass.

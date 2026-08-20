@@ -65,6 +65,7 @@ import online.streamfree.nativeapp.player.PlaybackPhase
 import online.streamfree.nativeapp.player.PlaybackSessionController
 import online.streamfree.nativeapp.player.PlaybackUiState
 import online.streamfree.nativeapp.player.PlaybackDisplayModeStore
+import online.streamfree.nativeapp.player.SourcePreferenceStore
 import online.streamfree.nativeapp.model.MediaType
 import online.streamfree.nativeapp.model.AudioVariant
 import online.streamfree.nativeapp.source.ResolvedSource
@@ -113,6 +114,7 @@ fun PhonePlayerScreen(
   onExit: () -> Unit,
   onFullscreenChanged: (Boolean) -> Unit,
   sourceCandidates: List<ResolvedSource> = emptyList(),
+  sourcePreferenceStore: SourcePreferenceStore,
 ) {
   val context = LocalContext.current
   val scope = rememberCoroutineScope()
@@ -216,6 +218,13 @@ fun PhonePlayerScreen(
             request.copy(audioVariant = source.audioVariant)
           } else {
             request
+          }
+          scope.launch {
+            sourcePreferenceStore.set(
+              requestWithAudio.mediaType,
+              requestWithAudio.audioVariant,
+              source.providerId,
+            )
           }
           controller.switchSource(requestWithAudio, source)
         }
