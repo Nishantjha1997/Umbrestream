@@ -662,6 +662,8 @@ export default function PlayerShell({
       } else {
         clearPlaybackPreference(window.localStorage, request.mediaType, preferredAudio);
         setRememberedSourceId(null);
+        automaticFallbackEnabledRef.current =
+          request.mediaType === "movie" || request.mediaType === "tv";
       }
 
       trackUmbraEvent("source_sheet_selection_completed", {
