@@ -123,7 +123,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P0
   - Depends on: SF-W2-004
   - Evidence: deterministic gate passed; preview `dpl_Dsyy177yZV8giEjNQhKjKNgVVm8Q` READY; production `dpl_33qEKaZ6fQStVARn1gpQmfXUp5w4` READY and aliased to `streamfree.online`; live route/source smoke passed; production browser source-picker/fullscreen smoke passed
-  - Commit: `PENDING_W2_CHECKPOINT`
+  - Commit: `9fcdbd2`
   - Deployment: `dpl_33qEKaZ6fQStVARn1gpQmfXUp5w4` (`READY`)
   - Completed: 2026-08-20
   - Next action: proceed with SF-W3-001
