@@ -1626,3 +1626,17 @@ contract that validates it. Both phone and TV now register the production
 resolver with their Media3 pipeline. Focused network/source/player tests and
 both app compile checks pass. The full `native-android/scripts/verify.ps1`
 gate remains the release-level check and must be rerun after the next UI slice.
+
+## 46. Shared native episode navigation contract — 2026-08-21
+
+`core:model` now owns `EpisodeRef`, `SeasonEpisodes`, and
+`AdjacentEpisodeResolver`. The resolver filters season zero and episode zero,
+deduplicates and sorts authoritative episode metadata, crosses from the last
+playable episode of one valid season to the first of the next, and returns no
+next/previous result only at the true catalogue boundary. It is pure and
+platform-neutral so phone, TV, and any future background next-episode worker
+can share exactly the same rule.
+
+The resolver is tested for specials, gaps, duplicate metadata, cross-season
+navigation, and true boundaries. It is not yet connected to a native episode
+catalogue or UI; that remains part of the request-driven episode launch slice.
