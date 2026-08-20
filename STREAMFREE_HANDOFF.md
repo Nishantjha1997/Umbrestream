@@ -1500,5 +1500,5 @@ gate passes core model/network/source/player tests, both debug APK assemblies,
 strict lint, and `git diff --check`. Provider adapters and the Compose player
 surface are not connected yet; the phone player UI is the next active task.
 
-Implementation commit: pending. The next active task is `SF-A2-003`, native
+Implementation commit: `bc219cb`. The next active task is `SF-A2-003`, native
 phone player UI parity.

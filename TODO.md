@@ -271,7 +271,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P0
   - Depends on: SF-A2-001
   - Evidence: `core:player` now owns `PlaybackSessionController` with ExoPlayer and MediaSession lifecycle, a trusted-event reducer, versioned DataStore-backed progress records, 15-second/pause/terminal/destroy persistence, 85% completion marking, and separate Anime Sub/Dub identity keys; phone and TV expose thin MediaSessionService implementations; `PlaybackStateTest`, full `scripts/verify.ps1`, strict lint, APK assemblies, and `git diff --check` passed
-  - Commit: pending
+  - Commit: `bc219cb`
   - Completed: 2026-08-21
 
 - [ ] SF-A2-003 — Build native phone player UI parity
