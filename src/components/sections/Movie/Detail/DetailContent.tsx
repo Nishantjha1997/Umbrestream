@@ -13,9 +13,11 @@ import { Suspense } from "react";
 import { Spinner } from "@heroui/spinner";
 import { useQuery } from "@tanstack/react-query";
 import { tmdbBrowser } from "@/api/tmdb-browser";
+import { useSetAmbient } from "@/components/media/AmbientProvider";
 import ServiceRetryState from "@/components/ui/feedback/ServiceRetryState";
+import { useExtractColors } from "@/hooks/useExtractColors";
 import { Cast } from "tmdb-ts/dist/types/credits";
-import { Image } from "tmdb-ts";
+import { AppendToResponse, Image, MovieDetails } from "tmdb-ts";
 import dynamic from "next/dynamic";
 import {
   getCinematicBackdropUrl,
@@ -29,7 +31,28 @@ const OverviewSection = dynamic(() => import("@/components/sections/Movie/Detail
 const CastsSection = dynamic(() => import("@/components/sections/Movie/Detail/Casts"));
 const RelatedSection = dynamic(() => import("@/components/sections/Movie/Detail/Related"));
 
-export default function MovieDetailContent({ id }: { id: number }) {
+type MovieDetailData = AppendToResponse<
+  MovieDetails,
+  (
+    | "images"
+    | "videos"
+    | "credits"
+    | "keywords"
+    | "recommendations"
+    | "similar"
+    | "reviews"
+    | "watch/providers"
+  )[],
+  "movie"
+>;
+
+export default function MovieDetailContent({
+  id,
+  initialData,
+}: {
+  id: number;
+  initialData?: MovieDetailData;
+}) {
   const {
     data: movie,
     isPending,
@@ -49,7 +72,18 @@ export default function MovieDetailContent({ id }: { id: number }) {
         "watch/providers",
       ]),
     queryKey: ["movie-detail", id],
+    initialData,
   });
+
+  const backdropUrl =
+    (movie
+      ? getCinematicBackdropUrl(
+          movie.images.backdrops,
+          getImageUrl(movie.backdrop_path, "backdrop", true),
+        )
+      : "") || "";
+  const { dominantColor } = useExtractColors(backdropUrl);
+  useSetAmbient(dominantColor);
 
   if (isPending) {
     return <Spinner size="lg" className="absolute-center" variant="simple" />;

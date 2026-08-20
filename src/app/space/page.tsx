@@ -62,7 +62,7 @@ export default async function MySpacePage() {
         Your StreamFree
       </p>
       <h1 className="mt-3 text-4xl font-semibold tracking-[-0.045em] sm:text-6xl">My Space</h1>
-      <p className="mt-4 max-w-xl text-white/55">
+      <p className="mt-4 max-w-xl text-white/75">
         Everything personal stays together: library, playback preferences, installation, and help.
       </p>
 
@@ -77,7 +77,7 @@ export default async function MySpacePage() {
               <Icon className="size-5" />
             </span>
             <h2 className="mt-5 font-semibold">{title}</h2>
-            <p className="mt-1 text-sm leading-6 text-white/45">{copy}</p>
+            <p className="mt-1 text-sm leading-6 text-white/70">{copy}</p>
           </Link>
         ))}
       </div>
@@ -87,7 +87,7 @@ export default async function MySpacePage() {
         className="mt-12 scroll-mt-24 rounded-3xl border border-white/8 bg-linear-to-br from-violet-500/12 to-transparent p-6 sm:p-8"
       >
         <h2 className="text-xl font-semibold">Install on iPhone</h2>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-white/55">
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-white/75">
           Open StreamFree in Safari, tap Share, choose Add to Home Screen, then tap Add. StreamFree launches
           standalone with safe-area-aware navigation and playback.
         </p>
@@ -97,7 +97,7 @@ export default async function MySpacePage() {
         className="mt-4 scroll-mt-24 rounded-3xl border border-white/8 bg-white/[0.035] p-6 sm:p-8"
       >
         <h2 className="text-xl font-semibold">Playback defaults</h2>
-        <p className="mt-2 text-sm leading-6 text-white/55">
+        <p className="mt-2 text-sm leading-6 text-white/75">
           StreamFree remembers the last provider that played successfully during your session, keeps
           manual server choices pinned, and stops after one complete fallback pass.
         </p>

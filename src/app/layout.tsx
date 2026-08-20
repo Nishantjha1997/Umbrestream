@@ -55,7 +55,7 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   icons: {
     icon: siteConfig.favicon,
-    apple: [{ url: "/streamfree-mark.svg", type: "image/svg+xml" }],
+    apple: [{ url: "/icons/ios/180.png", sizes: "180x180", type: "image/png" }],
   },
   appleWebApp: {
     capable: true,
@@ -118,7 +118,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-dvh overflow-x-hidden bg-[#0a090d] font-sans text-white antialiased select-none">
+      <body className="min-h-dvh overflow-x-hidden bg-[#0a090d] font-sans text-white antialiased">
         <Suspense>
           <CinematicSplash />
           <NuqsAdapter>

@@ -67,15 +67,20 @@ const AnimePlayerControls: React.FC<AnimePlayerControlsProps> = ({
             <span className="hidden sm:inline">Prev</span>
           </Link>
         ) : (
-          <span className={cn(btnBase, "pointer-events-none opacity-40")} aria-disabled="true">
+          <span
+            className={cn(btnBase, "pointer-events-none opacity-40")}
+            aria-disabled="true"
+            aria-label="Previous episode"
+          >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
               <path d="M6 6h2v12H6zm3.5 6 8.5 6V6z" />
             </svg>
             <span className="hidden sm:inline">Prev</span>
+            <span className="sr-only sm:hidden">Previous episode</span>
           </span>
         )}
 
-        <span className="text-xs font-medium text-white/50">
+        <span className="text-xs font-medium text-white/70">
           EP {episode}
           {totalEpisodes ? ` / ${totalEpisodes}` : ""}
         </span>
@@ -92,8 +97,13 @@ const AnimePlayerControls: React.FC<AnimePlayerControlsProps> = ({
             </svg>
           </Link>
         ) : (
-          <span className={cn(btnBase, "pointer-events-none opacity-40")} aria-disabled="true">
+          <span
+            className={cn(btnBase, "pointer-events-none opacity-40")}
+            aria-disabled="true"
+            aria-label="Next episode"
+          >
             <span className="hidden sm:inline">Next</span>
+            <span className="sr-only sm:hidden">Next episode</span>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
               <path d="M6 18 14.5 12 6 6v12zm8.5-6v0zM16 6h2v12h-2z" />
             </svg>

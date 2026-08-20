@@ -93,7 +93,7 @@ export default function PlayerSourceSheet({
         />
         <span className="flex min-w-0 flex-col gap-0.5">
           <span className="truncate text-[13.5px] font-medium text-white">{source.label}</span>
-          <span className="truncate text-[11px] text-white/48">
+          <span className="truncate text-[11px] text-white/70">
             {[
               source.capabilities.recommended && "Recommended",
               source.capabilities.fast && "Fast",
@@ -107,7 +107,7 @@ export default function PlayerSourceSheet({
               (source.providerTier === "stable" ? "Stable provider" : "Backup provider")}
           </span>
         </span>
-        <span className="flex min-w-[66px] items-center justify-end gap-2 text-[9.5px] font-medium tracking-[.08em] text-white/45 uppercase">
+        <span className="flex min-w-[66px] items-center justify-end gap-2 text-[10.5px] font-medium tracking-[.08em] text-white/60 uppercase">
           {isSwitching
             ? "Switching"
             : isSelected
@@ -141,7 +141,7 @@ export default function PlayerSourceSheet({
       .map((group) => (
         <section key={group.label} className="flex flex-col gap-2.5" aria-label={group.label}>
           {hasAudioGroups && (
-            <h3 className="px-1 text-[11px] font-semibold tracking-[.12em] text-white/55 uppercase">
+            <h3 className="px-1 text-[11px] font-semibold tracking-[.12em] text-white/75 uppercase">
               {group.label}
             </h3>
           )}

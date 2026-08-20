@@ -163,7 +163,7 @@ export default function DesktopHero() {
                 }
               />
             )}
-            {caption && <p className="text-[12.5px] text-white/56">{caption}</p>}
+            {caption && <p className="text-[12.5px] text-white/70">{caption}</p>}
           </div>
         )}
 
@@ -172,7 +172,7 @@ export default function DesktopHero() {
         </h1>
 
         {presentation?.synopsis && (
-          <p className="line-clamp-3 text-[14.5px] leading-[1.6] text-white/62">
+          <p className="line-clamp-3 text-[14.5px] leading-[1.6] text-white/75">
             {presentation.synopsis}
           </p>
         )}

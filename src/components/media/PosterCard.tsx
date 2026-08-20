@@ -180,7 +180,7 @@ const PosterCard: React.FC<PosterCardProps> = ({ media, variant = "rail", priori
           {media.title}
         </p>
         {(media.year !== undefined || rating !== undefined) && (
-          <p className="flex items-center gap-1.5 text-[11px] leading-tight text-white/50">
+          <p className="flex items-center gap-1.5 text-[11px] leading-tight text-white/70">
             {media.year !== undefined && <span>{media.year}</span>}
             {media.year !== undefined && rating !== undefined && (
               <span aria-hidden="true">&#8226;</span>

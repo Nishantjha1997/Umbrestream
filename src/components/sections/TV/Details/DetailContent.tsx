@@ -8,11 +8,14 @@
  */
 
 import { tmdbBrowser } from "@/api/tmdb-browser";
-import { Spinner } from "@heroui/react";
+import { useSetAmbient } from "@/components/media/AmbientProvider";
 import ServiceRetryState from "@/components/ui/feedback/ServiceRetryState";
+import { useExtractColors } from "@/hooks/useExtractColors";
+import { Spinner } from "@heroui/react";
 import { useScrollIntoView } from "@mantine/hooks";
 import { useQuery } from "@tanstack/react-query";
 import { Suspense } from "react";
+import type { AppendToResponse, TvShowDetails } from "tmdb-ts";
 import dynamic from "next/dynamic";
 import {
   getCinematicBackdropUrl,
@@ -27,7 +30,28 @@ const MediaBackdrop = dynamic(() => import("@/components/media/MediaBackdrop"));
 const TvShowOverviewSection = dynamic(() => import("@/components/sections/TV/Details/Overview"));
 const TvShowsSeasonsSelection = dynamic(() => import("@/components/sections/TV/Details/Seasons"));
 
-export default function TvShowDetailContent({ id }: { id: number }) {
+type TvDetailData = AppendToResponse<
+  TvShowDetails,
+  (
+    | "images"
+    | "videos"
+    | "credits"
+    | "keywords"
+    | "recommendations"
+    | "similar"
+    | "reviews"
+    | "watch/providers"
+  )[],
+  "tvShow"
+>;
+
+export default function TvShowDetailContent({
+  id,
+  initialData,
+}: {
+  id: number;
+  initialData?: TvDetailData;
+}) {
   const { scrollIntoView, targetRef } = useScrollIntoView<HTMLDivElement>({
     duration: 500,
   });
@@ -51,7 +75,18 @@ export default function TvShowDetailContent({ id }: { id: number }) {
         "watch/providers",
       ]),
     queryKey: ["tv-show-detail", id],
+    initialData,
   });
+
+  const backdropUrl =
+    (tv
+      ? getCinematicBackdropUrl(
+          tv.images.backdrops,
+          getImageUrl(tv.backdrop_path, "backdrop", true),
+        )
+      : "") || "";
+  const { dominantColor } = useExtractColors(backdropUrl);
+  useSetAmbient(dominantColor);
 
   if (isPending) {
     return (

@@ -72,7 +72,7 @@ export default function HomeDiscoveryFeed({ idPrefix, variant }: HomeDiscoveryFe
           >
             Find something worth pressing play on.
           </h2>
-          <p className="mt-2 text-sm leading-6 text-white/52">
+          <p className="mt-2 text-sm leading-6 text-white/70">
             Fresh regional lists for movies and series, with personal picks that improve as you
             watch when you sign in.
           </p>
@@ -95,7 +95,7 @@ export default function HomeDiscoveryFeed({ idPrefix, variant }: HomeDiscoveryFe
           <a
             key={href}
             href={href}
-            className="shrink-0 rounded-full border border-white/10 bg-black/25 px-3.5 py-2 text-xs font-medium text-white/65 transition-colors hover:border-white/20 hover:text-white focus-visible:ring-2 focus-visible:ring-violet-300/70 focus-visible:outline-none"
+            className="shrink-0 rounded-full border border-white/10 bg-black/25 px-3.5 py-2 text-xs font-medium text-white/75 transition-colors hover:border-white/20 hover:text-white focus-visible:ring-2 focus-visible:ring-violet-300/70 focus-visible:outline-none"
           >
             {label}
           </a>
@@ -112,7 +112,7 @@ export default function HomeDiscoveryFeed({ idPrefix, variant }: HomeDiscoveryFe
 
       <a
         href={`#${topId}`}
-        className="ml-auto inline-flex w-fit items-center gap-2 rounded-full px-3 py-2 text-xs font-medium text-white/45 transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-violet-300/70 focus-visible:outline-none"
+        className="ml-auto inline-flex w-fit items-center gap-2 rounded-full px-3 py-2 text-xs font-medium text-white/70 transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-violet-300/70 focus-visible:outline-none"
       >
         Back to top <span aria-hidden="true">&uarr;</span>
       </a>

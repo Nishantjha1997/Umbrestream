@@ -7,9 +7,11 @@ import type { MediaSummary } from "@/types/media";
 import type { SavedMovieDetails } from "@/types/movie";
 import { cn, isEmpty } from "@/utils/helpers";
 import { Calendar, Clock, List, PlayFilled, Season, Star } from "@/utils/icons";
+import { getMovieLastPosition } from "@/actions/histories";
 import { getCinematicBackdropUrl, getImageUrl, movieDurationString } from "@/utils/movies";
 import { Button, Link, Skeleton } from "@heroui/react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 
 /**
  * The single hover/long-press preview panel.
@@ -89,6 +91,31 @@ async function fetchPreview(media: MediaSummary) {
 type PreviewQueryResult = Awaited<ReturnType<typeof fetchPreview>>;
 
 const HoverPreview: React.FC<HoverPreviewProps> = ({ media, fullWidth }) => {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (media.kind === "movie") {
+      void queryClient.prefetchQuery({
+        queryKey: ["movie-player-detail", media.id],
+        queryFn: () => tmdbBrowser.movies.details(media.id),
+      });
+      void queryClient.prefetchQuery({
+        queryKey: ["movie-player-start-at", media.id],
+        queryFn: () => getMovieLastPosition(media.id),
+      });
+    } else if (media.kind === "tv") {
+      void queryClient.prefetchQuery({
+        queryKey: ["tv-show-player-details", media.id],
+        queryFn: () => tmdbBrowser.tvShows.details(media.id),
+      });
+    } else if (media.kind === "anime") {
+      void queryClient.prefetchQuery({
+        queryKey: ["anime-player-details", media.id],
+        queryFn: () => anilistApi.details(media.id),
+      });
+    }
+  }, [media.id, media.kind, queryClient]);
+
   const { data, isPending, isError } = useQuery({
     queryKey: ["media-hover-preview", media.kind, media.id],
     queryFn: () => fetchPreview(media),

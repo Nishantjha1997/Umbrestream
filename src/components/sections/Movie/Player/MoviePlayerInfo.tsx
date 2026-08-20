@@ -94,17 +94,17 @@ const MoviePlayerInfo: React.FC<MoviePlayerInfoProps> = ({ movie }) => {
               {title}
             </h2>
             {facts.length > 0 && (
-              <ul className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-white/50 sm:text-sm">
+              <ul className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-white/70 sm:text-sm">
                 {facts.map((fact) => (
                   <li
                     key={fact}
-                    className="flex items-center before:mr-2 before:text-white/40 before:content-['•'] first:before:content-none"
+                    className="flex items-center before:mr-2 before:text-white/60 before:content-['•'] first:before:content-none"
                   >
                     {fact}
                   </li>
                 ))}
                 {movie.vote_average > 0 && (
-                  <li className="flex items-center before:mr-2 before:text-white/40 before:content-['•']">
+                  <li className="flex items-center before:mr-2 before:text-white/60 before:content-['•']">
                     <Rating rate={movie.vote_average} count={movie.vote_count} />
                   </li>
                 )}
@@ -116,7 +116,7 @@ const MoviePlayerInfo: React.FC<MoviePlayerInfoProps> = ({ movie }) => {
             <div className="flex flex-col gap-2">
               <p
                 className={cn(
-                  "max-w-[68ch] text-sm leading-relaxed whitespace-pre-line text-white/60",
+                  "max-w-[68ch] text-sm leading-relaxed whitespace-pre-line text-white/75",
                   isLongSynopsis && !expanded && "line-clamp-4",
                 )}
               >
@@ -127,7 +127,7 @@ const MoviePlayerInfo: React.FC<MoviePlayerInfoProps> = ({ movie }) => {
                   type="button"
                   aria-expanded={expanded}
                   onClick={() => setExpanded((value) => !value)}
-                  className="w-fit rounded-full text-xs font-semibold tracking-wide text-white/50 uppercase transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+                  className="w-fit rounded-full text-xs font-semibold tracking-wide text-white/70 uppercase transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
                 >
                   {expanded ? "Show less" : "Show more"}
                 </button>

@@ -8,7 +8,11 @@
  */
 
 import { anilistApi } from "@/api/anilist";
-import { Button, Spinner } from "@heroui/react";
+import { useSetAmbient } from "@/components/media/AmbientProvider";
+import ServiceRetryState from "@/components/ui/feedback/ServiceRetryState";
+import { useExtractColors } from "@/hooks/useExtractColors";
+import type { AniListMediaDetail } from "@/types/anilist";
+import { Spinner } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
@@ -20,7 +24,13 @@ const StudiosSection = dynamic(() => import("@/components/sections/Anime/Detail/
 const RelatedSection = dynamic(() => import("@/components/sections/Anime/Detail/Related"));
 const AnimeEpisodesSelection = dynamic(() => import("@/components/sections/Anime/Detail/Episodes"));
 
-export default function AnimeDetailContent({ id }: { id: number }) {
+export default function AnimeDetailContent({
+  id,
+  initialData,
+}: {
+  id: number;
+  initialData?: AniListMediaDetail | null;
+}) {
   const {
     data: anime,
     isPending,
@@ -30,7 +40,16 @@ export default function AnimeDetailContent({ id }: { id: number }) {
   } = useQuery({
     queryFn: () => anilistApi.details(id),
     queryKey: ["anime-detail", id],
+    initialData: initialData ?? undefined,
   });
+
+  const backdropUrl =
+    anime?.bannerImage ??
+    anime?.coverImage.extraLarge ??
+    anime?.coverImage.large ??
+    "";
+  const { dominantColor } = useExtractColors(backdropUrl);
+  useSetAmbient(dominantColor || anime?.coverImage.color || null);
 
   if (isPending) {
     return (
@@ -46,15 +65,12 @@ export default function AnimeDetailContent({ id }: { id: number }) {
   // only when the title genuinely doesn't exist, so the two are handled apart.
   if (error) {
     return (
-      <div className="absolute-center flex max-w-sm flex-col items-center gap-4 text-center">
-        <h4 className="text-lg font-semibold">Couldn&apos;t reach AniList</h4>
-        <p className="text-default-500 text-sm">
-          This title didn&apos;t load. It&apos;s usually temporary.
-        </p>
-        <Button color="primary" isLoading={isFetching} onPress={() => refetch()}>
-          Try again
-        </Button>
-      </div>
+      <ServiceRetryState
+        title="Couldn’t reach AniList"
+        description="This title didn’t load. It’s usually temporary."
+        isRetrying={isFetching}
+        onRetry={() => void refetch()}
+      />
     );
   }
 

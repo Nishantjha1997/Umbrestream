@@ -58,14 +58,14 @@ export default function DesktopHeader({ className }: DesktopHeaderProps) {
       <Link
         href="/space"
         aria-label="My Space"
-        className="group inline-flex min-h-11 items-center gap-[9px] rounded-full border border-white/14 bg-black/36 px-4 text-white outline-none transition-colors duration-(--duration-fast) ease-(--ease-out-quint) hover:border-white/22 hover:bg-black/45 focus-visible:ring-2 focus-visible:ring-violet-400/60 motion-reduce:transition-none"
+        className="group inline-flex min-h-11 items-center gap-[9px] rounded-full border border-white/14 bg-black/36 px-4 text-white outline-none transition-colors duration-(--duration-fast) ease-(--ease-out-quint) hover:border-white/22 hover:bg-black/45 focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:outline-none motion-reduce:transition-none"
         style={{
           backdropFilter: "blur(16px) saturate(var(--glass-saturate))",
           WebkitBackdropFilter: "blur(16px) saturate(var(--glass-saturate))",
         }}
       >
-        <TbUserCircle className="size-[15px] shrink-0 text-white/55" aria-hidden="true" />
-        <span className="text-[12.5px] whitespace-nowrap text-white/40 transition-colors group-hover:text-white/65">
+        <TbUserCircle className="size-[15px] shrink-0 text-white/70" aria-hidden="true" />
+        <span className="text-[12.5px] whitespace-nowrap text-white/70 transition-colors group-hover:text-white">
           My Space
         </span>
       </Link>
@@ -82,7 +82,7 @@ export default function DesktopHeader({ className }: DesktopHeaderProps) {
       <Link
         href="/search"
         aria-label="Search StreamFree. Keyboard shortcut Command K or Control K."
-        className="group inline-flex min-h-11 items-center gap-[9px] rounded-full border border-white/14 bg-black/36 px-4 text-white outline-none transition-colors duration-(--duration-fast) ease-(--ease-out-quint) hover:border-white/22 hover:bg-black/45 focus-visible:ring-2 focus-visible:ring-violet-400/60 motion-reduce:transition-none"
+        className="group inline-flex min-h-11 items-center gap-[9px] rounded-full border border-white/14 bg-black/36 px-4 text-white outline-none transition-colors duration-(--duration-fast) ease-(--ease-out-quint) hover:border-white/22 hover:bg-black/45 focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:outline-none motion-reduce:transition-none"
         style={{
           backdropFilter: "blur(16px) saturate(var(--glass-saturate))",
           WebkitBackdropFilter: "blur(16px) saturate(var(--glass-saturate))",
@@ -95,17 +95,17 @@ export default function DesktopHeader({ className }: DesktopHeaderProps) {
           viewBox="0 0 20 20"
           fill="none"
           aria-hidden="true"
-          className="shrink-0 text-white/55"
+          className="shrink-0 text-white/70"
         >
           <circle cx="9" cy="9" r="6.2" stroke="currentColor" strokeWidth="1.5" />
           <path d="M13.6 13.6 17 17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
         </svg>
-        <span className="text-[12.5px] whitespace-nowrap text-white/40">Search StreamFree</span>
+        <span className="text-[12.5px] whitespace-nowrap text-white/70">Search StreamFree</span>
         {/* Discoverability for the shortcut above — the mockup has neither
             the handler nor the hint. `font-mono` ties it to the app's
             existing "numerals/data" register (`--font-mono`, §5.1) rather
             than inventing a fourth type treatment for one glyph pair. */}
-        <kbd className="ml-0.5 rounded-[5px] border border-white/14 bg-white/7 px-[5px] py-[1px] font-mono text-[10px] leading-none text-white/45 group-hover:text-white/60">
+        <kbd className="ml-0.5 rounded-[5px] border border-white/14 bg-white/7 px-[5px] py-[1px] font-mono text-[10px] leading-none text-white/60 group-hover:text-white/80">
           ⌘K
         </kbd>
       </Link>

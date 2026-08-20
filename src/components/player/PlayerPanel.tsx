@@ -65,9 +65,9 @@ export default function PlayerPanel({
             type="button"
             aria-label="Close"
             onClick={onClose}
-            className="glass-control flex size-8 shrink-0 items-center justify-center rounded-full border focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:outline-hidden"
+            className="glass-control flex size-11 shrink-0 items-center justify-center rounded-full border focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:outline-hidden"
           >
-            <Close size={13} />
+            <Close size={16} />
           </button>
         </div>
         {children}

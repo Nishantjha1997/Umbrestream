@@ -44,13 +44,13 @@ const TvShowsSeasonsSelection = forwardRef<HTMLElement, Props>(({ id, seasons },
       {/* No `color` any more: amber here meant "this is the TV page", which is
           colour as taxonomy (§1.1.3). */}
       <SectionTitle size="h5">Episodes</SectionTitle>
-      <Card shadow="none" className="border border-default-100 bg-default-50/60 sm:p-3">
+      <Card shadow="none" className="border border-white/10 bg-white/[0.025] sm:p-3">
         <CardHeader className="grid grid-cols-1 grid-rows-[1fr_auto] gap-3 md:grid-cols-[1fr_1fr_auto_auto]">
           <Select
             aria-label="Seasons"
             selectedKeys={[seasonNumber]}
             disallowEmptySelection={true}
-            classNames={{ trigger: "border-2 border-foreground-200" }}
+            classNames={{ trigger: "border border-white/10 bg-white/[0.035]" }}
             onChange={(e) => {
               close();
               setSearch("");
@@ -68,13 +68,13 @@ const TvShowsSeasonsSelection = forwardRef<HTMLElement, Props>(({ id, seasons },
             value={search}
             onValueChange={setSearch}
             startContent={<Search />}
-            classNames={{ inputWrapper: "border-2 border-foreground-200" }}
+            classNames={{ inputWrapper: "border border-white/10 bg-white/[0.035]" }}
           />
           <Tooltip content={titleCase(layout)}>
             <Tabs
               aria-label="Layout Select"
               size="sm"
-              classNames={{ tabList: "border-2 border-foreground-200" }}
+              classNames={{ tabList: "border border-white/10 bg-white/[0.035]" }}
               onSelectionChange={(value) => setLayout(value as typeof layout)}
               selectedKey={layout}
             >
@@ -92,8 +92,8 @@ const TvShowsSeasonsSelection = forwardRef<HTMLElement, Props>(({ id, seasons },
             variant={sortedByName ? "solid" : "faded"}
           />
         </CardHeader>
-        <CardBody>
-          <ScrollShadow className="h-[600px] py-2 pr-2 sm:pr-3">
+        <CardBody className="p-0 sm:p-3">
+          <ScrollShadow className="py-2 pr-0 md:max-h-[600px] md:pr-3">
             <TvShowEpisodesSelection
               id={id}
               seasonNumber={Number(seasonNumber)}

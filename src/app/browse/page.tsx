@@ -2,6 +2,7 @@ import { Metadata } from "next/types";
 import { siteConfig } from "@/config/site";
 import { Suspense } from "react";
 import BrowseTabs from "@/components/sections/Discover/BrowseTabs";
+import GridPageSkeleton from "@/components/ui/other/GridPageSkeleton";
 
 export const metadata: Metadata = {
   title: `Browse | ${siteConfig.name}`,
@@ -23,7 +24,7 @@ export const metadata: Metadata = {
  */
 export default function BrowsePage() {
   return (
-    <Suspense>
+    <Suspense fallback={<GridPageSkeleton />}>
       <BrowseTabs />
     </Suspense>
   );

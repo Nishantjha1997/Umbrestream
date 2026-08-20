@@ -181,7 +181,7 @@ const SearchFilter: React.FC<SearchFilterProps> = ({ isLoading, onSearchSubmit, 
             <motion.div
               // Was `height: 0 -> auto` — a layout animation. Transform and
               // opacity only.
-              className="absolute top-12 z-999 w-full md:top-13"
+              className="absolute top-12 z-50 w-full md:top-13"
               initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -8 }}

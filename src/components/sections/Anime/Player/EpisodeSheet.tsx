@@ -179,7 +179,7 @@ const AnimePlayerEpisodeSheet: React.FC<AnimePlayerEpisodeSheetProps> = ({
         <div className="border-b border-white/10 px-4 py-3">
           <p className="text-xs font-semibold tracking-[.12em] text-primary uppercase">Episodes</p>
           <h2 className="mt-0.5 text-sm font-semibold text-white">{title}</h2>
-          <p className="text-xs text-white/50">
+          <p className="text-xs text-white/70">
             EP {currentEpisode} · {audioVariant === "dub" ? "Dub" : "Sub"}
             {totalEpisodes ? ` of ${totalEpisodes}` : ""}
           </p>
@@ -200,7 +200,7 @@ const AnimePlayerEpisodeSheet: React.FC<AnimePlayerEpisodeSheetProps> = ({
           <div>
             <p className="text-xs font-semibold tracking-[.12em] text-primary uppercase">Anime episodes</p>
             <h2 className="mt-1 text-lg font-semibold text-white sm:text-xl">{title}</h2>
-            <p className="mt-1 text-sm text-white/50">
+            <p className="mt-1 text-sm text-white/70">
               Episode {currentEpisode} · {audioVariant === "dub" ? "Dub" : "Sub"}
             </p>
           </div>
@@ -217,7 +217,7 @@ const AnimePlayerEpisodeSheet: React.FC<AnimePlayerEpisodeSheetProps> = ({
               Next episode
             </Button>
           ) : (
-            <span className="rounded-full border border-white/10 px-4 py-2 text-sm text-white/50">
+            <span className="rounded-full border border-white/10 px-4 py-2 text-sm text-white/70">
               Final episode
             </span>
           )}

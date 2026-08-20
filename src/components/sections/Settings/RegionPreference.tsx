@@ -28,7 +28,7 @@ export default function RegionPreference() {
       <label htmlFor="region-preference" className="text-sm font-semibold text-white">
         Home region
       </label>
-      <p className="mt-1 text-sm leading-6 text-white/50">
+      <p className="mt-1 text-sm leading-6 text-white/70">
         Automatic uses your connection region. Choose another region when travelling, then reset it anytime.
       </p>
       <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">

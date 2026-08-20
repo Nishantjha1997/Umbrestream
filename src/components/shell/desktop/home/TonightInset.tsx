@@ -121,7 +121,7 @@ export default function TonightInset() {
           <h3 className="font-serif text-[44px] leading-[.94] tracking-[-.02em] text-white">
             {pick.title}
           </h3>
-          {meta && <p className="text-[12px] text-white/55">{meta}</p>}
+          {meta && <p className="text-[12px] text-white/70">{meta}</p>}
           <span className="mt-1.5 flex h-10 w-fit items-center gap-2 rounded-full bg-white px-5 text-[13px] font-semibold text-[#0a090d]">
             <PlayFilled size={11} aria-hidden="true" />
             Play

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 /**
  * Section 04, "Next episode drops" (DESKTOP_SPEC.md §G) — a hairline 3-up
@@ -101,20 +101,20 @@ export default function NextEpisodeDropsDesktop() {
                 "flex flex-col gap-2.5 bg-[#100f14] p-5",
                 "transition-colors duration-(--duration-base) ease-(--ease-out-quint) motion-reduce:transition-none",
                 "hover:bg-[#17151d] focus-visible:bg-[#17151d] focus-visible:outline-hidden",
-                "focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-inset",
+                "focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-inset",
               )}
             >
               <p className="truncate text-sm font-medium tracking-[-.01em] text-white">
                 {drop.title}
               </p>
-              <p className="truncate text-[11px] text-white/40">
+              <p className="truncate text-[11px] text-white/70">
                 Season {drop.episode.season_number} · Episode {drop.episode.episode_number}
               </p>
               <div className="mt-1 flex items-baseline gap-1.5">
                 <span className="font-serif text-[26px] leading-none text-accent">
                   {countdownLabel(drop.daysUntil)}
                 </span>
-                <span className="font-mono text-[9px] tracking-[.1em] text-white/34 uppercase">
+                <span className="font-mono text-[10px] tracking-[.1em] text-white/60 uppercase">
                   {format(parseISO(drop.episode.air_date), "MMM d")}
                 </span>
               </div>

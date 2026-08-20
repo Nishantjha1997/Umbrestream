@@ -15,6 +15,7 @@
 
 import EclipseRing from "@/components/media/EclipseRing";
 import HistoryItemActions from "@/components/ui/button/HistoryItemActions";
+import InlineRetry from "@/components/ui/feedback/InlineRetry";
 import useContinueWatching from "@/hooks/useContinueWatching";
 import { useHomeHero } from "@/hooks/useHomeHero";
 import { useCustomCarousel } from "@/hooks/useCustomCarousel";
@@ -43,6 +44,8 @@ export default function StillWatchingDesktop() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    isError,
+    refetch,
   } = useContinueWatching();
   const { pick } = useHomeHero();
 
@@ -69,7 +72,19 @@ export default function StillWatchingDesktop() {
 
   // Hide the rail only when the resume hero is the sole active title. If the
   // hero is trending/recommended, the first active title still belongs here.
-  if (items.length === 0) return null;
+  if (items.length === 0) {
+    if (isError) {
+      return (
+        <div className="px-12">
+          <InlineRetry
+            message="Couldn't load continue watching."
+            onRetry={() => void refetch()}
+          />
+        </div>
+      );
+    }
+    return null;
+  }
 
   return (
     <section className="flex flex-col gap-4">
@@ -123,7 +138,7 @@ export default function StillWatchingDesktop() {
                     <p className="truncate text-[13px] leading-[1.3] font-medium text-white">
                       {item.title}
                     </p>
-                    <p className="truncate text-[11px] text-white/40">
+                    <p className="truncate text-[11px] text-white/70">
                       {formatTimeLeft(item.last_position, item.duration)}
                     </p>
                   </div>

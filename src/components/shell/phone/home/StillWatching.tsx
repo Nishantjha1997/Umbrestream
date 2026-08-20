@@ -14,6 +14,7 @@
 import Link from "next/link";
 import EclipseRing from "@/components/media/EclipseRing";
 import HistoryItemActions from "@/components/ui/button/HistoryItemActions";
+import InlineRetry from "@/components/ui/feedback/InlineRetry";
 import useContinueWatching from "@/hooks/useContinueWatching";
 import { useHomeHero } from "@/hooks/useHomeHero";
 import type { HistoryDetail } from "@/types/movie";
@@ -32,7 +33,8 @@ function playHrefFor(item: HistoryDetail): string {
 
 export default function StillWatching() {
   const { ref, inViewport } = useInViewport<HTMLDivElement>();
-  const { items, fetchNextPage, hasNextPage, isFetchingNextPage } = useContinueWatching();
+  const { items, fetchNextPage, hasNextPage, isFetchingNextPage, isError, refetch } =
+    useContinueWatching();
   const { pick } = useHomeHero();
 
   useEffect(() => {
@@ -54,7 +56,19 @@ export default function StillWatching() {
   const resumeKey = pick?.source === "resume" ? `${pick.media.kind}:${pick.media.id}` : null;
   const rest = uniqueTitles.filter((item) => `${item.type}:${item.media_id}` !== resumeKey);
 
-  if (rest.length === 0) return null;
+  if (rest.length === 0) {
+    if (isError) {
+      return (
+        <div className="px-5">
+          <InlineRetry
+            message="Couldn't load continue watching."
+            onRetry={() => void refetch()}
+          />
+        </div>
+      );
+    }
+    return null;
+  }
 
   return (
     <div className="flex flex-col gap-[15px]">

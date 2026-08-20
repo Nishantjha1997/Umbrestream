@@ -1,4 +1,5 @@
 import { tmdbBrowser } from "@/api/tmdb-browser";
+import ServiceRetryState from "@/components/ui/feedback/ServiceRetryState";
 import useBreakpoints from "@/hooks/useBreakpoints";
 import { cn, formatDate, isEmpty } from "@/utils/helpers";
 import { PlayOutline } from "@/utils/icons";
@@ -39,20 +40,30 @@ const TvShowEpisodesSelection: React.FC<TvShowEpisodesSelectionProps> = ({
   seasonNumber,
   filters: { searchQuery, sortedByName, layout } = {},
 }) => {
-  const { data, isPending } = useQuery({
+  const { data, isPending, isError, refetch } = useQuery({
     queryFn: () => tmdbBrowser.tvShows.season(id, seasonNumber),
     queryKey: ["tv-show-episodes", id, seasonNumber],
   });
 
   if (isPending) {
     return (
-      <div className="flex h-full items-center justify-center">
+      <div className="flex min-h-[280px] items-center justify-center">
         <Spinner variant="wave" size="lg" label={getLoadingLabel()} />
       </div>
     );
   }
 
-  if (!data) return null;
+  if (isError || !data) {
+    return (
+      <div className="relative flex min-h-[280px] w-full items-center justify-center p-6">
+        <ServiceRetryState
+          title="Couldn't load episodes"
+          description="There was an issue fetching episodes for this season."
+          onRetry={() => void refetch()}
+        />
+      </div>
+    );
+  }
 
   const EPISODES = data.episodes
     .filter((episode) =>
@@ -62,8 +73,8 @@ const TvShowEpisodesSelection: React.FC<TvShowEpisodesSelectionProps> = ({
 
   if (isEmpty(EPISODES)) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <p className="text-center">No episodes found.</p>
+      <div className="flex min-h-[200px] w-full flex-col items-center justify-center rounded-xl border border-white/10 bg-white/[0.025] p-8 text-center">
+        <p className="text-sm text-white/70">No episodes found.</p>
       </div>
     );
   }
@@ -110,10 +121,10 @@ export const EpisodeListCard: React.FC<EpisodeCardProps> = ({
       href={href}
       shadow="none"
       className={cn(
-        "group motion-preset-blur-right border-foreground-200 bg-foreground-100 motion-duration-300 grid grid-cols-[auto_1fr] gap-3 border-2 transition-colors duration-(--duration-fast) ease-(--ease-out-quint) motion-reduce:animate-none motion-reduce:transition-none",
+        "group motion-preset-blur-right border-white/10 bg-white/[0.025] motion-duration-300 grid grid-cols-[auto_1fr] gap-3 border transition-colors duration-(--duration-fast) ease-(--ease-out-quint) motion-reduce:animate-none motion-reduce:transition-none",
         {
-          // Amber hover meant "TV page"; colour is not taxonomy (§1.1.3).
-          "hover:border-default-400 hover:bg-foreground-200": !isNotReleased,
+          // Accent hover styling
+          "hover:border-white/20 hover:bg-white/[0.05]": !isNotReleased,
           "cursor-not-allowed opacity-50": isNotReleased,
           "motion-preset-slide-left": isOdd && withAnimation,
           "motion-preset-slide-right": !isOdd && withAnimation,
@@ -155,10 +166,10 @@ export const EpisodeListCard: React.FC<EpisodeCardProps> = ({
         >
           {episode.name}
         </p>
-        <p className="text-content4-foreground line-clamp-1 text-xs">
+        <p className="text-white/60 line-clamp-1 text-xs">
           {formatDate(episode.air_date, "en-US")}
         </p>
-        <p className="text-foreground-500 line-clamp-2 text-sm" title={episode.overview}>
+        <p className="text-white/70 line-clamp-2 text-sm" title={episode.overview}>
           {episode.overview}
         </p>
       </CardBody>
@@ -180,9 +191,9 @@ const EpisodeGridCard: React.FC<EpisodeCardProps> = ({ episode, id }) => {
       href={href}
       shadow="none"
       className={cn(
-        "group motion-preset-focus border-foreground-200 bg-foreground-100 border-2 transition-colors duration-(--duration-fast) ease-(--ease-out-quint) motion-reduce:animate-none motion-reduce:transition-none",
+        "group motion-preset-focus border-white/10 bg-white/[0.025] border transition-colors duration-(--duration-fast) ease-(--ease-out-quint) motion-reduce:animate-none motion-reduce:transition-none",
         {
-          "hover:border-default-400 hover:bg-foreground-200": !isNotReleased,
+          "hover:border-white/20 hover:bg-white/[0.05]": !isNotReleased,
           "cursor-not-allowed opacity-50": isNotReleased,
         },
       )}
@@ -220,10 +231,10 @@ const EpisodeGridCard: React.FC<EpisodeCardProps> = ({ episode, id }) => {
           >
             {episode.name}
           </p>
-          <p className="text-content4-foreground line-clamp-1 text-xs">
+          <p className="text-white/60 line-clamp-1 text-xs">
             {formatDate(episode.air_date, "en-US")}
           </p>
-          <p className="text-foreground-500 text-sm" title={episode.overview}>
+          <p className="text-white/70 text-sm" title={episode.overview}>
             {episode.overview}
           </p>
         </div>

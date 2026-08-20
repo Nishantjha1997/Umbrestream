@@ -2,6 +2,7 @@ import { Metadata, NextPage } from "next/types";
 import { siteConfig } from "@/config/site";
 import dynamic from "next/dynamic";
 import { Suspense } from "react";
+import GridPageSkeleton from "@/components/ui/other/GridPageSkeleton";
 const DiscoverListGroup = dynamic(() => import("@/components/sections/Discover/ListGroup"));
 
 export const metadata: Metadata = {
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
 
 const DiscoverPage: NextPage = () => {
   return (
-    <Suspense>
+    <Suspense fallback={<GridPageSkeleton />}>
       <DiscoverListGroup />
     </Suspense>
   );

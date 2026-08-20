@@ -22,7 +22,7 @@ export default function SectionHeader({ number, label, action }: SectionHeaderPr
         <span className="font-mono text-[10.5px] font-semibold tracking-[.14em] text-accent">
           {number}
         </span>
-        <h2 className="text-[11px] font-semibold tracking-[.24em] text-white/48 uppercase">
+        <h2 className="text-[11px] font-semibold tracking-[.24em] text-white/70 uppercase">
           {label}
         </h2>
       </div>
@@ -30,7 +30,7 @@ export default function SectionHeader({ number, label, action }: SectionHeaderPr
         <Link
           href={action.href}
           prefetch={false}
-          className="rounded-xs border-0 bg-transparent p-0 text-[12px] text-white/42 transition-colors duration-(--duration-fast) ease-(--ease-out-quint) hover:text-white/75 focus-visible:text-white/75 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white/70 motion-reduce:transition-none"
+          className="rounded-xs border-0 bg-transparent p-0 text-[12px] text-white/70 transition-colors duration-(--duration-fast) ease-(--ease-out-quint) hover:text-white/75 focus-visible:text-white/75 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white/70 motion-reduce:transition-none"
         >
           {action.label}
         </Link>

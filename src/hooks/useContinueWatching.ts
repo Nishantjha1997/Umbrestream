@@ -31,6 +31,9 @@ export default function useContinueWatching() {
     [query.data?.pages],
   );
 
+  const hasFetchError =
+    query.isError || Boolean(query.data?.pages.some((page) => !page.success));
+
   return {
     ...query,
     items,
@@ -38,5 +41,7 @@ export default function useContinueWatching() {
     isUserLoading,
     isSignedOut: !isUserLoading && !user,
     isLoading: isUserLoading || (Boolean(user) && query.isPending),
+    hasError: hasFetchError,
+    isError: hasFetchError,
   };
 }

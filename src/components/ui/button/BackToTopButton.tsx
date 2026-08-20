@@ -16,7 +16,7 @@ const BackToTopButton: React.FC = () => {
   if (!isVisible) return null;
 
   return (
-    <div className={cn("fixed bottom-20 right-4 z-9999 transition-opacity md:bottom-4")}>
+    <div className={cn("fixed bottom-20 right-4 z-60 transition-opacity md:bottom-4")}>
       {/* Floats over page content, so it uses the glass-control tier rather
           than `variant="shadow"` — a coloured glow on a utility control pulls
           more attention than the control deserves (§9). */}

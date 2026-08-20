@@ -48,11 +48,20 @@ function playLabelFor(media: MediaSummary): string {
   return media.kind === "tv" ? "View Episodes" : "Play";
 }
 
+function TonightSkeleton() {
+  return (
+    <div className="flex flex-col gap-[15px]" aria-hidden="true">
+      <SectionHeader number="02" label="Tonight" />
+      <div className="aspect-3/4 w-full animate-pulse rounded-[13px] bg-white/8" />
+    </div>
+  );
+}
+
 export default function Tonight() {
   const { data: user, isLoading: isUserLoading } = useSupabaseUser();
   const { pick: heroPick } = useHomeHero();
 
-  const { data: recommendations } = useQuery({
+  const { data: recommendations, isLoading: isRecsLoading } = useQuery({
     queryKey: ["personalized-recommendations", user?.id],
     queryFn: () => getPersonalizedRecommendationFeed(),
     enabled: !isUserLoading,
@@ -83,6 +92,8 @@ export default function Tonight() {
 
   const [saved, setSaved] = useState(false);
   const [pending, setPending] = useState(false);
+
+  if (isUserLoading || isRecsLoading) return <TonightSkeleton />;
 
   if (!media) return null;
 

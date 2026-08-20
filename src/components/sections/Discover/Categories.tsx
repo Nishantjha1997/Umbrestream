@@ -58,7 +58,7 @@ export default function CategoriesSection() {
                 {name.slice(0, 1)}
               </span>
               <span className="relative text-lg font-semibold text-white">{name}</span>
-              <span className="relative mt-2 block text-xs text-white/45">Browse collection</span>
+              <span className="relative mt-2 block text-xs text-white/70">Browse collection</span>
             </Link>
           ))}
         </div>

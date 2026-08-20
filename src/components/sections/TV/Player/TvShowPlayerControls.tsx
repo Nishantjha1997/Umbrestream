@@ -48,7 +48,7 @@ const TvShowPlayerControls: React.FC<TvShowPlayerControlsProps> = ({
       {/* Left cluster: series + episode identity */}
       <div className="flex min-w-0 items-center gap-2">
         <p className="truncate text-sm font-semibold text-white/90">{seriesName}</p>
-        <span className="shrink-0 text-xs font-medium text-white/50">
+        <span className="shrink-0 text-xs font-medium text-white/70">
           S{episode.season_number} · E{episode.episode_number}
           {episode.name ? ` — ${episode.name}` : ""}
         </span>

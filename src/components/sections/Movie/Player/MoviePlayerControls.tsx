@@ -50,9 +50,9 @@ const MoviePlayerControls: React.FC<MoviePlayerControlsProps> = ({
       {/* Left cluster: title + compact meta */}
       <div className="flex min-w-0 items-center gap-2">
         <p className="truncate text-sm font-semibold text-white/90">{title}</p>
-        {releaseYear && <span className="shrink-0 text-xs font-medium text-white/50">{releaseYear}</span>}
+        {releaseYear && <span className="shrink-0 text-xs font-medium text-white/70">{releaseYear}</span>}
         {movie.runtime ? (
-          <span className="hidden shrink-0 text-xs font-medium text-white/50 sm:inline">
+          <span className="hidden shrink-0 text-xs font-medium text-white/70 sm:inline">
             {movieDurationString(movie.runtime)}
           </span>
         ) : null}

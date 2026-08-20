@@ -60,8 +60,8 @@ function TabBarItem({ item, active }: { item: NavigationItem; active: boolean })
       aria-label={item.label}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "relative isolate flex min-h-[54px] flex-col items-center justify-center gap-1.5 rounded-2xl p-0 outline-none transition-colors duration-(--duration-fast) active:scale-[0.95] focus-visible:ring-2 focus-visible:ring-violet-300/70 motion-reduce:transition-none",
-        active ? "text-white" : "text-white/42 hover:text-white/70",
+        "relative isolate flex min-h-[54px] flex-col items-center justify-center gap-1.5 rounded-2xl p-0 outline-none transition-colors duration-(--duration-fast) active:scale-[0.95] focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:outline-none motion-reduce:transition-none",
+        active ? "text-white" : "text-white/60 hover:text-white/90",
       )}
     >
       {active && (
@@ -83,7 +83,7 @@ function TabBarItem({ item, active }: { item: NavigationItem; active: boolean })
       >
         <TabGlyph label={item.label} />
       </motion.span>
-      <span className={cn("text-[9.5px] tracking-[.06em]", active ? "font-semibold" : "font-medium")}>
+      <span className={cn("text-[10.5px] tracking-[.06em]", active ? "font-semibold" : "font-medium")}>
         {item.label}
       </span>
     </Link>

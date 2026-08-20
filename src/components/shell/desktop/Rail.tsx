@@ -53,7 +53,7 @@ export default function DesktopRail({ pathname }: { pathname: string }) {
                   href={item.href}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "group/item relative isolate flex h-11 w-full items-center overflow-hidden rounded-xl text-white/50 transition-colors duration-200 outline-none hover:text-white focus-visible:ring-2 focus-visible:ring-violet-400/60",
+                    "group/item relative isolate flex h-11 w-full items-center overflow-hidden rounded-xl text-white/70 transition-colors duration-200 outline-none hover:text-white focus-visible:ring-2 focus-visible:ring-white/70",
                     active && "text-white",
                   )}
                 >

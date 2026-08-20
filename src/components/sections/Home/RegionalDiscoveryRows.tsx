@@ -4,6 +4,7 @@ import { anilistApi } from "@/api/anilist";
 import { getBrowserRegion, getRegionOverride, type GeoRegion } from "@/api/geo-browser";
 import { tmdbBrowser } from "@/api/tmdb-browser";
 import MediaRow from "@/components/media/MediaRow";
+import InlineRetry from "@/components/ui/feedback/InlineRetry";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import type { Movie, TV } from "tmdb-ts/dist/types";
@@ -33,7 +34,7 @@ export default function RegionalDiscoveryRows({ idPrefix }: { idPrefix: "phone" 
     return () => window.removeEventListener("streamfree-region-change", onRegionChange);
   }, []);
 
-  const { data: region } = useQuery({
+  const { data: region, isError, isLoading, refetch } = useQuery({
     queryKey: ["browser-region", override ?? "automatic"],
     queryFn: getBrowserRegion,
     staleTime: 24 * 60 * 60 * 1000,
@@ -41,7 +42,18 @@ export default function RegionalDiscoveryRows({ idPrefix }: { idPrefix: "phone" 
     refetchOnWindowFocus: false,
   });
 
-  if (!region) return null;
+  if (isLoading) return null;
+
+  if (isError || !region) {
+    return (
+      <div className="px-5 md:px-12">
+        <InlineRetry
+          message="Couldn't load regional trending rows."
+          onRetry={() => void refetch()}
+        />
+      </div>
+    );
+  }
 
   const params = regionParams(region);
   const countryLabel = region.country === "US" && region.source === "default" ? "Global" : region.countryName;

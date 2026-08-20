@@ -36,11 +36,11 @@ const AnimePlayerPage: NextPage<Params<{ id: number; episode: number }>> = ({ pa
     return (
       <div className="absolute-center flex max-w-sm flex-col items-center gap-4 text-center">
         <h4 className="text-lg font-semibold">Couldn&apos;t reach AniList</h4>
-        <p className="text-default-500 text-sm">
+        <p className="text-sm text-white/70">
           The episode data didn&apos;t load. This is usually temporary.
         </p>
         <div className="flex gap-2">
-          <Button color="secondary" isLoading={isFetching} onPress={() => refetch()}>
+          <Button color="primary" isLoading={isFetching} onPress={() => refetch()}>
             Try again
           </Button>
           <Button as={Link} href={`/anime/${id}`} variant="flat">

@@ -154,6 +154,23 @@ export default function PlayerShell({
     return () => window.removeEventListener("keydown", revealFromKeyboard);
   }, [revealChrome]);
 
+  useEffect(() => {
+    const root = playerRootRef.current;
+    if (!root) return;
+
+    let lastMoveTime = 0;
+    const handlePointerMove = () => {
+      const now = performance.now();
+      if (now - lastMoveTime >= 350) {
+        lastMoveTime = now;
+        revealChrome();
+      }
+    };
+
+    root.addEventListener("pointermove", handlePointerMove, { passive: true });
+    return () => root.removeEventListener("pointermove", handlePointerMove);
+  }, [revealChrome, mounted]);
+
   const events = usePlayerEvents({ saveHistory: true, metadata: historyMetadata, identity });
   const { setAllowedOrigin } = events;
   const [isFullscreen, setIsFullscreen] = useState(false);

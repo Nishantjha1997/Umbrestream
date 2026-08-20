@@ -1,4 +1,4 @@
-# StreamFree — Movies, TV Shows & Anime
+﻿# StreamFree — Movies, TV Shows & Anime
 
 StreamFree is a personal movies, TV shows, and anime discovery platform. It offers a seamless
 browsing experience for discovering, searching, and tracking a vast library of content.
@@ -8,7 +8,7 @@ handoff context, read [STREAMFREE_HANDOFF.md](STREAMFREE_HANDOFF.md).
 
 ## Key Features
 
-- **🌗 Light and Dark Mode**: Both light and dark modes, adapting to user preference.
+- **🌙 Dark-Only Interface**: Immersive, cinema-focused dark interface designed for streaming.
 - **🧭 Discover Content**: Browse popular, trending, and upcoming movies and TV shows.
 - **⛩️ Anime**: A dedicated anime section backed by AniList — proper studios, format, and episode
   metadata rather than a generic "Animation" genre filter.
@@ -40,13 +40,4 @@ npm install
 npm run dev
 ```
 
-Then open `http://localhost:3000`.
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the git workflow and known environment notes.
-
-## Acknowledgements
-
-StreamFree's foundation is built on [cinextma](https://github.com/wisnuwirayuda15/cinextma) by
-Wisnu Wirayuda, used under the MIT License (see [LICENSE](LICENSE)).
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.

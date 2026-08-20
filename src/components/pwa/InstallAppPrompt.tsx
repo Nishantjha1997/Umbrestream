@@ -38,7 +38,7 @@ export default function InstallAppPrompt() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (wasRecentlyDismissed()) return;
+    if (isInstalled() || wasRecentlyDismissed()) return;
 
     const userAgent = navigator.userAgent;
     const android = /Android/i.test(userAgent);
@@ -57,8 +57,6 @@ export default function InstallAppPrompt() {
       }, 4_500);
       return () => window.clearTimeout(androidTimer);
     }
-
-    if (isInstalled()) return;
 
     const timer = window.setTimeout(() => {
       if (ios && safari) {

@@ -1,34 +1,69 @@
 "use client";
 
 import Link from "next/link";
-import { Anime, ArrowUpLeft } from "@/utils/icons";
+import { Anime, ArrowUpLeft, Close } from "@/utils/icons";
+import { useEffect, useState } from "react";
+
+const STORAGE_KEY = "streamfree:anime-entry-dismissed:v1";
 
 /** Intentional mode switch for Anime's distinct source/audio experience. */
 export default function AnimeModeEntry() {
+  const [dismissed, setDismissed] = useState(true);
+
+  useEffect(() => {
+    try {
+      const isDismissed = window.localStorage.getItem(STORAGE_KEY) === "true";
+      setDismissed(isDismissed);
+    } catch {
+      setDismissed(false);
+    }
+  }, []);
+
+  if (dismissed) return null;
+
+  const handleDismiss = () => {
+    setDismissed(true);
+    try {
+      window.localStorage.setItem(STORAGE_KEY, "true");
+    } catch {
+      // ignore localStorage write errors
+    }
+  };
+
   return (
-    <section className="px-5 md:px-12" aria-labelledby="anime-mode-title">
-      <div className="relative overflow-hidden rounded-[24px] border border-fuchsia-200/16 bg-[radial-gradient(circle_at_86%_10%,rgba(217,70,239,.28),transparent_34%),linear-gradient(120deg,rgba(41,24,58,.95),rgba(14,11,24,.96))] px-5 py-5 shadow-[0_20px_60px_-40px_rgba(217,70,239,.8)] md:flex md:items-center md:justify-between md:px-7 md:py-6">
-        <div className="pointer-events-none absolute -right-8 -bottom-16 size-48 rounded-full bg-fuchsia-400/10 blur-3xl" aria-hidden="true" />
-        <div className="relative min-w-0">
-          <p className="mb-2 flex items-center gap-2 text-[10px] font-semibold tracking-[0.24em] text-fuchsia-200/65 uppercase">
-            <Anime size={13} aria-hidden="true" />
-            A dedicated anime space
-          </p>
-          <h2 id="anime-mode-title" className="font-serif text-[30px] leading-none tracking-[-0.02em] text-white md:text-[38px]">
-            Enter Anime Mode
-          </h2>
-          <p className="mt-2 max-w-[620px] text-[12.5px] leading-6 text-white/58 md:text-[13.5px]">
-            Discover seasonal releases, keep Sub and Dub servers separate, and continue episodes from one focused home.
-          </p>
+    <section className="px-5 md:px-12" aria-label="Anime Mode announcement">
+      <div className="relative flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.035] px-4 py-3 text-sm text-white/90">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-violet-400/20 text-accent">
+            <Anime size={15} aria-hidden="true" />
+          </span>
+          <div className="flex min-w-0 flex-col sm:flex-row sm:items-center sm:gap-2">
+            <span className="truncate font-semibold text-white">Enter Anime Mode</span>
+            <span className="hidden text-white/40 sm:inline">·</span>
+            <span className="truncate text-xs text-white/70">
+              Seasonal releases, Sub & Dub tracking, and focused playback.
+            </span>
+          </div>
         </div>
-        <Link
-          href="/anime"
-          prefetch={false}
-          className="relative mt-5 inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-full border border-fuchsia-100/25 bg-fuchsia-200/14 px-5 text-[13px] font-semibold text-fuchsia-50 transition-colors hover:bg-fuchsia-200/24 focus-visible:ring-2 focus-visible:ring-fuchsia-200/80 focus-visible:outline-none md:mt-0"
-        >
-          Open Anime Mode
-          <ArrowUpLeft size={14} aria-hidden="true" className="rotate-90" />
-        </Link>
+
+        <div className="flex shrink-0 items-center gap-2">
+          <Link
+            href="/anime"
+            prefetch={false}
+            className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-full border border-violet-400/30 bg-violet-500/20 px-3.5 text-xs font-semibold text-violet-200 transition-colors hover:bg-violet-500/30 hover:text-white focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:outline-none"
+          >
+            Open
+            <ArrowUpLeft size={12} aria-hidden="true" className="rotate-90" />
+          </Link>
+          <button
+            type="button"
+            onClick={handleDismiss}
+            aria-label="Dismiss Anime Mode banner"
+            className="glass-control flex size-8 shrink-0 items-center justify-center rounded-full border focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:outline-none"
+          >
+            <Close size={13} aria-hidden="true" />
+          </button>
+        </div>
       </div>
     </section>
   );

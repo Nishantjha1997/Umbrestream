@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 /**
  * `PHONE_SPEC.md` §G "04 — Next episode drops" — edge-to-edge divider list.
@@ -48,8 +48,30 @@ interface Upcoming {
   days: number;
 }
 
+function DropsSkeleton() {
+  return (
+    <div className="flex flex-col gap-[15px]" aria-hidden="true">
+      <SectionHeader number="04" label="Next episode drops" />
+      <div className="flex flex-col">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div
+            key={i}
+            className="flex items-center justify-between border-t border-white/7 px-5 py-[14px]"
+          >
+            <div className="flex flex-col gap-2">
+              <div className="h-4 w-36 animate-pulse rounded-md bg-white/8" />
+              <div className="h-3 w-24 animate-pulse rounded-md bg-white/8" />
+            </div>
+            <div className="h-6 w-12 animate-pulse rounded-md bg-white/8" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function NextEpisodeDrops() {
-  const { items: histories } = useContinueWatching();
+  const { items: histories, isLoading } = useContinueWatching();
 
   const tvRows = useMemo<HistoryDetail[]>(
     () => histories.filter((h) => h.type === "tv").slice(0, MAX_TV_ROWS),
@@ -63,6 +85,8 @@ export default function NextEpisodeDrops() {
       staleTime: 60 * 60 * 1000,
     })),
   });
+
+  const isQueriesLoading = tvRows.length > 0 && detailQueries.some((q) => q.isPending);
 
   const upcoming = useMemo<Upcoming[]>(() => {
     const now = new Date();
@@ -91,6 +115,8 @@ export default function NextEpisodeDrops() {
     return rows.sort((a, b) => a.days - b.days).slice(0, MAX_UPCOMING);
   }, [tvRows, detailQueries]);
 
+  if (isLoading || isQueriesLoading) return <DropsSkeleton />;
+
   if (upcoming.length === 0) return null;
 
   return (
@@ -107,7 +133,7 @@ export default function NextEpisodeDrops() {
               <span className="truncate text-[14.5px] font-medium tracking-[-0.015em] text-white">
                 {row.title}
               </span>
-              <span className="text-[11px] text-white/42">
+              <span className="text-[11px] text-white/70">
                 Season {row.season} · Episode {row.episode}
               </span>
             </span>
@@ -115,7 +141,7 @@ export default function NextEpisodeDrops() {
               <span className="font-serif text-[22px] leading-none text-accent tabular-nums">
                 {countdownLabel(row.days)}
               </span>
-              <span className="font-mono text-[9px] tracking-[0.14em] text-white/34">
+              <span className="font-mono text-[9px] tracking-[0.14em] text-white/60">
                 {format(row.airDate, "EEE, MMM d")}
               </span>
             </span>

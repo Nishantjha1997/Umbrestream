@@ -33,12 +33,12 @@ const AboutPage: NextPage = () => {
             <Link href="/app" className="rounded-2xl border border-white/12 bg-black/20 p-4 transition hover:border-violet-200/45">
               <span className="text-xs font-semibold tracking-[0.16em] text-violet-200 uppercase">Phone app</span>
               <strong className="mt-2 block text-white">StreamFree for Android</strong>
-              <span className="mt-1 block text-sm text-white/50">Native navigation, watch history, updates, and mobile playback.</span>
+              <span className="mt-1 block text-sm text-white/70">Native navigation, watch history, updates, and mobile playback.</span>
             </Link>
             <Link href="/app/tv" className="rounded-2xl border border-white/12 bg-black/20 p-4 transition hover:border-violet-200/45">
               <span className="text-xs font-semibold tracking-[0.16em] text-violet-200 uppercase">Living room app</span>
               <strong className="mt-2 block text-white">StreamFree for Android TV</strong>
-              <span className="mt-1 block text-sm text-white/50">Remote-first browsing, immersive playback, and next-episode flow.</span>
+              <span className="mt-1 block text-sm text-white/70">Remote-first browsing, immersive playback, and next-episode flow.</span>
             </Link>
           </div>
           <p className="mt-7 font-[cursive] text-lg text-violet-200/80 italic">Created with love by {brand.creatorName}</p>

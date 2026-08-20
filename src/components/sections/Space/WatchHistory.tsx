@@ -11,6 +11,7 @@
 
 import { getUserHistories, getWatchTimeSummary } from "@/actions/histories";
 import HistoryItemActions from "@/components/ui/button/HistoryItemActions";
+import InlineRetry from "@/components/ui/feedback/InlineRetry";
 import useSupabaseUser from "@/hooks/useSupabaseUser";
 import type { MediaKind } from "@/types/media";
 import { formatWatchTime, getImageUrl } from "@/utils/movies";
@@ -29,19 +30,25 @@ const SUMMARY_TYPES: MediaKind[] = ["movie", "tv", "anime"];
 export default function WatchHistory() {
   const { data: user, isLoading: isUserLoading } = useSupabaseUser();
 
-  const { data: summaryResponse } = useQuery({
+  const { data: summaryResponse, refetch: refetchSummary } = useQuery({
     queryKey: ["watch-time-summary", user?.id],
     queryFn: () => getWatchTimeSummary(),
     enabled: !isUserLoading,
   });
 
-  const { data: historyResponse, isLoading: isHistoryLoading } = useQuery({
+  const {
+    data: historyResponse,
+    isLoading: isHistoryLoading,
+    isError: isHistoryError,
+    refetch: refetchHistory,
+  } = useQuery({
     queryKey: ["watch-history", user?.id],
     queryFn: () => getUserHistories(),
     enabled: !isUserLoading,
   });
 
   const summary = summaryResponse?.success ? summaryResponse.data : undefined;
+  const historyFailed = isHistoryError || (Boolean(historyResponse) && !historyResponse?.success);
   const history = historyResponse?.success ? historyResponse.data ?? [] : [];
 
   return (
@@ -52,19 +59,19 @@ export default function WatchHistory() {
       <h1 className="mt-3 text-4xl font-semibold tracking-[-0.045em] sm:text-6xl">
         Watch History
       </h1>
-      <p className="mt-4 max-w-xl text-white/55">
+      <p className="mt-4 max-w-xl text-white/70">
         Everything you&apos;ve watched, and how much time you&apos;ve spent watching it.
       </p>
 
       <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {SUMMARY_TYPES.map((type) => (
           <div key={type} className="rounded-2xl border border-white/8 bg-white/[0.035] p-5">
-            <p className="text-sm text-white/45">{TYPE_LABEL[type]}</p>
+            <p className="text-sm text-white/70">{TYPE_LABEL[type]}</p>
             <p className="mt-2 text-2xl font-semibold">{formatWatchTime(summary?.[type] ?? 0)}</p>
           </div>
         ))}
         <div className="rounded-2xl border border-violet-400/20 bg-violet-500/10 p-5">
-          <p className="text-sm text-white/55">Total</p>
+          <p className="text-sm text-white/70">Total</p>
           <p className="mt-2 text-2xl font-semibold">{formatWatchTime(summary?.total ?? 0)}</p>
         </div>
       </div>
@@ -73,8 +80,17 @@ export default function WatchHistory() {
       <div className="mt-4 flex flex-col gap-2">
         {isHistoryLoading ? (
           <Spinner size="lg" variant="simple" className="mt-10 self-center" />
+        ) : historyFailed ? (
+          <InlineRetry
+            message="Couldn't load watch history."
+            onRetry={() => {
+              void refetchHistory();
+              void refetchSummary();
+            }}
+            className="mt-4"
+          />
         ) : history.length === 0 ? (
-          <p className="mt-4 text-white/45">Nothing watched yet.</p>
+          <p className="mt-4 text-white/70">Nothing watched yet.</p>
         ) : (
           history.map((item) => {
             const kind = item.type as MediaKind;
@@ -97,7 +113,7 @@ export default function WatchHistory() {
                 </Link>
                 <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                   <p className="truncate text-sm font-medium text-white">{item.title}</p>
-                  <p className="truncate text-xs text-white/45">
+                  <p className="truncate text-xs text-white/70">
                     {TYPE_LABEL[kind]}
                     {kind !== "movie" ? ` · S${item.season} E${item.episode}` : ""}
                   </p>

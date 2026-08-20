@@ -12,7 +12,7 @@ import { intervalToDuration } from "date-fns";
 import { cn } from "@/utils/helpers";
 import { AniListFormat, AniListMediaDetail, AniListStatus } from "@/types/anilist";
 
-const FALLBACK_POSTER = "https://dancyflix.com/placeholder.png";
+const FALLBACK_POSTER = "";
 
 /** Past this many characters the synopsis is clamped behind a More/Less toggle. */
 const SYNOPSIS_CLAMP_THRESHOLD = 420;

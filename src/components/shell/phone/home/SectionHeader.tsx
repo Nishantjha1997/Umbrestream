@@ -27,7 +27,7 @@ export default function SectionHeader({ number, label, action, className }: Sect
         <span className="font-mono text-[10px] font-semibold tracking-[0.14em] text-accent">
           {number}
         </span>
-        <h2 className="m-0 text-[10.5px] font-semibold tracking-[0.24em] text-white/48 uppercase">
+        <h2 className="m-0 text-[10.5px] font-semibold tracking-[0.24em] text-white/70 uppercase">
           {label}
         </h2>
       </div>
@@ -35,9 +35,9 @@ export default function SectionHeader({ number, label, action, className }: Sect
         <Link
           href={action.href}
           className={cn(
-            "shrink-0 rounded-sm text-[11.5px] text-white/42",
+            "shrink-0 rounded-sm text-[11.5px] text-white/70",
             "transition-colors duration-(--duration-fast) ease-(--ease-out-quint) motion-reduce:transition-none",
-            "hover:text-white/70 focus-visible:text-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70",
+            "hover:text-white focus-visible:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70",
           )}
         >
           {action.label}
