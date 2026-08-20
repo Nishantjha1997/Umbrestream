@@ -355,11 +355,12 @@
 .player-shell iframe,
 .player-shell video { background:#000; }
 .player-shell { isolation:isolate; contain:layout paint; }
-.player-shell-frame { display:block; border:0!important; outline:0; object-fit:contain; transform:none; transform-origin:center; transition:transform .24s ease; }
-.player-shell-fill .player-shell-frame,
-.player-shell-fill video { object-fit:cover!important; transform:scale(1.12); transform-origin:center; }
-.player-shell-fit .player-shell-frame,
-.player-shell-fit video { object-fit:contain!important; transform:none; }
+.player-shell-frame { display:block; border:0!important; outline:0; transform:none!important; }
+.player-shell-fill video { object-fit:cover!important; transform:none!important; }
+.player-shell-fit video { object-fit:contain!important; transform:none!important; }
+.player-shell-fullscreen .player-content-header {
+  padding-right: max(9rem, calc(8.5rem + env(safe-area-inset-right)));
+}
 
 /* Cinematic first-load splash. It exits through CSS as well as React so the
    site can never remain blocked if hydration or a cached PWA asset is slow. */

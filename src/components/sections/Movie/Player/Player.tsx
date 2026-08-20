@@ -58,12 +58,13 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, startAt }) => {
         request={request}
         identity={identity}
         inlineLayout
-        renderHeader={({ onOpenSource, chromeHidden }) => (
+        renderHeader={({ onOpenSource, chromeHidden, isFullscreen }) => (
           <MoviePlayerHeader
             id={movie.id}
             movieName={title}
             onOpenSource={onOpenSource}
             hidden={chromeHidden}
+            isFullscreen={isFullscreen}
           />
         )}
         renderControls={(controls: PlayerShellControlsContext) => (

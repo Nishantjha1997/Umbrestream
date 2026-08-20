@@ -7,6 +7,7 @@ interface MoviePlayerHeaderProps {
   movieName: string;
   onOpenSource: () => void;
   hidden?: boolean;
+  isFullscreen?: boolean;
 }
 
 /**
@@ -20,13 +21,15 @@ const MoviePlayerHeader: React.FC<MoviePlayerHeaderProps> = ({
   movieName,
   onOpenSource,
   hidden,
+  isFullscreen,
 }) => {
   return (
     <div
       aria-hidden={hidden || undefined}
       inert={hidden || undefined}
       className={cn(
-        "player-safe-header pointer-events-none absolute top-0 z-40 flex h-24 w-full items-start justify-between gap-2 bg-linear-to-b from-black/80 to-transparent text-white transition-[opacity,transform] duration-300 sm:h-28",
+        "player-content-header player-safe-header pointer-events-none absolute top-0 z-40 flex h-24 w-full items-start justify-between gap-2 bg-linear-to-b from-black/80 to-transparent text-white transition-[opacity,transform] duration-300 sm:h-28",
+        !isFullscreen && "max-sm:hidden",
         hidden && "-translate-y-3 opacity-0",
       )}
     >

@@ -187,12 +187,12 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Completed: 2026-08-20
 
 - [ ] SF-P0-005 — Repair phone portrait movie-player composition and control collisions
-  - Status: in progress
+  - Status: in progress — implementation and local release gates complete; preview/browser verification pending
   - Priority: P0
   - Depends on: SF-P0-003
-  - Evidence: —
+  - Evidence: iframe Fill no longer transforms/crops provider controls; native Fill uses `object-fit: cover`; inline phone overlay chrome is removed; movie Back/title/source/framing/fullscreen actions render in an external 44px toolbar; fullscreen exit follows chrome visibility and content headers reserve its safe zone; player-display contract, targeted ESLint, TypeScript, production build, and `git diff --check` pass
   - Commit: —
-  - Next action: prevent Fill from transforming cross-origin iframe controls, hide inline mobile overlay chrome, add an external Back/Details action, enforce 44px controls, reserve fullscreen safe zones, and verify at 390×844 without iframe remounting
+  - Next action: commit and deploy preview, verify 390×844 geometry and no in-stage StreamFree collision, open/close/select the source sheet, verify disabled iframe Fill and fullscreen entry/exit, then promote production
 
 - [x] SF-W3-003 — Update exact APK download headers and security checks
   - Status: completed

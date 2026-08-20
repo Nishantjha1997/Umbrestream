@@ -7,6 +7,7 @@
  */
 
 import type { PlayerShellControlsContext } from "@/components/player/PlayerShell";
+import PlayerDisplayModeToggle from "@/components/player/PlayerDisplayModeToggle";
 import type { AudioVariant } from "@/lib/sources/types";
 import { isSourceActivationKey } from "@/lib/player/sourceInteraction";
 import { cn } from "@/utils/helpers";
@@ -28,6 +29,7 @@ const AnimePlayerControls: React.FC<AnimePlayerControlsProps> = ({
   selectedSourceId,
   onChangeAudio,
   displayMode,
+  canUseFillMode,
   isFullscreen,
   onChooseDisplayMode,
   onToggleFullscreen,
@@ -43,7 +45,7 @@ const AnimePlayerControls: React.FC<AnimePlayerControlsProps> = ({
   };
 
   const btnBase =
-    "inline-flex items-center justify-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-white/85 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 disabled:pointer-events-none disabled:opacity-40";
+    "inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-white/85 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 disabled:pointer-events-none disabled:opacity-40";
 
   return (
     <div
@@ -155,28 +157,11 @@ const AnimePlayerControls: React.FC<AnimePlayerControlsProps> = ({
         </button>
 
         {/* Fit / Fill display mode */}
-        <div
-          className="flex overflow-hidden rounded-full border border-white/10 bg-white/5"
-          role="group"
-          aria-label="Video framing"
-        >
-          {(["fit", "fill"] as const).map((mode) => (
-            <button
-              key={mode}
-              type="button"
-              onClick={() => onChooseDisplayMode(mode)}
-              aria-pressed={displayMode === mode}
-              className={cn(
-                "px-3.5 py-2 text-xs font-semibold transition focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:outline-none",
-                displayMode === mode
-                  ? "bg-white text-black"
-                  : "text-white/70 hover:bg-white/10 hover:text-white",
-              )}
-            >
-              {mode === "fit" ? "Fit" : "Fill"}
-            </button>
-          ))}
-        </div>
+        <PlayerDisplayModeToggle
+          displayMode={displayMode}
+          canUseFillMode={canUseFillMode}
+          onChooseDisplayMode={onChooseDisplayMode}
+        />
 
         {/* Fullscreen */}
         <button

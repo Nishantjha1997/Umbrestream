@@ -10,9 +10,12 @@
  */
 
 import type { PlayerShellControlsContext } from "@/components/player/PlayerShell";
+import PlayerDisplayModeToggle from "@/components/player/PlayerDisplayModeToggle";
 import { isSourceActivationKey } from "@/lib/player/sourceInteraction";
 import { cn } from "@/utils/helpers";
+import { ArrowLeft } from "@/utils/icons";
 import { movieDurationString, mutateMovieTitle } from "@/utils/movies";
+import Link from "next/link";
 import type { MovieDetails } from "tmdb-ts/dist/types/movies";
 
 interface MoviePlayerControlsProps extends PlayerShellControlsContext {
@@ -22,6 +25,7 @@ interface MoviePlayerControlsProps extends PlayerShellControlsContext {
 const MoviePlayerControls: React.FC<MoviePlayerControlsProps> = ({
   movie,
   displayMode,
+  canUseFillMode,
   isFullscreen,
   onChooseDisplayMode,
   onToggleFullscreen,
@@ -31,25 +35,26 @@ const MoviePlayerControls: React.FC<MoviePlayerControlsProps> = ({
   const title = mutateMovieTitle(movie);
 
   const btnBase =
-    "inline-flex min-h-10 items-center justify-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-white/85 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50";
-
-  const segmentedBtn = (active: boolean) =>
-    cn(
-      "px-3.5 py-2 text-xs font-semibold transition focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:outline-none",
-      active ? "bg-white text-black" : "text-white/70 hover:bg-white/10 hover:text-white",
-    );
+    "inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3.5 py-2 text-xs font-semibold text-white/85 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 sm:px-4";
 
   return (
     <div
       className={cn(
-        "mx-auto flex w-full max-w-[min(100vw,1600px)] flex-wrap items-center justify-between gap-2 px-2 py-2.5 sm:px-3",
+        "mx-auto flex w-full max-w-[min(100vw,1600px)] flex-wrap items-center justify-between gap-2 px-3 py-3 sm:px-3 sm:py-2.5",
         // Hide this bar in native fullscreen — it lives outside the fullscreen
         // element, so it would be invisible yet still consume layout space.
         isFullscreen && "hidden",
       )}
     >
       {/* Left cluster: title + compact meta */}
-      <div className="flex min-w-0 items-center gap-2">
+      <div className="flex min-w-0 flex-1 items-center gap-2 max-sm:basis-full">
+        <Link
+          href={`/movie/${movie.id}`}
+          aria-label="Back to movie details"
+          className={cn(btnBase, "shrink-0 px-0 sm:hidden")}
+        >
+          <ArrowLeft className="size-5" aria-hidden />
+        </Link>
         <p className="truncate text-sm font-semibold text-white/90">{title}</p>
         {releaseYear && <span className="shrink-0 text-xs font-medium text-white/70">{releaseYear}</span>}
         {movie.runtime ? (
@@ -60,7 +65,7 @@ const MoviePlayerControls: React.FC<MoviePlayerControlsProps> = ({
       </div>
 
       {/* Right cluster: source, fit/fill, fullscreen */}
-      <div className="flex items-center gap-2">
+      <div className="flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-start">
         <button
           type="button"
           onClick={onOpenSource}
@@ -76,23 +81,11 @@ const MoviePlayerControls: React.FC<MoviePlayerControlsProps> = ({
           Source
         </button>
 
-        <div
-          className="flex overflow-hidden rounded-full border border-white/10 bg-white/5"
-          role="group"
-          aria-label="Video framing"
-        >
-          {(["fit", "fill"] as const).map((mode) => (
-            <button
-              key={mode}
-              type="button"
-              onClick={() => onChooseDisplayMode(mode)}
-              aria-pressed={displayMode === mode}
-              className={segmentedBtn(displayMode === mode)}
-            >
-              {mode === "fit" ? "Fit" : "Fill"}
-            </button>
-          ))}
-        </div>
+        <PlayerDisplayModeToggle
+          displayMode={displayMode}
+          canUseFillMode={canUseFillMode}
+          onChooseDisplayMode={onChooseDisplayMode}
+        />
 
         <button
           type="button"
