@@ -172,7 +172,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Status: in progress
   - Priority: P0
   - Depends on: SF-P0-002
-  - Evidence: source contracts pass; TypeScript passes; targeted ESLint passes; production build passes; Filmu UI rendered in about 12s; VidRift visibly played; VidKing visibly played after about 26s; movie route client-fetch/dynamic-import waterfall removed; provider matrix recorded in `docs/MOVIE_PROVIDER_SMOKE_2026-08-20.md`
+  - Evidence: source contracts pass; TypeScript passes; targeted ESLint passes; production build passes; Filmu UI rendered in about 12s; VidRift visibly played; VidKing visibly played after about 26s; movie metadata/history client-fetch waterfall removed; first preview exposed and blocked a browser-only SSR boundary (`location is not defined`), now isolated behind `MoviePlayerClient`; provider matrix recorded in `docs/MOVIE_PROVIDER_SMOKE_2026-08-20.md`
   - Commit: —
   - Next action: deploy preview, verify actual Filmu playback plus source selection and recovery timing, then promote the tested deployment
 

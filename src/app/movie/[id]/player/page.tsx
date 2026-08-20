@@ -1,8 +1,8 @@
 import { getMovieLastPosition } from "@/actions/histories";
 import { tmdb } from "@/api/tmdb";
-import MoviePlayer from "@/components/sections/Movie/Player/Player";
 import { isEmpty } from "@/utils/helpers";
 import { notFound } from "next/navigation";
+import MoviePlayerClient from "./MoviePlayerClient";
 
 interface MoviePlayerPageProps {
   params: Promise<{ id: string }>;
@@ -32,5 +32,5 @@ export default async function MoviePlayerPage({ params }: MoviePlayerPageProps) 
 
   if (!movie || isEmpty(movie)) notFound();
 
-  return <MoviePlayer movie={movie} startAt={startAt} />;
+  return <MoviePlayerClient movie={movie} startAt={startAt} />;
 }
