@@ -429,6 +429,11 @@ export default function PlayerShell({
   const automaticFallbackRequestKeyRef = useRef<string | null>(null);
   const automaticFallbackEnabledRef = useRef(false);
   const automaticFailureHandlerRef = useRef<((sourceId: string) => boolean) | null>(null);
+  const initialSourceParamRef = useRef<string | null | undefined>(undefined);
+  useEffect(() => {
+    if (initialSourceParamRef.current !== undefined) return;
+    initialSourceParamRef.current = new URL(window.location.href).searchParams.get("src");
+  }, []);
   useEffect(() => {
     if (!selectedSource || !directSettled) return;
     if (automaticFallbackRequestKeyRef.current === directRequestKey) return;
@@ -441,7 +446,7 @@ export default function PlayerShell({
     automaticFallbackRequestKeyRef.current = directRequestKey;
     automaticFallbackEnabledRef.current =
       (request.mediaType === "movie" || request.mediaType === "tv") &&
-      !sourceParam &&
+      !initialSourceParamRef.current &&
       !remembered;
   }, [
     directRequestKey,
@@ -449,7 +454,6 @@ export default function PlayerShell({
     preferredAudio,
     request.mediaType,
     selectedSource,
-    sourceParam,
   ]);
 
   // Keep `?src=` a stable provider id. Never blocks the mount above — the
