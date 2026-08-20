@@ -50,6 +50,7 @@ import { trackUmbraEvent } from "@/lib/analytics/client";
 import { createPublicEmbedSources } from "@/lib/sources/adapters/embed";
 import { ANIME_PROVIDER_CATALOG } from "@/lib/sources/animeCatalog";
 import { legacySourceId } from "@/lib/sources/legacy";
+import { isSourceActivationKey } from "@/lib/player/sourceInteraction";
 import {
   clearPlaybackPreference,
   findNextFallbackSource,
@@ -870,6 +871,12 @@ export default function PlayerShell({
           <button
             type="button"
             onClick={openSource}
+            onKeyDown={(event) => {
+              if (!isSourceActivationKey(event.key)) return;
+              event.preventDefault();
+              event.stopPropagation();
+              openSource();
+            }}
             aria-label="Choose playback source"
             className="min-h-11 rounded-full border border-white/20 bg-black/65 px-3.5 py-2 text-xs font-semibold text-white/90 shadow-lg backdrop-blur-xl transition hover:bg-black/85 focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:outline-none"
           >

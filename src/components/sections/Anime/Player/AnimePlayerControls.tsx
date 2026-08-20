@@ -8,6 +8,7 @@
 
 import type { PlayerShellControlsContext } from "@/components/player/PlayerShell";
 import type { AudioVariant } from "@/lib/sources/types";
+import { isSourceActivationKey } from "@/lib/player/sourceInteraction";
 import { cn } from "@/utils/helpers";
 import Link from "next/link";
 
@@ -141,6 +142,12 @@ const AnimePlayerControls: React.FC<AnimePlayerControlsProps> = ({
         <button
           type="button"
           onClick={onOpenSource}
+          onKeyDown={(event) => {
+            if (!isSourceActivationKey(event.key)) return;
+            event.preventDefault();
+            event.stopPropagation();
+            onOpenSource();
+          }}
           className={btnBase}
           aria-label="Choose playback source"
         >

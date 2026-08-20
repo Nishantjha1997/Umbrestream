@@ -2,6 +2,11 @@
 
 import PlayerPanel from "@/components/player/PlayerPanel";
 import type { AnimeProviderCatalogEntry } from "@/lib/sources/animeCatalog";
+import {
+  beginSourceSelection,
+  finishSourceSelection,
+  isSourceActivationKey,
+} from "@/lib/player/sourceInteraction";
 import VaulDrawer from "@/components/ui/overlay/VaulDrawer";
 import type { PlayerSource } from "@/lib/sources/types";
 import { cn } from "@/utils/helpers";
@@ -54,6 +59,15 @@ export default function PlayerSourceSheet({
   const sourceOption = (source: PlayerSource) => {
     const isSelected = source.id === selectedSourceId;
     const isSwitching = source.id === switchingSourceId;
+    const select = () => {
+      const nextInFlight = beginSourceSelection(selectionInFlightRef.current, source.id);
+      if (nextInFlight === null) return;
+
+      selectionInFlightRef.current = nextInFlight;
+      Promise.resolve(onSelect(source.id)).finally(() => {
+        selectionInFlightRef.current = finishSourceSelection(selectionInFlightRef.current, source.id);
+      });
+    };
 
     return (
       <button
@@ -67,11 +81,13 @@ export default function PlayerSourceSheet({
         onClick={(event) => {
           event.preventDefault();
           event.stopPropagation();
-          if (selectionInFlightRef.current) return;
-          selectionInFlightRef.current = source.id;
-          Promise.resolve(onSelect(source.id)).finally(() => {
-            if (selectionInFlightRef.current === source.id) selectionInFlightRef.current = null;
-          });
+          select();
+        }}
+        onKeyDown={(event) => {
+          if (!isSourceActivationKey(event.key)) return;
+          event.preventDefault();
+          event.stopPropagation();
+          select();
         }}
         className={cn(
           "grid min-h-14 w-full touch-manipulation grid-cols-[auto_1fr_auto] items-center gap-3 rounded-[13px] border p-3.5 text-left transition-[background-color,border-color,transform] duration-200 active:scale-[.985]",

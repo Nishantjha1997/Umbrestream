@@ -6,8 +6,8 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 
 - Branch: `codex/web-first-native-rebuild`
 - Baseline: `28bea93`
-- Active task: `SF-W2-001`
-- Next command: add deterministic source-sheet interaction tests covering mouse, touch, keyboard, close paths, focus restoration, and exactly-once selection.
+- Active task: `SF-W2-002`
+- Next command: inspect the shared player stage and certify framed playback, Fit/Fill, fullscreen lifecycle, and episode context across movie, TV, and anime.
 - Reference policy: Media3 and Now in Android are approved architecture references; Aniyomi is pattern-only because it is archived; Dantotsu is excluded pending license/source verification.
 
 ## W0 — Governance and baseline
@@ -82,13 +82,14 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 
 ## W2 — Player and interaction certification
 
-- [ ] SF-W2-001 — Add deterministic source-sheet interaction tests
-  - Status: not started
+- [x] SF-W2-001 — Add deterministic source-sheet interaction tests
+  - Status: completed
   - Priority: P0
   - Depends on: SF-W1-006
-  - Evidence: —
-  - Commit: —
-  - Next action: cover mouse, touch, keyboard, focus restoration, and one selection
+  - Evidence: shared keyboard activation and single-flight policy added across the sheet, shell, action buttons, and Movie/TV/Anime control bars; `scripts/check-source-sheet.mjs`; source-sheet test passed; ESLint zero warnings; TypeScript passed; production build passed; `git diff --check` passed
+  - Commit: `ec588af`
+  - Completed: 2026-08-20
+  - Next action: proceed with SF-W2-002
 
 - [ ] SF-W2-002 — Certify framed playback, Fit/Fill, fullscreen, and episode context
   - Status: not started

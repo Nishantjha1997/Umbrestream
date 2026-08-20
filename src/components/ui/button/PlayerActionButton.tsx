@@ -1,4 +1,5 @@
 import { cn } from "@/utils/helpers";
+import { isSourceActivationKey } from "@/lib/player/sourceInteraction";
 import { Tooltip } from "@heroui/react";
 import Link from "next/link";
 
@@ -42,7 +43,19 @@ const PlayerActionButton: React.FC<PlayerActionButtonProps> = ({
         {children}
       </Link>
     ) : (
-      <button type="button" aria-label={label} onClick={onClick} disabled={disabled} className={className}>
+      <button
+        type="button"
+        aria-label={label}
+        onClick={onClick}
+        onKeyDown={(event) => {
+          if (!onClick || disabled || !isSourceActivationKey(event.key)) return;
+          event.preventDefault();
+          event.stopPropagation();
+          onClick();
+        }}
+        disabled={disabled}
+        className={className}
+      >
         {children}
       </button>
     );

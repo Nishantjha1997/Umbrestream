@@ -10,6 +10,7 @@
  */
 
 import type { PlayerShellControlsContext } from "@/components/player/PlayerShell";
+import { isSourceActivationKey } from "@/lib/player/sourceInteraction";
 import { cn } from "@/utils/helpers";
 import type { Episode } from "tmdb-ts/dist/types/tv-episode";
 
@@ -59,6 +60,12 @@ const TvShowPlayerControls: React.FC<TvShowPlayerControlsProps> = ({
         <button
           type="button"
           onClick={onOpenSource}
+          onKeyDown={(event) => {
+            if (!isSourceActivationKey(event.key)) return;
+            event.preventDefault();
+            event.stopPropagation();
+            onOpenSource();
+          }}
           className={btnBase}
           aria-label="Choose playback source"
         >
