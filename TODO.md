@@ -144,7 +144,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P0
   - Depends on: SF-W3-001
   - Evidence: generated worker passed message-based `SKIP_WAITING` check, precaches 0 APKs, uses Network First for pages/API and Cache First for hashed JS; `PwaUpdateNotice` now calls `registration.update()` and observes late `updatefound`; `scripts/check-pwa-contract.mjs`; ESLint, TypeScript, PWA contract, and `git diff --check` passed
-  - Commit: pending
+  - Commit: `3f6a202`
   - Completed: 2026-08-20
   - Next action: proceed with SF-P0-001
 
