@@ -6,8 +6,8 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 
 - Branch: `codex/web-first-native-rebuild`
 - Baseline: `28bea93`
-- Active task: `SF-P0-005`
-- Next command: repair shared iframe display-mode ownership, remove inline mobile overlay collisions, add a 44px external mobile toolbar, and extend the player-display regression contract.
+- Active task: `SF-A0-001`
+- Next command: inventory the existing untracked `native-android` scaffold against the approved Gradle/module plan, preserve any valid work, and run its first deterministic Gradle configuration/test gate.
 - Reference policy: Media3 and Now in Android are approved architecture references; Aniyomi is pattern-only because it is archived; Dantotsu is excluded pending license/source verification.
 
 ## W0 — Governance and baseline
@@ -186,13 +186,14 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Deployment: `dpl_333xriThZmWkL3sVPua9Vq4yc86f` (`READY` preview; final production promotion will include the portrait-player follow-up)
   - Completed: 2026-08-20
 
-- [ ] SF-P0-005 — Repair phone portrait movie-player composition and control collisions
-  - Status: in progress — implementation and local release gates complete; preview/browser verification pending
+- [x] SF-P0-005 — Repair phone portrait movie-player composition and control collisions
+  - Status: completed
   - Priority: P0
   - Depends on: SF-P0-003
-  - Evidence: iframe Fill no longer transforms/crops provider controls; native Fill uses `object-fit: cover`; inline phone overlay chrome is removed; movie Back/title/source/framing/fullscreen actions render in an external 44px toolbar; fullscreen exit follows chrome visibility and content headers reserve its safe zone; player-display contract, targeted ESLint, TypeScript, production build, and `git diff --check` pass
-  - Commit: —
-  - Next action: commit and deploy preview, verify 390×844 geometry and no in-stage StreamFree collision, open/close/select the source sheet, verify disabled iframe Fill and fullscreen entry/exit, then promote production
+  - Evidence: iframe Fill no longer transforms/crops provider controls; native Fill uses `object-fit: cover`; production 390×844 geometry is borderless 366.4×206.1 with no horizontal overflow or inline overlay; external Back/source/framing/fullscreen controls are 44px; source sheet switched Filmu → VidRift exactly once and restored focus; fullscreen reveal is center-left, revealed Back/Sources/Exit have zero collisions, Exit preserves the player route; VidRift advanced `0:10` → `0:33 / 82:54`; browser errors `[]`; player-display contract, targeted ESLint, TypeScript, production build, and `git diff --check` pass
+  - Commit: `5578fd9`, `573bb57`
+  - Deployment: `dpl_3wzcvTEEeQdk2eWsghNhGVnbdikx` (`READY`, aliases `streamfree.online`)
+  - Completed: 2026-08-20
 
 - [x] SF-W3-003 — Update exact APK download headers and security checks
   - Status: completed

@@ -1277,3 +1277,34 @@ The next P0 work is tracked as `SF-P0-004` and `SF-P0-005`: audit every movie/TV
 primary provider documentation and repair the 390×844/Android portrait player composition and control
 collisions. Preserve provider-owned iframe boundaries; StreamFree may size and clip its shell but must
 not claim control over layout rendered inside a cross-origin provider.
+
+## 36. Provider contract certification and phone portrait release — 2026-08-20
+
+`SF-P0-004` audited the public movie/TV adapter registry against provider-owned documentation. VidKing,
+VidLink, Cinezo, VidRift, and Videasy URL shapes are documented in
+`docs/PLAYER_PROVIDER_CONTRACT_AUDIT_2026-08-20.md`. Unsupported Cinezo and Filmu resume claims were
+removed. VidBolt and VidSrc were quarantined because neither a provider-owned contract nor a working
+release fixture could be verified. Videasy remains a documented manual backup: its direct movie and TV
+fixtures played earlier, but the release-preview embed later timed out, so it is excluded from silent
+recovery. Live policy `2026-08-reliability-v5` keeps Filmu as movie default with a 30-second grace period
+and a conservative Filmu → VidKing → VidRift automatic chain.
+
+`SF-P0-005` removed the unsafe iframe Fill transform that enlarged and cropped provider-owned controls.
+Cross-origin iframes now always use a borderless, untransformed Fit stage; Fill remains available only
+for native video, where `object-fit: cover` changes the picture without transforming controls. The phone
+movie route hides StreamFree's inline overlay header, renders Back/title/source/framing/fullscreen actions
+in a separate 44px toolbar, reserves a fullscreen Exit safe zone, and places the hidden-chrome reveal
+target at center-left so it cannot overlap Back.
+
+Production verification at 390×844 measured one 366.4×206.1 iframe at `(12,32)`, zero horizontal
+overflow, no visible inline header, no iframe transform, and no actionable control collisions. The source
+sheet changed Filmu to VidRift exactly once, updated both URL and iframe, closed, and restored focus. In
+fullscreen, Back, Sources, and Exit were all 44px with zero intersection; Exit returned to the same player
+URL. VidRift playback advanced from `0:10` to `0:33 / 82:54`, and browser errors were empty. The public
+source sheet contains Filmu, VidRift, VidKing, Videasy, Cinezo, VidLink, and VidLink Classic only.
+
+Production deployment `dpl_3wzcvTEEeQdk2eWsghNhGVnbdikx` is `READY` and owns
+`https://streamfree.online`. Runtime logs contained only the existing Node `url.parse()` dependency
+deprecation warning, not StreamFree application exceptions. Implementation commits are `9495054`,
+`f059a0d`, `5578fd9`, and `573bb57`. The next active task is `SF-A0-001`, the native Android scaffold
+audit and first Gradle gate.
