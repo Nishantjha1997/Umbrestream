@@ -1,4 +1,5 @@
 import { createClient } from "@/utils/supabase/server";
+import { createAdminClient } from "@/utils/supabase/admin";
 import { env } from "@/utils/env";
 import {
   ANALYTICS_EVENT_NAMES,
@@ -64,7 +65,7 @@ export async function POST(request: Request): Promise<Response> {
     const {
       data: { user },
     } = await sessionClient.auth.getUser();
-    const supabase = await createClient(true);
+    const supabase = createAdminClient();
     const properties = sanitizeProperties(parsed.data.properties);
 
     const { error } = await supabase.from("umbra_events").insert({

@@ -33,6 +33,7 @@ interface ShareButtonProps {
 }
 
 const HASTAGS = ["streamfree", "movies", "tvshows", "anime"];
+const STREAMFREE_ORIGIN = "https://streamfree.online";
 
 const SHARE_BUTTONS = [
   {
@@ -78,7 +79,9 @@ const SHARE_BUTTONS = [
 ];
 
 const ShareButton: React.FC<ShareButtonProps> = ({ title, id, type = "movie" }) => {
-  const url = `https://${location.hostname}/${type}/${id}`;
+  // Share canonical production URLs. Reading `location` while rendering a client
+  // component still runs during Next.js SSR and previously crashed detail pages.
+  const url = `${STREAMFREE_ORIGIN}/${type}/${id}`;
   const description = `Check out ${title} on StreamFree.`;
 
   const [opened, { open, close }] = useDisclosure(false);

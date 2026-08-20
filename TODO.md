@@ -7,7 +7,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 - Branch: `codex/web-first-native-rebuild`
 - Baseline: `28bea93`
 - Active task: `SF-P0-003`
-- Next command: deploy the movie reliability preview, verify real Filmu playback and automatic/manual recovery in the browser, then promote the exact artifact to production.
+- Next command: deploy the server-rendering/analytics hotfix preview, reproduce `/movie/315162` and `/tv/60059`, verify analytics writes, promote it, then start the provider-contract and phone portrait-player audits.
 - Reference policy: Media3 and Now in Android are approved architecture references; Aniyomi is pattern-only because it is archived; Dantotsu is excluded pending license/source verification.
 
 ## W0 — Governance and baseline
@@ -172,9 +172,26 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Status: in progress
   - Priority: P0
   - Depends on: SF-P0-002
-  - Evidence: source contracts pass; TypeScript passes; targeted ESLint passes; production build passes; Filmu UI rendered in about 12s; VidRift visibly played; VidKing visibly played after about 26s; movie metadata/history client-fetch waterfall removed; first preview exposed and blocked a browser-only SSR boundary (`location is not defined`), now isolated behind `MoviePlayerClient`; second preview had no console errors and proved clean-launch Filmu → VidRift recovery with visible progress; source-menu verification caught a false eventless-provider warning while VidRift was playing, now removed; provider matrix recorded in `docs/MOVIE_PROVIDER_SMOKE_2026-08-20.md`
+  - Evidence: source contracts, TypeScript, targeted ESLint, production build, and `git diff --check` pass; Filmu received the full 30-second startup window; VidRift visibly advanced from `0:10` through `1:09` without a false eventless-provider warning; source picker opened/closed with focus restoration while playback continued; production deployment `dpl_EmipeRin38S6BijyJXeKVzdqLcVM` is `READY` and aliases `streamfree.online`; live API reports policy `2026-08-reliability-v4`, timeout `30000`, and order Filmu → VidRift → VidKing; production recovery reached VidRift playback at `0:23`; post-deploy logs exposed a separate detail-page SSR `location` crash and analytics RLS rejection, with local regression fixes passing the new production-runtime contract and full build
+  - Commit: `50e7069`, `0dcc868`, `0f49516`; runtime hotfix pending
+  - Deployment: `dpl_EmipeRin38S6BijyJXeKVzdqLcVM` (`READY`)
+  - Next action: deploy and certify the SSR/analytics hotfix, then close the task
+
+- [ ] SF-P0-004 — Audit every movie/TV provider embed contract against primary documentation
+  - Status: not started
+  - Priority: P0
+  - Depends on: SF-P0-003
+  - Evidence: —
   - Commit: —
-  - Next action: deploy preview, verify actual Filmu playback plus source selection and recovery timing, then promote the tested deployment
+  - Next action: inventory adapters, locate each provider's official documentation or repository, verify movie/TV URL templates and supported query parameters, add fixtures, then browser-smoke every corrected provider
+
+- [ ] SF-P0-005 — Repair phone portrait movie-player composition and control collisions
+  - Status: not started
+  - Priority: P0
+  - Depends on: SF-P0-003
+  - Evidence: —
+  - Commit: —
+  - Next action: reproduce at 390×844 and Android WebView dimensions, capture the StreamFree/provider ownership boundary, center the 16:9 stage, reserve overlay safe zones, and verify Fit/Fill/source/fullscreen controls without iframe remounting
 
 - [x] SF-W3-003 — Update exact APK download headers and security checks
   - Status: completed
