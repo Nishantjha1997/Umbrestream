@@ -155,8 +155,8 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P0
   - Depends on: SF-W2-005
   - Evidence: production API returns movie sources; live browser reproduced Filmu blank, Cinezo unresolved, VidLink provider rejection, and VidKing direct resolution; automatic movie/TV recovery now handles trusted errors and 20-second silent-provider timeouts; VidRift documentation-host URL corrected to its actual embed host; initial source-query capture added so app-generated `?src=filmu` cannot disable clean-launch recovery; source-policy checks, ESLint, and TypeScript pass
-  - Commit: `b27d2fb` (automatic failover), `1e2815c` (VidRift host correction), pending initial-query correction
-  - Next action: commit the initial-query correction, deploy production, and verify the clean movie flow plus the corrected VidRift URL
+  - Commit: `b27d2fb` (automatic failover), `1e2815c` (VidRift host correction), `4f6734f` (initial-query correction)
+  - Next action: deploy production and verify the clean movie flow plus the corrected VidRift URL
 
 - [ ] SF-W3-003 — Update exact APK download headers and security checks
   - Status: not started
