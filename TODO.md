@@ -6,8 +6,8 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 
 - Branch: `codex/web-first-native-rebuild`
 - Baseline: `28bea93`
-- Active task: `SF-A1-001`
-- Next command: add the native OkHttp networking core with exact-host/HTTPS/redirect policy, bounded response sizes, typed failures, and unit tests before wiring any provider resolver.
+- Active task: `SF-A1-002`
+- Next command: define normalized playback/source contracts, provider descriptors, app-owned header policies, and Sub/Dub capability before registering resolvers.
 - Reference policy: Media3 and Now in Android are approved architecture references; Aniyomi is pattern-only because it is archived; Dantotsu is excluded pending license/source verification.
 
 ## W0 — Governance and baseline
@@ -233,12 +233,12 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 ## A1 — Core networking and source resolution
 
 - [ ] SF-A1-001 — Implement safe native networking core
-  - Status: not started
+  - Status: completed
   - Priority: P0
   - Depends on: SF-A0-002
-  - Evidence: —
-  - Commit: —
-  - Next action: OkHttp, safe URL/DNS/redirect policy, typed failures, bounded responses
+  - Evidence: `core:network` adds `StreamFreeHttpClient`, HTTPS-only `SafeUrlValidator`, approved-host/subdomain policy, `SafeDns` private/link-local/multicast/reserved-address rejection, three-redirect maximum with validated loop detection, no-cookie OkHttp dispatcher/timeouts, app-owned header allowlist, response-size bound, typed failures, host-only metrics, and policy unit tests; full `scripts/verify.ps1` passed with network tests, core tests, phone/TV debug assembly, and strict lint; `git diff --check` passed
+  - Commit: pending
+  - Completed: 2026-08-20
 
 - [ ] SF-A1-002 — Implement normalized source contracts and resolver registry
   - Status: not started

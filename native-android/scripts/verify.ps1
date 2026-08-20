@@ -43,6 +43,7 @@ Push-Location $projectRoot
 try {
   & $wrapper `
     :core:model:test `
+    :core:network:test `
     :app-phone:assembleDebug `
     :app-tv:assembleDebug `
     :app-phone:lintDebug `

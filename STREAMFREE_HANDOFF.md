@@ -1356,3 +1356,30 @@ Implementation commits: `566d26f` (native scaffold), `55074c2` (record
 scaffold gate), `9d359c1` (start signing audit), and `584b64e` (signing and
 migration contracts). The active task is now `SF-A1-001`; native networking may now begin, while Media3 remains blocked on
 the provider/source contracts and safe response policy.
+
+## 38. Native safe networking core — 2026-08-20
+
+`native-android/core/network` now owns the native transport boundary. It uses
+OkHttp 5.5.0 with cookies disabled, bounded dispatcher concurrency, finite
+connect/read/write/call timeouts, explicit HTTPS-only URLs, and manual redirect
+handling. Redirects are capped at three, must resolve to an approved host over
+HTTPS, and reject loops. DNS resolution rejects loopback, any-local,
+link-local, site-local/private, multicast, IPv4-reserved, and IPv6 unique-local
+or reserved addresses.
+
+`AppOwnedHeaders` rejects cookies, authorization, proxy, host, and arbitrary
+caller headers; only the small app-owned policy set is accepted, with CR/LF
+header injection rejected. Responses are bounded by policy before the caller
+receives bytes. Failures are typed (`InvalidUrl`, `UnauthorizedHost`,
+`UnsafeResolvedAddress`, redirect, header, size, timeout, transport, and HTTP
+status failures). Metrics contain only host, status, duration, and outcome—no
+raw URL, title, token, cookie, or account data.
+
+`SafeNetworkPolicyTest` covers HTTPS/host policy, redirect validation,
+private-address rejection, and header safety. The full native verification
+script passes the networking and model unit tests, both debug APK assemblies,
+and strict lint. No provider scraper, source resolver, or Media3 player is
+connected yet; those remain downstream tasks.
+
+The next active task is `SF-A1-002`, normalized source contracts and provider
+descriptor registration.

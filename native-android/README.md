@@ -10,6 +10,8 @@ until migration, signing, updater, and device-release gates pass.
 - `app-tv` keeps `online.streamfree.tv` for the future native TV cutover.
 - `core:common`, `core:model`, and `core:designsystem` hold platform-neutral
   contract, ownership, and presentation foundations.
+- `core:network` owns HTTPS-only transport, approved-host validation, safe DNS,
+  bounded redirects/responses, app-owned headers, and typed failures.
 
 No native scaffold APK is a publishable release. Signing, migration data,
 networking, Media3, and release assembly are added in later tracked tasks.
