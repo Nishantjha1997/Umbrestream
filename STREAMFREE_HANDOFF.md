@@ -1580,3 +1580,25 @@ The latest phone layout pass constrains long title/status text with ellipsis and
 weighted slots so the server, Fit/Fill, settings, and play controls remain
 reachable on narrow phone widths. `:app-phone:compileDebugKotlin`,
 `:app-phone:lintDebug`, and `:core:player:test` pass after that change.
+
+## 44. Native TV playback root and 10-foot shell — 2026-08-21
+
+The TV app now switches between Home and a distinct playback root. While in
+playback, the normal home/navigation tree is not composed, so it cannot float
+above the player or intercept D-pad focus. The root uses a full black
+`PlayerView`, black-safe spacing, capped 4% margins between 32dp and 84dp,
+and a compact overlay sized for 720p, 1080p, and 4K television widths.
+
+TV controls are 64dp minimum, receive deterministic initial focus on Back, use
+a modest 1.02 focus scale with a visible primary-color ring, and provide Back,
+Play/Pause, Servers, Fit/Fill, and Next affordances. Fit/Fill updates the same
+PlayerView and does not recreate the Media3 player. Back exits playback to the
+home root. The server and next actions are deliberately presentation hooks
+until native episode/source resolution is connected; they do not claim a
+provider is available.
+
+`:app-tv:compileDebugKotlin`, `:app-tv:lintDebug`, and `:core:player:test`
+pass. The full native gate was green before this UI-only slice; a final full
+gate will be rerun after the next combined player checkpoint.
+
+Implementation commit: pending. `SF-A2-003` remains the active phone task.

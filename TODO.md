@@ -282,6 +282,14 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Commit: —
   - Next action: wire the shell to authenticated episode/source resolution, then add episode list/next controls and deterministic UI tests
 
+- [x] SF-A2-004 — Build independent native TV playback shell foundation
+  - Status: completed
+  - Priority: P0
+  - Depends on: SF-A2-002
+  - Evidence: TV playback is a distinct root mode that removes normal navigation from composition and focus, uses a full black stage, caps 10-foot safe margins at 720p/1080p/4K widths, exposes 64dp remote controls, requests deterministic initial Back focus, restores home on Back, and keeps Fit/Fill on the same PlayerView; `:app-tv:compileDebugKotlin`, `:app-tv:lintDebug`, `:core:player:test`, and `git diff --check` passed
+  - Commit: pending
+  - Completed: 2026-08-21
+
 ## A3 — Offline, auth, sync, and product parity
 
 - [ ] SF-A3-001 — Add bounded stream cache and permitted offline downloads
