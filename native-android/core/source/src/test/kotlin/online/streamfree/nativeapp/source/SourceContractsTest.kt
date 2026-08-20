@@ -3,6 +3,7 @@ package online.streamfree.nativeapp.source
 import online.streamfree.nativeapp.model.AudioVariant
 import online.streamfree.nativeapp.model.MediaType
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -61,6 +62,25 @@ class SourceContractsTest {
 
     assertTrue(registry.headersFor("miruro").containsKey("Referer"))
     assertTrue(registry.headersFor("missing").isEmpty())
+  }
+
+  @Test
+  fun `resolved source without audio label cannot satisfy anime variant`() {
+    val registry = SourceResolverRegistry(listOf(FakeResolver(animeDub)))
+    val source = ResolvedSource(
+      providerId = "miruro-dub",
+      label = "Miruro Dub",
+      playbackUrl = "https://miruro.tv/stream.m3u8",
+      kind = SourceKind.NativeDirect,
+      format = StreamFormat.Hls,
+    )
+
+    assertFalse(
+      registry.isCompatible(
+        source,
+        PlaybackRequest(MediaType.Anime, "anilist-1", audioVariant = AudioVariant.Dub),
+      ),
+    )
   }
 
   private fun descriptor(id: String, audioVariants: Set<AudioVariant>) = ProviderDescriptor(

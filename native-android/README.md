@@ -14,9 +14,12 @@ until migration, signing, updater, and device-release gates pass.
   bounded redirects/responses, app-owned headers, and typed failures.
 - `core:source` owns normalized playback requests, provider capabilities,
   resolver selection, header-policy registration, and Sub/Dub separation.
+- `core:player` owns the Media3 HLS/DASH/progressive media-source pipeline,
+  per-source allowlisted headers, safe DNS, and validated redirects. Iframe
+  embeds are intentionally outside this native pipeline.
 
 No native scaffold APK is a publishable release. Signing, migration data,
-networking, Media3, and release assembly are added in later tracked tasks.
+native player ownership, and release assembly are added in later tracked tasks.
 
 ## Build prerequisites
 

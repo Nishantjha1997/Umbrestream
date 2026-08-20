@@ -45,10 +45,12 @@ try {
     :core:model:test `
     :core:network:test `
     :core:source:test `
+    :core:player:test `
     :app-phone:assembleDebug `
     :app-tv:assembleDebug `
     :app-phone:lintDebug `
     :app-tv:lintDebug `
+    :core:player:lintDebug `
     :core:designsystem:lintDebug
   if ($LASTEXITCODE -ne 0) {
     throw "Native Android verification failed with exit code $LASTEXITCODE."

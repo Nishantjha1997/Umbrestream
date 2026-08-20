@@ -1436,3 +1436,33 @@ Media3 player is connected yet; those are the next phase.
 
 Implementation commit: `6cb0058`. The next active task is `SF-A2-001`, the
 Media3 data-source and media-source pipeline.
+
+## 41. Native Media3 source pipeline — 2026-08-21
+
+`native-android/core/player` is now the native playback transport boundary. It
+pins AndroidX Media3 `1.11.0` and creates a `DefaultMediaSourceFactory` from
+the Media3 OkHttp data source. HLS, DASH, and MP4 sources receive explicit
+Media3 MIME types; VTT/WebVTT, SSA/ASS, and SRT subtitle tracks are normalized
+into `MediaItem.SubtitleConfiguration` entries. The factory requires the
+original `PlaybackRequest`, so a resolved source is rechecked against the
+provider, media type, episode/audio variant, source kind, and declared format
+before it can become a native `MediaSource`.
+
+Each source uses the provider descriptor's approved hosts and header policy.
+The OkHttp client has no cookies, bounded concurrency/timeouts, safe DNS, no
+automatic redirect following, and a manual interceptor that validates every
+HTTPS redirect against the approved host set with a maximum of three hops.
+Only the app-owned header allowlist reaches Media3. Iframe/embed sources are
+rejected by this pipeline and must use the separately consented WebView
+fallback surface; they are never misrepresented as native playback.
+
+`Media3PlaybackContractsTest` covers format mapping and iframe rejection, while
+`SourceContractsTest` now also proves an unlabeled Anime source cannot satisfy
+a Sub/Dub request. The complete native verification script passed after
+upgrading to the current Media3 `1.11.0` release, including all core tests,
+both debug APK assemblies, and strict lint. This phase does not yet own an
+ExoPlayer instance, MediaSession, resume/history persistence, or UI; those are
+SF-A2-002 and SF-A2-003.
+
+Implementation commit: pending. The next active task is `SF-A2-002`,
+MediaSessionService ownership and playback persistence.

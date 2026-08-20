@@ -45,6 +45,7 @@ next-env.d.ts
 
 # Native Android generated state and signing material.
 /native-android/.gradle/
+/native-android/.kotlin/
 /native-android/**/build/
 /native-android/local.properties
 /native-android/.idea/

@@ -31,7 +31,7 @@ class SourceResolverRegistry(resolvers: List<SourceResolver>) {
     if (!descriptor.supports(request)) return false
     if (source.kind != descriptor.kind) return false
     if (source.format !in descriptor.capabilities.formats) return false
-    if (source.audioVariant != null && source.audioVariant != request.audioVariant) return false
+    if (request.audioVariant != null && source.audioVariant != request.audioVariant) return false
     if (request.explicitSourceId != null && request.explicitSourceId != source.providerId) return false
     return true
   }
