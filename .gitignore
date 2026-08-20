@@ -48,4 +48,6 @@ next-env.d.ts
 /native-android/**/build/
 /native-android/local.properties
 /native-android/.idea/
+/native-android/signing.properties
+/native-android/signing/
 !/native-android/gradlew.bat

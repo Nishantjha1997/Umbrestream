@@ -6,8 +6,8 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 
 - Branch: `codex/web-first-native-rebuild`
 - Baseline: `28bea93`
-- Active task: `SF-A0-002`
-- Next command: inspect the existing release certificate records and legacy package/signing artifacts before adding environment-only signing configuration; do not commit private keys.
+- Active task: `SF-A1-001`
+- Next command: add the native OkHttp networking core with exact-host/HTTPS/redirect policy, bounded response sizes, typed failures, and unit tests before wiring any provider resolver.
 - Reference policy: Media3 and Now in Android are approved architecture references; Aniyomi is pattern-only because it is archived; Dantotsu is excluded pending license/source verification.
 
 ## W0 — Governance and baseline
@@ -223,13 +223,12 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Completed: 2026-08-20
 
 - [ ] SF-A0-002 — Preserve signing/package identities and migration contracts
-  - Status: in progress
+  - Status: completed
   - Priority: P0
   - Depends on: SF-A0-001
-  - Evidence: —
-  - Commit: —
-  - Last completed step: canonical native phone/TV scaffold passed reproducible debug assembly and lint gates
-  - Next action: inventory `release/signing-certificates.json`, legacy Gradle signing blocks, and any local keystore candidates; record only public fingerprints and define environment-only release signing inputs
+  - Evidence: published APK certificates verified against the legacy phone/TV records; native fresh-install fingerprints recorded in `release/signing-certificates.json`; private native PKCS#12 keys created outside Git with DPAPI-protected credentials; environment-only signing in both native apps; signed phone `1.4.0-native` code 10 and TV `1.3.0-native` code 8 assembled with v2/v3 verification; release build rejected without signing variables; version-1 guest-data migration envelope and tests passed; `scripts/verify.ps1`, `scripts/build-release.ps1`, and `git diff --check` passed
+  - Commit: pending
+  - Completed: 2026-08-20
 
 ## A1 — Core networking and source resolution
 

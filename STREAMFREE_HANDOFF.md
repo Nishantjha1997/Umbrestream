@@ -1308,3 +1308,51 @@ Production deployment `dpl_3wzcvTEEeQdk2eWsghNhGVnbdikx` is `READY` and owns
 deprecation warning, not StreamFree application exceptions. Implementation commits are `9495054`,
 `f059a0d`, `5578fd9`, and `573bb57`. The next active task is `SF-A0-001`, the native Android scaffold
 audit and first Gradle gate.
+
+## 37. Native Android scaffold and signing audit — 2026-08-20
+
+`native-android/` is now a tracked Kotlin/Jetpack Compose multi-module
+foundation for the future phone and Android TV cutover. It contains `app-phone`,
+`app-tv`, and shared `core:common`, `core:model`, and `core:designsystem`
+modules. The native apps retain application IDs `online.streamfree.app` and
+`online.streamfree.tv`; debug variants add `.debug` and are never publishable.
+
+The reproducible toolchain is JDK 17, Android API 37, Build Tools 36.0.0,
+AGP 9.3.1, Kotlin 2.4.10, Lifecycle 2.11.0, Core KTX 1.19.0, Compose BOM
+2026.08.00, and the Gradle 9.7.1 wrapper. `native-android/scripts/verify.ps1`
+passes the core unit test, both debug assemblies, and phone/TV/design-system
+lint with warnings-as-errors. Release builds require signing variables and fail
+closed when they are absent.
+
+The published Capacitor APKs were verified against the existing public legacy
+fingerprints: phone
+`4218B5F726FD4D61703B2112D7A41C77B93F215F1C1DC85560BAB86A6FB38EF4` and TV
+`7D5C1BB46BA3CE888C56E9CF1F39F86F65BC502BCD5480B0F8CF4663C80779D7`. Their
+private keystores were not present in the workspace. Separate native fresh-
+install keys were therefore generated outside Git under
+`%LOCALAPPDATA%\StreamFree\signing`, with Windows-DPAPI-protected credentials.
+The native public fingerprints are phone
+`8D66F79FF18C0A842D689C4214DF1D84D74402F8866707658DF47B2AC4D7A112` and TV
+`93038E301F34C9E5AD8E28EB72B08604C1A0EA8BBF43B486765B819939E4BA2A`; both
+are recorded in `release/signing-certificates.json` under `nativeFreshInstall`.
+Because the certificate changed, these native packages are not in-place
+updates for the published Capacitor packages. Users must sync cloud data and
+follow the documented fresh-install migration path before uninstalling an old
+canonical package.
+
+`native-android/scripts/create-signing-keys.ps1` refuses to overwrite existing
+keys. `native-android/scripts/build-release.ps1` decrypts only the current
+Windows user's DPAPI credentials in memory, sets separate phone/TV signing
+variables, builds minified non-debuggable release APKs, and never commits the
+private material. A signed validation build passed with phone `1.4.0-native`
+code 10, SHA-256
+`DEB554438B46E685F9B36849482D9B92F8259A03B38F861F3513A3808BBC435A`, and TV
+`1.3.0-native` code 8, SHA-256
+`0AE4010ED0B95EDF7B75A5E2762E4F98EB9383AC8CF8E8D129E211F26B744829`.
+Both verified with APK Signature Scheme v2/v3 and the expected package IDs;
+these local candidates were not published.
+
+Implementation commits: `566d26f` (native scaffold), `55074c2` (record
+scaffold gate), `9d359c1` (start signing audit). The active task is now
+`SF-A1-001`; native networking may now begin, while Media3 remains blocked on
+the provider/source contracts and safe response policy.

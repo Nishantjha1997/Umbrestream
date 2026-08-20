@@ -23,6 +23,27 @@ android {
     buildConfig = true
   }
 
+  val releaseSigningConfigured = listOf(
+    "STREAMFREE_NATIVE_PHONE_KEYSTORE",
+    "STREAMFREE_NATIVE_PHONE_STORE_PASSWORD",
+    "STREAMFREE_NATIVE_PHONE_KEY_ALIAS",
+    "STREAMFREE_NATIVE_PHONE_KEY_PASSWORD",
+  ).all { providers.environmentVariable(it).isPresent }
+
+  if (releaseSigningConfigured) {
+    signingConfigs {
+      create("streamFreeRelease") {
+        storeFile = file(providers.environmentVariable("STREAMFREE_NATIVE_PHONE_KEYSTORE").get())
+        storePassword = providers.environmentVariable("STREAMFREE_NATIVE_PHONE_STORE_PASSWORD").get()
+        keyAlias = providers.environmentVariable("STREAMFREE_NATIVE_PHONE_KEY_ALIAS").get()
+        keyPassword = providers.environmentVariable("STREAMFREE_NATIVE_PHONE_KEY_PASSWORD").get()
+        enableV1Signing = true
+        enableV2Signing = true
+        enableV3Signing = true
+      }
+    }
+  }
+
   buildTypes {
     debug {
       applicationIdSuffix = ".debug"
@@ -33,8 +54,15 @@ android {
       isShrinkResources = true
       isDebuggable = false
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-      // Signing is introduced in SF-A0-002 from environment-only values.
-      // A release without that configuration must fail release validation.
+      if (releaseSigningConfigured) {
+        signingConfig = signingConfigs.getByName("streamFreeRelease")
+      }
+    }
+  }
+
+  gradle.taskGraph.whenReady {
+    if (allTasks.any { it.path.startsWith(":app-phone:") && it.name.contains("Release") } && !releaseSigningConfigured) {
+      throw GradleException("Native phone release signing is missing; configure STREAMFREE_NATIVE_* environment variables.")
     }
   }
 

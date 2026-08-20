@@ -45,3 +45,27 @@ canonical upgrade checks are owned by `SF-A0-002` and later release gates.
 The project intentionally has no keystore, passwords, or signing values in
 source control. The tracked public certificate fingerprints remain in
 `../release/signing-certificates.json`.
+
+## Native signing
+
+The published Capacitor certificate fingerprints remain under `phone` and
+`tv`. Because their private keys were not recoverable in this workspace, the
+native cutover uses separate fresh-install keys recorded under
+`nativeFreshInstall`. Generate them once on the release machine:
+
+```powershell
+.\scripts\create-signing-keys.ps1
+```
+
+This stores PKCS#12 private keys and Windows-DPAPI-protected credentials under
+`%LOCALAPPDATA%\StreamFree\signing`, outside Git. It refuses to overwrite
+existing material. Build a signed native candidate with:
+
+```powershell
+.\scripts\build-release.ps1 -Target both
+```
+
+The native APKs intentionally keep the canonical application IDs but are not
+in-place updates for APKs signed by the legacy certificate. The release page
+must tell users to uninstall the old canonical install (after cloud sync) or
+use the documented migration path before installing a native candidate.

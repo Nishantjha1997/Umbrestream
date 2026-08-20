@@ -21,6 +21,27 @@ android {
     buildConfig = true
   }
 
+  val releaseSigningConfigured = listOf(
+    "STREAMFREE_NATIVE_TV_KEYSTORE",
+    "STREAMFREE_NATIVE_TV_STORE_PASSWORD",
+    "STREAMFREE_NATIVE_TV_KEY_ALIAS",
+    "STREAMFREE_NATIVE_TV_KEY_PASSWORD",
+  ).all { providers.environmentVariable(it).isPresent }
+
+  if (releaseSigningConfigured) {
+    signingConfigs {
+      create("streamFreeRelease") {
+        storeFile = file(providers.environmentVariable("STREAMFREE_NATIVE_TV_KEYSTORE").get())
+        storePassword = providers.environmentVariable("STREAMFREE_NATIVE_TV_STORE_PASSWORD").get()
+        keyAlias = providers.environmentVariable("STREAMFREE_NATIVE_TV_KEY_ALIAS").get()
+        keyPassword = providers.environmentVariable("STREAMFREE_NATIVE_TV_KEY_PASSWORD").get()
+        enableV1Signing = true
+        enableV2Signing = true
+        enableV3Signing = true
+      }
+    }
+  }
+
   buildTypes {
     debug {
       applicationIdSuffix = ".debug"
@@ -31,6 +52,15 @@ android {
       isShrinkResources = true
       isDebuggable = false
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+      if (releaseSigningConfigured) {
+        signingConfig = signingConfigs.getByName("streamFreeRelease")
+      }
+    }
+  }
+
+  gradle.taskGraph.whenReady {
+    if (allTasks.any { it.path.startsWith(":app-tv:") && it.name.contains("Release") } && !releaseSigningConfigured) {
+      throw GradleException("Native TV release signing is missing; configure STREAMFREE_NATIVE_* environment variables.")
     }
   }
 

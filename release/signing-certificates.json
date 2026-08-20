@@ -7,5 +7,17 @@
   "tv": {
     "packageId": "online.streamfree.tv",
     "certificateSha256": "7D5C1BB46BA3CE888C56E9CF1F39F86F65BC502BCD5480B0F8CF4663C80779D7"
+  },
+  "nativeFreshInstall": {
+    "installMode": "fresh_install",
+    "reason": "The private keys for the published Capacitor packages were not recoverable from the workspace. Native keys are separate and must not be used as an in-place update claim.",
+    "phone": {
+      "packageId": "online.streamfree.app",
+      "certificateSha256": "8D66F79FF18C0A842D689C4214DF1D84D74402F8866707658DF47B2AC4D7A112"
+    },
+    "tv": {
+      "packageId": "online.streamfree.tv",
+      "certificateSha256": "93038E301F34C9E5AD8E28EB72B08604C1A0EA8BBF43B486765B819939E4BA2A"
+    }
   }
 }
