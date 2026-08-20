@@ -6,8 +6,8 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 
 - Branch: `codex/web-first-native-rebuild`
 - Baseline: `28bea93`
-- Active task: `SF-W2-004`
-- Next command: build the browser/accessibility matrix around the source sheet, player controls, and removal controls; record any environment-limited checks explicitly.
+- Active task: `SF-W2-005`
+- Next command: run the complete deterministic gate, commit the W2 checkpoint, deploy production, and verify the production alias and smoke routes.
 - Reference policy: Media3 and Now in Android are approved architecture references; Aniyomi is pattern-only because it is archived; Dantotsu is excluded pending license/source verification.
 
 ## W0 — Governance and baseline
@@ -109,13 +109,14 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Completed: 2026-08-20
   - Next action: proceed with SF-W2-004
 
-- [ ] SF-W2-004 — Add Playwright matrix and accessibility scans
-  - Status: in progress
+- [x] SF-W2-004 — Add Playwright matrix and accessibility scans
+  - Status: completed
   - Priority: P1
   - Depends on: SF-W2-002, SF-W2-003
-  - Evidence: browser harness is available for live UI verification; local first-route compile succeeded but local browser navigation exceeded the harness timeout during cold compilation
-  - Commit: —
-  - Next action: validate production and preview flows at desktop, mobile, and tablet viewports; capture source-sheet, Fit/Fill, removal, focus, and ARIA evidence
+  - Evidence: authenticated Vercel preview `dpl_Dsyy177yZV8giEjNQhKjKNgVVm8Q` READY; desktop, 390x844 mobile, and 820x1180 tablet checks passed; Movie/TV/Anime player controls and Sub/Dub groups verified; source-picker click/Enter/Space/selection/focus checks passed; Fit/Fill iframe non-remount check passed; fullscreen exit check passed; browser console errors `[]`; removal contract checks passed
+  - Commit: `PENDING_W2_004`
+  - Completed: 2026-08-20
+  - Next action: proceed with SF-W2-005
 
 - [ ] SF-W2-003 — Certify Continue Watching and Watchlist remove/Undo
   - Status: not started
@@ -134,10 +135,10 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Next action: desktop 1440×900, phone 390×844, tablet 820×1180
 
 - [ ] SF-W2-005 — Commit, push, deploy, and verify Web Phase W2
-  - Status: not started
+  - Status: in progress
   - Priority: P0
   - Depends on: SF-W2-004
-  - Evidence: —
+  - Evidence: preview deployment `dpl_Dsyy177yZV8giEjNQhKjKNgVVm8Q` READY; final production gate pending
   - Commit: —
   - Deployment: —
   - Next action: run phase gate and production player smoke tests
