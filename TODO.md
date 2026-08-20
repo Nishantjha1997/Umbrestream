@@ -96,7 +96,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P0
   - Depends on: SF-W2-001
   - Evidence: background/pagehide recovery added; player stage is isolated and black-backed; Fit/Fill remains class-only and source-key independent; `scripts/check-player-display.mjs`; player display checks passed; ESLint zero warnings; TypeScript passed; `git diff --check` passed
-  - Commit: `PENDING_W2_PLAYER_GROUP`
+  - Commit: `41a858d`
   - Completed: 2026-08-20
   - Next action: proceed with SF-W2-003
 
@@ -105,7 +105,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P0
   - Depends on: SF-W2-001
   - Evidence: action-level click consumption added to BookmarkButton and HistoryItemActions; optimistic cache update and Undo/rollback retained; `scripts/check-removal-interactions.mjs`; removal checks passed; ESLint zero warnings; TypeScript passed; `git diff --check` passed
-  - Commit: `PENDING_W2_PLAYER_GROUP`
+  - Commit: `41a858d`
   - Completed: 2026-08-20
   - Next action: proceed with SF-W2-004
 
