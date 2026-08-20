@@ -1,5 +1,12 @@
 import type { AudioVariant, MediaTrack, SourceAdapter, StreamCandidate, StreamKind } from "../types";
-import { proxiedFetch, toProxiedUrl } from "@/utils/proxy";
+import { proxiedFetch, toProxiedUrl } from "../../../utils/proxy.ts";
+import {
+  isAllowedHttpsUrl,
+  normalizeAllowedHttpsUrl,
+  normalizeConfiguredHttpsBase,
+  parseAllowedHttpsOrigins,
+  type AllowedHttpsOrigins,
+} from "../urlPolicy.ts";
 
 const API_PROVIDERS = new Set([
   "reanime",
@@ -56,49 +63,8 @@ function withDeadline<T>(promise: Promise<T>, ms: number): Promise<{ value: T } 
   });
 }
 
-function configuredOrigin(value: string | undefined): string | null {
-  if (!value) return null;
-  try {
-    const url = new URL(value);
-    return url.protocol === "https:" ? url.origin : null;
-  } catch {
-    return null;
-  }
-}
-
-function configuredBase(value: string | undefined): URL | null {
-  if (!value) return null;
-  try {
-    const url = new URL(value.endsWith("/") ? value : `${value}/`);
-    return url.protocol === "https:" ? url : null;
-  } catch {
-    return null;
-  }
-}
-
-function allowedOrigins(): Set<string> {
-  const raw = process.env.STREAMFREE_ANIME_ALLOWED_ORIGINS ?? "";
-  if (!raw || raw.trim() === "*") return new Set(["*"]);
-  return new Set(
-    raw
-      .split(",")
-      .map((value) => (value.trim() === "*" ? "*" : configuredOrigin(value.trim())))
-      .filter((value): value is string => Boolean(value)),
-  );
-}
-
-function safeUrl(value: unknown, origins: Set<string>): string | null {
-  if (typeof value !== "string" || value.length === 0) return null;
-  try {
-    const url = new URL(value);
-    if (url.protocol !== "https:" && url.protocol !== "http:") return null;
-    if (url.protocol === "http:" && url.hostname.includes("onrender.com")) {
-      url.protocol = "https:";
-    }
-    return url.toString();
-  } catch {
-    return null;
-  }
+function allowedOrigins(): AllowedHttpsOrigins {
+  return parseAllowedHttpsOrigins(process.env.STREAMFREE_ANIME_ALLOWED_ORIGINS);
 }
 
 function segment(value: unknown): string | null {
@@ -219,11 +185,11 @@ function miruroEpisodeParts(value: Record<string, unknown>, fallback: number): {
   return { category, slug };
 }
 
-function tracks(value: unknown, origins: Set<string>): MediaTrack[] | undefined {
+function tracks(value: unknown, origins: AllowedHttpsOrigins): MediaTrack[] | undefined {
   if (!Array.isArray(value)) return undefined;
   const result = value.flatMap((item, index) => {
     const record = asRecord(item);
-    const url = safeUrl(record?.url ?? record?.file, origins);
+    const url = normalizeAllowedHttpsUrl(record?.url ?? record?.file, origins);
     if (!url) return [];
     return [{
       id: String(record?.id ?? record?.label ?? index),
@@ -237,17 +203,43 @@ function tracks(value: unknown, origins: Set<string>): MediaTrack[] | undefined 
   return result.length ? result : undefined;
 }
 
-async function json(url: URL, signal?: AbortSignal): Promise<unknown> {
-  try {
-    const response = await fetch(url, {
+async function directJson(
+  initialUrl: URL,
+  origins: AllowedHttpsOrigins,
+  signal?: AbortSignal,
+): Promise<unknown> {
+  let current = new URL(initialUrl);
+  for (let redirectCount = 0; redirectCount <= 3; redirectCount += 1) {
+    if (!isAllowedHttpsUrl(current, origins)) throw new Error("Anime API URL is not allowlisted");
+    const response = await fetch(current, {
       signal,
       cache: "no-store",
+      redirect: "manual",
       headers: { Accept: "application/json" },
     });
+    if (response.status >= 300 && response.status < 400) {
+      const location = response.headers.get("location");
+      const next = normalizeAllowedHttpsUrl(location, origins, current);
+      if (!next || redirectCount === 3) throw new Error("Anime API redirect was rejected");
+      current = new URL(next);
+      continue;
+    }
     if (response.ok) return response.json();
     throw new Error(`Anime provider returned HTTP ${response.status}`);
+  }
+  throw new Error("Anime API redirect limit exceeded");
+}
+
+async function json(
+  url: URL,
+  origins: AllowedHttpsOrigins,
+  signal?: AbortSignal,
+): Promise<unknown> {
+  try {
+    return await directJson(url, origins, signal);
   } catch (directErr) {
     try {
+      if (!isAllowedHttpsUrl(url, origins)) throw directErr;
       const proxiedResponse = await proxiedFetch(url.toString(), {
         signal,
         cache: "no-store",
@@ -269,7 +261,7 @@ async function watchCandidates(
   audio: AudioVariant,
   episode: Record<string, unknown>,
   episodeNumberValue: number,
-  origins: Set<string>,
+  origins: AllowedHttpsOrigins,
   signal?: AbortSignal,
 ): Promise<StreamCandidate[]> {
   const providerSegment = segment(provider);
@@ -289,7 +281,7 @@ async function watchCandidates(
     url.pathname = `${url.pathname.replace(/\/$/, "")}/api/watch/${providerSegment}/${idSegment}/${miruroParts?.category ?? audioSegment}/${slugSegment}`;
   }
 
-  const responsePayload = asRecord(await json(url, signal));
+  const responsePayload = asRecord(await json(url, origins, signal));
   const payload = asRecord(responsePayload?.results) ?? responsePayload;
   if (!payload) return [];
   const rawStreams = [
@@ -305,13 +297,13 @@ async function watchCandidates(
   const candidates: StreamCandidate[] = [];
   for (let index = 0; index < rawStreams.length; index++) {
     const stream = asRecord(rawStreams[index]);
-    const rawUrl = safeUrl(stream?.url ?? stream?.file, origins);
+    const rawUrl = normalizeAllowedHttpsUrl(stream?.url ?? stream?.file, origins);
     if (!rawUrl || seen.has(rawUrl)) continue;
     if (rawUrl.includes("play2.php") || rawUrl.includes("/b2/play")) continue;
     // Anivexa wraps some streams in redirect URLs on its own host. Resolve
     // those to the final CDN URL here so the client never has to follow the
     // hop (browser and proxy would both send the wrong Referer on it).
-    const streamUrl = await resolvePlaybackUrl(rawUrl, base, signal);
+    const streamUrl = await resolvePlaybackUrl(rawUrl, base, origins, signal);
     if (!streamUrl || seen.has(streamUrl)) continue;
     seen.add(streamUrl);
     const kind = streamKind(stream?.type, streamUrl);
@@ -344,7 +336,12 @@ async function watchCandidates(
 }
 
 /** Follows redirects that point back at the API host and returns the final URL. */
-async function resolvePlaybackUrl(url: string, base: URL, signal?: AbortSignal): Promise<string> {
+async function resolvePlaybackUrl(
+  url: string,
+  base: URL,
+  origins: AllowedHttpsOrigins,
+  signal?: AbortSignal,
+): Promise<string> {
   let parsed: URL;
   try {
     parsed = new URL(url);
@@ -356,7 +353,7 @@ async function resolvePlaybackUrl(url: string, base: URL, signal?: AbortSignal):
     const response = await fetch(parsed, { redirect: "manual", signal, headers: { Accept: "*/*" } });
     const location = response.headers.get("location");
     if (location) {
-      const resolved = safeUrl(location, new Set(["*"]));
+      const resolved = normalizeAllowedHttpsUrl(location, origins, parsed);
       if (resolved) return resolved;
     }
   } catch {
@@ -373,9 +370,9 @@ function createRemoteAdapter(
 ): SourceAdapter {
   const getBase = () =>
     base ??
-    configuredBase(
+    normalizeConfiguredHttpsBase(
       id === "anivexa"
-        ? process.env.ANIVEXA_API_BASE_URL ?? process.env.NEXT_PUBLIC_ANIVEXA_API_BASE_URL ?? "https://anivexa-api-tvd0.onrender.com"
+        ? process.env.ANIVEXA_API_BASE_URL ?? process.env.NEXT_PUBLIC_ANIVEXA_API_BASE_URL
         : process.env.MIRURO_API_BASE_URL ?? process.env.NEXT_PUBLIC_MIRURO_API_BASE_URL,
     );
 
@@ -385,92 +382,107 @@ function createRemoteAdapter(
     supportedMediaTypes: ["anime"],
     identifierRequirements: { anime: ["anilistId", "episode"] },
     priority: 12,
-    supports: (request) =>
-      Boolean(
-        getBase() &&
+    supports: (request) => {
+      const activeBase = getBase();
+      return Boolean(
+        activeBase &&
+          isAllowedHttpsUrl(activeBase, allowedOrigins()) &&
           request.mediaType === "anime" &&
           request.anilistId &&
           request.episode,
-      ),
+      );
+    },
     async resolve(request, signal) {
       const activeBase = getBase();
-      if (!activeBase || !request.anilistId || !request.episode) return [];
-      const cacheKey = `${id}:${request.anilistId}:${request.episode}`;
+      const origins = allowedOrigins();
+      if (
+        !activeBase ||
+        !isAllowedHttpsUrl(activeBase, origins) ||
+        !request.anilistId ||
+        !request.episode
+      ) return [];
+      const primaryAudio: AudioVariant = request.preferredAudio === "dub" ? "dub" : "sub";
+      const cacheKey = `${id}:${request.anilistId}:${request.episode}:${primaryAudio}`;
       const cached = animeRemoteCache.get(cacheKey);
       if (cached && cached.expiresAt > Date.now() && cached.data.length > 0) {
         return cached.data;
       }
 
-      const origins = allowedOrigins();
-      const primaryAudio: AudioVariant = request.preferredAudio === "dub" ? "dub" : "sub";
       try {
-        if (id === "anivexa") {
-          // Fast path: hit /watch directly for the top providers for both sub and dub
+        const catalogCandidatesPromise = (async (): Promise<StreamCandidate[]> => {
+          const payload = await json(endpoint(activeBase, request.anilistId!), origins, signal);
+          const entries = providerEntries(payload);
+          const tasks: Promise<{ value: StreamCandidate[] } | null>[] = [];
+          for (const [provider, providerData] of entries) {
+            const episode = listForAudio(providerData, primaryAudio).find((item) => {
+              const record = asRecord(item);
+              return record ? episodeNumber(record) === request.episode : false;
+            });
+            const episodeRecord = asRecord(episode);
+            if (!episodeRecord) continue;
+            tasks.push(
+              withDeadline(
+                watchCandidates(
+                  id,
+                  activeBase,
+                  provider,
+                  request.anilistId!,
+                  primaryAudio,
+                  episodeRecord,
+                  request.episode!,
+                  origins,
+                  signal,
+                ).catch(() => []),
+                DIRECT_WATCH_DEADLINE_MS,
+              ),
+            );
+          }
+          const outcomes = await Promise.all(tasks);
+          return outcomes.flatMap((outcome) => outcome?.value ?? []);
+        })().catch(() => []);
+
+        const directCandidatesPromise = (async (): Promise<StreamCandidate[]> => {
+          if (id !== "anivexa") return [];
+          // The direct watch path runs in parallel with catalog discovery. It
+          // remains a bounded fallback when the catalogue route is unavailable,
+          // while a healthy catalogue can expose every compatible provider.
           const directProviders = ["anibd", "reanime", "animegg", "kaa"];
           const directTasks: Promise<{ value: StreamCandidate[] } | null>[] = [];
           for (const provider of directProviders) {
-            for (const audio of ["sub", "dub"] as const) {
-              directTasks.push(
-                withDeadline(
-                  watchCandidates(
-                    id,
-                    activeBase,
-                    provider,
-                    request.anilistId!,
-                    audio,
-                    { id: `watch/${provider}/${request.anilistId}/${audio}/${provider}-${request.episode}`, number: request.episode },
-                    request.episode!,
-                    origins,
-                    signal,
-                  ).catch(() => []),
-                  DIRECT_WATCH_DEADLINE_MS,
-                ),
-              );
-            }
+            directTasks.push(
+              withDeadline(
+                watchCandidates(
+                  id,
+                  activeBase,
+                  provider,
+                  request.anilistId!,
+                  primaryAudio,
+                  {
+                    id: `watch/${provider}/${request.anilistId}/${primaryAudio}/${provider}-${request.episode}`,
+                    number: request.episode,
+                  },
+                  request.episode!,
+                  origins,
+                  signal,
+                ).catch(() => []),
+                DIRECT_WATCH_DEADLINE_MS,
+              ),
+            );
           }
-          const settled = await Promise.all(directTasks);
-          const candidates: StreamCandidate[] = [];
-          for (const outcome of settled) {
-            if (outcome) candidates.push(...outcome.value);
-          }
-          if (candidates.length > 0) {
-            if (settled.every((outcome) => outcome)) {
-              animeRemoteCache.set(cacheKey, { expiresAt: Date.now() + 300_000, data: candidates });
-            }
-            return candidates;
-          }
-        }
+          const outcomes = await Promise.all(directTasks);
+          return outcomes.flatMap((outcome) => outcome?.value ?? []);
+        })();
 
-        const payload = await json(endpoint(activeBase, request.anilistId), signal);
-        const entries = providerEntries(payload);
-        const tasks: Promise<StreamCandidate[]>[] = [];
-        for (const [provider, providerData] of entries.slice(0, 4)) {
-          const episode = listForAudio(providerData, primaryAudio).find((item) => {
-            const record = asRecord(item);
-            return record ? episodeNumber(record) === request.episode : false;
-          });
-          const episodeRecord = asRecord(episode);
-          if (!episodeRecord) continue;
-          tasks.push(
-            watchCandidates(
-              id,
-              activeBase,
-              provider,
-              request.anilistId,
-              primaryAudio,
-              episodeRecord,
-              request.episode,
-              origins,
-              signal,
-            ).catch(() => []),
-          );
-        }
-        const results = await Promise.allSettled(tasks);
+        const [catalogCandidates, directCandidates] = await Promise.all([
+          catalogCandidatesPromise,
+          directCandidatesPromise,
+        ]);
         const candidates: StreamCandidate[] = [];
-        for (const res of results) {
-          if (res.status === "fulfilled" && Array.isArray(res.value)) {
-            candidates.push(...res.value);
-          }
+        const seenProviders = new Set<string>();
+        for (const candidate of [...catalogCandidates, ...directCandidates]) {
+          if (seenProviders.has(candidate.providerId)) continue;
+          seenProviders.add(candidate.providerId);
+          candidates.push(candidate);
         }
         if (candidates.length > 0) {
           animeRemoteCache.set(cacheKey, { expiresAt: Date.now() + 300_000, data: candidates });
@@ -489,13 +501,13 @@ export function createAnimeRemoteAdapters(): SourceAdapter[] {
     createRemoteAdapter(
       "anivexa",
       "Anivexa providers",
-      configuredBase(process.env.ANIVEXA_API_BASE_URL ?? process.env.NEXT_PUBLIC_ANIVEXA_API_BASE_URL ?? "https://anivexa-api-tvd0.onrender.com"),
+      normalizeConfiguredHttpsBase(process.env.ANIVEXA_API_BASE_URL ?? process.env.NEXT_PUBLIC_ANIVEXA_API_BASE_URL),
       (base, anilistId) => new URL(`episodes/${anilistId}`, base),
     ),
     createRemoteAdapter(
       "miruro",
       "MiruroAPI providers",
-      configuredBase(process.env.MIRURO_API_BASE_URL ?? process.env.NEXT_PUBLIC_MIRURO_API_BASE_URL),
+      normalizeConfiguredHttpsBase(process.env.MIRURO_API_BASE_URL ?? process.env.NEXT_PUBLIC_MIRURO_API_BASE_URL),
       (base, anilistId) => new URL(`api/episodes/${anilistId}`, base),
     ),
   ];

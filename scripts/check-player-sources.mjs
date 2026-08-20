@@ -117,9 +117,10 @@ assert.deepEqual(orderedIds(fixtures.movie), [
   "vidrift",
   "vidbolt",
   "videasy",
+  "vidsrc",
 ]);
-// VidKing is the verified TV default. Filmu remains last because its outer
-// shell can load while exposing no playable media on the checked fixture.
+// VidKing is the verified TV default. Experimental VidSrc is listed after the
+// stable providers; Filmu remains the final TV candidate on this fixture.
 assert.deepEqual(orderedIds(fixtures.tv), [
   "vidking",
   "cinezo",
@@ -128,6 +129,7 @@ assert.deepEqual(orderedIds(fixtures.tv), [
   "vidrift",
   "vidbolt",
   "videasy",
+  "vidsrc",
   "filmu",
 ]);
 assert.deepEqual(orderedIds(fixtures.anime), [
@@ -137,6 +139,7 @@ assert.deepEqual(orderedIds(fixtures.anime), [
   "cinezo-anime-dub",
   "anilink-sub",
   "anilink-dub",
+  "vidsrc-anime-sub",
 ]);
 
 const instantStartedAt = performance.now();

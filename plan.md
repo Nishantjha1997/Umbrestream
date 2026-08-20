@@ -56,6 +56,29 @@ Baseline commit: `28bea93` (`feat(ux): site-wide refinement phases 1.4-3.4`). At
 8. Show quality only when verified from a manifest or track. Manual source selections are never silently replaced.
 9. Offline downloads are enabled only when the provider contract and applicable rights permit them.
 
+## 3.1 Open-source technical references
+
+These repositories are reference material, not code to copy wholesale. Their
+license, provenance, and compatibility must be checked before any reuse.
+
+- [AndroidX Media3](https://github.com/androidx/media) is the primary reference
+  for Media3/ExoPlayer data sources, per-request headers, Compose player surfaces,
+  MediaSession, and permitted offline downloads.
+- [Now in Android](https://github.com/android/nowinandroid) is the architecture
+  reference for multi-module Gradle Kotlin DSL, Hilt, Room, DataStore, Flow,
+  testing, and unidirectional Compose state. It is Apache-2.0 licensed.
+- [Aniyomi extensions](https://github.com/aniyomiorg/aniyomi-extensions) may be
+  consulted only for generic adapter boundaries and parsing structure. It is
+  archived and Apache-2.0 licensed; provider-specific extraction, header recipes,
+  anti-bot workarounds, or copied endpoints are out of scope.
+- [Dantotsu](https://github.com/rebelonion/Dantotsu) was not used because the
+  repository was unavailable for legal-access reasons during review and its
+  reusable license/source could not be verified. Reimplement interactions from
+  public Android/Media3 APIs until that verification exists.
+
+Any future reference must pass the same license/provenance review and must not
+weaken the exact-host, consent, privacy, or provider-authorization rules above.
+
 ## 4. Web phases
 
 ### W0 — Governance and baseline

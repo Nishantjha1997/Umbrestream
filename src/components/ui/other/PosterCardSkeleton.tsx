@@ -1,5 +1,3 @@
-import { Skeleton } from "@heroui/react";
-
 /**
  * Placeholder for a single <PosterCard>.
  *
@@ -9,11 +7,11 @@ import { Skeleton } from "@heroui/react";
  * footer chrome, matching a `variant="bordered"` card that no longer exists.
  */
 const PosterCardSkeleton: React.FC = () => (
-  <div className="flex w-full flex-col gap-2">
-    <Skeleton className="aspect-2/3 w-full rounded-(--radius-card)" />
+  <div aria-hidden="true" className="flex w-full flex-col gap-2">
+    <div className="bg-content3 dark:bg-content2 aspect-2/3 w-full animate-pulse rounded-(--radius-card) motion-reduce:animate-none" />
     <div className="flex flex-col gap-1.5">
-      <Skeleton className="h-3.5 w-4/5 rounded-full" />
-      <Skeleton className="h-3 w-1/2 rounded-full" />
+      <div className="bg-content3 dark:bg-content2 h-3.5 w-4/5 animate-pulse rounded-full motion-reduce:animate-none" />
+      <div className="bg-content3 dark:bg-content2 h-3 w-1/2 animate-pulse rounded-full motion-reduce:animate-none" />
     </div>
   </div>
 );

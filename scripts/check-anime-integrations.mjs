@@ -1,4 +1,24 @@
 import assert from "node:assert/strict";
+import {
+  normalizeAllowedHttpsUrl,
+  parseAllowedHttpsOrigins,
+} from "../src/lib/sources/urlPolicy.ts";
+
+const exactPolicy = parseAllowedHttpsOrigins(
+  "https://api.example.test,https://cdn.example.test,https://*.media.example.test",
+);
+assert.equal(normalizeAllowedHttpsUrl("https://cdn.example.test/video.m3u8", exactPolicy), "https://cdn.example.test/video.m3u8");
+assert.equal(normalizeAllowedHttpsUrl("https://edge.media.example.test/video.m3u8", exactPolicy), "https://edge.media.example.test/video.m3u8");
+assert.equal(normalizeAllowedHttpsUrl("https://media.example.test/video.m3u8", exactPolicy), null, "wildcards must not include the parent host");
+assert.equal(normalizeAllowedHttpsUrl("https://untrusted.example.test/video.m3u8", exactPolicy), null);
+assert.equal(normalizeAllowedHttpsUrl("http://cdn.example.test/video.m3u8", exactPolicy), null);
+assert.equal(normalizeAllowedHttpsUrl("https://user:pass@cdn.example.test/video.m3u8", exactPolicy), null);
+assert.equal(normalizeAllowedHttpsUrl("https://cdn.example.test:8443/video.m3u8", exactPolicy), null);
+assert.equal(normalizeAllowedHttpsUrl("https://cdn.example.test/video.m3u8#fragment", exactPolicy), null);
+assert.equal(normalizeAllowedHttpsUrl("https://127.0.0.1/video.m3u8", parseAllowedHttpsOrigins("https://127.0.0.1")), null);
+assert.equal(normalizeAllowedHttpsUrl("https://10.0.0.1/video.m3u8", parseAllowedHttpsOrigins("https://10.0.0.1")), null);
+assert.equal(normalizeAllowedHttpsUrl("https://[::1]/video.m3u8", parseAllowedHttpsOrigins("https://[::1]")), null);
+assert.equal(parseAllowedHttpsOrigins("*").exactOrigins.size, 0, "a bare wildcard must fail closed");
 
 delete process.env.ANIVEXA_API_BASE_URL;
 delete process.env.MIRURO_API_BASE_URL;
@@ -47,13 +67,28 @@ const configuredAdapters = (await import("../src/lib/sources/adapters/animeRemot
 const anivexaCandidates = await configuredAdapters[0].resolve({ mediaType: "anime", anilistId: 123, episode: 1, preferredAudio: "sub" });
 assert.equal(anivexaCandidates[0]?.providerId, "anivexa:reanime");
 assert.equal(anivexaCandidates[0]?.kind, "hls");
-assert.equal(new Set(anivexaCandidates.map((candidate) => candidate.providerId)).size, 9, "all requested Anivexa providers should normalize");
+const expectedAnivexaProviders = [
+  "reanime", "anikoto", "animegg", "anineko", "2dhive", "anizone", "animecg", "animenosub", "megaplay",
+];
+for (const provider of expectedAnivexaProviders) {
+  assert.ok(
+    anivexaCandidates.some((candidate) => candidate.providerId === `anivexa:${provider}`),
+    `${provider} should be exposed when its watch route resolves`,
+  );
+}
+assert.equal(
+  new Set(anivexaCandidates.map((candidate) => candidate.providerId)).size,
+  anivexaCandidates.length,
+  "catalog and direct fast-path candidates must be deduplicated",
+);
 assert.ok(anivexaCandidates.some((candidate) => candidate.label.startsWith("ReAnime · Sub")));
 assert.ok(anivexaCandidates.some((candidate) => candidate.label.startsWith("MegaPlay · Sub")));
 assert.ok(anivexaCandidates.every((candidate) => candidate.audioVariant === "sub"));
 assert.ok(anivexaCandidates.every((candidate) => !candidate.url.includes("untrusted") && candidate.url.startsWith("https://")));
 const anivexaDubCandidates = await configuredAdapters[0].resolve({ mediaType: "anime", anilistId: 123, episode: 1, preferredAudio: "dub" });
-assert.equal(anivexaDubCandidates.length, 9);
+for (const provider of expectedAnivexaProviders) {
+  assert.ok(anivexaDubCandidates.some((candidate) => candidate.providerId === `anivexa:${provider}`));
+}
 assert.ok(anivexaDubCandidates.every((candidate) => candidate.audioVariant === "dub" && candidate.label.includes("Dub")));
 const miruroCandidates = await configuredAdapters[1].resolve({ mediaType: "anime", anilistId: 123, episode: 1, preferredAudio: "sub" });
 assert.equal(miruroCandidates[0]?.providerId, "miruro:kiwi");

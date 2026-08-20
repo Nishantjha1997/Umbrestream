@@ -6,8 +6,9 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 
 - Branch: `codex/web-first-native-rebuild`
 - Baseline: `28bea93`
-- Active task: none; Phase W0 checkpoint is ready to commit
-- Next command: run `git diff --check`, commit the documentation checkpoint, and push the branch.
+- Active task: `SF-W1-006`
+- Next command: run the W1 gate, commit and push the repaired web phase, deploy through the `umbrestream` Vercel project, and verify production routes.
+- Reference policy: Media3 and Now in Android are approved architecture references; Aniyomi is pattern-only because it is archived; Dantotsu is excluded pending license/source verification.
 
 ## W0 — Governance and baseline
 
@@ -16,7 +17,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P0
   - Depends on: none
   - Evidence: branch `codex/web-first-native-rebuild`; canonical `plan.md`; reset `TODO.md`; superseded plans removed; `.zcode/` ignored
-  - Commit: —
+  - Commit: `73c492c`
   - Completed: 2026-08-20
 
 - [x] SF-W0-002 — Record release and deployment baseline
@@ -24,59 +25,59 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P0
   - Depends on: SF-W0-001
   - Evidence: baseline `28bea93`; phone `1.3.3` code `7`, APK SHA-256 `571FA4CB…D444`, certificate `4218B5F7…8EF4`; TV `1.2.3` code `6`, APK SHA-256 `06E4C403…7683`, certificate `7D5C1BB4…79D7`; local Vercel project `umbrestream` (`prj_jF4itYCa4JrGVioyt4uEz3hVQh58`); connector deployment listing returned 403 and will be retried with deployment credentials during W1
-  - Commit: —
+  - Commit: `73c492c`
   - Completed: 2026-08-20
 
 ## W1 — Web release blockers
 
-- [ ] SF-W1-001 — Repair `/anime/discover` production prerender
-  - Status: not started
+- [x] SF-W1-001 — Repair `/anime/discover` production prerender
+  - Status: completed
   - Priority: P0
   - Depends on: SF-W0-002
-  - Evidence: current build fails with React Server Consumer Manifest error
-  - Commit: —
-  - Next action: clean `.next`, rebuild, then repair dynamic Server Component boundary if reproducible
+  - Evidence: moved generated `.next` outside the repository; direct client import plus CSS-only server-safe skeletons; fresh `next build --webpack` passed for all 38 routes
+  - Commit: pending W1 phase commit
+  - Completed: 2026-08-20
 
-- [ ] SF-W1-002 — Enforce anime source URL and redirect policy
-  - Status: not started
+- [x] SF-W1-002 — Enforce anime source URL and redirect policy
+  - Status: completed
   - Priority: P0
   - Depends on: SF-W1-001
-  - Evidence: `origins` input is unused in `animeRemote.ts`
-  - Commit: —
-  - Next action: implement exact HTTPS origin checks and negative fixtures
+  - Evidence: `src/lib/sources/urlPolicy.ts`; exact HTTPS origins and intentional wildcard subdomains; credentials, HTTP, fragments, nonstandard ports, private/reserved literals, and untrusted redirects rejected; anime integration contract passed
+  - Commit: pending W1 phase commit
+  - Completed: 2026-08-20
 
-- [ ] SF-W1-003 — Reconcile movie/TV/anime provider ordering
-  - Status: not started
+- [x] SF-W1-003 — Reconcile movie/TV/anime provider ordering
+  - Status: completed
   - Priority: P0
   - Depends on: SF-W1-002
-  - Evidence: `test:player-sources` fails because runtime includes `vidsrc`
-  - Commit: —
-  - Next action: retain only as explicit fallback or remove; update policy fixtures
+  - Evidence: Filmu remains movie default; VidKing remains TV default; VidSrc is explicitly experimental and ordered after stable providers; anime catalog candidates are deduplicated and remain within selected Sub/Dub; player source contract passed
+  - Commit: pending W1 phase commit
+  - Completed: 2026-08-20
 
-- [ ] SF-W1-004 — Repair anime integration test runner and aliases
-  - Status: not started
+- [x] SF-W1-004 — Repair anime integration test runner and aliases
+  - Status: completed
   - Priority: P0
   - Depends on: SF-W1-002
-  - Evidence: runner cannot resolve `@/utils`
-  - Commit: —
-  - Next action: introduce alias-aware deterministic runner and port assertions
+  - Evidence: adapter test uses portable explicit TypeScript imports; URL, provider, audio, subtitle, dedupe, allowlist, and fallback assertions pass with Node’s strip-types runner
+  - Commit: pending W1 phase commit
+  - Completed: 2026-08-20
 
-- [ ] SF-W1-005 — Make lint and verify strict
-  - Status: not started
+- [x] SF-W1-005 — Make lint and verify strict
+  - Status: completed
   - Priority: P0
   - Depends on: SF-W1-003, SF-W1-004
-  - Evidence: —
-  - Commit: —
-  - Next action: fail lint on warnings and add all source/anime checks to `verify`
+  - Evidence: lint uses `--max-warnings=0`; `package.json` verify includes web, playback, anime, native state, manifest, type, build, artifact, and leak checks; direct equivalent gate passed; `git diff --check` passed
+  - Commit: pending W1 phase commit
+  - Completed: 2026-08-20
 
 - [ ] SF-W1-006 — Commit, push, deploy, and verify Web Phase W1
-  - Status: not started
+  - Status: in progress
   - Priority: P0
   - Depends on: SF-W1-005
-  - Evidence: —
+  - Evidence: implementation and deterministic gate complete; production deployment and live smoke checks pending
   - Commit: —
   - Deployment: —
-  - Next action: run gate, push, deploy production, confirm `Ready`, smoke-test critical routes
+  - Next action: commit W1, push branch, deploy `umbrestream`, confirm `Ready`, and smoke-test `/`, `/anime/discover`, `/browse`, and representative player/API routes
 
 ## W2 — Player and interaction certification
 

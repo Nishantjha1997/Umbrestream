@@ -91,8 +91,10 @@ const definitions: EmbedDefinition[] = [
     id: "vidsrc",
     label: "VidSrc",
     origin: "https://vidsrc.rip",
-    tier: "stable",
-    priorities: { movie: 6, tv: 6 },
+    // Keep this user-selectable as an experimental fallback. It has no
+    // verified playback event contract and must not outrank stable providers.
+    tier: "experimental",
+    priorities: { movie: 70, tv: 70 },
     requirements: movieAndTvRequirements,
     build: (request) =>
       movieOrTv(
