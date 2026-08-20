@@ -118,6 +118,31 @@ export function findNextFallbackSource(
   );
 }
 
+/**
+ * Automatic recovery is intentionally limited to a true product-default
+ * movie/TV launch. A query parameter and a remembered preference both mean
+ * the person made (or previously confirmed) a server choice, so recovery
+ * must remain consent-based for that session.
+ *
+ * Keeping this decision pure makes the privacy-preserving clean-session
+ * contract testable without clearing or inspecting a real browser profile.
+ */
+export function shouldUseAutomaticRecovery({
+  mediaType,
+  initialSourceId,
+  rememberedSourceId,
+}: {
+  mediaType: MediaType;
+  initialSourceId?: string | null;
+  rememberedSourceId?: string | null;
+}): boolean {
+  return (
+    (mediaType === "movie" || mediaType === "tv") &&
+    !initialSourceId &&
+    !rememberedSourceId
+  );
+}
+
 const AUTOMATIC_PROVIDER_ORDER: Record<"movie" | "tv", readonly string[]> = {
   // Keep Filmu as the displayed movie recommendation, but prefer the source
   // that has most recently reached a playable state when the clean default

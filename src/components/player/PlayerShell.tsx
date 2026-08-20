@@ -60,6 +60,7 @@ import {
   findPreferredSource,
   PLAYBACK_RECOVERY_TIMEOUT_MS,
   readPlaybackPreference,
+  shouldUseAutomaticRecovery,
   withResumePosition,
   writePlaybackPreference,
 } from "@/lib/sources/playbackPolicy";
@@ -444,10 +445,11 @@ export default function PlayerShell({
       preferredAudio,
     );
     automaticFallbackRequestKeyRef.current = directRequestKey;
-    automaticFallbackEnabledRef.current =
-      (request.mediaType === "movie" || request.mediaType === "tv") &&
-      !initialSourceParamRef.current &&
-      !remembered;
+    automaticFallbackEnabledRef.current = shouldUseAutomaticRecovery({
+      mediaType: request.mediaType,
+      initialSourceId: initialSourceParamRef.current,
+      rememberedSourceId: remembered,
+    });
   }, [
     directRequestKey,
     directSettled,

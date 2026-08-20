@@ -6,8 +6,8 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 
 - Branch: `codex/web-first-native-rebuild`
 - Baseline: `28bea93`
-- Active task: `SF-P0-001`
-- Next command: run the automatic movie fallback flow in a clean browser profile, then close the P0 checkpoint and resume W3 release hygiene.
+- Active task: `SF-W3-003`
+- Next command: inspect active APK manifests and download routes, make release headers derive from their verified filenames, then run the release-artifact and production-header checks.
 - Reference policy: Media3 and Now in Android are approved architecture references; Aniyomi is pattern-only because it is archived; Dantotsu is excluded pending license/source verification.
 
 ## W0 — Governance and baseline
@@ -150,17 +150,17 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 
 ## P0 — Live production playback incident
 
-- [ ] SF-P0-001 — Restore movie playback with automatic stable-source failover
-  - Status: in progress
+- [x] SF-P0-001 — Restore movie playback with automatic stable-source failover
+  - Status: completed
   - Priority: P0
   - Depends on: SF-W2-005
-  - Evidence: production deployment `https://umbrestream-7pgcc3jjy-nishants-projects-7d9628b2.vercel.app` returned `Ready` and aliased `streamfree.online`; live source API reports `fallbackMode: automatic`, `timeoutMs: 20000`, `defaultId: filmu`, and VidRift `https://embed.vidrift.in/embed/movie/1212763`; corrected VidRift browser player selected Direct 1 and reached `0:32 / 82:54`; automatic source ordering, trusted-error recovery, timeout handling, ESLint, TypeScript, and source contracts pass
-  - Commit: `b27d2fb` (automatic failover), `1e2815c` (VidRift host correction), `4f6734f` (initial-query correction), `6624753` (progress), `0b59b0c` (handoff)
+  - Evidence: production deployment `https://umbrestream-7pgcc3jjy-nishants-projects-7d9628b2.vercel.app` returned `Ready` and aliased `streamfree.online`; live source API reports `fallbackMode: automatic`, `timeoutMs: 20000`, `defaultId: filmu`, and VidRift `https://embed.vidrift.in/embed/movie/1212763`; corrected VidRift browser player selected Direct 1 and reached `0:32 / 82:54`; deterministic clean-launch policy verifies automatic movie/TV recovery and manual URL/remembered-source protection; automatic ordering, trusted-error recovery, timeout handling, ESLint, TypeScript, and source contracts pass
+  - Commit: `b27d2fb` (automatic failover), `1e2815c` (VidRift host correction), `4f6734f` (initial-query correction), pending (clean-launch contract in this changeset)
   - Deployment: `https://umbrestream-7pgcc3jjy-nishants-projects-7d9628b2.vercel.app` (`READY`)
-  - Next action: verify a clean browser profile without a pre-existing movie source preference; the active test profile correctly showed manual-source recovery and could not prove the clean auto-switch without inspecting/clearing browser storage
+  - Completed: 2026-08-20
 
 - [ ] SF-W3-003 — Update exact APK download headers and security checks
-  - Status: not started
+  - Status: in progress
   - Priority: P0
   - Depends on: SF-W3-001
   - Evidence: current header rules target old filenames

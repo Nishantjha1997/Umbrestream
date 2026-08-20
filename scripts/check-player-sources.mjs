@@ -12,6 +12,7 @@ import {
   findNextAutomaticFallbackSource,
   findPreferredSource,
   PLAYBACK_POLICY,
+  shouldUseAutomaticRecovery,
 } from "../src/lib/sources/playbackPolicy.ts";
 
 const fixtures = {
@@ -170,6 +171,31 @@ assert.equal(
 assert.equal(
   findNextAutomaticFallbackSource(instantMovie, "vidking", ["filmu", "vidking"])?.id,
   "cinezo",
+);
+assert.equal(
+  shouldUseAutomaticRecovery({ mediaType: "movie" }),
+  true,
+  "a clean movie launch should recover automatically",
+);
+assert.equal(
+  shouldUseAutomaticRecovery({ mediaType: "tv" }),
+  true,
+  "a clean TV launch should recover automatically",
+);
+assert.equal(
+  shouldUseAutomaticRecovery({ mediaType: "anime" }),
+  false,
+  "anime recovery must preserve its explicit Sub/Dub chooser flow",
+);
+assert.equal(
+  shouldUseAutomaticRecovery({ mediaType: "movie", initialSourceId: "filmu" }),
+  false,
+  "an explicit source must never be silently replaced",
+);
+assert.equal(
+  shouldUseAutomaticRecovery({ mediaType: "tv", rememberedSourceId: "vidking" }),
+  false,
+  "a remembered source must never be silently replaced",
 );
 
 const cinezoMovie = { ...(await resolveOne("cinezo", fixtures.movie)), availability: "unverified" };

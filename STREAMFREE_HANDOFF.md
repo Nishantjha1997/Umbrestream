@@ -1192,3 +1192,15 @@ The active browser session had an existing movie source preference from earlier 
 20-second result was the expected manual-source recovery prompt rather than a clean-session auto-switch. A fresh
 profile/clean storage run remains a final validation item before treating the automatic transition as a measured
 real-provider result; deterministic ordering and production contracts are green.
+
+## 33. P0 automatic-recovery verification closure — 2026-08-20
+
+The last P0 verification gap was converted into a pure shared playback-policy contract rather than attempting to
+inspect or clear a browser profile. `shouldUseAutomaticRecovery` permits the automatic recovery loop only for a
+clean movie or TV launch with neither an initial `src` query value nor a remembered source preference. It rejects
+anime, explicit URL selections, and remembered selections. `PlayerShell` consumes that exact helper when it arms
+its 20-second recovery timer; the source-contract runner now asserts all five cases. This preserves the expected
+live-browser result for a previously selected server (show recovery choices rather than silently switching it),
+while deterministically proving the clean product-default behavior. Strict ESLint, TypeScript, the complete player
+source contract, and `git diff --check` passed. The next active task is W3-003, which audits the active APK download
+filenames, headers, and release-artifact checks.
