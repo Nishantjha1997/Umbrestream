@@ -6,8 +6,8 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 
 - Branch: `codex/web-first-native-rebuild`
 - Baseline: `28bea93`
-- Active task: `SF-W1-006`
-- Next command: run the W1 gate, commit and push the repaired web phase, deploy through the `umbrestream` Vercel project, and verify production routes.
+- Active task: `SF-W2-001`
+- Next command: add deterministic source-sheet interaction tests covering mouse, touch, keyboard, close paths, focus restoration, and exactly-once selection.
 - Reference policy: Media3 and Now in Android are approved architecture references; Aniyomi is pattern-only because it is archived; Dantotsu is excluded pending license/source verification.
 
 ## W0 — Governance and baseline
@@ -71,13 +71,14 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Completed: 2026-08-20
 
 - [ ] SF-W1-006 — Commit, push, deploy, and verify Web Phase W1
-  - Status: in progress
+  - Status: completed
   - Priority: P0
   - Depends on: SF-W1-005
-  - Evidence: implementation and deterministic gate complete; production deployment and live smoke checks pending
-  - Commit: —
-  - Deployment: —
-  - Next action: commit W1, push branch, deploy `umbrestream`, confirm `Ready`, and smoke-test `/`, `/anime/discover`, `/browse`, and representative player/API routes
+  - Evidence: commits `375f93b` and `4c38c63`; branch pushed; production `dpl_4fYCKjtDyJm9hPJJF5zsDFZLMJyx` returned `READY` and aliased `streamfree.online`; live `/`, `/anime/discover`, `/browse`, `/robots.txt`, `/sitemap.xml`, `/api/mobile/config`, movie/TV/anime source contracts returned HTTP 200; movie default `filmu`, TV default `vidking`, anime policy `2026-08-reliability-v1`
+  - Commit: `4c38c63`
+  - Deployment: `dpl_4fYCKjtDyJm9hPJJF5zsDFZLMJyx` (`READY`)
+  - Completed: 2026-08-20
+  - Next action: proceed with SF-W2-001
 
 ## W2 — Player and interaction certification
 

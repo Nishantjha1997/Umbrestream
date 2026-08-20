@@ -1084,3 +1084,42 @@ Commit: `a4a2741` (`fix(anime): restore framed episode player flow`). Preview de
 390×844 checks passed for stage geometry, scroll position, Source sheet opening, catalog visibility,
 next-episode navigation, and default fullscreen-off behavior. Production promotion remains pending
 because the Vercel project dashboard currently indicates production is updated from `main`.
+
+## 30. Web-first rebuild W1 production checkpoint — 2026-08-20
+
+The web-first rebuild is being developed on branch `codex/web-first-native-rebuild`.
+The canonical implementation plan is `plan.md` and the live task board is `TODO.md`.
+The W1 release-blocker phase is complete and pushed in commits `375f93b` and `4c38c63`.
+
+W1 repaired the Next.js production build by removing the Anime Discover dynamic RSC boundary,
+making the shared route skeletons server-safe CSS placeholders, and confirming a fresh
+`next build --webpack` passes all 38 routes. Anime remote source resolution now uses a reusable
+exact-HTTPS allowlist policy covering API bases, streams, subtitles, and manually validated redirects.
+It rejects wildcard `*`, HTTP, credentials, fragments, nonstandard ports, private/reserved literal
+hosts, and unallowlisted origins; wildcard subdomains require explicit `https://*.example.com`
+configuration. Anime catalog resolution is Sub/Dub-specific, deduplicated, and combines the full
+validated catalogue with a bounded direct-watch fallback. VidSrc remains an experimental,
+user-selectable fallback and is not treated as a stable default.
+
+The deterministic gate passed: strict lint (`--max-warnings=0`), TypeScript, player source ordering,
+episode resolver, Continue Watching, Home-feed dedupe, Anime integrations, native cache/history/update
+state, update-manifest verification, release-artifact checks, leak scan, and production build.
+The single `verify` script now includes these checks. The local bundled runtime did not include npm;
+equivalent commands were run directly with Node, while Vercel ran the project build successfully.
+
+Production deployment `dpl_4fYCKjtDyJm9hPJJF5zsDFZLMJyx` returned `READY` and is aliased to
+`https://streamfree.online`. Live smoke checks returned HTTP 200 for `/`, `/anime/discover`, `/browse`,
+`/robots.txt`, `/sitemap.xml`, and `/api/mobile/config`. Live source checks returned movie default
+`filmu`, TV default `vidking`, anime source policy `2026-08-reliability-v1`, and the expected source
+labels. Vercel built from a transient generated pnpm lockfile created by the local pnpm wrapper; that
+file was removed from the worktree and was not committed. Future deployments must use the repository's
+tracked npm lockfile only.
+
+The approved reference policy is recorded in `plan.md`: Media3 and Now in Android are primary
+architecture references; Aniyomi is pattern-only because it is archived; Dantotsu was not reused
+because its source/license could not be verified during review. No provider anti-bot bypass, hidden
+iframe stream extraction, open proxy, or unlicensed code was added.
+
+Next phase is W2 player and interaction certification: deterministic source-sheet tests, framed
+playback/Fit-Fill/fullscreen checks, Continue Watching/watchlist removal and Undo checks, and the
+Playwright/accessibility matrix. Native Android work remains blocked behind completion of the web phases.
