@@ -219,7 +219,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P0
   - Depends on: SF-W3-004
   - Evidence: isolated JDK 17, Android API 37, Build Tools 36.0.0; AGP 9.3.1/Kotlin 2.4.10/Lifecycle 2.11/Core 1.19; Gradle 9.7.1 distribution and wrapper JAR SHA-256 verified; `scripts/verify.ps1` passed core unit test, phone/TV debug assembly, and phone/TV/design-system lint with warnings-as-errors; debug package IDs verified as `online.streamfree.app.debug` and `online.streamfree.tv.debug`; `git diff --check` passed
-  - Commit: pending
+  - Commit: `566d26f`
   - Completed: 2026-08-20
 
 - [ ] SF-A0-002 — Preserve signing/package identities and migration contracts
