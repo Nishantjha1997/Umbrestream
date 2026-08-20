@@ -6,8 +6,8 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 
 - Branch: `codex/web-first-native-rebuild`
 - Baseline: `28bea93`
-- Active task: `SF-W3-001`
-- Next command: audit web/native bundles and player-only dependencies, capture a reproducible performance baseline, and identify verified bottlenecks.
+- Active task: `SF-P0-001`
+- Next command: run the automatic movie fallback flow in a clean browser profile, then close the P0 checkpoint and resume W3 release hygiene.
 - Reference policy: Media3 and Now in Android are approved architecture references; Aniyomi is pattern-only because it is archived; Dantotsu is excluded pending license/source verification.
 
 ## W0 — Governance and baseline
@@ -130,7 +130,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 
 ## W3 — Performance, PWA, downloads, and security
 
-- [ ] SF-W3-001 — Audit bundles, images, and player-only dependencies
+- [x] SF-W3-001 — Audit bundles, images, and player-only dependencies
   - Status: completed
   - Priority: P1
   - Depends on: SF-W2-005
@@ -139,7 +139,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Completed: 2026-08-20
   - Next action: proceed with SF-W3-002
 
-- [ ] SF-W3-002 — Verify service-worker freshness and update-ready flow
+- [x] SF-W3-002 — Verify service-worker freshness and update-ready flow
   - Status: completed
   - Priority: P0
   - Depends on: SF-W3-001
@@ -154,9 +154,10 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Status: in progress
   - Priority: P0
   - Depends on: SF-W2-005
-  - Evidence: production API returns movie sources; live browser reproduced Filmu blank, Cinezo unresolved, VidLink provider rejection, and VidKing direct resolution; automatic movie/TV recovery now handles trusted errors and 20-second silent-provider timeouts; VidRift documentation-host URL corrected to its actual embed host; initial source-query capture added so app-generated `?src=filmu` cannot disable clean-launch recovery; source-policy checks, ESLint, and TypeScript pass
-  - Commit: `b27d2fb` (automatic failover), `1e2815c` (VidRift host correction), `4f6734f` (initial-query correction)
-  - Next action: deploy production and verify the clean movie flow plus the corrected VidRift URL
+  - Evidence: production deployment `https://umbrestream-7pgcc3jjy-nishants-projects-7d9628b2.vercel.app` returned `Ready` and aliased `streamfree.online`; live source API reports `fallbackMode: automatic`, `timeoutMs: 20000`, `defaultId: filmu`, and VidRift `https://embed.vidrift.in/embed/movie/1212763`; corrected VidRift browser player selected Direct 1 and reached `0:32 / 82:54`; automatic source ordering, trusted-error recovery, timeout handling, ESLint, TypeScript, and source contracts pass
+  - Commit: `b27d2fb` (automatic failover), `1e2815c` (VidRift host correction), `4f6734f` (initial-query correction), `6624753` (progress)
+  - Deployment: `https://umbrestream-7pgcc3jjy-nishants-projects-7d9628b2.vercel.app` (`READY`)
+  - Next action: verify a clean browser profile without a pre-existing movie source preference; the active test profile correctly showed manual-source recovery and could not prove the clean auto-switch without inspecting/clearing browser storage
 
 - [ ] SF-W3-003 — Update exact APK download headers and security checks
   - Status: not started

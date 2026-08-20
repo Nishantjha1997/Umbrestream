@@ -1161,3 +1161,34 @@ and Undo; deterministic optimistic/rollback coverage is green. External provider
 unreliable by nature and is represented as consent-based recovery rather than a guarantee. Next phase is
 W3 performance, PWA freshness, download/update hygiene, and security review; native Android work remains
 behind the web phases.
+
+## 32. P0 movie playback recovery and VidRift correction — 2026-08-20
+
+The live movie incident was isolated to provider startup availability rather than the StreamFree source API.
+Production returned HTTP 200 with the expected movie source manifest, but the browser reproduced a blank Filmu
+embed, a Cinezo source that remained unresolved, and a VidLink provider rejection. The VidKing embed resolved
+the title through its Yoru source chain and exposed playable quality options in the same browser.
+
+The shared `PlayerShell` now has a bounded automatic recovery path for clean movie and TV launches. After the
+20-second, visibility-paused grace period—or immediately after a trusted/native playback error—it selects the
+next stable/direct candidate using a separate recovery ranking (`VidKing`, `Cinezo`, `VidLink`, `VidLink Classic`,
+then `Filmu`), without changing the source-sheet order. A trusted `play` or `timeupdate` stops recovery. A URL
+source or remembered device preference remains explicit and is not silently replaced. Automatic switches are
+session-scoped and do not write `src` into the URL, so an app-generated default cannot masquerade as a manual
+choice on reload. Exhausted or eventless providers still receive a neutral recovery panel.
+
+The VidRift adapter previously used `https://vidrift.in/embed/...`, which is the documentation host. It now uses
+the provider's actual player host `https://embed.vidrift.in/embed/...` for movies and TV, and the documented TV
+URL shape for anime. The source contract checks cover the corrected movie and TV URLs. A live browser smoke test
+opened the corrected endpoint, selected Direct 1, and reached `0:32 / 82:54`; it no longer renders documentation.
+
+Production deployment `https://umbrestream-7pgcc3jjy-nishants-projects-7d9628b2.vercel.app` returned `Ready` and
+was aliased to `https://streamfree.online`. The live source API reports `defaultId: filmu`,
+`fallbackMode: automatic`, `timeoutMs: 20000`, and the corrected VidRift origin. The implementation commits are
+`b27d2fb` (automatic stable-source recovery), `1e2815c` (VidRift embed host), and `4f6734f` (initial source-query
+capture); the task state is recorded in `TODO.md`.
+
+The active browser session had an existing movie source preference from earlier provider testing, so its visible
+20-second result was the expected manual-source recovery prompt rather than a clean-session auto-switch. A fresh
+profile/clean storage run remains a final validation item before treating the automatic transition as a measured
+real-provider result; deterministic ordering and production contracts are green.
