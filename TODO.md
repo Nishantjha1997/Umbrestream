@@ -7,7 +7,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 - Branch: `codex/web-first-native-rebuild`
 - Baseline: `28bea93`
 - Active task: `SF-A3-002`
-- Next command: add the native AniList/MAL account-link handoff on top of the secure StreamFree session; keep device/provider/release testing gated until the native auth surfaces are complete.
+- Next command: register native callback URLs, apply the OAuth transaction migration, and exercise provider linking on the connected phone; keep device/provider/release testing gated until that integration passes.
 - Reference policy: Media3 and Now in Android are approved architecture references; Aniyomi is pattern-only because it is archived; Dantotsu is excluded pending license/source verification.
 
 ## W0 — Governance and baseline
@@ -320,9 +320,9 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Status: in progress
   - Priority: P1
   - Depends on: SF-A2-003
-  - Evidence: new `core:auth` module fetches only the official runtime Supabase URL/publishable key, rejects insecure/path-bearing config, performs password and refresh-token calls against the validated Supabase origin, never accepts service-role/provider secrets, and stores only AES-GCM ciphertext in DataStore with a non-exportable Android Keystore key; phone and TV Home expose sign-in/sign-out, refresh sessions before expiry, and pass the bearer token into the shared Home feed; auth/config/network tests, app compilation, Android-test compilation, strict lint, and `git diff --check` pass
+  - Evidence: new `core:auth` module fetches only the official runtime Supabase URL/publishable key, rejects insecure/path-bearing config, performs password and refresh-token calls against the validated Supabase origin, never accepts service-role/provider secrets, and stores only AES-GCM ciphertext in DataStore with a non-exportable Android Keystore key; phone and TV Home expose sign-in/sign-out, refresh sessions before expiry, and pass the bearer token into the shared Home feed; native AniList/MAL linking uses a server-created, hashed, ten-minute state transaction, provider authorization URL validation, fixed `streamfree://anime-link` callbacks, and no provider secret in the APK; auth/config/network tests, web TypeScript, app compilation, Android-test compilation, strict lint, and `git diff --check` pass
   - Commit: `pending`
-  - Next action: implement provider-link handoff for existing web AniList/MAL OAuth routes using a one-time, expiring app callback; do not put AniList/MAL client secrets in the APK.
+  - Next action: register `https://streamfree.online/api/mobile/anime-links/callback/anilist` and `/mal` with the providers, apply `20260821100000_native_anime_oauth_transactions.sql`, then exercise the browser callback on the connected phone.
 
 - [ ] SF-A3-003 — Add scrobbling and new-episode notifications
   - Status: not started

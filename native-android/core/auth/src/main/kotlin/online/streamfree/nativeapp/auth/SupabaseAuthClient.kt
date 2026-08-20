@@ -111,6 +111,7 @@ class SupabaseAuthClient(
 class AuthSessionManager(
   private val client: SupabaseAuthClient,
   private val store: AuthSessionStore,
+  private val animeLinkClient: NativeAnimeLinkClient = NativeAnimeLinkClient(),
 ) {
   val session = store.session
 
@@ -142,5 +143,10 @@ class AuthSessionManager(
   suspend fun signOut() {
     store.current()?.let { client.signOut(it) }
     store.clear()
+  }
+
+  suspend fun beginAnimeLink(provider: NativeAnimeProvider): String? {
+    val token = accessToken() ?: return null
+    return animeLinkClient.start(provider, token)
   }
 }

@@ -4,6 +4,7 @@ package online.streamfree.nativeapp.phone
 
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.media.AudioManager
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -67,6 +68,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.net.toUri
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import androidx.media3.common.C
@@ -78,6 +80,7 @@ import kotlinx.coroutines.launch
 import online.streamfree.nativeapp.designsystem.StreamFreeArtwork
 import online.streamfree.nativeapp.auth.AuthResult
 import online.streamfree.nativeapp.auth.AuthSessionManager
+import online.streamfree.nativeapp.auth.NativeAnimeProvider
 import online.streamfree.nativeapp.player.PlaybackDisplayMode
 import online.streamfree.nativeapp.player.PlaybackPhase
 import online.streamfree.nativeapp.player.PlaybackSessionController
@@ -122,6 +125,8 @@ fun PhoneHomeScreen(
   var authPassword by rememberSaveable { mutableStateOf("") }
   var authError by remember { mutableStateOf<String?>(null) }
   var authBusy by remember { mutableStateOf(false) }
+  var linkMessage by remember { mutableStateOf<String?>(null) }
+  val context = LocalContext.current
   var showRegionDialog by rememberSaveable { mutableStateOf(false) }
   val homeScope = rememberCoroutineScope()
   fun reloadHome() {
@@ -147,6 +152,18 @@ fun PhoneHomeScreen(
         if (nextPage != null) feed = feed?.mergeContinueWatchingPage(nextPage)
       } finally {
         loadingContinue = false
+      }
+    }
+  }
+  fun openAnimeLink(provider: NativeAnimeProvider) {
+    homeScope.launch {
+      linkMessage = "Preparing ${provider.name} linking…"
+      val authorizationUrl = authManager?.beginAnimeLink(provider)
+      if (authorizationUrl == null) {
+        linkMessage = "Anime account linking is unavailable right now."
+      } else {
+        context.startActivity(Intent(Intent.ACTION_VIEW, authorizationUrl.toUri()))
+        linkMessage = "Finish linking in your browser, then return to StreamFree."
       }
     }
   }
@@ -194,6 +211,8 @@ fun PhoneHomeScreen(
             }
           }
         },
+        onLinkAnime = ::openAnimeLink,
+        linkMessage = linkMessage,
         onLoadMore = { row ->
           if (row.kind == "continue") row.nextCursor?.let(::loadMoreContinue)
         },
@@ -275,6 +294,8 @@ internal fun PhoneHomeFeed(
   onRegionChange: (() -> Unit)? = null,
   accountEmail: String? = null,
   onAccountAction: (() -> Unit)? = null,
+  onLinkAnime: ((NativeAnimeProvider) -> Unit)? = null,
+  linkMessage: String? = null,
   onLoadMore: (NativeHomeRow) -> Unit = {},
   onOpenTitle: (PlaybackRequest) -> Unit,
 ) {
@@ -306,6 +327,17 @@ internal fun PhoneHomeFeed(
           }
         }
       }
+      if (accountEmail != null && onLinkAnime != null) {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
+          OutlinedButton(onClick = { onLinkAnime(NativeAnimeProvider.AniList) }, modifier = Modifier.sizeIn(minHeight = 44.dp)) {
+            Text("Link AniList")
+          }
+          OutlinedButton(onClick = { onLinkAnime(NativeAnimeProvider.MyAnimeList) }, modifier = Modifier.sizeIn(minHeight = 44.dp)) {
+            Text("Link MAL")
+          }
+        }
+      }
+      linkMessage?.let { Text(it, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 4.dp)) }
     }
     feed.hero?.let { hero ->
       item {

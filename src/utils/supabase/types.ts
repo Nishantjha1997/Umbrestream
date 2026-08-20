@@ -259,6 +259,33 @@ export type Database = {
         };
         Relationships: [];
       };
+      anime_oauth_transactions: {
+        Row: {
+          state_hash: string;
+          user_id: string;
+          provider: "anilist" | "mal";
+          code_verifier: string | null;
+          expires_at: string;
+          created_at: string;
+        };
+        Insert: {
+          state_hash: string;
+          user_id: string;
+          provider: "anilist" | "mal";
+          code_verifier?: string | null;
+          expires_at: string;
+          created_at?: string;
+        };
+        Update: {
+          state_hash?: string;
+          user_id?: string;
+          provider?: "anilist" | "mal";
+          code_verifier?: string | null;
+          expires_at?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;

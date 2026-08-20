@@ -1812,8 +1812,36 @@ invalid session, and feeds the current bearer token to native Home.
 Phone and TV Home now expose sign-in/sign-out controls and reload the shared feed
 after a successful session change. Auth endpoint parsing, invalid credential
 handling, runtime-config rejection, and expiry-window behavior are covered by
-unit tests. This is not yet AniList/MAL linking: the next safe step is an
-expiring, one-time app callback handoff to the already server-side OAuth routes.
+unit tests. The expiring, one-time provider callback handoff is recorded in the
+next section; it remains operationally gated on provider callback registration
+and the production migration.
+
+## 53. Native AniList/MAL link handoff — 2026-08-21
+
+The native link flow is now implemented as a server broker. A signed-in native
+client calls `/api/mobile/anime-links/start?provider=anilist|mal` with its
+Supabase bearer token. The server validates the user, generates provider state
+and MAL PKCE when required, stores only a SHA-256 state hash plus user/provider/
+verifier/ten-minute expiry in `anime_oauth_transactions`, and returns a provider
+authorization URL. The APK validates that URL against the exact AniList or
+MyAnimeList host before opening the system browser.
+
+The provider callback consumes and deletes the transaction before exchanging the
+code, links the account with the existing encrypted server-side token storage,
+and redirects only to the fixed `streamfree://anime-link` app callback. Phone and
+TV Home expose Link AniList and Link MAL actions after StreamFree sign-in.
+
+Operational gates remain open: register these callback URLs with each provider:
+
+- `https://streamfree.online/api/mobile/anime-links/callback/anilist`
+- `https://streamfree.online/api/mobile/anime-links/callback/mal`
+
+The Supabase migration
+`20260821100000_native_anime_oauth_transactions.sql` must be applied before
+native linking can work. The production environment must also contain the
+dedicated `OAUTH_TOKEN_ENCRYPTION_KEY`; the new native route fails closed when it
+is missing. Browser callback and native deep-link behavior still require the
+connected-phone gate.
 
 Live source-contract smoke on 2026-08-21 returned HTTP 200 for a movie,
 multi-episode TV fixture, and anime Sub request. The API policy was

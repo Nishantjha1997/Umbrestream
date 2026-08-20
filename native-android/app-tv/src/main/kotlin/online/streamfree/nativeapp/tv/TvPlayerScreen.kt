@@ -2,6 +2,7 @@
 
 package online.streamfree.nativeapp.tv
 
+import android.content.Intent
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -47,12 +48,14 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
@@ -71,6 +74,7 @@ import online.streamfree.nativeapp.model.mergeContinueWatchingPage
 import online.streamfree.nativeapp.player.PlaybackDisplayMode
 import online.streamfree.nativeapp.auth.AuthResult
 import online.streamfree.nativeapp.auth.AuthSessionManager
+import online.streamfree.nativeapp.auth.NativeAnimeProvider
 import online.streamfree.nativeapp.player.PlaybackDisplayModeStore
 import online.streamfree.nativeapp.player.PlaybackPhase
 import online.streamfree.nativeapp.player.PlaybackSessionController
@@ -103,6 +107,8 @@ fun TvHomeScreen(
   var authPassword by rememberSaveable { mutableStateOf("") }
   var authError by remember { mutableStateOf<String?>(null) }
   var authBusy by remember { mutableStateOf(false) }
+  var linkMessage by remember { mutableStateOf<String?>(null) }
+  val context = LocalContext.current
   var showRegionDialog by rememberSaveable { mutableStateOf(false) }
   val homeScope = rememberCoroutineScope()
   fun reloadHome() {
@@ -128,6 +134,18 @@ fun TvHomeScreen(
         if (nextPage != null) feed = feed?.mergeContinueWatchingPage(nextPage)
       } finally {
         loadingContinue = false
+      }
+    }
+  }
+  fun openAnimeLink(provider: NativeAnimeProvider) {
+    homeScope.launch {
+      linkMessage = "Preparing ${provider.name} linking…"
+      val authorizationUrl = authManager?.beginAnimeLink(provider)
+      if (authorizationUrl == null) {
+        linkMessage = "Anime account linking is unavailable right now."
+      } else {
+        context.startActivity(Intent(Intent.ACTION_VIEW, authorizationUrl.toUri()))
+        linkMessage = "Finish linking in your browser, then return to StreamFree."
       }
     }
   }
@@ -170,6 +188,8 @@ fun TvHomeScreen(
             }
           }
         },
+        onLinkAnime = ::openAnimeLink,
+        linkMessage = linkMessage,
         onLoadMore = { row ->
           if (row.kind == "continue") row.nextCursor?.let(::loadMoreContinue)
         },
@@ -252,6 +272,8 @@ internal fun TvHomeFeed(
   onRegionChange: (() -> Unit)? = null,
   accountEmail: String? = null,
   onAccountAction: (() -> Unit)? = null,
+  onLinkAnime: ((NativeAnimeProvider) -> Unit)? = null,
+  linkMessage: String? = null,
   onLoadMore: (NativeHomeRow) -> Unit = {},
   onOpenTitle: (PlaybackRequest) -> Unit,
 ) {
@@ -288,6 +310,23 @@ internal fun TvHomeFeed(
             )
           }
         }
+        if (accountEmail != null && onLinkAnime != null) {
+          Row(horizontalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.padding(top = 12.dp)) {
+            TvFocusButton(
+              text = "Link AniList",
+              onClick = { onLinkAnime(NativeAnimeProvider.AniList) },
+              contentDescription = "Link AniList account",
+              modifier = Modifier.widthIn(min = 220.dp, max = 300.dp),
+            )
+            TvFocusButton(
+              text = "Link MAL",
+              onClick = { onLinkAnime(NativeAnimeProvider.MyAnimeList) },
+              contentDescription = "Link MyAnimeList account",
+              modifier = Modifier.widthIn(min = 220.dp, max = 300.dp),
+            )
+          }
+        }
+        linkMessage?.let { Text(it, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 8.dp)) }
       }
     }
     feed.hero?.let { hero ->
