@@ -155,7 +155,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P0
   - Depends on: SF-W2-005
   - Evidence: production deployment `https://umbrestream-7pgcc3jjy-nishants-projects-7d9628b2.vercel.app` returned `Ready` and aliased `streamfree.online`; live source API reports `fallbackMode: automatic`, `timeoutMs: 20000`, `defaultId: filmu`, and VidRift `https://embed.vidrift.in/embed/movie/1212763`; corrected VidRift browser player selected Direct 1 and reached `0:32 / 82:54`; automatic source ordering, trusted-error recovery, timeout handling, ESLint, TypeScript, and source contracts pass
-  - Commit: `b27d2fb` (automatic failover), `1e2815c` (VidRift host correction), `4f6734f` (initial-query correction), `6624753` (progress)
+  - Commit: `b27d2fb` (automatic failover), `1e2815c` (VidRift host correction), `4f6734f` (initial-query correction), `6624753` (progress), `0b59b0c` (handoff)
   - Deployment: `https://umbrestream-7pgcc3jjy-nishants-projects-7d9628b2.vercel.app` (`READY`)
   - Next action: verify a clean browser profile without a pre-existing movie source preference; the active test profile correctly showed manual-source recovery and could not prove the clean auto-switch without inspecting/clearing browser storage
 
