@@ -12,6 +12,7 @@ import { pageContinueWatching } from "@/lib/history/continueWatching";
 export const syncHistory = async (
   data: UnifiedPlayerEventData,
   completed?: boolean,
+  accessToken?: string,
 ): ActionResponse => {
   // Was `console.info("Saving history:", data)` on entry — i.e. before the auth
   // check, so any unauthenticated caller could write arbitrary attacker-chosen
@@ -25,7 +26,7 @@ export const syncHistory = async (
   }
 
   try {
-    const supabase = await createClient();
+    const supabase = await createClient(false, accessToken);
 
     // Get current user
     const {

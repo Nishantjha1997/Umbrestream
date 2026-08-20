@@ -336,8 +336,8 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Status: completed
   - Priority: P1
   - Depends on: none
-  - Evidence: shared AniList past-airing schedule resolver no longer treats total `episodes` as aired; future and finished-title false positives are covered by `scripts/check-anime-notifications.mjs`; browser and bearer-native notification routes share the sync/read contract; native notification client and signed-in phone/TV Home banners parse and mark alerts read; web TypeScript, targeted ESLint, `:core:auth:test`, both app Kotlin compilation, Android-test Kotlin compilation, and `git diff --check` pass
-  - Commit: `6ffd58b`
+  - Evidence: shared AniList past-airing schedule resolver no longer treats total `episodes` as aired; future and finished-title false positives are covered by `scripts/check-anime-notifications.mjs`; browser and bearer-native notification routes share the sync/read contract; native notification client and signed-in phone/TV Home banners parse and mark alerts read; trusted native playback sync posts once at 85% or validated end through the bearer history route; web TypeScript, targeted ESLint, `:core:auth:test`, both app Kotlin compilation, Android-test Kotlin compilation, and `git diff --check` pass
+  - Commit: `pending`
   - Completed: 2026-08-21
 
 - [ ] SF-A3-004 — Complete native Home/details/library/settings/onboarding parity

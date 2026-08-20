@@ -18,6 +18,7 @@ import androidx.media3.common.util.UnstableApi
 import online.streamfree.nativeapp.designsystem.StreamFreeTheme
 import online.streamfree.nativeapp.auth.AuthSessionManager
 import online.streamfree.nativeapp.auth.AnimeNotificationClient
+import online.streamfree.nativeapp.auth.HistorySyncClient
 import online.streamfree.nativeapp.auth.EncryptedAuthSessionStore
 import online.streamfree.nativeapp.auth.SupabaseAuthClient
 import online.streamfree.nativeapp.player.Media3SourcePipeline
@@ -68,6 +69,8 @@ class MainActivity : ComponentActivity() {
             sourcePreferenceStore = sourcePreferenceStore,
             onExit = { showPlayer = false; selectedRequest = null },
             onFullscreenChanged = ::setPlayerFullscreen,
+            authManager = authManager,
+            historySyncClient = HistorySyncClient(),
             initialRequest = selectedRequest,
             sourceOrchestrator = sourceOrchestrator,
             episodeCatalogResolver = episodeCatalogResolver,

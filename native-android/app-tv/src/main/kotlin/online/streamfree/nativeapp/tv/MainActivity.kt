@@ -14,6 +14,7 @@ import androidx.compose.runtime.setValue
 import online.streamfree.nativeapp.designsystem.StreamFreeTheme
 import online.streamfree.nativeapp.auth.AuthSessionManager
 import online.streamfree.nativeapp.auth.AnimeNotificationClient
+import online.streamfree.nativeapp.auth.HistorySyncClient
 import online.streamfree.nativeapp.auth.EncryptedAuthSessionStore
 import online.streamfree.nativeapp.auth.SupabaseAuthClient
 import online.streamfree.nativeapp.player.Media3SourcePipeline
@@ -61,6 +62,8 @@ class MainActivity : ComponentActivity() {
             displayModeStore = PreferencesPlaybackDisplayModeStore(this@MainActivity),
             onExit = { showPlayer = false; selectedRequest = null },
             sourcePreferenceStore = sourcePreferenceStore,
+            authManager = authManager,
+            historySyncClient = HistorySyncClient(),
             initialRequest = selectedRequest,
             sourceOrchestrator = sourceOrchestrator,
             episodeCatalogResolver = episodeCatalogResolver,

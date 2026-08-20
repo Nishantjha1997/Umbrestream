@@ -80,6 +80,7 @@ import kotlinx.coroutines.launch
 import online.streamfree.nativeapp.designsystem.StreamFreeArtwork
 import online.streamfree.nativeapp.auth.AuthResult
 import online.streamfree.nativeapp.auth.AnimeNotificationClient
+import online.streamfree.nativeapp.auth.HistorySyncClient
 import online.streamfree.nativeapp.auth.NativeAnimeNotifications
 import online.streamfree.nativeapp.auth.AuthSessionManager
 import online.streamfree.nativeapp.auth.NativeAnimeProvider
@@ -492,6 +493,8 @@ fun PhonePlayerScreen(
   displayModeStore: PlaybackDisplayModeStore,
   onExit: () -> Unit,
   onFullscreenChanged: (Boolean) -> Unit,
+  authManager: AuthSessionManager? = null,
+  historySyncClient: HistorySyncClient? = null,
   sourceCandidates: List<ResolvedSource> = emptyList(),
   sourcePreferenceStore: SourcePreferenceStore,
   initialRequest: PlaybackRequest? = null,
@@ -514,6 +517,7 @@ fun PhonePlayerScreen(
   var activeEmbedSource by remember { mutableStateOf<ResolvedSource?>(null) }
   var pendingEmbedSource by remember { mutableStateOf<ResolvedSource?>(null) }
   var episodeCatalog by remember { mutableStateOf<EpisodeCatalog?>(null) }
+  var remoteSyncKeys by remember { mutableStateOf<Set<String>>(emptySet()) }
 
   fun applyResolvedSources(sources: List<ResolvedSource>) {
     val usable = sources.filter { it.kind == SourceKind.NativeDirect || EmbedSourcePolicy.isEligible(it) }
@@ -568,6 +572,24 @@ fun PhonePlayerScreen(
       positionMs = controller.player.currentPosition.coerceAtLeast(0L)
       durationMs = controller.player.duration.takeIf { it > 0L } ?: 0L
       delay(500L)
+    }
+  }
+
+  LaunchedEffect(state.request, state.hasTrustedPlayback, state.phase, positionMs, durationMs, authManager, historySyncClient) {
+    val request = state.request ?: return@LaunchedEffect
+    if (!state.hasTrustedPlayback || durationMs <= 0L) return@LaunchedEffect
+    val progress = positionMs.toDouble() / durationMs.toDouble()
+    if (state.phase != PlaybackPhase.Ended && progress < 0.85) return@LaunchedEffect
+    val key = listOf(request.mediaType.name, request.titleId, request.season, request.episode, request.audioVariant).joinToString(":")
+    if (key in remoteSyncKeys) return@LaunchedEffect
+    val token = authManager?.accessToken() ?: return@LaunchedEffect
+    val type = when (request.mediaType) {
+      MediaType.Movie -> "movie"
+      MediaType.Tv -> "tv"
+      MediaType.Anime -> "anime"
+    }
+    if (historySyncClient?.sync(token, type, request.titleId, positionMs / 1000.0, durationMs / 1000.0, request.season, request.episode, progress >= 0.85) == true) {
+      remoteSyncKeys = remoteSyncKeys + key
     }
   }
 

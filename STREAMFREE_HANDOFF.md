@@ -1869,3 +1869,19 @@ alerts read. This is foreground/in-app delivery only. Background WorkManager
 delivery, Android notification permission/channel UX, and the 85% AniList/MAL
 progress scrobbler remain open in `SF-A3-003`; no push or background
 notification capability is claimed yet.
+
+## 55. Trusted native progress sync — 2026-08-21
+
+Native playback now has a bounded bearer history path at
+`/api/mobile/history`. It validates the event, media type, ID, position, and
+duration before calling the existing server-side `syncHistory` writer with the
+authenticated token. The server still fetches canonical TMDB/AniList metadata
+and enforces the existing history uniqueness key; no client-supplied title or
+artwork is trusted for persistence.
+
+Phone and TV player shells call `HistorySyncClient` only after trusted playback
+has reached 85% or the player has ended, and de-duplicate attempts for the
+current title/season/episode/audio scope. Opening a player, buffering, or an
+untrusted embed event does not create remote history. Retry queues and
+WorkManager delivery remain open in `SF-A3-003`; a network failure currently
+leaves the local Media3 progress intact and does not claim successful sync.
