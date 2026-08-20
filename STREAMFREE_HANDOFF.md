@@ -1353,6 +1353,6 @@ Both verified with APK Signature Scheme v2/v3 and the expected package IDs;
 these local candidates were not published.
 
 Implementation commits: `566d26f` (native scaffold), `55074c2` (record
-scaffold gate), `9d359c1` (start signing audit). The active task is now
-`SF-A1-001`; native networking may now begin, while Media3 remains blocked on
+scaffold gate), `9d359c1` (start signing audit), and `584b64e` (signing and
+migration contracts). The active task is now `SF-A1-001`; native networking may now begin, while Media3 remains blocked on
 the provider/source contracts and safe response policy.

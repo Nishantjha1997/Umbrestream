@@ -227,7 +227,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P0
   - Depends on: SF-A0-001
   - Evidence: published APK certificates verified against the legacy phone/TV records; native fresh-install fingerprints recorded in `release/signing-certificates.json`; private native PKCS#12 keys created outside Git with DPAPI-protected credentials; environment-only signing in both native apps; signed phone `1.4.0-native` code 10 and TV `1.3.0-native` code 8 assembled with v2/v3 verification; release build rejected without signing variables; version-1 guest-data migration envelope and tests passed; `scripts/verify.ps1`, `scripts/build-release.ps1`, and `git diff --check` passed
-  - Commit: pending
+  - Commit: `584b64e`
   - Completed: 2026-08-20
 
 ## A1 — Core networking and source resolution
