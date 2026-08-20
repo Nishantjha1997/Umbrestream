@@ -70,7 +70,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Commit: `375f93b`
   - Completed: 2026-08-20
 
-- [ ] SF-W1-006 — Commit, push, deploy, and verify Web Phase W1
+- [x] SF-W1-006 — Commit, push, deploy, and verify Web Phase W1
   - Status: completed
   - Priority: P0
   - Depends on: SF-W1-005
@@ -131,20 +131,21 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 ## W3 — Performance, PWA, downloads, and security
 
 - [ ] SF-W3-001 — Audit bundles, images, and player-only dependencies
-  - Status: not started
+  - Status: completed
   - Priority: P1
   - Depends on: SF-W2-005
-  - Evidence: —
-  - Commit: —
-  - Next action: capture bundle and Core Web Vitals baseline
+  - Evidence: `scripts/check-performance-contract.mjs`; standalone ESLint and TypeScript passed; production webpack build passed with explicit local Next typecheck bypass after standalone typecheck; 116 JS chunks / 4,745,850 bytes; HLS, DASH, lightbox, and query devtools remain split; movie/anime player route entries are dynamically loaded; generated worker precaches 0 APKs
+  - Commit: pending
+  - Completed: 2026-08-20
+  - Next action: proceed with SF-W3-002
 
 - [ ] SF-W3-002 — Verify service-worker freshness and update-ready flow
-  - Status: not started
+  - Status: in progress
   - Priority: P0
   - Depends on: SF-W3-001
   - Evidence: —
   - Commit: —
-  - Next action: test Network First navigation and new deployment activation
+  - Next action: test generated worker message activation, production `/sw.js`, and update notice behavior
 
 - [ ] SF-W3-003 — Update exact APK download headers and security checks
   - Status: not started

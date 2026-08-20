@@ -1,15 +1,20 @@
 "use client";
 
 import { anilistApi } from "@/api/anilist";
-import AnimePlayer from "@/components/sections/Anime/Player/Player";
 import { Params } from "@/types";
 import type { AniListMediaDetail } from "@/types/anilist";
 import { Button, Spinner } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
+import dynamic from "next/dynamic";
 import { notFound } from "next/navigation";
 import { use } from "react";
 import { NextPage } from "next";
 import Link from "next/link";
+
+const AnimePlayer = dynamic(() => import("@/components/sections/Anime/Player/Player"), {
+  ssr: false,
+  loading: () => <Spinner size="lg" className="absolute-center" variant="simple" />,
+});
 
 const AnimePlayerPage: NextPage<Params<{ id: number; episode: number }>> = ({ params }) => {
   const { id, episode } = use(params);

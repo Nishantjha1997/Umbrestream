@@ -6,11 +6,18 @@ const withPWA = withPWAInit({
   register: true,
   disable: process.env.NODE_ENV === "development",
   reloadOnOnline: true,
+  // APKs are downloads, not application-shell assets. Precaching every old
+  // release makes first install pay for artifacts users will never open.
+  publicExcludes: ["!downloads/*.apk", "!downloads/**/*.apk"],
   // HTML/API navigation must revalidate so a newly deployed player or update
   // manifest is not hidden behind an old client-side cache.
   cacheOnFrontEndNav: false,
   aggressiveFrontEndNavCaching: false,
   workboxOptions: {
+    // Keep a new worker waiting until the user accepts the update notice. An
+    // unconditional skipWaiting makes the notice race the worker lifecycle and
+    // can leave a tab running a mixed deployment during a release.
+    skipWaiting: false,
     disableDevLogs: true,
   },
 });
@@ -103,12 +110,12 @@ const nextConfig: NextConfig = {
     return [
       ...[
         {
-          source: "/downloads/StreamFree-Android-v1.3.apk",
-          filename: "StreamFree-Android-v1.3.apk",
+          source: "/downloads/StreamFree-Android-v1.3.3.apk",
+          filename: "StreamFree-Android-v1.3.3.apk",
         },
         {
-          source: "/downloads/StreamFree-TV-v1.2.apk",
-          filename: "StreamFree-TV-v1.2.apk",
+          source: "/downloads/StreamFree-TV-v1.2.3.apk",
+          filename: "StreamFree-TV-v1.2.3.apk",
         },
       ].map(({ source, filename }) => ({
         source,
