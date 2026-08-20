@@ -11,6 +11,29 @@ export interface ContinueWatchingCursor {
   id: number;
 }
 
+/**
+ * The Home API carries this cursor as an opaque query value. Keep the wire
+ * format URL-safe and validate it again when it returns from a client.
+ */
+export function encodeContinueWatchingCursor(cursor: ContinueWatchingCursor): string {
+  return encodeURIComponent(`${cursor.updatedAt}|${cursor.id}`);
+}
+
+export function decodeContinueWatchingCursor(value: string | null | undefined): ContinueWatchingCursor | undefined {
+  if (!value) return undefined;
+  try {
+    const decoded = decodeURIComponent(value);
+    const separator = decoded.lastIndexOf("|");
+    if (separator <= 0) return undefined;
+    const updatedAt = decoded.slice(0, separator);
+    const id = Number(decoded.slice(separator + 1));
+    if (!Number.isSafeInteger(id) || id <= 0 || !Number.isFinite(Date.parse(updatedAt))) return undefined;
+    return { updatedAt, id };
+  } catch {
+    return undefined;
+  }
+}
+
 function compareNewest(a: ContinueWatchingRow, b: ContinueWatchingRow): number {
   const updated = Date.parse(b.updated_at) - Date.parse(a.updated_at);
   return updated || b.id - a.id;

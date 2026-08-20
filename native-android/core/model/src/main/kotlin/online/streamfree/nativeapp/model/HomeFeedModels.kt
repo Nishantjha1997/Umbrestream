@@ -56,3 +56,23 @@ data class NativeHomeFeed(
   val rows: List<NativeHomeRow>,
   val generatedAt: String,
 )
+
+/** Merge a cursor page without replacing the already-rendered regional rows. */
+fun NativeHomeFeed.mergeContinueWatchingPage(page: NativeHomeFeed): NativeHomeFeed {
+  val incoming = page.rows.firstOrNull { it.kind == "continue" } ?: return this
+  val current = rows.firstOrNull { it.kind == "continue" }
+  val mergedItems = buildList {
+    current?.items.orEmpty().forEach { add(it) }
+    incoming.items.forEach { item ->
+      if (none { it.mediaType == item.mediaType && it.id == item.id }) add(item)
+    }
+  }
+  if (current == null) {
+    return copy(rows = rows + incoming.copy(items = mergedItems))
+  }
+  return copy(
+    rows = rows.map { row ->
+      if (row.kind == "continue") row.copy(items = mergedItems, nextCursor = incoming.nextCursor) else row
+    },
+  )
+}

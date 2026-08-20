@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Button
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
@@ -36,6 +37,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,6 +55,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import online.streamfree.nativeapp.model.AdjacentEpisodeResolver
 import online.streamfree.nativeapp.model.EpisodeCatalog
@@ -60,7 +63,9 @@ import online.streamfree.nativeapp.model.EpisodeDirection
 import online.streamfree.nativeapp.model.EpisodeRef
 import online.streamfree.nativeapp.model.MediaType
 import online.streamfree.nativeapp.model.NativeHomeFeed
+import online.streamfree.nativeapp.model.NativeHomeRow
 import online.streamfree.nativeapp.model.NativeMediaSummary
+import online.streamfree.nativeapp.model.mergeContinueWatchingPage
 import online.streamfree.nativeapp.player.PlaybackDisplayMode
 import online.streamfree.nativeapp.player.PlaybackDisplayModeStore
 import online.streamfree.nativeapp.player.PlaybackPhase
@@ -86,6 +91,7 @@ fun TvHomeScreen(
   var feed by remember { mutableStateOf<NativeHomeFeed?>(null) }
   var feedFailed by remember { mutableStateOf(false) }
   var regionOverride by remember { mutableStateOf<String?>(null) }
+  var loadingContinue by remember { mutableStateOf(false) }
   var showRegionDialog by rememberSaveable { mutableStateOf(false) }
   val homeScope = rememberCoroutineScope()
   fun reloadHome() {
@@ -95,6 +101,19 @@ fun TvHomeScreen(
       val resolved = feedResolver?.resolve(regionOverrideValue = override)
       feed = resolved
       feedFailed = feedResolver != null && resolved == null
+    }
+  }
+  fun loadMoreContinue(cursor: String) {
+    if (loadingContinue || feedResolver == null) return
+    homeScope.launch {
+      loadingContinue = true
+      try {
+        val override = regionPreferenceStore?.get()
+        val nextPage = feedResolver.resolve(regionOverrideValue = override, continueCursorValue = cursor)
+        if (nextPage != null) feed = feed?.mergeContinueWatchingPage(nextPage)
+      } finally {
+        loadingContinue = false
+      }
     }
   }
   LaunchedEffect(feedResolver, regionPreferenceStore) { reloadHome() }
@@ -123,6 +142,9 @@ fun TvHomeScreen(
         feed = feed!!,
         regionOverride = regionOverride,
         onRegionChange = { showRegionDialog = true },
+        onLoadMore = { row ->
+          if (row.kind == "continue") row.nextCursor?.let(::loadMoreContinue)
+        },
         onOpenTitle = onOpenTitle,
       )
     }
@@ -147,6 +169,7 @@ internal fun TvHomeFeed(
   feed: NativeHomeFeed,
   regionOverride: String? = null,
   onRegionChange: (() -> Unit)? = null,
+  onLoadMore: (NativeHomeRow) -> Unit = {},
   onOpenTitle: (PlaybackRequest) -> Unit,
 ) {
   LazyColumn(
@@ -187,7 +210,17 @@ internal fun TvHomeFeed(
     items(feed.rows, key = { it.id }) { row ->
       Column {
         Text(row.title, style = MaterialTheme.typography.headlineSmall)
+        val listState = rememberLazyListState()
+        LaunchedEffect(row.id, row.nextCursor, listState) {
+          if (row.nextCursor == null) return@LaunchedEffect
+          snapshotFlow { listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -1 }
+            .distinctUntilChanged()
+            .collect { lastVisible ->
+              if (lastVisible >= (row.items.lastIndex - 2).coerceAtLeast(0)) onLoadMore(row)
+            }
+        }
         LazyRow(
+          state = listState,
           modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
           horizontalArrangement = Arrangement.spacedBy(18.dp),
         ) {

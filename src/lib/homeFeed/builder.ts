@@ -8,11 +8,16 @@ import { getImageUrl } from "@/utils/movies";
 import { createClient } from "@/utils/supabase/server";
 import { isSupabaseConfigured } from "@/utils/supabase/config";
 import type { ContinueWatchingSummary, HomeFeedResponseV1, HomeFeedRowKind } from "./types";
-import { latestIncompleteByTitle } from "@/lib/history/continueWatching";
+import {
+  encodeContinueWatchingCursor,
+  latestIncompleteByTitle,
+  type ContinueWatchingCursor,
+} from "@/lib/history/continueWatching";
 import { dedupeHomeRows } from "./dedupe";
 
 const DEFAULT_COUNTRY = "US";
 const PAGE_SIZE = 24;
+const LOOKAHEAD_PAGE_SIZE = PAGE_SIZE + 1;
 
 async function safeQuery<T>(query: () => Promise<T>, fallback: Partial<T>): Promise<T> {
   // The API clients intentionally expose lazy proxies. A missing token can
@@ -32,6 +37,7 @@ interface FeedOptions {
   detectedCountry?: string | null;
   countryOverride?: string | null;
   countrySource?: "edge" | "override" | "default";
+  continueCursor?: ContinueWatchingCursor | null;
 }
 
 interface Region {
@@ -105,9 +111,13 @@ function progressFor(history: HistoryDetail): ContinueWatchingSummary {
 interface ContinueWatchingResult {
   items: HistoryDetail[];
   authenticated: boolean;
+  nextCursor?: ContinueWatchingCursor;
 }
 
-async function loadContinueWatching(accessToken?: string): Promise<ContinueWatchingResult> {
+async function loadContinueWatching(
+  accessToken?: string,
+  cursor?: ContinueWatchingCursor | null,
+): Promise<ContinueWatchingResult> {
   if (!accessToken || !isSupabaseConfigured) return { items: [], authenticated: false };
   try {
     const supabase = await createClient(false, accessToken);
@@ -115,11 +125,22 @@ async function loadContinueWatching(accessToken?: string): Promise<ContinueWatch
     if (!auth.user) return { items: [], authenticated: false };
 
     const { data: rpcRows, error: rpcError } = await supabase.rpc("get_continue_watching_page", {
-      p_limit: PAGE_SIZE,
-      p_cursor_updated_at: null,
-      p_cursor_id: null,
+      p_limit: LOOKAHEAD_PAGE_SIZE,
+      p_cursor_updated_at: cursor?.updatedAt ?? null,
+      p_cursor_id: cursor?.id ?? null,
     });
-    if (!rpcError) return { items: (rpcRows ?? []) as HistoryDetail[], authenticated: true };
+    if (!rpcError) {
+      const rawItems = (rpcRows ?? []) as HistoryDetail[];
+      const items = rawItems.slice(0, PAGE_SIZE);
+      const last = items.at(-1);
+      return {
+        items,
+        authenticated: true,
+        nextCursor: rawItems.length > PAGE_SIZE && last
+          ? { updatedAt: last.updated_at, id: last.id }
+          : undefined,
+      };
+    }
 
     // Additive migration fallback: older production databases still return a
     // useful title-level feed while the RPC is being deployed.
@@ -131,15 +152,39 @@ async function loadContinueWatching(accessToken?: string): Promise<ContinueWatch
       .order("updated_at", { ascending: false })
       .order("id", { ascending: false })
       .limit(100);
-    const items = latestIncompleteByTitle((rows ?? []) as HistoryDetail[]).slice(0, PAGE_SIZE);
-    return { items, authenticated: true };
+    const page = pageContinueWatchingFallback((rows ?? []) as HistoryDetail[], cursor);
+    return { items: page.items, authenticated: true, nextCursor: page.nextCursor };
   } catch {
     return { items: [], authenticated: false };
   }
 }
 
-function row(id: string, title: string, kind: HomeFeedRowKind, items: MediaSummary[]) {
-  return { id, title, kind, items: unique(items) };
+function pageContinueWatchingFallback(rows: HistoryDetail[], cursor?: ContinueWatchingCursor | null) {
+  const ordered = latestIncompleteByTitle(rows);
+  const afterCursor = cursor
+    ? ordered.filter((row) =>
+        row.updated_at < cursor.updatedAt ||
+        (row.updated_at === cursor.updatedAt && row.id < cursor.id),
+      )
+    : ordered;
+  const items = afterCursor.slice(0, PAGE_SIZE);
+  const last = items.at(-1);
+  return {
+    items,
+    nextCursor: afterCursor.length > PAGE_SIZE && last
+      ? { updatedAt: last.updated_at, id: last.id }
+      : undefined,
+  };
+}
+
+function row(
+  id: string,
+  title: string,
+  kind: HomeFeedRowKind,
+  items: MediaSummary[],
+  nextCursor?: string,
+) {
+  return { id, title, kind, items: unique(items), nextCursor };
 }
 
 export async function buildHomeFeed(options: FeedOptions = {}): Promise<HomeFeedResponseV1> {
@@ -157,7 +202,7 @@ export async function buildHomeFeed(options: FeedOptions = {}): Promise<HomeFeed
     safeQuery(() => tmdb.discover.movie(params), { results: [] }),
     safeQuery(() => tmdb.discover.tvShow(params), { results: [] }),
     safeQuery(() => anilistApi.trending(), { media: [] }),
-    loadContinueWatching(options.accessToken),
+    loadContinueWatching(options.accessToken, options.continueCursor),
   ]);
 
   const histories = historyResult.items;
@@ -200,7 +245,15 @@ export async function buildHomeFeed(options: FeedOptions = {}): Promise<HomeFeed
     ? "Global"
     : region.countryName;
   const rows = dedupeHomeRows([
-    ...(continueItems.length > 0 ? [row("continue", "Continue Watching", "continue", continueItems)] : []),
+    ...(continueItems.length > 0
+      ? [row(
+          "continue",
+          "Continue Watching",
+          "continue",
+          continueItems,
+          historyResult.nextCursor ? encodeContinueWatchingCursor(historyResult.nextCursor) : undefined,
+        )]
+      : []),
     ...(personalizedItems.length > 0 && signedIn && hasHistory
       ? [row("personalized", "Picked for you", "personalized", personalizedItems)]
       : []),

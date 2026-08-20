@@ -286,9 +286,9 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Status: in progress
   - Priority: P0
   - Depends on: SF-A2-003
-  - Evidence: `StreamFreeHomeFeedResolver` strictly parses the versioned `/api/mobile/home` contract, carries optional bearer and validated `X-StreamFree-Region` headers, and has region/provenance/hero/row tests; phone and TV Home now load the shared feed, display provenance and rows, launch request-driven playback intents, render bounded trusted TMDB/AniList artwork with loading/failure states, persist a validated country override in DataStore, and reload the feed after changing/resetting the override; phone/TV Compose Android tests cover regional row rendering and the region action; production `/api/mobile/home` returned HTTP 200 with schemaVersion 1 and the expected India regional feed; core tests, app compilation, Android-test compilation, strict lint, and `git diff --check` pass
-  - Commit: —
-  - Next action: add authenticated Continue Watching cursor loading and verify the private/public feed split before moving to offline/auth work.
+  - Evidence: `StreamFreeHomeFeedResolver` strictly parses the versioned `/api/mobile/home` contract, carries optional bearer and validated `X-StreamFree-Region` headers, accepts a URL-safe Continue Watching cursor, and has region/provenance/hero/row/cursor-request tests; phone and TV Home load the shared feed, display provenance and rows, launch request-driven playback intents, render bounded trusted TMDB/AniList artwork with loading/failure states, persist a validated country override in DataStore, and automatically request/merge cursor pages as the Continue Watching rail is traversed; the web builder uses a 25-row look-ahead so exactly 24 active titles do not create a false page; phone/TV Compose Android tests cover regional rows, region actions, and source controls; production `/api/mobile/home` previously returned HTTP 200 with schemaVersion 1 and the expected India regional feed; web cursor checks, TypeScript, native core tests, app compilation, Android-test compilation, strict lint, and `git diff --check` pass
+  - Commit: `pending`
+  - Next action: connect the resolver to the authenticated native session token in SF-A3-002, then execute cursor loading on a device with more than 24 incomplete titles.
 
 - [x] SF-A2-004 — Build independent native TV playback shell foundation
   - Status: completed

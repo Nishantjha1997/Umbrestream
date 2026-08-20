@@ -2,6 +2,7 @@ package online.streamfree.nativeapp.source
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.net.URLEncoder
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -34,6 +35,7 @@ class StreamFreeHomeFeedResolver(
   suspend fun resolve(
     bearerTokenValue: String? = bearerToken(),
     regionOverrideValue: String? = regionOverride(),
+    continueCursorValue: String? = null,
   ): NativeHomeFeed? = withContext(Dispatchers.IO) {
     val headers = buildMap {
       put("Accept", "application/json")
@@ -43,10 +45,16 @@ class StreamFreeHomeFeedResolver(
       }
     }
     runCatching {
-      val response = transport.get("$apiBase/api/mobile/home", headers)
+      val endpoint = buildEndpoint(continueCursorValue)
+      val response = transport.get(endpoint, headers)
       if (response.statusCode !in 200..299) return@runCatching null
       parse(json.parseToJsonElement(response.text).jsonObject)
     }.getOrNull()
+  }
+
+  private fun buildEndpoint(cursor: String?): String {
+    val value = cursor?.trim()?.takeIf { it.isNotEmpty() && it.length <= 512 } ?: return "$apiBase/api/mobile/home"
+    return "$apiBase/api/mobile/home?continueCursor=${URLEncoder.encode(value, Charsets.UTF_8.name())}"
   }
 
   private fun parse(root: JsonObject): NativeHomeFeed? {

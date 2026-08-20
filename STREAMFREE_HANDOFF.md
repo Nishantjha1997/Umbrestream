@@ -1771,6 +1771,28 @@ the feed after selecting a country or resetting to automatic. The override is on
 a recommendation input; it does not alter playback provider selection or claim
 that upstream content is available in that country.
 
+## 51. Native Continue Watching cursor contract — 2026-08-21
+
+The shared Home API now preserves the authenticated Continue Watching cursor. The
+server validates an opaque URL-safe cursor, passes it to the existing
+`get_continue_watching_page` RPC, requests one look-ahead row, and returns only
+the requested 24-title page plus `rows[kind=continue].nextCursor`. The legacy
+database fallback applies the same title-level ordering and only exposes a next
+cursor when the bounded result proves that another page exists.
+
+Native Home passes the bearer token when one is supplied, sends the cursor as a
+query parameter, and merges subsequent Continue Watching pages by
+`mediaType:id` without replacing the other Home rows. Phone and TV rails request
+the next page automatically when their visible window reaches the final two
+items. The merge and encoded-request behavior are covered by model/source tests;
+web cursor ordering and malformed-cursor checks are covered by the existing
+Continue Watching script.
+
+The native entry points still construct the production resolver without an auth
+token because secure native session linking is the next A3 task. This means the
+contract is ready, but authenticated multi-page execution has not been claimed
+until native auth is implemented and exercised on the connected phone.
+
 Live source-contract smoke on 2026-08-21 returned HTTP 200 for a movie,
 multi-episode TV fixture, and anime Sub request. The API policy was
 `2026-08-reliability-v5`; the movie response contained seven labelled iframe

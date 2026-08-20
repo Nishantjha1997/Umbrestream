@@ -49,6 +49,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -69,6 +70,7 @@ import androidx.media3.ui.PlayerView
 import androidx.media3.common.C
 import androidx.media3.common.Player
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import online.streamfree.nativeapp.designsystem.StreamFreeArtwork
@@ -86,7 +88,9 @@ import online.streamfree.nativeapp.model.EpisodeCatalog
 import online.streamfree.nativeapp.model.EpisodeDirection
 import online.streamfree.nativeapp.model.EpisodeRef
 import online.streamfree.nativeapp.model.NativeHomeFeed
+import online.streamfree.nativeapp.model.NativeHomeRow
 import online.streamfree.nativeapp.model.NativeMediaSummary
+import online.streamfree.nativeapp.model.mergeContinueWatchingPage
 import online.streamfree.nativeapp.source.ResolvedSource
 import online.streamfree.nativeapp.source.PlaybackRequest
 import online.streamfree.nativeapp.source.EpisodeCatalogResolver
@@ -106,6 +110,7 @@ fun PhoneHomeScreen(
   var feed by remember { mutableStateOf<NativeHomeFeed?>(null) }
   var feedFailed by remember { mutableStateOf(false) }
   var regionOverride by remember { mutableStateOf<String?>(null) }
+  var loadingContinue by remember { mutableStateOf(false) }
   var showRegionDialog by rememberSaveable { mutableStateOf(false) }
   val homeScope = rememberCoroutineScope()
   fun reloadHome() {
@@ -115,6 +120,19 @@ fun PhoneHomeScreen(
       val resolved = feedResolver?.resolve(regionOverrideValue = override)
       feed = resolved
       feedFailed = feedResolver != null && resolved == null
+    }
+  }
+  fun loadMoreContinue(cursor: String) {
+    if (loadingContinue || feedResolver == null) return
+    homeScope.launch {
+      loadingContinue = true
+      try {
+        val override = regionPreferenceStore?.get()
+        val nextPage = feedResolver.resolve(regionOverrideValue = override, continueCursorValue = cursor)
+        if (nextPage != null) feed = feed?.mergeContinueWatchingPage(nextPage)
+      } finally {
+        loadingContinue = false
+      }
     }
   }
   LaunchedEffect(feedResolver, regionPreferenceStore) { reloadHome() }
@@ -148,6 +166,9 @@ fun PhoneHomeScreen(
         feed = feed!!,
         regionOverride = regionOverride,
         onRegionChange = { showRegionDialog = true },
+        onLoadMore = { row ->
+          if (row.kind == "continue") row.nextCursor?.let(::loadMoreContinue)
+        },
         onOpenTitle = onOpenTitle,
       )
     }
@@ -172,6 +193,7 @@ internal fun PhoneHomeFeed(
   feed: NativeHomeFeed,
   regionOverride: String? = null,
   onRegionChange: (() -> Unit)? = null,
+  onLoadMore: (NativeHomeRow) -> Unit = {},
   onOpenTitle: (PlaybackRequest) -> Unit,
 ) {
   LazyColumn(
@@ -220,7 +242,17 @@ internal fun PhoneHomeFeed(
     items(feed.rows, key = { it.id }) { row ->
       Column {
         Text(row.title, style = MaterialTheme.typography.titleLarge)
+        val listState = androidx.compose.foundation.lazy.rememberLazyListState()
+        LaunchedEffect(row.id, row.nextCursor, listState) {
+          if (row.nextCursor == null) return@LaunchedEffect
+          snapshotFlow { listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -1 }
+            .distinctUntilChanged()
+            .collect { lastVisible ->
+              if (lastVisible >= (row.items.lastIndex - 2).coerceAtLeast(0)) onLoadMore(row)
+            }
+        }
         LazyRow(
+          state = listState,
           modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
           horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {

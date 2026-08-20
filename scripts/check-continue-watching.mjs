@@ -1,5 +1,10 @@
 import assert from "node:assert/strict";
-import { latestIncompleteByTitle, pageContinueWatching } from "../src/lib/history/continueWatching.ts";
+import {
+  decodeContinueWatchingCursor,
+  encodeContinueWatchingCursor,
+  latestIncompleteByTitle,
+  pageContinueWatching,
+} from "../src/lib/history/continueWatching.ts";
 
 const rows = [
   { id: 1, media_id: 10, type: "tv", completed: false, updated_at: "2026-08-17T10:00:00.000Z" },
@@ -14,6 +19,10 @@ const first = pageContinueWatching(rows, null, 2);
 assert.deepEqual(first.items.map((row) => row.id), [3, 2]);
 assert.deepEqual(first.nextCursor, { updatedAt: rows[1].updated_at, id: 2 });
 assert.deepEqual(pageContinueWatching(rows, first.nextCursor, 2).items.map((row) => row.id), [5]);
+const encodedCursor = encodeContinueWatchingCursor(first.nextCursor);
+assert.equal(encodedCursor, "2026-08-17T12%3A00%3A00.000Z%7C2");
+assert.deepEqual(decodeContinueWatchingCursor(encodedCursor), first.nextCursor);
+assert.equal(decodeContinueWatchingCursor("not-a-cursor"), undefined);
 
 // The Home rail must not inherit the historical 100-row cap. This synthetic
 // fixture represents a large account and walks every cursor page to verify
