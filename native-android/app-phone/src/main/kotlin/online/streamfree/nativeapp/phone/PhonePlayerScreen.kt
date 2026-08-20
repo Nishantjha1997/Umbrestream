@@ -23,6 +23,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -68,6 +70,7 @@ import androidx.media3.common.Player
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import online.streamfree.nativeapp.designsystem.StreamFreeArtwork
 import online.streamfree.nativeapp.player.PlaybackDisplayMode
 import online.streamfree.nativeapp.player.PlaybackPhase
 import online.streamfree.nativeapp.player.PlaybackSessionController
@@ -154,11 +157,18 @@ private fun PhoneHomeFeed(feed: NativeHomeFeed, onOpenTitle: (PlaybackRequest) -
         Card(
           modifier = Modifier.fillMaxWidth().clickable { onOpenTitle(hero.media.toPlaybackRequest(hero.progress)) },
         ) {
-          Column(modifier = Modifier.padding(20.dp)) {
-            Text(if (hero.intent == "resume") "Continue watching" else "Featured", style = MaterialTheme.typography.labelLarge)
-            Text(hero.media.title, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(top = 8.dp))
-            hero.progress?.let { Text("Season ${it.season}, episode ${it.episode}", modifier = Modifier.padding(top = 4.dp)) }
-            Text("Open player", style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(top = 16.dp))
+          Row(modifier = Modifier.padding(12.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            StreamFreeArtwork(
+              url = hero.media.posterUrl,
+              title = hero.media.title,
+              modifier = Modifier.size(width = 112.dp, height = 168.dp),
+            )
+            Column(modifier = Modifier.padding(vertical = 8.dp)) {
+              Text(if (hero.intent == "resume") "Continue watching" else "Featured", style = MaterialTheme.typography.labelLarge)
+              Text(hero.media.title, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(top = 8.dp))
+              hero.progress?.let { Text("Season ${it.season}, episode ${it.episode}", modifier = Modifier.padding(top = 4.dp)) }
+              Text("Open player", style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(top = 16.dp))
+            }
           }
         }
       }
@@ -172,14 +182,21 @@ private fun PhoneHomeFeed(feed: NativeHomeFeed, onOpenTitle: (PlaybackRequest) -
         ) {
           items(row.items, key = { "${it.mediaType}:${it.id}" }) { media ->
             Card(
-              modifier = Modifier.widthIn(min = 148.dp, max = 180.dp).clickable {
+              modifier = Modifier.width(164.dp).clickable {
                 onOpenTitle(media.toPlaybackRequest())
               },
             ) {
-              Column(modifier = Modifier.padding(14.dp)) {
-                Text(media.title, maxLines = 2, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.titleMedium)
-                media.year?.let { Text(it.toString(), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 8.dp)) }
-                media.rating?.let { Text("★ ${"%.1f".format(it)}", style = MaterialTheme.typography.bodySmall) }
+              Column {
+                StreamFreeArtwork(
+                  url = media.posterUrl,
+                  title = media.title,
+                  modifier = Modifier.fillMaxWidth().heightIn(min = 180.dp, max = 180.dp),
+                )
+                Column(modifier = Modifier.padding(12.dp)) {
+                  Text(media.title, maxLines = 2, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.titleMedium)
+                  media.year?.let { Text(it.toString(), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 8.dp)) }
+                  media.rating?.let { Text("★ ${"%.1f".format(it)}", style = MaterialTheme.typography.bodySmall) }
+                }
               }
             }
           }

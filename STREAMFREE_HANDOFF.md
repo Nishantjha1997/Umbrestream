@@ -1750,9 +1750,14 @@ construct the same `PlaybackRequest` contract used by the source resolver.
 Signed-out production smoke verification returned HTTP 200 with
 `schemaVersion: 1`, India edge detection, and the expected regional row data.
 
-This is the first native shell slice, not a release claim: poster/image loading,
-persistent region settings, authenticated Continue Watching cursor loading,
-full details/search/library surfaces, and device execution remain open.
+This is the first native shell slice, not a release claim: persistent region
+settings, authenticated Continue Watching cursor loading, full
+details/search/library surfaces, and device execution remain open.
+
+Home artwork is now rendered by the shared design system through a bounded
+loader that accepts only HTTPS `image.tmdb.org`, `s4.anilist.co`, and
+`img.anili.st` hosts, refuses redirects, caps the response at 4 MiB, and
+surfaces loading/failure states instead of leaving blank layout holes.
 
 Live source-contract smoke on 2026-08-21 returned HTTP 200 for a movie,
 multi-episode TV fixture, and anime Sub request. The API policy was
