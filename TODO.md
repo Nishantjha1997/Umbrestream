@@ -263,7 +263,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P0
   - Depends on: SF-A1-003
   - Evidence: new `core:player` Android library pins Media3 `1.11.0`, maps HLS/DASH/MP4 to Media3 MIME types, builds `DefaultMediaSourceFactory` from OkHttp, injects validated provider header policies into every HTTP request, uses no-cookie safe DNS, caps and validates HTTPS redirects, validates provider/source/subtitle hosts, supports VTT/SSA/SRT subtitles, and rejects iframe sources before native factory work; `Media3PlaybackContractsTest` and source compatibility tests passed; forced phone/TV lint and full `scripts/verify.ps1` passed; `git diff --check` passed
-  - Commit: `pending`
+  - Commit: `6da512d`
   - Completed: 2026-08-21
 
 - [ ] SF-A2-002 — Implement MediaSessionService and playback persistence

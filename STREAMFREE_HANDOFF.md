@@ -1464,5 +1464,5 @@ both debug APK assemblies, and strict lint. This phase does not yet own an
 ExoPlayer instance, MediaSession, resume/history persistence, or UI; those are
 SF-A2-002 and SF-A2-003.
 
-Implementation commit: pending. The next active task is `SF-A2-002`,
+Implementation commit: `6da512d`. The next active task is `SF-A2-002`,
 MediaSessionService ownership and playback persistence.
