@@ -2013,3 +2013,13 @@ load and persist the enabled value through `AnimeNotificationPreferenceStore`
 and leave the 22:00–08:00 quiet-hours policy intact. This is a focused parity
 step while the broader native details/library/settings surfaces remain tracked
 in `SF-A3-004`.
+
+## 63. Native phone Picture-in-Picture — 2026-08-21
+
+The phone player now exposes an explicit `PiP` action when not already in
+fullscreen. The activity declares the Android Picture-in-Picture contract and
+uses a 16:9 aspect ratio, a safe window source rectangle, and API-31+ auto-enter
+transition support while retaining API-26 compatibility. Existing Media3
+playback/session state is not remounted or replaced. Phone Kotlin compilation
+and strict debug lint passed; actual PiP transition behavior remains part of
+the connected-phone gate.

@@ -396,6 +396,14 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Commit: `052fb3f`
   - Completed: 2026-08-21
 
+- [x] SF-A3-004c — Add explicit phone Picture-in-Picture playback action
+  - Status: completed
+  - Priority: P1
+  - Depends on: SF-A2-003
+  - Evidence: phone player exposes a 16:9 PiP action, enables the canonical Android activity PiP contract, and leaves the existing Media3 session/source state untouched; phone Kotlin compilation and `git diff --check` passed
+  - Commit: pending
+  - Completed: 2026-08-21
+
 ## A4 — TV and release
 
 - [ ] SF-A4-001 — Build remote-first native TV presentation

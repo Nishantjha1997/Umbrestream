@@ -1,8 +1,12 @@
 package online.streamfree.nativeapp.phone
 
 import android.os.Bundle
+import android.os.Build
 import android.content.pm.ActivityInfo
 import android.content.Intent
+import android.app.PictureInPictureParams
+import android.graphics.Rect
+import android.util.Rational
 import java.io.File
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -87,6 +91,7 @@ class MainActivity : ComponentActivity() {
             sourcePreferenceStore = sourcePreferenceStore,
             onExit = { showPlayer = false; selectedRequest = null },
             onFullscreenChanged = ::setPlayerFullscreen,
+            onEnterPictureInPicture = ::enterPictureInPicture,
             authManager = authManager,
             historySyncClient = historySyncClient,
             initialRequest = selectedRequest,
@@ -152,6 +157,27 @@ class MainActivity : ComponentActivity() {
         WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
     } else {
       insetsController.show(WindowInsetsCompat.Type.systemBars())
+    }
+  }
+
+  private fun enterPictureInPicture() {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || !isInPictureInPictureMode) {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val builder = PictureInPictureParams.Builder()
+          .setAspectRatio(Rational(16, 9))
+          .setSourceRectHint(
+            Rect(
+              0,
+              0,
+              window.decorView.width.coerceAtLeast(1),
+              window.decorView.height.coerceAtLeast(1),
+            ),
+          )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+          builder.setAutoEnterEnabled(true)
+        }
+        enterPictureInPictureMode(builder.build())
+      }
     }
   }
 

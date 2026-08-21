@@ -728,6 +728,7 @@ fun PhonePlayerScreen(
   displayModeStore: PlaybackDisplayModeStore,
   onExit: () -> Unit,
   onFullscreenChanged: (Boolean) -> Unit,
+  onEnterPictureInPicture: (() -> Unit)? = null,
   authManager: AuthSessionManager? = null,
   historySyncClient: HistorySyncClient? = null,
   sourceCandidates: List<ResolvedSource> = emptyList(),
@@ -884,10 +885,11 @@ fun PhonePlayerScreen(
         onOpenSources = { showSourcePicker = true },
         onOpenSettings = { showSettings = true },
         onDisplayModeChanged = { mode -> scope.launch { displayModeStore.set(mode) } },
-        onFullscreenChanged = { fullscreen ->
-          isFullscreen = fullscreen
-          onFullscreenChanged(fullscreen)
-        },
+         onFullscreenChanged = { fullscreen ->
+           isFullscreen = fullscreen
+           onFullscreenChanged(fullscreen)
+         },
+         onEnterPictureInPicture = onEnterPictureInPicture,
       )
       if (!isFullscreen) {
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -1034,6 +1036,7 @@ private fun PlayerCinemaStage(
   onOpenSettings: () -> Unit,
   onDisplayModeChanged: (PlaybackDisplayMode) -> Unit,
   onFullscreenChanged: (Boolean) -> Unit,
+  onEnterPictureInPicture: (() -> Unit)? = null,
 ) {
   val stageModifier = if (isFullscreen) {
     Modifier.fillMaxSize()
@@ -1093,8 +1096,9 @@ private fun PlayerCinemaStage(
       sourceCount = sourceCount,
       onOpenSources = onOpenSources,
       onOpenSettings = onOpenSettings,
-      onDisplayModeChanged = onDisplayModeChanged,
-      onFullscreenChanged = onFullscreenChanged,
+       onDisplayModeChanged = onDisplayModeChanged,
+       onFullscreenChanged = onFullscreenChanged,
+       onEnterPictureInPicture = onEnterPictureInPicture,
     )
   }
 }
@@ -1114,6 +1118,7 @@ private fun PlayerOverlay(
   onOpenSettings: () -> Unit,
   onDisplayModeChanged: (PlaybackDisplayMode) -> Unit,
   onFullscreenChanged: (Boolean) -> Unit,
+  onEnterPictureInPicture: (() -> Unit)? = null,
 ) {
   val isPlaying = state.phase == PlaybackPhase.Playing
   val progress = if (durationMs > 0L) {
@@ -1154,6 +1159,16 @@ private fun PlayerOverlay(
           .semantics { contentDescription = if (isFullscreen) "Exit fullscreen" else "Enter fullscreen" },
       ) {
         Text(if (isFullscreen) "↙" else "↗")
+      }
+      if (onEnterPictureInPicture != null && !isFullscreen) {
+        OutlinedButton(
+          onClick = onEnterPictureInPicture,
+          modifier = Modifier
+            .sizeIn(minWidth = 48.dp, minHeight = 48.dp)
+            .semantics { contentDescription = "Enter picture in picture" },
+        ) {
+          Text("PiP")
+        }
       }
     }
 
