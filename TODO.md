@@ -494,7 +494,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P0
   - Depends on: SF-W5-001
   - Evidence: Home header now overlays the single `DesktopHero` surface; duplicate `HomeHeaderBackdrop`/hero fetch removed; readable glass actions retained; `test:ui-composition`, `test:movie-player-workspace`, production build
-  - Commit: pending implementation commit
+  - Commit: `5268b48`
   - Completed: 2026-08-21
 
 - [x] SF-W5-003 — Build a compact semantic player route header
@@ -502,7 +502,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P0
   - Depends on: SF-W5-001
   - Evidence: app-owned brand plus Home/Browse/Anime/Search navigation; compact glass boundary; hidden from layout in fullscreen; `test:ui-composition`, `test:player-display`, production build
-  - Commit: pending implementation commit
+  - Commit: `5268b48`
   - Completed: 2026-08-21
 
 - [x] SF-W5-004 — Repair full-bleed mobile Anime detail composition
@@ -510,7 +510,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P0
   - Depends on: SF-W5-001
   - Evidence: one full-bleed Anime detail surface, safe responsive title/action spacing, modal overflow clipping, 390×844 DOM measurements keep Play visible with no horizontal overflow; `test:ui-composition`, production build
-  - Commit: pending implementation commit
+  - Commit: `5268b48`
   - Completed: 2026-08-21
 
 - [x] SF-W5-004a — Add franchise-aware Anime season selection and watched episode state
@@ -518,7 +518,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P0
   - Depends on: SF-W5-001
   - Evidence: typed PREQUEL/SEQUEL AniList relations; TV/TV_SHORT/ONA-only continuation selector; selected continuation updates episodes in place; targeted 2,500-row Anime episode-history query; subtle completed veil/check and partial progress; fabricated 12-episode fallback removed; `test:anime-episode-navigation`, `test:anime-integrations`, production build
-  - Commit: pending implementation commit
+  - Commit: `5268b48`
   - Completed: 2026-08-21
 
 - [x] SF-W5-005 — Mirror WebView composition and rebuild generated mobile bundle
@@ -526,7 +526,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P0
   - Depends on: SF-W5-003, SF-W5-004, SF-W5-004a
   - Evidence: semantic mobile player header; normal app header removed from player layout; integrated Anime detail composition and responsive sticky actions; regenerated `mobile/app.bundle.js`; `test:ui-composition`, full `verify`
-  - Commit: pending implementation commit
+  - Commit: `5268b48`
   - Completed: 2026-08-21
 
 - [x] SF-W5-006 — Run deterministic and responsive pre-deployment QA
@@ -534,7 +534,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P0
   - Depends on: SF-W5-002, SF-W5-003, SF-W5-004, SF-W5-005
   - Evidence: full `verify` passed through lint, playback/source/history/UI/native contracts, typecheck, optimized production build, PWA/performance/release-artifact/leak checks; 1440×900 and 390×844 production-build inspection found no horizontal overflow, one compact player header, one continuation selector, no duplicate Home backdrop, and a fully visible mobile Play action; selecting Mugen Train updated 26 episodes to 7 and removed stale `src`; fullscreen removed header rendering; latest-build resolver exposed AniBD/ReAnime/AniKoto/AnimeGG Sub plus ReAnime/AniKoto Dub; selecting ReAnime Dub mounted native video with `anivexa:reanime:dub` and Anime contained no Cinezo
-  - Commit: pending implementation commit
+  - Commit: `5268b48`
   - Completed: 2026-08-21
 
 - [ ] SF-W5-007 — Commit, push, deploy, and certify production
