@@ -2004,3 +2004,12 @@ connected refresh. The policy is pure and unit-tested for overnight windows,
 disabled alerts, equal boundaries, and invalid values. A future Settings UI
 can call `AnimeNotificationPreferenceStore.update` without changing the
 delivery worker contract.
+
+## 62. Native notification preference surface — 2026-08-21
+
+Signed-in phone Home now exposes an accessible `Anime episode alerts` switch;
+TV Home exposes the same preference as a remote-focusable toggle. Both screens
+load and persist the enabled value through `AnimeNotificationPreferenceStore`
+and leave the 22:00–08:00 quiet-hours policy intact. This is a focused parity
+step while the broader native details/library/settings surfaces remain tracked
+in `SF-A3-004`.

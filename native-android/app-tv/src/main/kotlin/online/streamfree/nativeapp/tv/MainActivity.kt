@@ -16,6 +16,7 @@ import androidx.core.content.FileProvider
 import online.streamfree.nativeapp.designsystem.StreamFreeTheme
 import online.streamfree.nativeapp.auth.AuthSessionManager
 import online.streamfree.nativeapp.auth.AnimeNotificationClient
+import online.streamfree.nativeapp.auth.AnimeNotificationPreferenceStore
 import online.streamfree.nativeapp.auth.HistorySyncClient
 import online.streamfree.nativeapp.auth.HistorySyncScheduler
 import online.streamfree.nativeapp.auth.EncryptedHistorySyncQueue
@@ -56,6 +57,7 @@ class MainActivity : ComponentActivity() {
     val sourcePreferenceStore = PreferencesSourcePreferenceStore(this)
     val regionPreferenceStore = PreferencesRegionPreferenceStore(this)
     val authManager = AuthSessionManager(SupabaseAuthClient(), EncryptedAuthSessionStore(this))
+    val notificationPreferenceStore = AnimeNotificationPreferenceStore(this)
     val historySyncClient = HistorySyncClient(
       retryQueue = EncryptedHistorySyncQueue(this),
       onRetryQueued = { HistorySyncScheduler.enqueue(this) },
@@ -99,6 +101,7 @@ class MainActivity : ComponentActivity() {
             onInstallUpdate = ::installUpdate,
             authManager = authManager,
             notificationClient = AnimeNotificationClient(),
+            notificationPreferenceStore = notificationPreferenceStore,
             animeLinkResult = animeLinkResult,
             onAnimeLinkResultHandled = { animeLinkResult = null },
             onOpenTitle = { request ->

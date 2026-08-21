@@ -388,6 +388,14 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Commit: —
   - Next action: Compose surfaces using shared APIs and design tokens
 
+- [x] SF-A3-004b — Expose native anime notification preference in Home
+  - Status: completed
+  - Priority: P1
+  - Depends on: SF-A3-003d
+  - Evidence: signed-in phone Home exposes an accessible persisted alerts switch, and TV Home exposes a deterministic remote-focusable alerts toggle; both use `AnimeNotificationPreferenceStore` and preserve quiet-hour behavior; phone/TV Kotlin compilation and `git diff --check` passed
+  - Commit: pending
+  - Completed: 2026-08-21
+
 ## A4 — TV and release
 
 - [ ] SF-A4-001 — Build remote-first native TV presentation

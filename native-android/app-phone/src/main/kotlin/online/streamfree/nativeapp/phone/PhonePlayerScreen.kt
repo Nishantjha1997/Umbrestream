@@ -86,6 +86,7 @@ import kotlinx.coroutines.launch
 import online.streamfree.nativeapp.designsystem.StreamFreeArtwork
 import online.streamfree.nativeapp.auth.AuthResult
 import online.streamfree.nativeapp.auth.AnimeNotificationClient
+import online.streamfree.nativeapp.auth.AnimeNotificationPreferenceStore
 import online.streamfree.nativeapp.auth.HistorySyncClient
 import online.streamfree.nativeapp.auth.NativeAnimeNotifications
 import online.streamfree.nativeapp.auth.AuthSessionManager
@@ -131,6 +132,7 @@ fun PhoneHomeScreen(
   onInstallUpdate: (File) -> Unit = {},
   authManager: AuthSessionManager? = null,
   notificationClient: AnimeNotificationClient? = null,
+  notificationPreferenceStore: AnimeNotificationPreferenceStore? = null,
   animeLinkResult: NativeAnimeLinkResult? = null,
   onAnimeLinkResultHandled: () -> Unit = {},
   onOpenTitle: (PlaybackRequest) -> Unit = {},
@@ -147,6 +149,7 @@ fun PhoneHomeScreen(
   var authBusy by remember { mutableStateOf(false) }
   var linkMessage by remember { mutableStateOf<String?>(null) }
   var animeNotifications by remember { mutableStateOf<NativeAnimeNotifications?>(null) }
+  var notificationsEnabled by remember { mutableStateOf(true) }
   val context = LocalContext.current
   var showRegionDialog by rememberSaveable { mutableStateOf(false) }
   var showTour by rememberSaveable { mutableStateOf(false) }
@@ -193,6 +196,9 @@ fun PhoneHomeScreen(
   LaunchedEffect(onboardingPreferenceStore) {
     onboardingCompleted = onboardingPreferenceStore?.hasCompleted() ?: true
   }
+  LaunchedEffect(notificationPreferenceStore) {
+    notificationsEnabled = notificationPreferenceStore?.read()?.enabled ?: true
+  }
   LaunchedEffect(onboardingCompleted) {
     if (onboardingCompleted == false) showTour = true
   }
@@ -230,6 +236,14 @@ fun PhoneHomeScreen(
         message = "Updates are unavailable in this build.",
       )
       updateBusy = false
+    }
+  }
+  fun setNotificationsEnabled(enabled: Boolean) {
+    notificationsEnabled = enabled
+    homeScope.launch {
+      notificationPreferenceStore?.let { store ->
+        store.update(store.read().copy(enabled = enabled))
+      }
     }
   }
   LaunchedEffect(feedResolver, regionPreferenceStore) { reloadHome() }
@@ -278,7 +292,9 @@ fun PhoneHomeScreen(
         },
         onLinkAnime = ::openAnimeLink,
         linkMessage = linkMessage,
-        animeNotifications = animeNotifications,
+         animeNotifications = animeNotifications,
+         notificationsEnabled = notificationsEnabled,
+         onNotificationsEnabledChange = ::setNotificationsEnabled,
         onMarkAnimeNotificationsRead = {
           homeScope.launch {
             val token = authManager?.accessToken()
@@ -425,6 +441,8 @@ internal fun PhoneHomeFeed(
   linkMessage: String? = null,
   animeNotifications: NativeAnimeNotifications? = null,
   onMarkAnimeNotificationsRead: (() -> Unit)? = null,
+  notificationsEnabled: Boolean? = null,
+  onNotificationsEnabledChange: ((Boolean) -> Unit)? = null,
   onOpenTour: (() -> Unit)? = null,
   onCheckForUpdates: (() -> Unit)? = null,
   onLoadMore: (NativeHomeRow) -> Unit = {},
@@ -481,6 +499,23 @@ internal fun PhoneHomeFeed(
         }
       }
       linkMessage?.let { Text(it, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 4.dp)) }
+      if (accountEmail != null && notificationsEnabled != null && onNotificationsEnabledChange != null) {
+        Row(
+          modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+          horizontalArrangement = Arrangement.SpaceBetween,
+          verticalAlignment = Alignment.CenterVertically,
+        ) {
+          Column(modifier = Modifier.weight(1f)) {
+            Text("Anime episode alerts", style = MaterialTheme.typography.titleSmall)
+            Text("Background alerts follow your quiet hours.", style = MaterialTheme.typography.bodySmall)
+          }
+          androidx.compose.material3.Switch(
+            checked = notificationsEnabled,
+            onCheckedChange = onNotificationsEnabledChange,
+            modifier = Modifier.semantics { contentDescription = "Anime episode alerts" },
+          )
+        }
+      }
       if (animeNotifications != null && animeNotifications.unreadCount > 0) {
         Card(modifier = Modifier.fillMaxWidth().padding(top = 12.dp)) {
           Row(

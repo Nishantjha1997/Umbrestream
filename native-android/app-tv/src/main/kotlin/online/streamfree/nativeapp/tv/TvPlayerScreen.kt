@@ -81,6 +81,7 @@ import online.streamfree.nativeapp.model.mergeContinueWatchingPage
 import online.streamfree.nativeapp.player.PlaybackDisplayMode
 import online.streamfree.nativeapp.auth.AuthResult
 import online.streamfree.nativeapp.auth.AnimeNotificationClient
+import online.streamfree.nativeapp.auth.AnimeNotificationPreferenceStore
 import online.streamfree.nativeapp.auth.AuthSessionManager
 import online.streamfree.nativeapp.auth.HistorySyncClient
 import online.streamfree.nativeapp.auth.NativeAnimeNotifications
@@ -114,6 +115,7 @@ fun TvHomeScreen(
   onInstallUpdate: (File) -> Unit = {},
   authManager: AuthSessionManager? = null,
   notificationClient: AnimeNotificationClient? = null,
+  notificationPreferenceStore: AnimeNotificationPreferenceStore? = null,
   animeLinkResult: NativeAnimeLinkResult? = null,
   onAnimeLinkResultHandled: () -> Unit = {},
   onOpenTitle: (PlaybackRequest) -> Unit = {},
@@ -130,6 +132,7 @@ fun TvHomeScreen(
   var authBusy by remember { mutableStateOf(false) }
   var linkMessage by remember { mutableStateOf<String?>(null) }
   var animeNotifications by remember { mutableStateOf<NativeAnimeNotifications?>(null) }
+  var notificationsEnabled by remember { mutableStateOf(true) }
   val context = LocalContext.current
   var showRegionDialog by rememberSaveable { mutableStateOf(false) }
   var showTour by rememberSaveable { mutableStateOf(false) }
@@ -173,6 +176,9 @@ fun TvHomeScreen(
       onAnimeLinkResultHandled()
     }
   }
+  LaunchedEffect(notificationPreferenceStore) {
+    notificationsEnabled = notificationPreferenceStore?.read()?.enabled ?: true
+  }
   LaunchedEffect(onboardingPreferenceStore) {
     onboardingCompleted = onboardingPreferenceStore?.hasCompleted() ?: true
   }
@@ -213,6 +219,14 @@ fun TvHomeScreen(
         message = "Updates are unavailable in this build.",
       )
       updateBusy = false
+    }
+  }
+  fun setNotificationsEnabled(enabled: Boolean) {
+    notificationsEnabled = enabled
+    homeScope.launch {
+      notificationPreferenceStore?.let { store ->
+        store.update(store.read().copy(enabled = enabled))
+      }
     }
   }
   LaunchedEffect(feedResolver, regionPreferenceStore) { reloadHome() }
@@ -256,7 +270,9 @@ fun TvHomeScreen(
         },
         onLinkAnime = ::openAnimeLink,
         linkMessage = linkMessage,
-        animeNotifications = animeNotifications,
+         animeNotifications = animeNotifications,
+         notificationsEnabled = notificationsEnabled,
+         onNotificationsEnabledChange = ::setNotificationsEnabled,
         onMarkAnimeNotificationsRead = {
           homeScope.launch {
             val token = authManager?.accessToken()
@@ -404,6 +420,8 @@ internal fun TvHomeFeed(
   linkMessage: String? = null,
   animeNotifications: NativeAnimeNotifications? = null,
   onMarkAnimeNotificationsRead: (() -> Unit)? = null,
+  notificationsEnabled: Boolean? = null,
+  onNotificationsEnabledChange: ((Boolean) -> Unit)? = null,
   onOpenTour: (() -> Unit)? = null,
   onCheckForUpdates: (() -> Unit)? = null,
   onLoadMore: (NativeHomeRow) -> Unit = {},
@@ -477,6 +495,14 @@ internal fun TvHomeFeed(
               TvFocusButton(text = "Mark anime notifications read", onClick = onRead, contentDescription = "Mark anime episode notifications as read", modifier = Modifier.padding(top = 8.dp))
             }
           }
+        }
+        if (accountEmail != null && notificationsEnabled != null && onNotificationsEnabledChange != null) {
+          TvFocusButton(
+            text = "Episode alerts: ${if (notificationsEnabled) "On" else "Off"}",
+            onClick = { onNotificationsEnabledChange(!notificationsEnabled) },
+            contentDescription = "${if (notificationsEnabled) "Disable" else "Enable"} anime episode alerts",
+            modifier = Modifier.padding(top = 12.dp),
+          )
         }
       }
       if (onCheckForUpdates != null) {
