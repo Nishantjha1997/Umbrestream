@@ -2062,3 +2062,17 @@ The staging manifests contain matching package IDs, version codes, sizes,
 hashes, native certificate pins, filenames, and fresh-install migration notes.
 They remain outside `public/downloads`; publication still requires the physical
 phone gate, TV emulator gate, and real-provider smoke report.
+
+## 66. Web deterministic regression gate — 2026-08-21
+
+The bundled web verification suite was rerun after the native player/cache
+work. Lint, all source/player/display/removal/episode/home/anime/history/update
+contracts, TypeScript, production-runtime checks, manifest/header validation,
+performance, PWA freshness, release-artifact, leak scan, and the production
+Next.js webpack build passed. The performance contract was corrected to inspect
+the real movie route boundary: server-side metadata/resume loading remains in
+the route page while the browser-only player import remains dynamically split
+in `MoviePlayerClient.tsx`. The local build logged expected Supabase-not-configured
+warnings for library/history static generation, but exited successfully; the
+production deployment’s configured environment remains the authoritative runtime
+configuration.

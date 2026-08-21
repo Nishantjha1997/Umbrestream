@@ -212,6 +212,14 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Deployment: `dpl_9J7xBsqHKnkMcSXAZs77bKX52P8d` (`READY`)
   - Completed: 2026-08-20
 
+- [x] SF-W3-004a — Align the performance gate with the movie route boundary
+  - Status: completed
+  - Priority: P1
+  - Depends on: SF-W3-004
+  - Evidence: the movie route keeps server-side metadata/resume work in `src/app/movie/[id]/player/page.tsx` and the browser-only dynamic player import in `MoviePlayerClient.tsx`; `scripts/check-performance-contract.mjs` now validates that actual boundary; the full bundled web gate passed including lint, source/player/history/anime/update contracts, TypeScript, performance, PWA, release-artifact, leak, and production build checks
+  - Commit: pending
+  - Completed: 2026-08-21
+
 ## A0 — Native scaffold and migration
 
 - [x] SF-A0-001 — Create `native-android` Gradle Kotlin DSL project
@@ -222,7 +230,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Commit: `566d26f`
   - Completed: 2026-08-20
 
-- [ ] SF-A0-002 — Preserve signing/package identities and migration contracts
+- [x] SF-A0-002 — Preserve signing/package identities and migration contracts
   - Status: completed
   - Priority: P0
   - Depends on: SF-A0-001
@@ -232,7 +240,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 
 ## A1 — Core networking and source resolution
 
-- [ ] SF-A1-001 — Implement safe native networking core
+- [x] SF-A1-001 — Implement safe native networking core
   - Status: completed
   - Priority: P0
   - Depends on: SF-A0-002
@@ -240,7 +248,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Commit: `2b7cfb1`
   - Completed: 2026-08-20
 
-- [ ] SF-A1-002 — Implement normalized source contracts and resolver registry
+- [x] SF-A1-002 — Implement normalized source contracts and resolver registry
   - Status: completed
   - Priority: P0
   - Depends on: SF-A1-001
@@ -283,12 +291,12 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Completed: 2026-08-21
 
 - [ ] SF-A2-007 — Wire native shared Home feed shell
-  - Status: in progress
+  - Status: pending device verification
   - Priority: P0
   - Depends on: SF-A2-003
   - Evidence: `StreamFreeHomeFeedResolver` strictly parses the versioned `/api/mobile/home` contract, carries optional bearer and validated `X-StreamFree-Region` headers, accepts a URL-safe Continue Watching cursor, and has region/provenance/hero/row/cursor-request tests; phone and TV Home load the shared feed, display provenance and rows, launch request-driven playback intents, render bounded trusted TMDB/AniList artwork with loading/failure states, persist a validated country override in DataStore, and automatically request/merge cursor pages as the Continue Watching rail is traversed; the web builder uses a 25-row look-ahead so exactly 24 active titles do not create a false page; phone/TV Compose Android tests cover regional rows, region actions, and source controls; production `/api/mobile/home` previously returned HTTP 200 with schemaVersion 1 and the expected India regional feed; web cursor checks, TypeScript, native core tests, app compilation, Android-test compilation, strict lint, and `git diff --check` pass
   - Commit: `pending`
-  - Next action: connect the resolver to the authenticated native session token in SF-A3-002, then execute cursor loading on a device with more than 24 incomplete titles.
+  - Next action: after the connected-phone gate, connect the resolver to the authenticated native session token in SF-A3-002 and execute cursor loading on a device with more than 24 incomplete titles.
 
 - [x] SF-A3-004a — Add persistent, replayable native onboarding tour
   - Status: completed
@@ -317,7 +325,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 ## A3 — Offline, auth, sync, and product parity
 
 - [ ] SF-A3-001 — Add bounded stream cache and permitted offline downloads
-  - Status: in progress
+  - Status: pending provider authorization
   - Priority: P1
   - Depends on: SF-A2-003
   - Evidence: bounded on-the-fly LRU stream cache is complete in `core:player`; permanent downloads remain disabled until a provider-authorized contract is available
@@ -348,13 +356,13 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Commit: `aa34e30`
   - Completed: 2026-08-21
 
-- [ ] SF-A3-003 — Add scrobbling and new-episode notifications
-  - Status: not started
+- [x] SF-A3-003 — Add scrobbling and new-episode notifications
+  - Status: completed
   - Priority: P1
   - Depends on: SF-A3-002
-  - Evidence: —
-  - Commit: —
-  - Next action: verify background airing refresh policy, add quiet-hours controls if required, and decide whether FCM is needed; current permission/channel/periodic refresh work is complete in SF-A3-003c.
+  - Evidence: shared aired-schedule resolution, authenticated web/native notification routes, trusted 85%-or-end native scrobbling, encrypted retry queue, notification permission/channel, idempotent delivery, six-hour WorkManager refresh, and local quiet-hours/preferences are implemented and covered by the completed SF-A3-003a–d subtasks; provider OAuth configuration remains tracked under SF-A3-002 and push/FCM is not required for the current periodic in-app/local-notification contract
+  - Commit: `124bce9`
+  - Completed: 2026-08-21
 
 - [x] SF-A3-003a — Harden aired-episode notification sync and native in-app alerts
   - Status: completed
@@ -389,12 +397,12 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Completed: 2026-08-21
 
 - [ ] SF-A3-004 — Complete native Home/details/library/settings/onboarding parity
-  - Status: not started
+  - Status: pending implementation
   - Priority: P1
   - Depends on: SF-A3-001, SF-A3-003
-  - Evidence: —
+  - Evidence: shared Home feed, onboarding tour, notification preference, PiP, source controls, and playback parity are implemented; native details/library/settings surfaces and device verification remain open
   - Commit: —
-  - Next action: Compose surfaces using shared APIs and design tokens
+  - Next action: complete native details/library/settings surfaces after the provider/auth/device gates, then run phone and TV-emulator accessibility/focus checks
 
 - [x] SF-A3-004b — Expose native anime notification preference in Home
   - Status: completed
@@ -415,12 +423,12 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 ## A4 — TV and release
 
 - [ ] SF-A4-001 — Build remote-first native TV presentation
-  - Status: not started
+  - Status: pending emulator verification
   - Priority: P1
   - Depends on: SF-A3-004
-  - Evidence: —
+  - Evidence: TV playback mode, immersive black stage, bounded 10-foot sizing, remote source controls, focus restoration, and next-episode countdown are implemented under `SF-A2-004`; emulator behavior remains unverified because no emulator/system image is currently available
   - Commit: —
-  - Next action: D-pad focus, immersive mode, 720p/1080p/4K scaling, countdown
+  - Next action: run the Android TV emulator gate when an emulator/system image is available; physical TV certification remains deferred
 
 - [x] SF-A4-002 — Build and verify signed release APKs
   - Status: completed

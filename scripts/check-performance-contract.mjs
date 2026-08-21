@@ -12,12 +12,12 @@ const forbidText = (text, pattern, message) => {
   if (pattern.test(text)) failures.push(message);
 };
 
-const [layout, providers, nativePlayer, photos, moviePage, animePage, config] = await Promise.all([
+const [layout, providers, nativePlayer, photos, movieClient, animePage, config] = await Promise.all([
   read("src/app/layout.tsx"),
   read("src/app/providers.tsx"),
   read("src/components/player/NativePlayer.tsx"),
   read("src/components/ui/other/PhotosSection.tsx"),
-  read("src/app/movie/[id]/player/page.tsx"),
+  read("src/app/movie/[id]/player/MoviePlayerClient.tsx"),
   read("src/app/anime/[id]/player/[episode]/page.tsx"),
   read("next.config.ts"),
 ]);
@@ -31,7 +31,12 @@ forbidText(nativePlayer, /from ["'](?:hls\.js|dashjs)["']/, "native player has a
 requireText(photos, /dynamic\(\(\) => import\("@\/components\/ui\/overlay\/Gallery"\), \{ ssr: false \}\)/, "gallery must remain a client-only feature split");
 requireText(providers, /process\.env\.NODE_ENV === "development"/, "query devtools are not development-gated");
 requireText(providers, /dynamic\(\s*\(\) => import\("@tanstack\/react-query-devtools"\)/s, "query devtools must load dynamically");
-requireText(moviePage, /dynamic\(\(\) => import\("@\/components\/sections\/Movie\/Player\/Player"\)/, "movie player is not route-split");
+// The movie route intentionally keeps metadata/resume loading in the Server
+// Component and places the browser-only player boundary in its client wrapper.
+// Validate the actual dynamic boundary rather than requiring it in the page
+// file, which would either duplicate the wrapper or violate Next's server
+// component constraints.
+requireText(movieClient, /dynamic\(\(\) => import\("@\/components\/sections\/Movie\/Player\/Player"\)/, "movie player is not route-split");
 requireText(animePage, /dynamic\(\(\) => import\("@\/components\/sections\/Anime\/Player\/Player"\)/, "anime player is not route-split");
 
 // The PWA must wait for explicit user acceptance, and downloads must never be
