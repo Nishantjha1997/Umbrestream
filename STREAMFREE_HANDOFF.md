@@ -2023,3 +2023,21 @@ transition support while retaining API-26 compatibility. Existing Media3
 playback/session state is not remounted or replaced. Phone Kotlin compilation
 and strict debug lint passed; actual PiP transition behavior remains part of
 the connected-phone gate.
+
+## 64. Native bounded playback cache — 2026-08-21
+
+The native Media3 pipeline now wraps validated native-direct playback in a
+process-wide, app-private `SimpleCache` with a 256 MiB default
+`LeastRecentlyUsedCacheEvictor`. The policy enforces a 16–512 MiB bound,
+excludes iframe/WebView sources, ignores the cache after cache errors, and
+falls back to the existing safe upstream data source if cache initialization
+fails. The singleton holder prevents activity and media-session service
+instances from opening duplicate cache locks for the same directory.
+
+This is an on-the-fly performance cache, not a permanent download feature.
+`OfflineDownloadPolicy` defaults to disabled with an empty provider allowlist.
+No current third-party source is represented as authorized for offline storage,
+and no DownloadService UI or manifest was added. A future provider-authorized
+download implementation must add a separate Media3 DownloadService, storage
+and network requirements, removal controls, and device tests before enabling
+the allowlist. `:core:player:test` and strict `:core:player:lintDebug` pass.

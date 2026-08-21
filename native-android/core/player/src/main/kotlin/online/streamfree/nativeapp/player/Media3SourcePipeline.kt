@@ -6,6 +6,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DefaultDataSource
+import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.MediaSource
@@ -19,6 +20,7 @@ import online.streamfree.nativeapp.source.SourceResolverRegistry
 data class Media3PipelinePolicy(
   val defaultUserAgent: String = "StreamFree Android Player",
   val maxRedirects: Int = 3,
+  val streamCache: StreamCachePolicy = StreamCachePolicy(),
 ) {
   init {
     require(defaultUserAgent.isNotBlank()) { "A player user agent is required" }
@@ -66,7 +68,17 @@ class Media3SourcePipeline(
     val httpFactory = OkHttpDataSource.Factory(SafeMedia3HttpClient(safePolicy).build())
       .setDefaultRequestProperties(headers)
       .setUserAgent(headers.userAgentOrNull() ?: policy.defaultUserAgent)
-    val dataSourceFactory: DataSource.Factory = DefaultDataSource.Factory(applicationContext, httpFactory)
+    val upstreamFactory: DataSource.Factory = DefaultDataSource.Factory(applicationContext, httpFactory)
+    val dataSourceFactory: DataSource.Factory = if (policy.streamCache.shouldCache(source)) {
+      StreamCacheStore.getOrCreate(applicationContext, policy.streamCache)?.let { cache ->
+        CacheDataSource.Factory()
+          .setCache(cache)
+          .setUpstreamDataSourceFactory(upstreamFactory)
+          .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
+      } ?: upstreamFactory
+    } else {
+      upstreamFactory
+    }
     val mediaItem = MediaItem.Builder()
       .setUri(validatedUrl.toString())
       .setMimeType(Media3PlaybackContracts.mimeType(source.format))
