@@ -295,7 +295,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P1
   - Depends on: SF-A2-007
   - Evidence: shared DataStore-backed completion contract, four-step phone/TV Compose tour, Skip/Back/Next/Done actions, and replayable Home `Help & tour` action; `:core:player:test`, both app Kotlin compiles, `native-android/scripts/verify.ps1`, strict lint, debug APK assembly, and `git diff --check` passed
-  - Commit: pending
+  - Commit: `ba6f6a2`
   - Completed: 2026-08-21
 
 - [x] SF-A2-004 — Build independent native TV playback shell foundation
