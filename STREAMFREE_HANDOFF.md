@@ -1963,3 +1963,32 @@ the ignored Gradle build directories. Do not copy them into `public/downloads`
 or update the public manifests until the connected phone has passed signed
 installation, playback, orientation, updater, and rollback checks. Physical TV
 certification remains deferred; an emulator is still required for the TV gate.
+
+## 60. Native publication preparation — 2026-08-21
+
+`native-android/scripts/prepare-native-publication.ps1` is the controlled bridge
+between a signed native candidate and the public download channel. It parses
+the APK with `aapt2`, requires APK Signature Scheme v2 and v3, extracts the
+canonical package/version and signing certificate with `apksigner`, computes
+the SHA-256 and byte size, and writes matching APK plus manifest pairs to the
+ignored `release-staging/native` directory by default. It never changes
+`public/downloads` unless `-Publish -ConfirmNativeFreshInstall` are both
+provided.
+
+The staged manifests declare `freshInstallRequired: true` and record the
+legacy certificate in a migration object. `scripts/check-update-manifests.mjs`
+now accepts legacy-signed manifests while `freshInstallRequired` is false and
+requires the native fresh-install certificate and migration record when it is
+true. This prevents a native APK from being paired accidentally with the
+retired public certificate policy.
+
+Example preparation command (no production mutation):
+
+```powershell
+.\native-android\scripts\prepare-native-publication.ps1 -Target both
+```
+
+Publication remains gated on signed phone installation/playback/orientation/
+updater verification, TV emulator checks, real-provider smoke tests, and final
+Vercel verification. The native candidates remain private until those gates
+pass.

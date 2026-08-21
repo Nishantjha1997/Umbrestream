@@ -12,13 +12,15 @@ const expected = [
     file: "streamfree-android.json",
     platform: "android",
     packageId: "online.streamfree.app",
-    certificate: releaseMetadata.phone,
+    legacyCertificate: releaseMetadata.phone,
+    nativeCertificate: releaseMetadata.nativeFreshInstall.phone,
   },
   {
     file: "streamfree-android-tv.json",
     platform: "android-tv",
     packageId: "online.streamfree.tv",
-    certificate: releaseMetadata.tv,
+    legacyCertificate: releaseMetadata.tv,
+    nativeCertificate: releaseMetadata.nativeFreshInstall.tv,
   },
 ];
 
@@ -69,9 +71,17 @@ for (const item of expected) {
   for (const field of required) if (!(field in manifest)) fail(`${item.file} is missing ${field}`);
   if (manifest.schemaVersion !== 1 || manifest.platform !== item.platform) fail(`${item.file} schema/platform mismatch`);
   if (manifest.packageId !== item.packageId) fail(`${item.file} packageId mismatch`);
-  if (item.certificate.packageId !== manifest.packageId) fail(`${item.file} release certificate package mismatch`);
-  if (String(manifest.signingCertificateSha256).toUpperCase() !== String(item.certificate.certificateSha256).toUpperCase()) {
-    fail(`${item.file} certificate does not match release/signing-certificates.json`);
+  if (item.legacyCertificate.packageId !== manifest.packageId) fail(`${item.file} release certificate package mismatch`);
+  const expectedCertificate = manifest.freshInstallRequired ? item.nativeCertificate : item.legacyCertificate;
+  if (!expectedCertificate?.certificateSha256) fail(`${item.file} has no certificate policy for its install mode`);
+  if (String(manifest.signingCertificateSha256).toUpperCase() !== String(expectedCertificate.certificateSha256).toUpperCase()) {
+    fail(`${item.file} certificate does not match its declared install mode`);
+  }
+  if (manifest.freshInstallRequired === true) {
+    if (manifest.migration?.mode !== "fresh_install") fail(`${item.file} must declare fresh_install migration mode`);
+    if (String(manifest.migration?.legacySigningCertificateSha256).toUpperCase() !== String(item.legacyCertificate.certificateSha256).toUpperCase()) {
+      fail(`${item.file} fresh-install migration does not record the legacy certificate`);
+    }
   }
   if (!Number.isSafeInteger(manifest.versionCode) || manifest.versionCode < 1) fail(`${item.file} has invalid versionCode`);
   if (!Number.isSafeInteger(manifest.minimumSupportedVersion) || manifest.minimumSupportedVersion < 1) fail(`${item.file} has invalid minimumSupportedVersion`);

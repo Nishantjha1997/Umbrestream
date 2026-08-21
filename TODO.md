@@ -7,7 +7,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 - Branch: `main`
 - Baseline: `28bea93`
 - Active task: `SF-A4-003`
-- Next command: prepare matching native release manifests and publication artifacts, then connect the phone for signed install/playback/updater checks before any production manifest or APK replacement.
+- Next command: run the publication-preparation script against the signed candidates, then connect the phone for signed install/playback/updater checks before any production manifest or APK replacement.
 - Reference policy: Media3 and Now in Android are approved architecture references; Aniyomi is pattern-only because it is archived; Dantotsu is excluded pending license/source verification.
 
 ## W0 — Governance and baseline
@@ -407,13 +407,21 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Completed: 2026-08-21
 
 - [ ] SF-A4-003 — Publish manifests/APKs and certify production
-  - Status: not started
+  - Status: in progress
   - Priority: P0
   - Depends on: SF-A4-002
   - Evidence: —
   - Commit: —
   - Deployment: —
   - Next action: phone hardware, TV emulator, real-provider smoke tests, Vercel publication
+
+- [x] SF-A4-003a — Prepare reproducible native publication artifacts
+  - Status: completed
+  - Priority: P0
+  - Depends on: SF-A4-002, SF-A4-002a
+  - Evidence: `native-android/scripts/prepare-native-publication.ps1` derives package/version/signature/hash/size from signed APKs, stages matching fresh-install manifests without changing `public/downloads`, requires explicit confirmation before publication, and manifest validation now distinguishes legacy and native signing identities; staged phone/TV artifacts and `node scripts/check-update-manifests.mjs` passed
+  - Commit: pending
+  - Completed: 2026-08-21
 
 - [ ] SF-A4-004 — Final handoff and rollback documentation
   - Status: not started

@@ -52,3 +52,6 @@ next-env.d.ts
 /native-android/signing.properties
 /native-android/signing/
 !/native-android/gradlew.bat
+
+# Native release candidates are staged here before the phone/device gate.
+/release-staging/
