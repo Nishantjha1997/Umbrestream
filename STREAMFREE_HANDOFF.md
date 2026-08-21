@@ -2121,6 +2121,10 @@ Validation for this web-only change: `test:movie-player-workspace`, authored
 source ESLint with zero warnings, TypeScript, `next build --webpack`, and
 `git diff --check` passed. The local build emitted the existing expected
 Supabase-not-configured warnings for authenticated library/history prerendering
-but exited successfully. Commit: `734e333`. Vercel production verification is
-the next deployment step; native APK publication remains separately gated by
-the physical-phone, TV-emulator, and real-provider checks.
+but exited successfully. Commit: `734e333`; task checkpoint commit:
+`31bdda8`. The pushed production alias served HTTP 200 for `/`,
+`/movie/1212763/player`, and `/api/mobile/config`; the live home HTML included
+the poster-backed header marker. The deployment-list connector returned 403 for
+this account, so the live alias is verified but a dashboard/API `READY` label
+could not be independently recorded here. Native APK publication remains
+separately gated by the physical-phone, TV-emulator, and real-provider checks.

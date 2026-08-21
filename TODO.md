@@ -485,10 +485,10 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Status: completed
   - Priority: P1
   - Depends on: SF-P0-006, SF-W3-004a
-  - Evidence: test:movie-player-workspace, authored-source ESLint with zero warnings, TypeScript, next build --webpack, and git diff --check passed; home header now uses active hero artwork with contrast scrims; movie Details expands inline; desktop movie playback has a lazy More like this/Trending now rail while narrow layouts stack it below the player
+  - Evidence: test:movie-player-workspace, authored-source ESLint with zero warnings, TypeScript, next build --webpack, and git diff --check passed; home header now uses active hero artwork with contrast scrims; movie Details expands inline; desktop movie playback has a lazy More like this/Trending now rail while narrow layouts stack it below the player; pushed main and live production home/player routes returned HTTP 200 with the new home marker
   - Commit: 734e333
   - Completed: 2026-08-21
-  - Next action: push and verify the Vercel production deployment
+  - Next action: no further web action; continue native SF-A4-003 only after its external hardware/provider gates
 
 - [x] SF-A4-003a — Prepare reproducible native publication artifacts
   - Status: completed
