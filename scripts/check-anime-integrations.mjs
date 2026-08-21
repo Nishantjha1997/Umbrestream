@@ -100,6 +100,30 @@ assert.equal(miruroDubCandidates[0]?.label, "Miruro · Kiwi · Dub · 720p");
 process.env.STREAMFREE_ANIME_ALLOWED_ORIGINS = "https://anivexa.example.test";
 const allowlistRestricted = (await import("../src/lib/sources/adapters/animeRemote.ts?restricted")).createAnimeRemoteAdapters();
 assert.equal(allowlistRestricted[1].supports({ mediaType: "anime", anilistId: 123, episode: 1 }), false, "a missing Miruro origin must disable its adapter");
+
+// If the large catalogue route is unavailable, Anivexa's documented direct
+// watch route remains a bounded fallback for every known provider.
+process.env.ANIVEXA_API_BASE_URL = "https://anivexa-direct.example.test";
+process.env.STREAMFREE_ANIME_ALLOWED_ORIGINS = "https://anivexa-direct.example.test,https://cdn.example.test";
+globalThis.fetch = async (input) => {
+  const url = new URL(String(input));
+  const body = url.pathname.startsWith("/episodes/")
+    ? {}
+    : { stream_url: "https://cdn.example.test/direct.m3u8", type: "hls" };
+  return new Response(JSON.stringify(body), { status: 200, headers: { "content-type": "application/json" } });
+};
+const directFallback = (await import("../src/lib/sources/adapters/animeRemote.ts?direct-fallback")).createAnimeRemoteAdapters()[0];
+const directFallbackCandidates = await directFallback.resolve({ mediaType: "anime", anilistId: 123, episode: 1, preferredAudio: "sub" });
+for (const provider of [
+  "anibd", "reanime", "anikoto", "animegg", "anineko", "2dhive", "anizone", "animecg",
+  "animenosub", "megaplay", "mkissa", "senshi", "kickassanime", "kaa", "anidbapp", "animedunya",
+]) {
+  assert.ok(
+    directFallbackCandidates.some((candidate) => candidate.providerId === `anivexa:${provider}`),
+    `${provider} should be exposed by the direct Anivexa fallback`,
+  );
+}
+assert.ok(directFallbackCandidates.every((candidate) => candidate.audioVariant === "sub"));
 globalThis.fetch = originalFetch;
 
 console.log("Anime integration contract checks passed.");

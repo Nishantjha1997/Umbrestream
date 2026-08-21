@@ -45,7 +45,7 @@ const API_PROVIDERS = new Set([
 const IFRAME_ALLOW = "autoplay; encrypted-media; picture-in-picture; fullscreen; screen-wake-lock";
 const animeRemoteCache = new Map<string, { expiresAt: number; data: StreamCandidate[] }>();
 const REMOTE_CACHE_VERSION = "fanout-v2";
-const DIRECT_WATCH_DEADLINE_MS = 8_000;
+const DIRECT_WATCH_DEADLINE_MS = 12_000;
 const ANIVEXA_DIRECT_PROVIDERS = [
   "anibd",
   "reanime",
@@ -460,17 +460,13 @@ function createRemoteAdapter(
           return outcomes.flatMap((outcome) => outcome?.value ?? []);
         })().catch(() => []);
 
-        const directCandidatesPromise = (async (): Promise<StreamCandidate[]> => {
+        const resolveDirectCandidates = async (): Promise<StreamCandidate[]> => {
           if (id !== "anivexa") return [];
-          // The direct watch path runs in parallel with catalog discovery. It
-          // remains a bounded fallback when the catalogue route is unavailable,
-          // while a healthy catalogue can expose every compatible provider.
-          // The documented watch route is deterministic enough to use as a
-          // parallel fast path for every known Anivexa provider. This avoids
-          // making the whole source sheet wait for the large /episodes
-          // catalogue response before a slower provider can appear. The
-          // catalogue remains authoritative when it returns first, and the
-          // final provider-id dedupe below prevents duplicate rows.
+          // Use the documented deterministic watch route only when the
+          // catalogue cannot be read. When the catalogue is healthy it gives
+          // us the provider-specific episode IDs and avoids doubling outbound
+          // requests against the free API (which otherwise causes rate limits
+          // and makes every provider disappear together).
           const directProviders = ANIVEXA_DIRECT_PROVIDERS;
           const directTasks: Promise<{ value: StreamCandidate[] } | null>[] = [];
           for (const provider of directProviders) {
@@ -496,12 +492,10 @@ function createRemoteAdapter(
           }
           const outcomes = await Promise.all(directTasks);
           return outcomes.flatMap((outcome) => outcome?.value ?? []);
-        })();
+        };
 
-        const [catalogCandidates, directCandidates] = await Promise.all([
-          catalogCandidatesPromise,
-          directCandidatesPromise,
-        ]);
+        const catalogCandidates = await catalogCandidatesPromise;
+        const directCandidates = catalogCandidates.length > 0 ? [] : await resolveDirectCandidates();
         const candidates: StreamCandidate[] = [];
         const seenProviders = new Set<string>();
         for (const candidate of [...catalogCandidates, ...directCandidates]) {

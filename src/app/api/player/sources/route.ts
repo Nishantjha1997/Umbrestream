@@ -13,6 +13,7 @@ import { callerKey, rateLimit, tooManyRequests } from "@/lib/rate-limit";
 import { PLAYBACK_POLICY } from "@/lib/sources/playbackPolicy";
 
 export const runtime = "nodejs";
+export const maxDuration = 30;
 
 /**
  * One inbound request fans out to every adapter that matches the title, and in
@@ -124,7 +125,7 @@ export async function GET(request: Request): Promise<Response> {
   }
 
   const legacyPreflight = searchParams.get("version") === "2";
-  const resolveTimeout = legacyPreflight ? 4500 : sourceRequest.mediaType === "anime" ? 14000 : 500;
+  const resolveTimeout = legacyPreflight ? 4500 : sourceRequest.mediaType === "anime" ? 28000 : 500;
   const groups = await resolveAll(sourceRequest, request.signal, resolveTimeout);
   const candidates = fallbackChain(groups);
   // Probe only the head of the fallback chain. The tail is what the user reaches
