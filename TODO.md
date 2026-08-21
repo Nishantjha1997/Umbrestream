@@ -497,7 +497,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P0
   - Depends on: SF-P0-006, SF-W4-001
   - Evidence: `test:player-sources`, `test:anime-playback-startup`, `test:anime-integrations`, authored-source ESLint, TypeScript, `mobile:build`, and `git diff --check` passed; Anime Cinezo/experimental embeds removed; public Sub/Dub embeds request autoplay; live Anivexa AniList 21 episode-1 resolution returned five Sub and four Dub provider streams; production Vercel allowlist corrected from rejected wildcard to exact API/CDN origins
-  - Commit: —
+  - Commit: `cad953f`
   - Completed: 2026-08-21
 
 - [x] SF-A4-003a — Prepare reproducible native publication artifacts
