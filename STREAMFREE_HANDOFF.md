@@ -2041,3 +2041,24 @@ and no DownloadService UI or manifest was added. A future provider-authorized
 download implementation must add a separate Media3 DownloadService, storage
 and network requirements, removal controls, and device tests before enabling
 the allowlist. `:core:player:test` and strict `:core:player:lintDebug` pass.
+
+## 65. Refreshed native release candidates — 2026-08-21
+
+After the bounded Media3 stream-cache and phone PiP changes, both release APKs
+were rebuilt with the protected native signing credentials and staged privately:
+
+- Phone: `online.streamfree.app`, version `1.4.2-native`, code `12`,
+  `3,220,727` bytes, SHA-256
+  `A7C002E832C9B16525BC0D02584F934BEC52B3EE070611162F814F02900FA6BB`,
+  native certificate
+  `8D66F79FF18C0A842D689C4214DF1D84D74402F8866707658DF47B2AC4D7A112`.
+- TV: `online.streamfree.tv`, version `1.3.2-native`, code `10`,
+  `3,108,065` bytes, SHA-256
+  `364BF7B30E3134B596439A3A0A89E498391C5FCD0D931682324C13A4629F8CB8`,
+  native certificate
+  `93038E301F34C9E5AD8E28EB72B08604C1A0EA8BBF43B486765B819939E4BA2A`.
+
+The staging manifests contain matching package IDs, version codes, sizes,
+hashes, native certificate pins, filenames, and fresh-install migration notes.
+They remain outside `public/downloads`; publication still requires the physical
+phone gate, TV emulator gate, and real-provider smoke report.
