@@ -401,7 +401,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P1
   - Depends on: SF-A2-003
   - Evidence: phone player exposes a 16:9 PiP action, enables the canonical Android activity PiP contract, and leaves the existing Media3 session/source state untouched; phone Kotlin compilation and `git diff --check` passed
-  - Commit: pending
+  - Commit: `dd72fcd`
   - Completed: 2026-08-21
 
 ## A4 — TV and release
