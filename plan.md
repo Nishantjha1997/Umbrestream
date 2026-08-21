@@ -211,6 +211,22 @@ native-android/
 
 Use Kotlin DSL, version catalog, Compose, Coroutines/Flow, Hilt, OkHttp, Retrofit where appropriate, Kotlin serialization, Room, DataStore, WorkManager, Media3, static analysis, and unit/instrumentation tests.
 
+## 5.1 Web UI composition closure (approved 2026-08-21)
+
+Complete this web release before resuming native publication:
+
+1. Capture the current production Home, Anime detail, Anime player, and source-picker flow at desktop and phone widths.
+2. Make the desktop Home hero one continuous artwork surface from the top of the content viewport. The persistent Home actions remain readable glass controls over that same surface; do not render a second copy of the hero artwork as a separate header card.
+3. Replace the empty non-fullscreen player spacer with a compact, semantic StreamFree header containing the brand and useful Home, Browse, Anime, and Search navigation. Keep it clear of provider controls and remove it from layout and accessibility in fullscreen.
+4. Make intercepted Anime details a true full-bleed phone surface. Extend one backdrop to the top safe area, remove the artificial second hero/card seam, keep the title and Episode 1 actions inside the viewport, and ensure the page scrolls without horizontal clipping.
+5. Upgrade the Anime player episode panel with an AniList-relation-aware season/continuation selector. AniList models seasons as separate media records, so expose validated TV/TV Short/ONA prequel, current, and sequel entries rather than guessing season numbers or mixing in movies/OVAs/specials. Selecting an entry updates the episode list in place; choosing an episode navigates to that media ID and preserves audio preference without carrying an episode-specific source ID across titles.
+6. Mark episode-level watch state in the player list from authenticated StreamFree history. Completed episodes receive a subtle check and veil; partial episodes show restrained progress. Merely opening a player never marks an episode watched, and the targeted history query must cover long-running series rather than inheriting the general 100-row history cap.
+7. Mirror the compact player header and full-bleed Anime detail composition in the generated mobile WebView source, then rebuild the tracked bundle from source.
+8. Add deterministic composition checks, run responsive browser QA, and exercise the actual Anime source sheet for Sub and Dub. Anivexa labels count as present only when the live source API returns validated playable candidates; catalogue names must never masquerade as resolved servers.
+9. Commit and push the passing web phase, wait for the exact Vercel Git deployment to report Ready, and repeat Home/detail/player/source-picker checks on `streamfree.online` before resuming Android publication.
+
+Acceptance: no separate Home header band; no blank player spacer; no clipped Anime detail action; no Anime Cinezo; the player panel can move to an adjacent AniList season and accurately marks completed/partial episodes; and at least one live Anivexa candidate is visible for each audio variant when the upstream API returns one. Provider variability is recorded honestly rather than hidden with fake options.
+
 ## 6. Android phases
 
 ### A0 — Scaffold and migration safety

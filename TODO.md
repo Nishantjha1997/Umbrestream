@@ -6,8 +6,8 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 
 - Branch: `main`
 - Baseline: `28bea93`
-- Active task: `SF-A4-003`
-- Next command: complete the physical-phone, TV-emulator, and real-provider gates for native publication; the Anime source recovery and Anivexa catalogue-first resolver are deployed and live-smoked.
+- Active task: `SF-W5-002`
+- Next command: make the desktop Home header overlay the single DesktopHero artwork surface, then verify the artwork reaches the top edge without weakening action contrast.
 - Reference policy: Media3 and Now in Android are approved architecture references; Aniyomi is pattern-only because it is archived; Dantotsu is excluded pending license/source verification.
 
 ## W0 — Governance and baseline
@@ -471,13 +471,80 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Completed: 2026-08-21
 
 - [ ] SF-A4-003 — Publish manifests/APKs and certify production
-  - Status: in progress
+  - Status: paused for approved Web Phase W5
   - Priority: P0
   - Depends on: SF-A4-002
   - Evidence: publication staging contains fresh phone/TV candidates and matching native fresh-install manifests; full deterministic native verification passed; live web/API smoke passed; `adb devices -l` currently reports no connected phone and no Android TV emulator/system image is available, so signed install/orientation/updater and real-provider playback gates remain open; no production download was changed
   - Commit: —
   - Deployment: —
   - Next action: phone hardware, TV emulator, real-provider smoke tests, Vercel publication
+
+## W5 — Unified hero, detail, player chrome, and live Anime source certification
+
+- [x] SF-W5-001 — Capture responsive production baseline and live Anime source flow
+  - Status: completed
+  - Priority: P0
+  - Depends on: SF-P0-008, SF-W4-001
+  - Evidence: repository audit confirms Home duplicates hero art across separate header/hero surfaces; player route renders an empty decorative header; Anime detail combines a fixed backdrop with `20vh`/`40vh` overview offset; generated mobile Anime detail uses a separate 300px visual and sticky action cluster; production Anime 21 episode 1 live flow played in the provider iframe; the Sub sheet exposed AniBD/ReAnime/AniKoto/AnimeGG and the Dub sheet exposed ReAnime/AniKoto after the remote resolver completed; no Anime Cinezo was present; the live player also exposed the fabricated 12-episode fallback for a long-running title
+  - Commit: pending task-state commit
+  - Completed: 2026-08-21
+
+- [ ] SF-W5-002 — Unify desktop Home hero artwork through top navigation
+  - Status: in progress
+  - Priority: P0
+  - Depends on: SF-W5-001
+  - Evidence: —
+  - Commit: —
+  - Next action: make Home header an overlay on the single DesktopHero artwork surface and preserve readable controls
+
+- [ ] SF-W5-003 — Build a compact semantic player route header
+  - Status: not started
+  - Priority: P0
+  - Depends on: SF-W5-001
+  - Evidence: —
+  - Commit: —
+  - Next action: replace the empty spacer with brand and Home/Browse/Anime/Search navigation; hide fully in fullscreen
+
+- [ ] SF-W5-004 — Repair full-bleed mobile Anime detail composition
+  - Status: not started
+  - Priority: P0
+  - Depends on: SF-W5-001
+  - Evidence: —
+  - Commit: —
+  - Next action: extend one backdrop through the safe-area top and keep title/actions within the viewport without horizontal clipping
+
+- [ ] SF-W5-004a — Add franchise-aware Anime season selection and watched episode state
+  - Status: not started
+  - Priority: P0
+  - Depends on: SF-W5-001
+  - Evidence: Anime player sidebar currently renders only the active AniList media record and repeats cover art per episode; detail view already demonstrates episode progress but uses the general history action whose server-side cap is 100 rows
+  - Commit: —
+  - Next action: add typed AniList prequel/sequel relations, an in-panel continuation selector, and a targeted long-series episode-history query with subtle completed/partial indicators
+
+- [ ] SF-W5-005 — Mirror WebView composition and rebuild generated mobile bundle
+  - Status: not started
+  - Priority: P0
+  - Depends on: SF-W5-003, SF-W5-004, SF-W5-004a
+  - Evidence: —
+  - Commit: —
+  - Next action: update authored mobile source, rebuild `mobile/app.bundle.js`, and validate source/detail/player contracts
+
+- [ ] SF-W5-006 — Run deterministic and responsive pre-deployment QA
+  - Status: not started
+  - Priority: P0
+  - Depends on: SF-W5-002, SF-W5-003, SF-W5-004, SF-W5-005
+  - Evidence: —
+  - Commit: —
+  - Next action: lint, typecheck, composition tests, production build, desktop/phone browser flows, live Anivexa Sub/Dub source selection
+
+- [ ] SF-W5-007 — Commit, push, deploy, and certify production
+  - Status: not started
+  - Priority: P0
+  - Depends on: SF-W5-006
+  - Evidence: —
+  - Commit: —
+  - Deployment: —
+  - Next action: push passing main, confirm exact Vercel deployment Ready, and repeat production UI/source-flow smoke tests
 
 ## W4 — Desktop shell and movie-player workspace
 
