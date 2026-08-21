@@ -377,7 +377,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P1
   - Depends on: SF-A3-003c
   - Evidence: native episode delivery now reads a DataStore-backed enabled/quiet-hours policy before claiming notification IDs, so suppressed alerts remain available for a later refresh; overnight, disabled, equal-boundary, and invalid-value behavior covered by `AnimeNotificationPreferencesTest`; core auth tests and `git diff --check` passed
-  - Commit: pending
+  - Commit: `124bce9`
   - Completed: 2026-08-21
 
 - [ ] SF-A3-004 — Complete native Home/details/library/settings/onboarding parity
