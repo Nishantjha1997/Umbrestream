@@ -6,8 +6,8 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 
 - Branch: `main`
 - Baseline: `28bea93`
-- Active task: `SF-A3-002`
-- Next command: register native callback URLs, apply the OAuth transaction migration, and exercise provider linking on the connected phone; the native updater contract is complete, but release-manifest publication and installer exercise remain under `SF-A4-002`/`SF-A4-003`.
+- Active task: `SF-A4-003`
+- Next command: prepare matching native release manifests and publication artifacts, then connect the phone for signed install/playback/updater checks before any production manifest or APK replacement.
 - Reference policy: Media3 and Now in Android are approved architecture references; Aniyomi is pattern-only because it is archived; Dantotsu is excluded pending license/source verification.
 
 ## W0 — Governance and baseline
@@ -390,13 +390,13 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Commit: —
   - Next action: D-pad focus, immersive mode, 720p/1080p/4K scaling, countdown
 
-- [ ] SF-A4-002 — Build and verify signed release APKs
-  - Status: not started
+- [x] SF-A4-002 — Build and verify signed release APKs
+  - Status: completed
   - Priority: P0
   - Depends on: SF-A4-001
-  - Evidence: —
-  - Commit: —
-  - Next action: release builds, signatures, packages, versions, hashes, updater tests
+  - Evidence: private signed candidates built with `native-android/scripts/build-release.ps1`; phone `online.streamfree.app` `1.4.1-native` code `11`, 3,204,301 bytes, SHA-256 `9F1BF62764C80045504A1326C94D5B2025882BB3322A3D8AD23BDEF018BABBE0`, v2/v3, native certificate `8D66F79F…D7A112`; TV `online.streamfree.tv` `1.3.1-native` code `9`, 3,091,684 bytes, SHA-256 `239B81CCDE2593A50FCCCFE6F81771AE41269C8F7EBF1A4414DBE30F31076684`, v2/v3, native certificate `93038E30…E4BA2A`; `aapt2 dump badging`, `apksigner verify --print-certs`, strict lint, and full native verification passed
+  - Commit: `b89eafd`
+  - Completed: 2026-08-21
 
 - [x] SF-A4-002a — Implement native official-manifest update verification
   - Status: completed
