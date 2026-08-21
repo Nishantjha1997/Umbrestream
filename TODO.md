@@ -353,7 +353,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P1
   - Depends on: SF-A3-003a
   - Evidence: `EncryptedHistorySyncQueue` stores only encrypted playback metadata under an Android Keystore AES-GCM key; WorkManager uses connected-network constraints, unique work, exponential backoff, a 50-event cap, deduplication, session refresh, and no bearer token in input data; failed trusted syncs enqueue and schedule recovery, successful syncs remove their matching event; auth retry tests, `scripts/verify.ps1`, phone/TV compilation, strict lint, and `git diff --check` passed
-  - Commit: `pending`
+  - Commit: `54cf078`
   - Completed: 2026-08-21
 
 - [ ] SF-A3-004 — Complete native Home/details/library/settings/onboarding parity
