@@ -420,7 +420,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P0
   - Depends on: SF-A4-002, SF-A4-002a
   - Evidence: `native-android/scripts/prepare-native-publication.ps1` derives package/version/signature/hash/size from signed APKs, stages matching fresh-install manifests without changing `public/downloads`, requires explicit confirmation before publication, and manifest validation now distinguishes legacy and native signing identities; staged phone/TV artifacts and `node scripts/check-update-manifests.mjs` passed
-  - Commit: pending
+  - Commit: `7164e4c`
   - Completed: 2026-08-21
 
 - [ ] SF-A4-004 — Final handoff and rollback documentation
