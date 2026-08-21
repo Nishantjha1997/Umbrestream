@@ -20,6 +20,7 @@ import online.streamfree.nativeapp.auth.AuthSessionManager
 import online.streamfree.nativeapp.auth.AnimeNotificationClient
 import online.streamfree.nativeapp.auth.HistorySyncClient
 import online.streamfree.nativeapp.auth.EncryptedAuthSessionStore
+import online.streamfree.nativeapp.auth.NativeAnimeLinkResult
 import online.streamfree.nativeapp.auth.SupabaseAuthClient
 import online.streamfree.nativeapp.player.Media3SourcePipeline
 import online.streamfree.nativeapp.player.PlaybackSessionController
@@ -40,9 +41,11 @@ import online.streamfree.nativeapp.model.MediaType
 class MainActivity : ComponentActivity() {
   private lateinit var playbackController: PlaybackSessionController
   private var playerFullscreen = false
+  private var animeLinkResult by mutableStateOf<NativeAnimeLinkResult?>(null)
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    handleAnimeLinkIntent(intent)
     enableEdgeToEdge()
     WindowCompat.setDecorFitsSystemWindows(window, false)
     val sourceRegistry = SourceResolverRegistry(listOf(StreamFreeSourceApiResolver.production()))
@@ -82,6 +85,8 @@ class MainActivity : ComponentActivity() {
             regionPreferenceStore = regionPreferenceStore,
             authManager = authManager,
             notificationClient = AnimeNotificationClient(),
+            animeLinkResult = animeLinkResult,
+            onAnimeLinkResultHandled = { animeLinkResult = null },
             onOpenTitle = { request ->
               selectedRequest = request
               showPlayer = true
@@ -90,6 +95,12 @@ class MainActivity : ComponentActivity() {
         }
       }
     }
+  }
+
+  override fun onNewIntent(intent: Intent) {
+    super.onNewIntent(intent)
+    setIntent(intent)
+    handleAnimeLinkIntent(intent)
   }
 
   override fun onStop() {
@@ -118,6 +129,10 @@ class MainActivity : ComponentActivity() {
     } else {
       insetsController.show(WindowInsetsCompat.Type.systemBars())
     }
+  }
+
+  private fun handleAnimeLinkIntent(intent: Intent?) {
+    animeLinkResult = NativeAnimeLinkResult.parse(intent?.data?.toString())
   }
 }
 

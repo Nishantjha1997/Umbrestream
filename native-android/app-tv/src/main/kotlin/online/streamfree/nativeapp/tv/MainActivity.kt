@@ -16,6 +16,7 @@ import online.streamfree.nativeapp.auth.AuthSessionManager
 import online.streamfree.nativeapp.auth.AnimeNotificationClient
 import online.streamfree.nativeapp.auth.HistorySyncClient
 import online.streamfree.nativeapp.auth.EncryptedAuthSessionStore
+import online.streamfree.nativeapp.auth.NativeAnimeLinkResult
 import online.streamfree.nativeapp.auth.SupabaseAuthClient
 import online.streamfree.nativeapp.player.Media3SourcePipeline
 import online.streamfree.nativeapp.player.PlaybackSessionController
@@ -35,9 +36,11 @@ import online.streamfree.nativeapp.player.PreferencesRegionPreferenceStore
 @UnstableApi
 class MainActivity : ComponentActivity() {
   private lateinit var playbackController: PlaybackSessionController
+  private var animeLinkResult by mutableStateOf<NativeAnimeLinkResult?>(null)
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    handleAnimeLinkIntent(intent)
     enableEdgeToEdge()
     val sourceRegistry = SourceResolverRegistry(listOf(StreamFreeSourceApiResolver.production()))
     val sourceOrchestrator = ResolutionOrchestrator(sourceRegistry)
@@ -75,6 +78,8 @@ class MainActivity : ComponentActivity() {
             regionPreferenceStore = regionPreferenceStore,
             authManager = authManager,
             notificationClient = AnimeNotificationClient(),
+            animeLinkResult = animeLinkResult,
+            onAnimeLinkResultHandled = { animeLinkResult = null },
             onOpenTitle = { request ->
               selectedRequest = request
               showPlayer = true
@@ -85,9 +90,19 @@ class MainActivity : ComponentActivity() {
     }
   }
 
+  override fun onNewIntent(intent: Intent) {
+    super.onNewIntent(intent)
+    setIntent(intent)
+    handleAnimeLinkIntent(intent)
+  }
+
   override fun onDestroy() {
     playbackController.release()
     super.onDestroy()
+  }
+
+  private fun handleAnimeLinkIntent(intent: Intent?) {
+    animeLinkResult = NativeAnimeLinkResult.parse(intent?.data?.toString())
   }
 }
 

@@ -1831,6 +1831,13 @@ code, links the account with the existing encrypted server-side token storage,
 and redirects only to the fixed `streamfree://anime-link` app callback. Phone and
 TV Home expose Link AniList and Link MAL actions after StreamFree sign-in.
 
+The native apps now consume that callback on both cold start and `onNewIntent`.
+`NativeAnimeLinkResult` rejects non-StreamFree schemes/hosts, unknown providers,
+unknown statuses, malformed reasons, and unexpected query fields; it never
+accepts or displays tokens. A successful result shows a safe confirmation and
+refreshes Home so the linked state is not stale. Callback parsing and the phone/
+TV compile path are covered by the native auth test and verification gates.
+
 Operational gates remain open: register these callback URLs with each provider:
 
 - `https://streamfree.online/api/mobile/anime-links/callback/anilist`

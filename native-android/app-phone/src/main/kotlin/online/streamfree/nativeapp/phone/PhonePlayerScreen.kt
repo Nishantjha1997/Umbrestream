@@ -84,6 +84,7 @@ import online.streamfree.nativeapp.auth.HistorySyncClient
 import online.streamfree.nativeapp.auth.NativeAnimeNotifications
 import online.streamfree.nativeapp.auth.AuthSessionManager
 import online.streamfree.nativeapp.auth.NativeAnimeProvider
+import online.streamfree.nativeapp.auth.NativeAnimeLinkResult
 import online.streamfree.nativeapp.player.PlaybackDisplayMode
 import online.streamfree.nativeapp.player.PlaybackPhase
 import online.streamfree.nativeapp.player.PlaybackSessionController
@@ -117,6 +118,8 @@ fun PhoneHomeScreen(
   regionPreferenceStore: RegionPreferenceStore? = null,
   authManager: AuthSessionManager? = null,
   notificationClient: AnimeNotificationClient? = null,
+  animeLinkResult: NativeAnimeLinkResult? = null,
+  onAnimeLinkResultHandled: () -> Unit = {},
   onOpenTitle: (PlaybackRequest) -> Unit = {},
 ) {
   var feed by remember { mutableStateOf<NativeHomeFeed?>(null) }
@@ -152,6 +155,13 @@ fun PhoneHomeScreen(
       animeNotifications = null
     } else {
       animeNotifications = authManager.accessToken()?.let { notificationClient.load(it) }
+    }
+  }
+  LaunchedEffect(animeLinkResult) {
+    animeLinkResult?.let { result ->
+      linkMessage = result.message
+      if (result.success) reloadHome()
+      onAnimeLinkResultHandled()
     }
   }
   fun loadMoreContinue(cursor: String) {
