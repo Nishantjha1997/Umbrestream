@@ -7,7 +7,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 - Branch: `main`
 - Baseline: `28bea93`
 - Active task: `SF-A4-003`
-- Next command: run the publication-preparation script against the signed candidates, then connect the phone for signed install/playback/updater checks before any production manifest or APK replacement.
+- Next command: connect the physical phone for signed install/playback/orientation/updater checks; do not replace production manifests or APKs until that gate and the TV-emulator/real-provider checks pass.
 - Reference policy: Media3 and Now in Android are approved architecture references; Aniyomi is pattern-only because it is archived; Dantotsu is excluded pending license/source verification.
 
 ## W0 — Governance and baseline
@@ -426,7 +426,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Status: in progress
   - Priority: P0
   - Depends on: SF-A4-002
-  - Evidence: —
+  - Evidence: publication staging and native fresh-install manifests are ready from `7164e4c`; refreshed signed candidates and full native verification are recorded in `53dc695`/`c41454b`; no production download was changed
   - Commit: —
   - Deployment: —
   - Next action: phone hardware, TV emulator, real-provider smoke tests, Vercel publication
