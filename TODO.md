@@ -414,6 +414,14 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Commit: `b89eafd`
   - Completed: 2026-08-21
 
+- [x] SF-A4-002b — Rebuild signed candidates after native source changes
+  - Status: completed
+  - Priority: P0
+  - Depends on: SF-A4-002, SF-A3-003d
+  - Evidence: phone and TV release APKs were rebuilt with the existing protected signing credentials at the pinned package/version codes; `aapt2`, v2/v3 signature checks, exact size/hash extraction, publication staging, and `git diff --check` passed; public downloads and manifests were not changed
+  - Commit: `53dc695`
+  - Completed: 2026-08-21
+
 - [ ] SF-A4-003 — Publish manifests/APKs and certify production
   - Status: in progress
   - Priority: P0
