@@ -459,7 +459,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P0
   - Depends on: SF-A4-002b
   - Evidence: `build-release.ps1` and both app Gradle fallbacks now default to the staged phone `1.4.2-native`/code `12` and TV `1.3.2-native`/code `10` candidates; explicit release properties remain supported; `git diff --check` passed
-  - Commit: pending
+  - Commit: `ce6cef7`
   - Completed: 2026-08-21
 
 - [ ] SF-A4-003 — Publish manifests/APKs and certify production
