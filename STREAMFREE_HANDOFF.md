@@ -2076,3 +2076,12 @@ in `MoviePlayerClient.tsx`. The local build logged expected Supabase-not-configu
 warnings for library/history static generation, but exited successfully; the
 production deployment’s configured environment remains the authoritative runtime
 configuration.
+
+## 67. Native release version defaults — 2026-08-21
+
+The native release script and phone/TV Gradle fallbacks now default to the
+latest private candidates: phone `1.4.2-native` code `12`, TV `1.3.2-native`
+code `10`. This prevents a future operator from invoking the release script
+without arguments and accidentally producing a lower version code. Explicit
+version properties remain available for a deliberate future release, and the
+public manifests remain unchanged until the release gates pass.

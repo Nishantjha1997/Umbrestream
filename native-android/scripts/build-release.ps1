@@ -3,10 +3,10 @@ param(
   [ValidateSet('phone', 'tv', 'both')]
   [string]$Target = 'both',
   [string]$SigningRoot = '',
-  [string]$PhoneVersionName = '1.4.0-native',
-  [int]$PhoneVersionCode = 10,
-  [string]$TvVersionName = '1.3.0-native',
-  [int]$TvVersionCode = 8
+  [string]$PhoneVersionName = '1.4.2-native',
+  [int]$PhoneVersionCode = 12,
+  [string]$TvVersionName = '1.3.2-native',
+  [int]$TvVersionCode = 10
 )
 
 $ErrorActionPreference = 'Stop'
