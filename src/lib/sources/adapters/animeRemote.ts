@@ -44,6 +44,7 @@ const API_PROVIDERS = new Set([
 
 const IFRAME_ALLOW = "autoplay; encrypted-media; picture-in-picture; fullscreen; screen-wake-lock";
 const animeRemoteCache = new Map<string, { expiresAt: number; data: StreamCandidate[] }>();
+const REMOTE_CACHE_VERSION = "fanout-v2";
 const DIRECT_WATCH_DEADLINE_MS = 8_000;
 const ANIVEXA_DIRECT_PROVIDERS = [
   "anibd",
@@ -420,7 +421,7 @@ function createRemoteAdapter(
         !request.episode
       ) return [];
       const primaryAudio: AudioVariant = request.preferredAudio === "dub" ? "dub" : "sub";
-      const cacheKey = `${id}:${request.anilistId}:${request.episode}:${primaryAudio}`;
+      const cacheKey = `${REMOTE_CACHE_VERSION}:${id}:${request.anilistId}:${request.episode}:${primaryAudio}`;
       const cached = animeRemoteCache.get(cacheKey);
       if (cached && cached.expiresAt > Date.now() && cached.data.length > 0) {
         return cached.data;

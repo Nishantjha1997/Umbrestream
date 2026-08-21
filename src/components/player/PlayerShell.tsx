@@ -126,7 +126,7 @@ type PlayerDisplayMode = "fit" | "fill";
 const PLAYER_DISPLAY_STORAGE_KEY = "streamfree:player-display:v1";
 
 function directSourceParams(request: SourceRequest): URLSearchParams {
-  const params = new URLSearchParams({ mediaType: request.mediaType, version: "3" });
+  const params = new URLSearchParams({ mediaType: request.mediaType, version: "4" });
   if (request.tmdbId) params.set("tmdbId", String(request.tmdbId));
   if (request.anilistId) params.set("anilistId", String(request.anilistId));
   if (request.malId) params.set("malId", String(request.malId));
