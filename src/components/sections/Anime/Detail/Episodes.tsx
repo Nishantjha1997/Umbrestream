@@ -16,7 +16,7 @@ import { useDebouncedValue } from "@mantine/hooks";
 import { useQuery } from "@tanstack/react-query";
 import { format as formatDate } from "date-fns";
 import Link from "next/link";
-import { getUserHistories } from "@/actions/histories";
+import { getAnimeEpisodeHistories } from "@/actions/histories";
 import SectionTitle from "@/components/ui/other/SectionTitle";
 import type { AniListMediaDetail } from "@/types/anilist";
 import { cn } from "@/utils/helpers";
@@ -95,7 +95,7 @@ const AnimeEpisodesSelection = forwardRef<HTMLElement, AnimeEpisodesSelectionPro
     // Guests and unwritten titles simply resolve to an empty map.
     const { data: histories, isPending: isProgressPending } = useQuery({
       queryKey: ["anime-episode-history", anime.id],
-      queryFn: () => getUserHistories(200),
+      queryFn: () => getAnimeEpisodeHistories(anime.id),
       staleTime: 1000 * 60 * 5,
       retry: false,
     });
@@ -105,7 +105,7 @@ const AnimeEpisodesSelection = forwardRef<HTMLElement, AnimeEpisodesSelectionPro
       let resume: number | null = null;
 
       for (const row of histories?.data ?? []) {
-        if (row.type !== "anime" || row.media_id !== anime.id || !row.episode) continue;
+        if (!row.episode) continue;
         const percent =
           row.duration > 0
             ? Math.min(100, Math.round((row.last_position / row.duration) * 100))
@@ -120,14 +120,14 @@ const AnimeEpisodesSelection = forwardRef<HTMLElement, AnimeEpisodesSelectionPro
       }
 
       return { progressByEpisode: map, resumeEpisode: resume };
-    }, [histories, anime.id]);
+    }, [histories]);
 
     const heading = (
       <div className="flex flex-wrap items-center justify-between gap-3">
         <SectionTitle classNames={{ indicator: "hidden" }}>
           Episodes
           {totalEpisodes > 0 && (
-            <span className="ml-2 text-base font-normal text-default-400">{totalEpisodes}</span>
+            <span className="text-default-400 ml-2 text-base font-normal">{totalEpisodes}</span>
           )}
         </SectionTitle>
         {resumeEpisode != null && resumeEpisode <= lastAired && (
@@ -157,14 +157,14 @@ const AnimeEpisodesSelection = forwardRef<HTMLElement, AnimeEpisodesSelectionPro
           {heading}
           <Card
             shadow="none"
-            className="border border-default-100 shadow-(--elevation-card)"
+            className="border-default-100 border shadow-(--elevation-card)"
             radius="lg"
           >
             <CardBody className="flex flex-col items-center gap-3 px-6 py-12 text-center">
-              <p className="text-sm font-medium text-foreground">
+              <p className="text-foreground text-sm font-medium">
                 {notYetReleased ? "This title hasn't aired yet" : "No episode list available"}
               </p>
-              <p className="max-w-[46ch] text-xs leading-relaxed text-default-500">
+              <p className="text-default-500 max-w-[46ch] text-xs leading-relaxed">
                 {notYetReleased
                   ? anime.startDate.year
                     ? `AniList has it scheduled for ${anime.startDate.year}. Episodes appear here once it starts airing.`
@@ -177,7 +177,7 @@ const AnimeEpisodesSelection = forwardRef<HTMLElement, AnimeEpisodesSelectionPro
                   size="sm"
                   radius="full"
                   href={`/anime/${anime.id}/player/1?audio=sub`}
-                  className="mt-1 bg-foreground font-semibold text-background"
+                  className="bg-foreground text-background mt-1 font-semibold"
                   startContent={<PlayFilled size={12} />}
                 >
                   Play episode 1
@@ -193,7 +193,11 @@ const AnimeEpisodesSelection = forwardRef<HTMLElement, AnimeEpisodesSelectionPro
       <section ref={ref} id="episodes-section" className="z-3 flex flex-col gap-3">
         {heading}
 
-        <Card shadow="none" className="border border-default-100 shadow-(--elevation-card)" radius="lg">
+        <Card
+          shadow="none"
+          className="border-default-100 border shadow-(--elevation-card)"
+          radius="lg"
+        >
           <CardHeader className="flex flex-col gap-3 p-3 sm:p-4">
             <div className="flex w-full items-center gap-2">
               <Input
@@ -241,7 +245,7 @@ const AnimeEpisodesSelection = forwardRef<HTMLElement, AnimeEpisodesSelectionPro
                       aria-pressed={isActive}
                       onPress={() => setRangeIndex(index)}
                       className={cn(
-                        "h-7 min-w-0 shrink-0 px-3 text-xs font-medium text-default-500",
+                        "text-default-500 h-7 min-w-0 shrink-0 px-3 text-xs font-medium",
                         isActive && "bg-foreground text-background",
                       )}
                     >
@@ -253,7 +257,7 @@ const AnimeEpisodesSelection = forwardRef<HTMLElement, AnimeEpisodesSelectionPro
             )}
 
             {query && (
-              <p aria-live="polite" className="w-full text-xs text-default-500">
+              <p aria-live="polite" className="text-default-500 w-full text-xs">
                 {visibleEpisodes.length === 0
                   ? "No matching episodes"
                   : `${visibleEpisodes.length} matching episode${visibleEpisodes.length === 1 ? "" : "s"}`}
@@ -265,8 +269,10 @@ const AnimeEpisodesSelection = forwardRef<HTMLElement, AnimeEpisodesSelectionPro
             <ScrollShadow className="h-[min(60vh,34rem)] pr-1">
               {visibleEpisodes.length === 0 ? (
                 <div className="flex h-40 flex-col items-center justify-center gap-1 text-center">
-                  <p className="text-sm text-default-500">No episode matches that number.</p>
-                  <p className="text-xs text-default-400">Try a different number, or clear the search.</p>
+                  <p className="text-default-500 text-sm">No episode matches that number.</p>
+                  <p className="text-default-400 text-xs">
+                    Try a different number, or clear the search.
+                  </p>
                 </div>
               ) : layout === "grid" ? (
                 <ul className="grid grid-cols-[repeat(auto-fill,minmax(4rem,1fr))] gap-2">
@@ -320,7 +326,7 @@ export default memo(AnimeEpisodesSelection);
 export const AnimeEpisodesSectionSkeleton: React.FC = () => (
   <section className="z-3 flex flex-col gap-3">
     <Skeleton className="h-7 w-40 rounded-full" />
-    <Card shadow="none" className="border border-default-100" radius="lg">
+    <Card shadow="none" className="border-default-100 border" radius="lg">
       <CardHeader className="p-3 sm:p-4">
         <Skeleton className="h-9 w-full rounded-full" />
       </CardHeader>
@@ -352,7 +358,7 @@ const EpisodeAudioButtons: React.FC<{ animeId: number; episode: number; compact?
         href={`/anime/${animeId}/player/${episode}?audio=${audio}`}
         aria-label={`Play episode ${episode} ${audio === "dub" ? "dubbed" : "subtitled"}`}
         className={cn(
-          "flex min-h-11 items-center justify-center rounded-full border border-default-200/70 px-3 text-[11px] font-semibold text-foreground hover:border-foreground/40 hover:bg-default-100",
+          "border-default-200/70 text-foreground hover:border-foreground/40 hover:bg-default-100 flex min-h-11 items-center justify-center rounded-full border px-3 text-[11px] font-semibold",
           SURFACE_TRANSITION,
           FOCUS_RING,
           compact && "min-h-7 flex-1 px-1 text-[9px]",
@@ -369,9 +375,9 @@ const EpisodeAudioButtons: React.FC<{ animeId: number; episode: number; compact?
 const ProgressBar: React.FC<{ percent: number; className?: string }> = ({ percent, className }) => (
   <span
     aria-hidden
-    className={cn("block h-[3px] overflow-hidden rounded-full bg-default-200", className)}
+    className={cn("bg-default-200 block h-[3px] overflow-hidden rounded-full", className)}
   >
-    <span className="block h-full rounded-full bg-foreground/70" style={{ width: `${percent}%` }} />
+    <span className="bg-foreground/70 block h-full rounded-full" style={{ width: `${percent}%` }} />
   </span>
 );
 
@@ -400,7 +406,7 @@ const EpisodeRow: React.FC<
     <>
       <span
         className={cn(
-          "w-9 shrink-0 text-right text-sm font-semibold tabular-nums text-default-400",
+          "text-default-400 w-9 shrink-0 text-right text-sm font-semibold tabular-nums",
           isAired && SURFACE_TRANSITION,
           isAired && "group-hover:text-foreground",
         )}
@@ -408,20 +414,20 @@ const EpisodeRow: React.FC<
         {episode}
       </span>
       <span className="flex min-w-0 flex-1 flex-col gap-1">
-        <span className="truncate text-sm font-medium text-foreground">Episode {episode}</span>
-        <span className="text-xs text-default-500">{meta}</span>
+        <span className="text-foreground truncate text-sm font-medium">Episode {episode}</span>
+        <span className="text-default-500 text-xs">{meta}</span>
         {isPartial && <ProgressBar percent={progress!.percent} className="w-full max-w-40" />}
       </span>
       <span className="flex w-6 shrink-0 items-center justify-center">
         {isProgressPending && isAired ? (
           <Skeleton className="size-4 rounded-full" />
         ) : progress?.completed ? (
-          <Check aria-hidden className="text-sm text-foreground/70" />
+          <Check aria-hidden className="text-foreground/70 text-sm" />
         ) : isAired ? (
           <PlayFilled
             aria-hidden
             className={cn(
-              "text-xs text-foreground opacity-0",
+              "text-foreground text-xs opacity-0",
               SURFACE_TRANSITION,
               "transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100",
             )}
@@ -445,7 +451,7 @@ const EpisodeRow: React.FC<
   return (
     <div
       className={cn(
-        "group flex items-center gap-3 rounded-(--radius-card) px-3 py-2.5 hover:bg-default-100",
+        "group hover:bg-default-100 flex items-center gap-3 rounded-(--radius-card) px-3 py-2.5",
         SURFACE_TRANSITION,
       )}
     >
@@ -461,7 +467,7 @@ const EpisodeTile: React.FC<EpisodeItemProps> = ({ animeId, episode, isAired, pr
   const inner = (
     <>
       <span className="text-sm font-semibold tabular-nums">{episode}</span>
-      {progress?.completed && <Check aria-hidden className="text-[10px] text-foreground/70" />}
+      {progress?.completed && <Check aria-hidden className="text-foreground/70 text-[10px]" />}
       {isPartial && (
         <ProgressBar percent={progress!.percent} className="absolute inset-x-2 bottom-1.5" />
       )}
@@ -472,7 +478,7 @@ const EpisodeTile: React.FC<EpisodeItemProps> = ({ animeId, episode, isAired, pr
     return (
       <div
         aria-disabled
-        className="relative flex h-14 flex-col items-center justify-center gap-1 rounded-(--radius-card) border border-dashed border-default-200/60 text-default-400 opacity-45"
+        className="border-default-200/60 text-default-400 relative flex h-14 flex-col items-center justify-center gap-1 rounded-(--radius-card) border border-dashed opacity-45"
       >
         {inner}
       </div>
@@ -482,7 +488,7 @@ const EpisodeTile: React.FC<EpisodeItemProps> = ({ animeId, episode, isAired, pr
   return (
     <div
       className={cn(
-        "relative flex h-20 flex-col items-center justify-start gap-1 rounded-(--radius-card) border pt-2 text-default-500 hover:bg-default-100 hover:text-foreground",
+        "text-default-500 hover:bg-default-100 hover:text-foreground relative flex h-20 flex-col items-center justify-start gap-1 rounded-(--radius-card) border pt-2",
         progress?.completed
           ? "border-foreground/25 bg-default-100/70 text-foreground"
           : "border-default-200/60",

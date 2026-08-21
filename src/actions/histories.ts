@@ -196,7 +196,9 @@ const boundedLimit = (limit: unknown, fallback = 20): number => {
  * with `limit = 1_000_000` and force a full scan plus a huge serialized payload,
  * on repeat. Clamp it server-side.
  */
-export const getUserHistories = async (limit: number = MAX_PAGE_SIZE): ActionResponse<HistoryDetail[]> => {
+export const getUserHistories = async (
+  limit: number = MAX_PAGE_SIZE,
+): ActionResponse<HistoryDetail[]> => {
   const take = boundedLimit(limit);
   try {
     const supabase = await createClient();
@@ -239,6 +241,61 @@ export const getUserHistories = async (limit: number = MAX_PAGE_SIZE): ActionRes
       success: false,
       message: "An unexpected error occurred",
     };
+  }
+};
+
+export interface AnimeEpisodeHistory {
+  episode: number;
+  last_position: number;
+  duration: number;
+  completed: boolean;
+  updated_at: string;
+}
+
+/** Episode-level history for one Anime media record. This intentionally does
+ * not inherit the general 100-row history cap: long-running shows can exceed
+ * one thousand episodes, and the player must not hide older watched state. */
+export const getAnimeEpisodeHistories = async (
+  mediaId: number,
+): ActionResponse<AnimeEpisodeHistory[]> => {
+  const normalizedMediaId = Math.trunc(Number(mediaId));
+  if (!Number.isFinite(normalizedMediaId) || normalizedMediaId < 1) {
+    return { success: false, message: "Invalid Anime media ID" };
+  }
+
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) return { success: false, message: "User not authenticated" };
+
+    const pageSize = 500;
+    const maximumRows = 2500;
+    const rows: AnimeEpisodeHistory[] = [];
+
+    for (let from = 0; from < maximumRows; from += pageSize) {
+      const { data, error } = await supabase
+        .from("histories")
+        .select("episode,last_position,duration,completed,updated_at")
+        .eq("user_id", user.id)
+        .eq("type", "anime")
+        .eq("media_id", normalizedMediaId)
+        .gt("episode", 0)
+        .order("episode", { ascending: true })
+        .order("updated_at", { ascending: true })
+        .range(from, from + pageSize - 1);
+
+      if (error) return { success: false, message: "Failed to fetch Anime episode history" };
+      rows.push(...(data as AnimeEpisodeHistory[]));
+      if (data.length < pageSize) break;
+    }
+
+    return { success: true, data: rows };
+  } catch {
+    return { success: false, message: "An unexpected error occurred" };
   }
 };
 
@@ -303,7 +360,11 @@ export const getContinueWatchingPage = async (
           .limit(MAX_PAGE_SIZE);
 
         if (!legacyError) {
-          const page = pageContinueWatching((legacyRows ?? []) as HistoryDetail[], validCursor, take);
+          const page = pageContinueWatching(
+            (legacyRows ?? []) as HistoryDetail[],
+            validCursor,
+            take,
+          );
           return {
             success: true,
             data: {
@@ -325,9 +386,7 @@ export const getContinueWatchingPage = async (
       data: {
         items,
         nextCursor:
-          items.length === take && last
-            ? { updatedAt: last.updated_at, id: last.id }
-            : undefined,
+          items.length === take && last ? { updatedAt: last.updated_at, id: last.id } : undefined,
       },
     };
   } catch (error) {

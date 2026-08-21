@@ -55,6 +55,26 @@ export interface AniListMediaSummary {
   isAdult: boolean;
 }
 
+export type AniListRelationType =
+  | "ADAPTATION"
+  | "PREQUEL"
+  | "SEQUEL"
+  | "PARENT"
+  | "SIDE_STORY"
+  | "CHARACTER"
+  | "SUMMARY"
+  | "ALTERNATIVE"
+  | "SPIN_OFF"
+  | "OTHER"
+  | "SOURCE"
+  | "COMPILATION"
+  | "CONTAINS";
+
+export interface AniListMediaRelation {
+  relationType: AniListRelationType;
+  media: AniListMediaSummary;
+}
+
 /** Full shape used on the detail page. */
 export interface AniListMediaDetail extends AniListMediaSummary {
   bannerImage: string | null;
@@ -70,6 +90,7 @@ export interface AniListMediaDetail extends AniListMediaSummary {
   nextAiringEpisode: AniListNextAiring | null;
   trailer: AniListTrailer | null;
   recommendations: AniListMediaSummary[];
+  relations: AniListMediaRelation[];
 }
 
 export interface AniListPageInfo {

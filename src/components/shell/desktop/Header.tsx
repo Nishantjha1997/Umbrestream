@@ -20,9 +20,7 @@
  * this renders nothing below the `md` breakpoint.
  */
 
-import { useHomeHero } from "@/hooks/useHomeHero";
 import { cn } from "@/utils/helpers";
-import { getHighResolutionImageUrl } from "@/utils/movies";
 import { useRouter } from "@bprogress/next";
 import { useHotkeys } from "@mantine/hooks";
 import Link from "next/link";
@@ -35,32 +33,6 @@ interface DesktopHeaderProps {
   /** Home can use the active hero artwork as a cinematic backdrop for the
       otherwise-empty top chrome. */
   isHome?: boolean;
-}
-
-function HomeHeaderBackdrop() {
-  const { pick } = useHomeHero();
-  const artwork = getHighResolutionImageUrl(pick?.media.backdropUrl ?? pick?.media.posterUrl);
-
-  if (!artwork) return null;
-
-  return (
-    <>
-      {/* Decorative only; the hero remains the primary content surface. */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={artwork}
-        alt=""
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 size-full object-cover object-[center_28%] opacity-75"
-        decoding="async"
-        fetchPriority="high"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(10,9,13,0.9)_0%,rgba(10,9,13,0.48)_48%,rgba(10,9,13,0.75)_100%),linear-gradient(180deg,rgba(10,9,13,0.2)_0%,rgba(10,9,13,0.92)_100%)]"
-      />
-    </>
-  );
 }
 
 export default function DesktopHeader({ className, isHome = false }: DesktopHeaderProps) {
@@ -81,30 +53,28 @@ export default function DesktopHeader({ className, isHome = false }: DesktopHead
     <header
       className={cn(
         "hidden items-center justify-end gap-3 px-3 py-4 sm:px-5 md:flex",
-        isHome &&
-          "relative min-h-24 overflow-hidden rounded-b-[2rem] border-b border-white/8 px-4 py-4 shadow-[0_20px_60px_rgba(0,0,0,0.28)] sm:min-h-[108px] sm:px-6",
+        isHome && "absolute top-0 right-0 left-20 z-30 min-h-24 px-4 py-4 sm:min-h-[108px] sm:px-6",
         className,
       )}
     >
-      {isHome && <HomeHeaderBackdrop />}
       <div className="relative z-10 flex w-full items-center justify-end gap-3">
-      {/* "My Space" entry point, promoted from the rail footer to the persistent
+        {/* "My Space" entry point, promoted from the rail footer to the persistent
           desktop header so /space is one obvious click from every screen. */}
-      <Link
-        href="/space"
-        aria-label="My Space"
-        className="group inline-flex min-h-11 items-center gap-[9px] rounded-full border border-white/14 bg-black/36 px-4 text-white outline-none transition-colors duration-(--duration-fast) ease-(--ease-out-quint) hover:border-white/22 hover:bg-black/45 focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:outline-none motion-reduce:transition-none"
-        style={{
-          backdropFilter: "blur(16px) saturate(var(--glass-saturate))",
-          WebkitBackdropFilter: "blur(16px) saturate(var(--glass-saturate))",
-        }}
-      >
-        <TbUserCircle className="size-[15px] shrink-0 text-white/70" aria-hidden="true" />
-        <span className="text-[12.5px] whitespace-nowrap text-white/70 transition-colors group-hover:text-white">
-          My Space
-        </span>
-      </Link>
-      {/* The glass search pill, `DESKTOP_SPEC.md` §C — right-aligned, per the
+        <Link
+          href="/space"
+          aria-label="My Space"
+          className="group inline-flex min-h-11 items-center gap-[9px] rounded-full border border-white/18 bg-black/58 px-4 text-white shadow-[0_10px_28px_rgba(0,0,0,0.34)] transition-colors duration-(--duration-fast) ease-(--ease-out-quint) outline-none hover:border-white/28 hover:bg-black/70 focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:outline-none motion-reduce:transition-none"
+          style={{
+            backdropFilter: "blur(16px) saturate(var(--glass-saturate))",
+            WebkitBackdropFilter: "blur(16px) saturate(var(--glass-saturate))",
+          }}
+        >
+          <TbUserCircle className="size-[15px] shrink-0 text-white/70" aria-hidden="true" />
+          <span className="text-[12.5px] whitespace-nowrap text-white/70 transition-colors group-hover:text-white">
+            My Space
+          </span>
+        </Link>
+        {/* The glass search pill, `DESKTOP_SPEC.md` §C — right-aligned, per the
           mockup's `top:26px; right:40px` hero placement, now persistent
           instead of Home-only. Hand-rolled rather than the `glass-control`
           utility (`globals.css`): the spec's blur (16px) and border/bg alpha
@@ -114,36 +84,41 @@ export default function DesktopHeader({ className, isHome = false }: DesktopHead
           re-declared. Hover/focus-visible states are additions — the mockup
           declares none anywhere on desktop (§B "Motion"), and turning this
           into a real control means it needs them. */}
-      <Link
-        href="/search"
-        aria-label="Search StreamFree. Keyboard shortcut Command K or Control K."
-        className="group inline-flex min-h-11 items-center gap-[9px] rounded-full border border-white/14 bg-black/36 px-4 text-white outline-none transition-colors duration-(--duration-fast) ease-(--ease-out-quint) hover:border-white/22 hover:bg-black/45 focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:outline-none motion-reduce:transition-none"
-        style={{
-          backdropFilter: "blur(16px) saturate(var(--glass-saturate))",
-          WebkitBackdropFilter: "blur(16px) saturate(var(--glass-saturate))",
-        }}
-      >
-        {/* Magnifying glass, verbatim geometry from `DESKTOP_SPEC.md` §C. */}
-        <svg
-          width="15"
-          height="15"
-          viewBox="0 0 20 20"
-          fill="none"
-          aria-hidden="true"
-          className="shrink-0 text-white/70"
+        <Link
+          href="/search"
+          aria-label="Search StreamFree. Keyboard shortcut Command K or Control K."
+          className="group inline-flex min-h-11 items-center gap-[9px] rounded-full border border-white/18 bg-black/58 px-4 text-white shadow-[0_10px_28px_rgba(0,0,0,0.34)] transition-colors duration-(--duration-fast) ease-(--ease-out-quint) outline-none hover:border-white/28 hover:bg-black/70 focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:outline-none motion-reduce:transition-none"
+          style={{
+            backdropFilter: "blur(16px) saturate(var(--glass-saturate))",
+            WebkitBackdropFilter: "blur(16px) saturate(var(--glass-saturate))",
+          }}
         >
-          <circle cx="9" cy="9" r="6.2" stroke="currentColor" strokeWidth="1.5" />
-          <path d="M13.6 13.6 17 17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-        </svg>
-        <span className="text-[12.5px] whitespace-nowrap text-white/70">Search StreamFree</span>
-        {/* Discoverability for the shortcut above — the mockup has neither
+          {/* Magnifying glass, verbatim geometry from `DESKTOP_SPEC.md` §C. */}
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 20 20"
+            fill="none"
+            aria-hidden="true"
+            className="shrink-0 text-white/70"
+          >
+            <circle cx="9" cy="9" r="6.2" stroke="currentColor" strokeWidth="1.5" />
+            <path
+              d="M13.6 13.6 17 17"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+          </svg>
+          <span className="text-[12.5px] whitespace-nowrap text-white/70">Search StreamFree</span>
+          {/* Discoverability for the shortcut above — the mockup has neither
             the handler nor the hint. `font-mono` ties it to the app's
             existing "numerals/data" register (`--font-mono`, §5.1) rather
             than inventing a fourth type treatment for one glyph pair. */}
-        <kbd className="ml-0.5 rounded-[5px] border border-white/14 bg-white/7 px-[5px] py-[1px] font-mono text-[10px] leading-none text-white/60 group-hover:text-white/80">
-          ⌘K
-        </kbd>
-      </Link>
+          <kbd className="ml-0.5 rounded-[5px] border border-white/14 bg-white/7 px-[5px] py-[1px] font-mono text-[10px] leading-none text-white/60 group-hover:text-white/80">
+            ⌘K
+          </kbd>
+        </Link>
       </div>
     </header>
   );

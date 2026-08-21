@@ -17,7 +17,8 @@ assert.match(suggestions, /Promise\.all/);
 assert.match(suggestions, /More like this/);
 assert.match(suggestions, /Trending now/);
 assert.match(suggestions, /never enters the fullscreen element/);
-assert.match(header, /HomeHeaderBackdrop/);
+assert.doesNotMatch(header, /HomeHeaderBackdrop|useHomeHero|getHighResolutionImageUrl/);
+assert.match(header, /absolute top-0 right-0 left-20 z-30/);
 assert.match(shell, /<DesktopHeader isHome=\{pathname === "\/"\} \/>/);
 
 console.log("Movie player workspace checks passed");

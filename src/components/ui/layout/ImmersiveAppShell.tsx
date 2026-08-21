@@ -22,6 +22,7 @@ import { AmbientLayers } from "@/components/media/AmbientProvider";
 import DesktopHeader from "@/components/shell/desktop/Header";
 import DesktopRail from "@/components/shell/desktop/Rail";
 import PhoneAppHeader from "@/components/shell/phone/PhoneAppHeader";
+import PlayerRouteHeader from "@/components/shell/PlayerRouteHeader";
 import TabBar from "@/components/shell/phone/TabBar";
 import AppRouteMotion from "@/components/ui/layout/AppRouteMotion";
 import Footer from "@/components/ui/layout/Footer";
@@ -59,9 +60,12 @@ export default function ImmersiveAppShell({ children, modal }: ImmersiveAppShell
         className={cn(
           "container mx-auto min-h-dvh max-w-full transition-[padding] duration-300",
           chromeHidden
-            ? SpacingClasses.main
+            ? playerRoute
+              ? "px-3 pt-0 pb-8 sm:px-5"
+              : SpacingClasses.main
             : "px-3 pt-[max(0.5rem,env(safe-area-inset-top))] pb-[calc(6.5rem+env(safe-area-inset-bottom))] sm:px-5 md:py-8",
           !chromeHidden && "md:pl-[calc(5rem+var(--spacing-main-x,1rem))]",
+          !chromeHidden && pathname === "/" && "md:pt-0",
         )}
       >
         {/* Persistent desktop search header (Phase 3, §7). Hidden on
@@ -69,7 +73,7 @@ export default function ImmersiveAppShell({ children, modal }: ImmersiveAppShell
             screens own the whole viewport. */}
         {!chromeHidden && <DesktopHeader isHome={pathname === "/"} />}
         {!chromeHidden && <PhoneAppHeader pathname={pathname} />}
-        {playerRoute && <div className="player-route-header" aria-hidden="true" />}
+        {playerRoute && <PlayerRouteHeader />}
         <AppRouteMotion>{children}</AppRouteMotion>
         {!chromeHidden && <Footer className="hidden md:block" />}
       </main>

@@ -71,7 +71,7 @@ const cleanDescription = (html: string): string =>
  * (or `::before` content) is unavailable.
  */
 const MetaItem: React.FC<React.PropsWithChildren> = ({ children }) => (
-  <li className="flex items-center before:mr-2 before:text-default-600 before:content-['•'] first:before:content-none">
+  <li className="before:text-default-600 flex items-center before:mr-2 before:content-['•'] first:before:content-none">
     {children}
   </li>
 );
@@ -128,7 +128,10 @@ const AnimeOverviewSection: React.FC<AnimeOverviewSectionProps> = ({ anime }) =>
   useDocumentTitle(`${primaryTitle} | ${siteConfig.name}`);
 
   return (
-    <section id="overview" className="relative z-3 flex flex-col gap-8 pt-[20vh] md:pt-[40vh]">
+    <section
+      id="overview"
+      className="relative z-3 flex min-w-0 flex-col gap-8 pt-[clamp(14rem,34svh,19rem)] md:pt-[40vh]"
+    >
       <div className="flex flex-col gap-6 md:grid md:grid-cols-[auto_1fr] md:gap-8">
         <Image
           radius="none"
@@ -143,10 +146,10 @@ const AnimeOverviewSection: React.FC<AnimeOverviewSectionProps> = ({ anime }) =>
 
         <div className="flex flex-col gap-6 md:gap-7">
           <header id="title" className="flex flex-col gap-3">
-            <div className="flex items-center gap-2 text-[11px] font-semibold tracking-[0.16em] text-default-500 uppercase">
+            <div className="text-default-500 flex items-center gap-2 text-[11px] font-semibold tracking-[0.16em] uppercase">
               <span>Anime</span>
               {anime.isAdult && (
-                <span className="rounded-full border border-danger-400/40 px-2 py-0.5 text-danger-400">
+                <span className="border-danger-400/40 text-danger-400 rounded-full border px-2 py-0.5">
                   18+
                 </span>
               )}
@@ -157,10 +160,10 @@ const AnimeOverviewSection: React.FC<AnimeOverviewSectionProps> = ({ anime }) =>
             </h1>
 
             {altTitles.length > 0 && (
-              <p className="text-xs text-default-500 md:text-sm">{altTitles.join(" · ")}</p>
+              <p className="text-default-500 text-xs md:text-sm">{altTitles.join(" · ")}</p>
             )}
 
-            <ul className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-default-400 md:text-sm">
+            <ul className="text-default-400 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs md:text-sm">
               {facts.map((fact) => (
                 <MetaItem key={fact}>{fact}</MetaItem>
               ))}
@@ -172,7 +175,7 @@ const AnimeOverviewSection: React.FC<AnimeOverviewSectionProps> = ({ anime }) =>
             </ul>
 
             {anime.status === "RELEASING" && anime.nextAiringEpisode && (
-              <p className="text-xs text-default-500 md:text-sm">
+              <p className="text-default-500 text-xs md:text-sm">
                 Episode {anime.nextAiringEpisode.episode} airs{" "}
                 {formatTimeUntil(anime.nextAiringEpisode.timeUntilAiring)}
               </p>
@@ -181,13 +184,13 @@ const AnimeOverviewSection: React.FC<AnimeOverviewSectionProps> = ({ anime }) =>
 
           {/* One dominant action. A flat, high-contrast pill rather than
               `variant="shadow"`, which emits a coloured glow (§9). */}
-          <div id="action" className="flex w-full flex-wrap items-center gap-3">
+          <div id="action" className="flex w-full min-w-0 flex-wrap items-center gap-3">
             <Button
               as={Link}
               size="lg"
               radius="full"
               href={`/anime/${anime.id}/player/1`}
-              className="bg-foreground px-7 font-semibold text-background transition-transform duration-(--duration-fast) ease-(--ease-out-quint) hover:scale-[1.02] active:scale-[0.98] motion-reduce:transition-none motion-reduce:hover:scale-100"
+              className="bg-foreground text-background max-w-full px-7 font-semibold transition-transform duration-(--duration-fast) ease-(--ease-out-quint) hover:scale-[1.02] active:scale-[0.98] motion-reduce:transition-none motion-reduce:hover:scale-100"
               startContent={<PlayFilled size={15} />}
             >
               {isMovie ? "Play" : "Play Episode 1"}
@@ -201,7 +204,7 @@ const AnimeOverviewSection: React.FC<AnimeOverviewSectionProps> = ({ anime }) =>
                 href={`https://www.youtube.com/watch?v=${anime.trailer.id}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="border-default-300/50 font-medium text-foreground transition-colors duration-(--duration-fast) ease-(--ease-out-quint) hover:border-default-400 motion-reduce:transition-none"
+                className="border-default-300/50 text-foreground hover:border-default-400 font-medium transition-colors duration-(--duration-fast) ease-(--ease-out-quint) motion-reduce:transition-none"
                 startContent={<Youtube size={18} />}
               >
                 Trailer
@@ -212,7 +215,7 @@ const AnimeOverviewSection: React.FC<AnimeOverviewSectionProps> = ({ anime }) =>
           <div id="story" className="flex flex-col gap-3">
             <p
               className={cn(
-                "max-w-[68ch] text-sm leading-relaxed whitespace-pre-line text-default-500 md:text-base",
+                "text-default-500 max-w-[68ch] text-sm leading-relaxed whitespace-pre-line md:text-base",
                 isLongSynopsis && !expanded && "line-clamp-4",
               )}
             >
@@ -223,7 +226,7 @@ const AnimeOverviewSection: React.FC<AnimeOverviewSectionProps> = ({ anime }) =>
                 type="button"
                 aria-expanded={expanded}
                 onClick={() => setExpanded((value) => !value)}
-                className="w-fit rounded-full text-xs font-semibold tracking-wide text-default-400 uppercase transition-colors duration-(--duration-fast) ease-(--ease-out-quint) hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground motion-reduce:transition-none"
+                className="text-default-400 hover:text-foreground focus-visible:outline-foreground w-fit rounded-full text-xs font-semibold tracking-wide uppercase transition-colors duration-(--duration-fast) ease-(--ease-out-quint) focus-visible:outline-2 focus-visible:outline-offset-4 motion-reduce:transition-none"
               >
                 {expanded ? "Show less" : "Show more"}
               </button>

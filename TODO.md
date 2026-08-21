@@ -6,8 +6,8 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 
 - Branch: `main`
 - Baseline: `28bea93`
-- Active task: `SF-W5-002`
-- Next command: make the desktop Home header overlay the single DesktopHero artwork surface, then verify the artwork reaches the top edge without weakening action contrast.
+- Active task: `SF-W5-007`
+- Next command: commit and push the passing W5 implementation, confirm its Vercel deployment is Ready, and repeat the production smoke tests.
 - Reference policy: Media3 and Now in Android are approved architecture references; Aniyomi is pattern-only because it is archived; Dantotsu is excluded pending license/source verification.
 
 ## W0 — Governance and baseline
@@ -486,56 +486,56 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P0
   - Depends on: SF-P0-008, SF-W4-001
   - Evidence: repository audit confirms Home duplicates hero art across separate header/hero surfaces; player route renders an empty decorative header; Anime detail combines a fixed backdrop with `20vh`/`40vh` overview offset; generated mobile Anime detail uses a separate 300px visual and sticky action cluster; production Anime 21 episode 1 live flow played in the provider iframe; the Sub sheet exposed AniBD/ReAnime/AniKoto/AnimeGG and the Dub sheet exposed ReAnime/AniKoto after the remote resolver completed; no Anime Cinezo was present; the live player also exposed the fabricated 12-episode fallback for a long-running title
-  - Commit: pending task-state commit
+  - Commit: `8e99c2c`
   - Completed: 2026-08-21
 
-- [ ] SF-W5-002 — Unify desktop Home hero artwork through top navigation
-  - Status: in progress
+- [x] SF-W5-002 — Unify desktop Home hero artwork through top navigation
+  - Status: completed
   - Priority: P0
   - Depends on: SF-W5-001
-  - Evidence: —
-  - Commit: —
-  - Next action: make Home header an overlay on the single DesktopHero artwork surface and preserve readable controls
+  - Evidence: Home header now overlays the single `DesktopHero` surface; duplicate `HomeHeaderBackdrop`/hero fetch removed; readable glass actions retained; `test:ui-composition`, `test:movie-player-workspace`, production build
+  - Commit: pending implementation commit
+  - Completed: 2026-08-21
 
-- [ ] SF-W5-003 — Build a compact semantic player route header
-  - Status: not started
+- [x] SF-W5-003 — Build a compact semantic player route header
+  - Status: completed
   - Priority: P0
   - Depends on: SF-W5-001
-  - Evidence: —
-  - Commit: —
-  - Next action: replace the empty spacer with brand and Home/Browse/Anime/Search navigation; hide fully in fullscreen
+  - Evidence: app-owned brand plus Home/Browse/Anime/Search navigation; compact glass boundary; hidden from layout in fullscreen; `test:ui-composition`, `test:player-display`, production build
+  - Commit: pending implementation commit
+  - Completed: 2026-08-21
 
-- [ ] SF-W5-004 — Repair full-bleed mobile Anime detail composition
-  - Status: not started
+- [x] SF-W5-004 — Repair full-bleed mobile Anime detail composition
+  - Status: completed
   - Priority: P0
   - Depends on: SF-W5-001
-  - Evidence: —
-  - Commit: —
-  - Next action: extend one backdrop through the safe-area top and keep title/actions within the viewport without horizontal clipping
+  - Evidence: one full-bleed Anime detail surface, safe responsive title/action spacing, modal overflow clipping, 390×844 DOM measurements keep Play visible with no horizontal overflow; `test:ui-composition`, production build
+  - Commit: pending implementation commit
+  - Completed: 2026-08-21
 
-- [ ] SF-W5-004a — Add franchise-aware Anime season selection and watched episode state
-  - Status: not started
+- [x] SF-W5-004a — Add franchise-aware Anime season selection and watched episode state
+  - Status: completed
   - Priority: P0
   - Depends on: SF-W5-001
-  - Evidence: Anime player sidebar currently renders only the active AniList media record and repeats cover art per episode; detail view already demonstrates episode progress but uses the general history action whose server-side cap is 100 rows
-  - Commit: —
-  - Next action: add typed AniList prequel/sequel relations, an in-panel continuation selector, and a targeted long-series episode-history query with subtle completed/partial indicators
+  - Evidence: typed PREQUEL/SEQUEL AniList relations; TV/TV_SHORT/ONA-only continuation selector; selected continuation updates episodes in place; targeted 2,500-row Anime episode-history query; subtle completed veil/check and partial progress; fabricated 12-episode fallback removed; `test:anime-episode-navigation`, `test:anime-integrations`, production build
+  - Commit: pending implementation commit
+  - Completed: 2026-08-21
 
-- [ ] SF-W5-005 — Mirror WebView composition and rebuild generated mobile bundle
-  - Status: not started
+- [x] SF-W5-005 — Mirror WebView composition and rebuild generated mobile bundle
+  - Status: completed
   - Priority: P0
   - Depends on: SF-W5-003, SF-W5-004, SF-W5-004a
-  - Evidence: —
-  - Commit: —
-  - Next action: update authored mobile source, rebuild `mobile/app.bundle.js`, and validate source/detail/player contracts
+  - Evidence: semantic mobile player header; normal app header removed from player layout; integrated Anime detail composition and responsive sticky actions; regenerated `mobile/app.bundle.js`; `test:ui-composition`, full `verify`
+  - Commit: pending implementation commit
+  - Completed: 2026-08-21
 
-- [ ] SF-W5-006 — Run deterministic and responsive pre-deployment QA
-  - Status: not started
+- [x] SF-W5-006 — Run deterministic and responsive pre-deployment QA
+  - Status: completed
   - Priority: P0
   - Depends on: SF-W5-002, SF-W5-003, SF-W5-004, SF-W5-005
-  - Evidence: —
-  - Commit: —
-  - Next action: lint, typecheck, composition tests, production build, desktop/phone browser flows, live Anivexa Sub/Dub source selection
+  - Evidence: full `verify` passed through lint, playback/source/history/UI/native contracts, typecheck, optimized production build, PWA/performance/release-artifact/leak checks; 1440×900 and 390×844 production-build inspection found no horizontal overflow, one compact player header, one continuation selector, no duplicate Home backdrop, and a fully visible mobile Play action; selecting Mugen Train updated 26 episodes to 7 and removed stale `src`; fullscreen removed header rendering; latest-build resolver exposed AniBD/ReAnime/AniKoto/AnimeGG Sub plus ReAnime/AniKoto Dub; selecting ReAnime Dub mounted native video with `anivexa:reanime:dub` and Anime contained no Cinezo
+  - Commit: pending implementation commit
+  - Completed: 2026-08-21
 
 - [ ] SF-W5-007 — Commit, push, deploy, and certify production
   - Status: not started

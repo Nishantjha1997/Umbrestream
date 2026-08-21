@@ -107,7 +107,7 @@ export default function DetailModal({ children }: PropsWithChildren) {
         role="dialog"
         aria-modal="true"
         aria-label="Details"
-        className="relative min-h-dvh w-full bg-[#0a090d] md:min-h-0 md:max-h-full md:w-auto md:max-w-[940px] md:overflow-y-auto md:rounded-[18px] md:border md:border-white/10 md:bg-[#131217]"
+        className="relative min-h-dvh w-full overflow-x-clip bg-[#0a090d] md:max-h-full md:min-h-0 md:w-auto md:max-w-[940px] md:overflow-y-auto md:rounded-[18px] md:border md:border-white/10 md:bg-[#131217]"
       >
         <button
           ref={closeButtonRef}

@@ -44,10 +44,7 @@ export default function AnimeDetailContent({
   });
 
   const backdropUrl =
-    anime?.bannerImage ??
-    anime?.coverImage.extraLarge ??
-    anime?.coverImage.large ??
-    "";
+    anime?.bannerImage ?? anime?.coverImage.extraLarge ?? anime?.coverImage.large ?? "";
   const { dominantColor } = useExtractColors(backdropUrl);
   useSetAmbient(dominantColor || anime?.coverImage.color || null);
 
@@ -77,27 +74,29 @@ export default function AnimeDetailContent({
   if (!anime) notFound();
 
   return (
-    <div className="mx-auto max-w-5xl">
+    <div className="anime-detail-surface mx-auto min-h-dvh max-w-5xl overflow-x-clip">
       <Suspense
         fallback={
           <Spinner size="lg" className="absolute-center" color="primary" variant="simple" />
         }
       >
-        <div className="flex flex-col gap-10">
+        <div className="relative z-3 flex flex-col gap-10 px-5 pb-12 sm:px-6 md:px-0 md:pb-0">
           {/* AniList has no wordmark art, so `logoUrl` is deliberately omitted —
               the anime title is rendered by the Overview section below. Banner
               art is optional too; falling back to the cover, then to a block
               tinted with the cover's dominant colour. */}
-          <MediaBackdrop
-            alt={anime.title.english ?? anime.title.romaji ?? anime.title.native ?? "Untitled"}
-            backdropUrl={
-              anime.bannerImage ??
-              anime.coverImage.extraLarge ??
-              anime.coverImage.large ??
-              undefined
-            }
-            fallbackColor={anime.coverImage.color ?? undefined}
-          />
+          <div className="absolute inset-x-0 top-0 -z-1 -mx-5 sm:-mx-6 md:mx-0">
+            <MediaBackdrop
+              alt={anime.title.english ?? anime.title.romaji ?? anime.title.native ?? "Untitled"}
+              backdropUrl={
+                anime.bannerImage ??
+                anime.coverImage.extraLarge ??
+                anime.coverImage.large ??
+                undefined
+              }
+              fallbackColor={anime.coverImage.color ?? undefined}
+            />
+          </div>
           <OverviewSection anime={anime} />
           <AnimeEpisodesSelection anime={anime} />
           <StudiosSection studios={anime.studios} />

@@ -68,6 +68,9 @@ const MEDIA_DETAIL_FIELDS = `
   recommendations(sort: RATING_DESC, perPage: 12) {
     nodes { mediaRecommendation { ${MEDIA_SUMMARY_FIELDS} } }
   }
+  relations {
+    edges { relationType node { ${MEDIA_SUMMARY_FIELDS} } }
+  }
 `;
 
 interface RawStudios {
@@ -78,10 +81,18 @@ interface RawRecommendations {
   nodes: { mediaRecommendation: AniListMediaSummary | null }[];
 }
 
+interface RawRelations {
+  edges: {
+    relationType: AniListMediaDetail["relations"][number]["relationType"];
+    node: AniListMediaSummary | null;
+  }[];
+}
+
 type RawDetail = AniListMediaSummary &
-  Omit<AniListMediaDetail, "studios" | "recommendations"> & {
+  Omit<AniListMediaDetail, "studios" | "recommendations" | "relations"> & {
     studios: RawStudios;
     recommendations: RawRecommendations;
+    relations: RawRelations;
   };
 
 function normalizeDetail(raw: RawDetail): AniListMediaDetail {
@@ -91,6 +102,9 @@ function normalizeDetail(raw: RawDetail): AniListMediaDetail {
     recommendations: raw.recommendations.nodes
       .map((n) => n.mediaRecommendation)
       .filter((m): m is AniListMediaSummary => m !== null),
+    relations: raw.relations.edges
+      .filter((edge) => edge.node !== null)
+      .map((edge) => ({ relationType: edge.relationType, media: edge.node! })),
   };
 }
 

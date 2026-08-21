@@ -32,15 +32,24 @@ assert.match(shell, /document\.addEventListener\("visibilitychange", restoreAfte
 assert.match(shell, /window\.addEventListener\("pagehide", restoreAfterBackground\)/);
 assert.match(shell, /sourceOpenerRef\.current\?\.focus\(\)/);
 
-assert.match(styles, /\.player-shell-frame[\s\S]*border:0!important/);
-assert.match(styles, /\.player-shell-frame[\s\S]*transform:none!important/);
+assert.match(styles, /\.player-shell-frame[\s\S]*border:\s*0\s*!important/);
+assert.match(styles, /\.player-shell-frame[\s\S]*transform:\s*none\s*!important/);
 assert.doesNotMatch(styles, /\.player-shell-fill \.player-shell-frame/);
 assert.doesNotMatch(styles, /transform:scale\(/);
-assert.match(styles, /\.player-shell-fill video \{ object-fit:cover!important; transform:none!important; \}/);
-assert.match(styles, /\.player-shell-fit video \{ object-fit:contain!important; transform:none!important; \}/);
+assert.match(
+  styles,
+  /\.player-shell-fill video \{[\s\S]*?object-fit:\s*cover\s*!important;[\s\S]*?transform:\s*none\s*!important;[\s\S]*?\}/,
+);
+assert.match(
+  styles,
+  /\.player-shell-fit video \{[\s\S]*?object-fit:\s*contain\s*!important;[\s\S]*?transform:\s*none\s*!important;[\s\S]*?\}/,
+);
 assert.match(styles, /\.player-shell-fullscreen \.player-content-header/);
 assert.match(styles, /\.player-controls-reveal \{[\s\S]*top: 50%;[\s\S]*transform: translateY\(-50%\)/);
-assert.match(styles, /\.player-shell \{ isolation:isolate; contain:layout paint; \}/);
+assert.match(
+  styles,
+  /\.player-shell \{[\s\S]*?isolation:\s*isolate;[\s\S]*?contain:\s*layout paint;[\s\S]*?\}/,
+);
 
 assert.match(movie, /mediaType: "movie"/);
 assert.match(tv, /mediaType: "tv"[\s\S]*season,[\s\S]*episode:/);

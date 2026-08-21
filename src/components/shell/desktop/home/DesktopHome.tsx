@@ -20,8 +20,8 @@ import AnimeModeEntry from "@/components/sections/Home/AnimeModeEntry";
 export default function DesktopHome() {
   return (
     <div id="desktop-home-top" className="relative flex flex-col gap-[42px] pb-16">
-      <AnimeModeEntry />
       <DesktopHero />
+      <AnimeModeEntry />
       <StillWatchingDesktop />
       <HomeDiscoveryFeed idPrefix="desktop" variant="desktop" />
       <TonightInset />
