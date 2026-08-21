@@ -10,6 +10,16 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 - Next command: when hardware is available, connect the physical phone and start the Android TV emulator before resuming native publication certification.
 - Reference policy: Media3 and Now in Android are approved architecture references; Aniyomi is pattern-only because it is archived; Dantotsu is excluded pending license/source verification.
 
+## W7 — Home hero framing correction
+
+- [ ] SF-W7-001 — Anchor Home hero artwork to the top edge
+  - Status: in progress
+  - Priority: P1
+  - Depends on: SF-W6-004
+  - Evidence: production report indicates the hero’s upper artwork is cropped by centered cover positioning; the lower gradient should remain unchanged
+  - Commit: —
+  - Next action: run the UI composition contract, build, deploy, and verify desktop/mobile production geometry
+
 ## W0 — Governance and baseline
 
 - [x] SF-W0-001 — Replace conflicting plans and establish live tracking

@@ -242,6 +242,15 @@ Treat episode navigation as one product capability across TV and Anime rather th
 
 Acceptance: TV users can change season without leaving the player; TV titles remain understandable in the sidebar; One Piece has no compressed range-pill overflow; Anime does not call unrelated ONA entries a season; both panels remain within the viewport and preserve compatible playback context.
 
+## 5.3 Home hero artwork framing (approved 2026-08-21)
+
+1. Anchor the Home hero artwork to the top edge of its cinematic frame so the source image's upper composition is never removed by center cropping.
+2. Keep the existing horizontal and vertical scrims unchanged so the lower edge still blends into the StreamFree page background.
+3. Cover the frame horizontally without adding letterbox bars or a second artwork layer, and keep the behavior deterministic across desktop Home widths.
+4. Add a source-level composition contract and verify the production Home at desktop and phone widths after deployment.
+
+Acceptance: the hero image begins at the top of its source artwork, no top subject detail is lost to `object-position: center`, and the existing bottom fade remains visible without a seam or horizontal overflow.
+
 ## 6. Android phases
 
 ### A0 — Scaffold and migration safety

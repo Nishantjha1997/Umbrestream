@@ -6,6 +6,7 @@ const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 const [
   desktopHeader,
   desktopHome,
+  desktopHero,
   shell,
   playerHeader,
   animeDetail,
@@ -16,6 +17,7 @@ const [
 ] = await Promise.all([
   read("src/components/shell/desktop/Header.tsx"),
   read("src/components/shell/desktop/home/DesktopHome.tsx"),
+  read("src/components/shell/desktop/home/DesktopHero.tsx"),
   read("src/components/ui/layout/ImmersiveAppShell.tsx"),
   read("src/components/shell/PlayerRouteHeader.tsx"),
   read("src/components/sections/Anime/Detail/DetailContent.tsx"),
@@ -30,6 +32,11 @@ assert.match(desktopHeader, /absolute top-0 right-0 left-20 z-30/);
 assert.ok(
   desktopHome.indexOf("<DesktopHero />") < desktopHome.indexOf("<AnimeModeEntry />"),
   "Home artwork must start before the optional Anime announcement",
+);
+assert.match(
+  desktopHero,
+  /className="size-full object-cover object-top"/,
+  "Desktop hero artwork must show its top edge and let the lower scrim handle blending",
 );
 assert.match(shell, /pathname === "\/" && "md:pt-0"/);
 

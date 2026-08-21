@@ -124,7 +124,7 @@ export default function DesktopHero() {
           loading="eager"
           fetchPriority="high"
           decoding="async"
-          className="size-full object-cover object-center"
+          className="size-full object-cover object-top"
         />
       </div>
 
