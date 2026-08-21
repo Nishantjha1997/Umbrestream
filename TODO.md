@@ -393,7 +393,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P1
   - Depends on: SF-A3-003d
   - Evidence: signed-in phone Home exposes an accessible persisted alerts switch, and TV Home exposes a deterministic remote-focusable alerts toggle; both use `AnimeNotificationPreferenceStore` and preserve quiet-hour behavior; phone/TV Kotlin compilation and `git diff --check` passed
-  - Commit: pending
+  - Commit: `052fb3f`
   - Completed: 2026-08-21
 
 ## A4 — TV and release
