@@ -2,20 +2,31 @@
   "platform": "android-tv",
   "schemaVersion": 1,
   "packageId": "online.streamfree.tv",
-  "versionName": "1.2.3",
-  "versionCode": 6,
-  "apkUrl": "/downloads/StreamFree-TV-v1.2.3.apk",
-  "sha256": "06E4C403D29C5D4F6EF5D690AC31A38908A5E64A1D1308AE703C11E9C1907683",
-  "sizeBytes": 3375567,
-  "signingCertificateSha256": "7D5C1BB46BA3CE888C56E9CF1F39F86F65BC502BCD5480B0F8CF4663C80779D7",
-  "publishedAt": "2026-08-18T15:00:00.000Z",
+  "versionName": "1.3.3-native",
+  "versionCode": 11,
+  "apkUrl": "/downloads/StreamFree-TV-v1.3.3-native.apk",
+  "sha256": "941D54187D8C1555107A9B17B1B25F4A9229CBCB3AF82615CAD9D9DD9408FEF8",
+  "sizeBytes": 3154019,
+  "signingCertificateSha256": "93038E301F34C9E5AD8E28EB72B08604C1A0EA8BBF43B486765B819939E4BA2A",
+  "publishedAt": "2026-08-21T13:29:12.7643756Z",
   "minimumSupportedVersion": 1,
   "mandatory": false,
-  "freshInstallRequired": false,
-  "releaseNotes": ["Dedicated Anime Mode entry point is available from the TV Home shell.", "Anime Sub and Dub provider labels remain grouped and easy to navigate with a remote.", "Native HLS playback candidates now use a video surface with better playback events."],
+  "freshInstallRequired": true,
+  "migration": {
+    "mode": "fresh_install",
+    "legacyPackageId": "online.streamfree.tv",
+    "legacySigningCertificateSha256": "7D5C1BB46BA3CE888C56E9CF1F39F86F65BC502BCD5480B0F8CF4663C80779D7",
+    "userAction": "Sync guest data, uninstall the legacy-signed app, then install this native release."
+  },
+  "releaseNotes": [
+    "Native Media3 playback with provider-aware headers and trusted progress events.",
+    "Persistent Fit/Fill, fullscreen orientation, source selection, and anime Sub/Dub controls.",
+    "Gated offline downloads with Wi-Fi-only background transfer for explicitly approved direct sources.",
+    "Official-manifest update verification checks package, version, checksum, and signing certificate before install."
+  ],
   "notes": [
-    "Playback opens in landscape with a focused, compact overlay",
-    "Back restores the previous TV navigation focus",
-    "Existing canonical installs can update in place"
+    "This release uses the native fresh-install signing identity.",
+    "Do not install over a legacy-signed package; sync cloud data before migration.",
+    "Third-party providers are not automatically enabled for permanent offline storage."
   ]
 }

@@ -2,20 +2,31 @@
   "platform": "android",
   "schemaVersion": 1,
   "packageId": "online.streamfree.app",
-  "versionName": "1.3.3",
-  "versionCode": 7,
-  "apkUrl": "/downloads/StreamFree-Android-v1.3.3.apk",
-  "sha256": "571FA4CB69051EDE36A16F02FDBAFF8EC7C2F1714D08B216B832DDA652D0D444",
-  "sizeBytes": 3347964,
-  "signingCertificateSha256": "4218B5F726FD4D61703B2112D7A41C77B93F215F1C1DC85560BAB86A6FB38EF4",
-  "publishedAt": "2026-08-18T15:00:00.000Z",
+  "versionName": "1.4.3-native",
+  "versionCode": 13,
+  "apkUrl": "/downloads/StreamFree-Android-v1.4.3-native.apk",
+  "sha256": "CF76F96C55F3DAFEB482BA680385208C390B1D6C575E512EE4D1882419491D16",
+  "sizeBytes": 3266648,
+  "signingCertificateSha256": "8D66F79FF18C0A842D689C4214DF1D84D74402F8866707658DF47B2AC4D7A112",
+  "publishedAt": "2026-08-21T13:29:12.7643756Z",
   "minimumSupportedVersion": 1,
   "mandatory": false,
-  "freshInstallRequired": false,
-  "releaseNotes": ["Dedicated Anime Mode with clearly labelled Sub and Dub provider groups.", "Optional Anivexa and Miruro API adapters with same-audio fallback and native HLS playback.", "Improved Anime discovery, account connections, and new-episode notification foundation."],
+  "freshInstallRequired": true,
+  "migration": {
+    "mode": "fresh_install",
+    "legacyPackageId": "online.streamfree.app",
+    "legacySigningCertificateSha256": "4218B5F726FD4D61703B2112D7A41C77B93F215F1C1DC85560BAB86A6FB38EF4",
+    "userAction": "Sync guest data, uninstall the legacy-signed app, then install this native release."
+  },
+  "releaseNotes": [
+    "Native Media3 playback with provider-aware headers and trusted progress events.",
+    "Persistent Fit/Fill, fullscreen orientation, source selection, and anime Sub/Dub controls.",
+    "Gated offline downloads with Wi-Fi-only background transfer for explicitly approved direct sources.",
+    "Official-manifest update verification checks package, version, checksum, and signing certificate before install."
+  ],
   "notes": [
-    "Fit preserves the whole frame; Fill zooms to the screen and remembers your choice",
-    "Fullscreen locks landscape and restores portrait safely",
-    "Existing canonical installs can update in place"
+    "This release uses the native fresh-install signing identity.",
+    "Do not install over a legacy-signed package; sync cloud data before migration.",
+    "Third-party providers are not automatically enabled for permanent offline storage."
   ]
 }

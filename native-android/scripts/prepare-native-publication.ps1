@@ -154,11 +154,13 @@ function New-Publication {
     releaseNotes = @(
       'Native Media3 playback with provider-aware headers and trusted progress events.',
       'Persistent Fit/Fill, fullscreen orientation, source selection, and anime Sub/Dub controls.',
+      'Gated offline downloads with Wi-Fi-only background transfer for explicitly approved direct sources.',
       'Official-manifest update verification checks package, version, checksum, and signing certificate before install.'
     )
     notes = @(
       'This release uses the native fresh-install signing identity.',
-      'Do not install over a legacy-signed package; sync cloud data before migration.'
+      'Do not install over a legacy-signed package; sync cloud data before migration.',
+      'Third-party providers are not automatically enabled for permanent offline storage.'
     )
   }
 

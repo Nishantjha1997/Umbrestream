@@ -2224,3 +2224,37 @@ later upstream/player investigation passes.
 The desktop Home hero artwork now uses top-anchored cover positioning (`object-position: 50% 0%`) so the upper edge of the source backdrop is not lost to centered cropping. The existing horizontal and vertical scrims were left unchanged, preserving the lower blend into the app background without adding letterbox bars or a duplicate artwork layer.
 
 Validation: `test:ui-composition`, `pnpm run build`, and `git diff --check` passed. Production deployment `7952312` reported Ready. Live 1440×900 Home geometry confirmed hero top `0`, image top `0`, `object-fit: cover`, `object-position: 50% 0%`, both scrims present, and no horizontal overflow. A 390×844 Home check also had no horizontal overflow; phone Home uses its separate poster-led ResumeHero composition.
+
+### 74. Native offline downloads and fresh release candidates — 2026-08-21
+
+The native player now has a separate persistent Media3 offline-download cache,
+distinct from the bounded streaming LRU. `OfflineDownloadStore` provides stable
+content IDs, queued DownloadService work, Wi-Fi/unmetered requirements by
+default, one-at-a-time background transfer, retry handling, foreground progress
+notifications, pause/resume/remove commands, and playback reuse of completed
+downloaded media. Phone and TV each declare a private `StreamFreeDownloadService`
+with the required foreground data-sync permission. The native player checks the
+persistent cache before opening its normal streaming cache.
+
+Permanent downloads are deliberately gated. `OfflineDownloadPolicy` accepts only
+explicitly allowlisted native-direct providers with no provider-specific header
+policy; iframe, hotlink-header, and otherwise unapproved third-party sources are
+rejected. The current allowlist is empty, so existing third-party sources do not
+show a Download control until an authorized provider contract is configured.
+This is intentional and prevents the APK from presenting arbitrary provider
+streams as offline-authorized media.
+
+Fresh signed release candidates were built and publication-validated:
+
+- Phone: `online.streamfree.app`, `1.4.3-native`, version code `13`,
+  SHA-256 `CF76F96C55F3DAFEB482BA680385208C390B1D6C575E512EE4D1882419491D16`.
+- TV: `online.streamfree.tv`, `1.3.3-native`, version code `11`,
+  SHA-256 `941D54187D8C1555107A9B17B1B25F4A9229CBCB3AF82615CAD9D9DD9408FEF8`.
+
+The validator confirmed package IDs, APK parsing, v2/v3 signatures, native
+certificate fingerprints, file sizes, hashes, and fresh-install manifest fields.
+The candidates and manifests are now copied into `public/downloads`; production
+deployment and public URL verification are the next steps. No ADB or physical
+device test was run because the user requested manual phone installation. TV
+emulator/physical-TV and real-provider smoke certification remain open and are
+not represented as passed.

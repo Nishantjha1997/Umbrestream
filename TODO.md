@@ -6,8 +6,9 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 
 - Branch: `main`
 - Baseline: `28bea93`
-- Active task: none; Web Phase W7 is complete and `SF-A4-003` remains paused at its external hardware/provider gate
-- Next command: when hardware is available, connect the physical phone and start the Android TV emulator before resuming native publication certification.
+- Active task: SF-A4-003 — Publish manifests/APKs and certify production
+- Next command: commit the validated release APKs/manifests, push `main`, verify the Vercel production deployment and download URLs, then install the phone APK manually; ADB/device automation is intentionally not a release blocker by user decision.
+- Release decision: the user will manually download and test the phone APK. Physical phone ADB, Android TV emulator, physical TV, and real-provider smoke tests remain deferred acceptance work rather than publication blockers.
 - Reference policy: Media3 and Now in Android are approved architecture references; Aniyomi is pattern-only because it is archived; Dantotsu is excluded pending license/source verification.
 
 ## W7 — Home hero framing correction
@@ -364,8 +365,9 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P1
   - Depends on: SF-A3-001a
   - Evidence: persistent no-eviction Media3 download cache, Wi-Fi/unmetered requirement by default, one-at-a-time background DownloadService, foreground progress notification, pause/resume/remove commands, stable content IDs, offline-cache playback reuse, storage ceiling checks, phone/TV service declarations, and source-policy tests; `:core:player:test`, `:core:player:lintDebug`, both app debug Kotlin compiles, both app debug lint, and `git diff --check` passed
-  - Commit: pending
-  - Next action: build signed phone/TV release candidates; current third-party providers remain disabled for permanent downloads until an explicit provider-authorized allowlist is configured
+  - Commit: `46dcddb`
+  - Completed: 2026-08-21
+  - Next action: configure an explicit provider-authorized allowlist only when a source contract permits permanent storage; no current third-party provider is enabled by default
 
 - [ ] SF-A3-002 — Add AniList and MAL secure linking
   - Status: pending external configuration
@@ -490,13 +492,13 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Completed: 2026-08-21
 
 - [ ] SF-A4-003 — Publish manifests/APKs and certify production
-  - Status: paused for approved Web Phase W5
+  - Status: in progress — release candidates validated; production publication pending
   - Priority: P0
   - Depends on: SF-A4-002
-  - Evidence: publication staging contains fresh phone/TV candidates and matching native fresh-install manifests; full deterministic native verification passed; live web/API smoke passed; `adb devices -l` currently reports no connected phone and no Android TV emulator/system image is available, so signed install/orientation/updater and real-provider playback gates remain open; no production download was changed
+  - Evidence: signed phone `1.4.3-native`/code `13` and TV `1.3.3-native`/code `11` release APKs passed v2/v3 signature, package, certificate, hash, size, and manifest validation; offline-download service and manifest notes are included; APKs and manifests are copied into `public/downloads`; no ADB or hardware test was run by user instruction
   - Commit: —
   - Deployment: —
-  - Next action: phone hardware, TV emulator, real-provider smoke tests, Vercel publication
+  - Next action: commit/push the release artifacts, verify Vercel production Ready and public download responses, then perform manual phone installation; keep TV/emulator and real-provider certification open
 
 ## W5 — Unified hero, detail, player chrome, and live Anime source certification
 
