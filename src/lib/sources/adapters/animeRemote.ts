@@ -45,6 +45,24 @@ const API_PROVIDERS = new Set([
 const IFRAME_ALLOW = "autoplay; encrypted-media; picture-in-picture; fullscreen; screen-wake-lock";
 const animeRemoteCache = new Map<string, { expiresAt: number; data: StreamCandidate[] }>();
 const DIRECT_WATCH_DEADLINE_MS = 8_000;
+const ANIVEXA_DIRECT_PROVIDERS = [
+  "anibd",
+  "reanime",
+  "anikoto",
+  "animegg",
+  "anineko",
+  "2dhive",
+  "anizone",
+  "animecg",
+  "animenosub",
+  "megaplay",
+  "mkissa",
+  "senshi",
+  "kickassanime",
+  "kaa",
+  "anidbapp",
+  "animedunya",
+] as const;
 
 /** Resolves to { value } on success or null on timeout/rejection. */
 function withDeadline<T>(promise: Promise<T>, ms: number): Promise<{ value: T } | null> {
@@ -446,7 +464,13 @@ function createRemoteAdapter(
           // The direct watch path runs in parallel with catalog discovery. It
           // remains a bounded fallback when the catalogue route is unavailable,
           // while a healthy catalogue can expose every compatible provider.
-          const directProviders = ["anibd", "reanime", "animegg", "kaa"];
+          // The documented watch route is deterministic enough to use as a
+          // parallel fast path for every known Anivexa provider. This avoids
+          // making the whole source sheet wait for the large /episodes
+          // catalogue response before a slower provider can appear. The
+          // catalogue remains authoritative when it returns first, and the
+          // final provider-id dedupe below prevents duplicate rows.
+          const directProviders = ANIVEXA_DIRECT_PROVIDERS;
           const directTasks: Promise<{ value: StreamCandidate[] } | null>[] = [];
           for (const provider of directProviders) {
             directTasks.push(
