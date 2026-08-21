@@ -200,7 +200,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P0
   - Depends on: SF-P0-005
   - Evidence: live `streamfree.online` smoke returned HTTP 200 for `/`, `/api/mobile/config`, `/robots.txt`, `/sitemap.xml`, movie fixture `tmdbId=1212763`, TV fixture `tmdbId=1399/1/1`, and anime fixture `anilistId=21/episode=1`; production policy is `2026-08-reliability-v5`, defaults are Filmu/movie, VidKing/TV, and labelled anime Sub/Dub candidates; this confirms the API contract and source metadata only, not real-provider playback certification
-  - Commit: pending
+  - Commit: `0d4245d`
   - Completed: 2026-08-21
 
 - [x] SF-W3-003 — Update exact APK download headers and security checks
