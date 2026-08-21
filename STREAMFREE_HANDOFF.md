@@ -2100,3 +2100,27 @@ or signed-device certification.
 At the final gate check, `adb devices -l` reported no connected phone and no
 Android TV emulator/system image was available. The private native candidates
 therefore remain staged and the public APK manifests/downloads remain unchanged.
+
+## 69. Home chrome and movie player workspace — 2026-08-21
+
+The desktop home header now uses the active home hero artwork as a restrained
+poster-backed surface with dark contrast scrims, so the former empty black band
+behind My Space and Search is purposeful without competing with the main hero.
+The artwork is decorative and the existing accessible controls remain real
+links with visible focus states.
+
+The movie player no longer sends the inline Details action to the intercepted
+details overlay. Details now expands in place below the player information card
+with the full synopsis, tagline, release, runtime, and genres. A responsive
+movie player workspace adds a lazy TMDB-backed right rail on desktop and a
+stacked section on smaller screens with More like this and Trending now cards.
+The recommendation rail is outside the fullscreen stage, so it cannot remount
+or interfere with provider playback/fullscreen behavior.
+
+Validation for this web-only change: `test:movie-player-workspace`, authored
+source ESLint with zero warnings, TypeScript, `next build --webpack`, and
+`git diff --check` passed. The local build emitted the existing expected
+Supabase-not-configured warnings for authenticated library/history prerendering
+but exited successfully. Commit: `734e333`. Vercel production verification is
+the next deployment step; native APK publication remains separately gated by
+the physical-phone, TV-emulator, and real-provider checks.
