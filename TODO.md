@@ -418,7 +418,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Status: completed
   - Priority: P0
   - Depends on: SF-A4-002, SF-A3-003d
-  - Evidence: phone and TV release APKs were rebuilt with the existing protected signing credentials at the pinned package/version codes; `aapt2`, v2/v3 signature checks, exact size/hash extraction, publication staging, and `git diff --check` passed; public downloads and manifests were not changed
+  - Evidence: phone and TV release APKs were rebuilt with the existing protected signing credentials at the pinned package/version codes; `aapt2`, v2/v3 signature checks, exact size/hash extraction, publication staging, full `native-android/scripts/verify.ps1`, and `git diff --check` passed; public downloads and manifests were not changed
   - Commit: `53dc695`
   - Completed: 2026-08-21
 
