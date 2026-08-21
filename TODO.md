@@ -329,7 +329,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P1
   - Depends on: SF-A3-002
   - Evidence: `NativeAnimeLinkResult` accepts only the fixed `streamfree://anime-link` scheme/host, known providers, success/error status, bounded reasons, and no unknown query fields; phone and TV handle cold-start and `onNewIntent` callbacks, show a safe result message, and refresh Home after success; 15 `core:auth` unit tests, `scripts/verify.ps1`, app compilation, strict lint, and `git diff --check` passed
-  - Commit: `pending`
+  - Commit: `aa34e30`
   - Completed: 2026-08-21
 
 - [ ] SF-A3-003 — Add scrobbling and new-episode notifications
