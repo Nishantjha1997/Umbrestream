@@ -217,7 +217,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P1
   - Depends on: SF-W3-004
   - Evidence: the movie route keeps server-side metadata/resume work in `src/app/movie/[id]/player/page.tsx` and the browser-only dynamic player import in `MoviePlayerClient.tsx`; `scripts/check-performance-contract.mjs` now validates that actual boundary; the full bundled web gate passed including lint, source/player/history/anime/update contracts, TypeScript, performance, PWA, release-artifact, leak, and production build checks
-  - Commit: pending
+  - Commit: `9011278`
   - Completed: 2026-08-21
 
 ## A0 — Native scaffold and migration
