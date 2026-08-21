@@ -1949,16 +1949,17 @@ directory and were not copied into the repository. Private release candidates
 were built with the existing `scripts/build-release.ps1` strategy:
 
 - Phone: `online.streamfree.app`, version `1.4.1-native`, code `11`,
-  `3,204,301` bytes, SHA-256
-  `9F1BF62764C80045504A1326C94D5B2025882BB3322A3D8AD23BDEF018BABBE0`,
+  `3,204,304` bytes, SHA-256
+  `E8D5C4FD1B08EBECCA7968BD2B79C871C52BF99D05D71B16431B3A600EBF0DAF`,
   native certificate `8D66F79FF18C0A842D689C4214DF1D84D74402F8866707658DF47B2AC4D7A112`.
 - TV: `online.streamfree.tv`, version `1.3.1-native`, code `9`,
-  `3,091,684` bytes, SHA-256
-  `239B81CCDE2593A50FCCCFE6F81771AE41269C8F7EBF1A4414DBE30F31076684`,
+  `3,091,683` bytes, SHA-256
+  `D70030A9BBDBACC3DBF2B0F3E84168BAB62F60C3B7AC8D11FAA6C91964AEAD2B`,
   native certificate `93038E301F34C9E5AD8E28EB72B08604C1A0EA8BBF43B486765B819939E4BA2A`.
 
-Both candidates report the expected package/version from `aapt2` and verify
-with APK Signature Scheme v2 and v3. They remain private build outputs under
+Both candidates were rebuilt after the native notification-policy change.
+They report the expected package/version from `aapt2` and verify with APK
+Signature Scheme v2 and v3. They remain private build outputs under
 the ignored Gradle build directories. Do not copy them into `public/downloads`
 or update the public manifests until the connected phone has passed signed
 installation, playback, orientation, updater, and rollback checks. Physical TV

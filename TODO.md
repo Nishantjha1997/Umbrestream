@@ -402,7 +402,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Status: completed
   - Priority: P0
   - Depends on: SF-A4-001
-  - Evidence: private signed candidates built with `native-android/scripts/build-release.ps1`; phone `online.streamfree.app` `1.4.1-native` code `11`, 3,204,301 bytes, SHA-256 `9F1BF62764C80045504A1326C94D5B2025882BB3322A3D8AD23BDEF018BABBE0`, v2/v3, native certificate `8D66F79F…D7A112`; TV `online.streamfree.tv` `1.3.1-native` code `9`, 3,091,684 bytes, SHA-256 `239B81CCDE2593A50FCCCFE6F81771AE41269C8F7EBF1A4414DBE30F31076684`, v2/v3, native certificate `93038E30…E4BA2A`; `aapt2 dump badging`, `apksigner verify --print-certs`, strict lint, and full native verification passed
+  - Evidence: private signed candidates rebuilt with `native-android/scripts/build-release.ps1` after the notification-policy change; phone `online.streamfree.app` `1.4.1-native` code `11`, 3,204,304 bytes, SHA-256 `E8D5C4FD1B08EBECCA7968BD2B79C871C52BF99D05D71B16431B3A600EBF0DAF`, v2/v3, native certificate `8D66F79F…D7A112`; TV `online.streamfree.tv` `1.3.1-native` code `9`, 3,091,683 bytes, SHA-256 `D70030A9BBDBACC3DBF2B0F3E84168BAB62F60C3B7AC8D11FAA6C91964AEAD2B`, v2/v3, native certificate `93038E30…E4BA2A`; `aapt2 dump badging`, `apksigner verify --print-certs`, release build, and publication staging passed
   - Commit: `b89eafd`
   - Completed: 2026-08-21
 
