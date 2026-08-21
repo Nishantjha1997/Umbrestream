@@ -442,15 +442,15 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Status: completed
   - Priority: P0
   - Depends on: SF-A4-002, SF-A3-003d
-  - Evidence: phone and TV release APKs were rebuilt with the existing protected signing credentials at the pinned package/version codes; `aapt2`, v2/v3 signature checks, exact size/hash extraction, publication staging, full `native-android/scripts/verify.ps1`, and `git diff --check` passed; public downloads and manifests were not changed
-  - Commit: `53dc695`
+  - Evidence: fresh candidates were rebuilt after the Media3 cache/PiP changes with the protected credentials; phone `online.streamfree.app` `1.4.2-native` code `12`, 3,220,727 bytes, SHA-256 `A7C002E832C9B16525BC0D02584F934BEC52B3EE070611162F814F02900FA6BB`; TV `online.streamfree.tv` `1.3.2-native` code `10`, 3,108,065 bytes, SHA-256 `364BF7B30E3134B596439A3A0A89E498391C5FCD0D931682324C13A4629F8CB8`; both v2/v3 and native certificate pins passed independent staging; full `native-android/scripts/verify.ps1` passed with 235 tasks; public downloads and manifests were not changed
+  - Commit: `2c87537`
   - Completed: 2026-08-21
 
 - [ ] SF-A4-003 — Publish manifests/APKs and certify production
   - Status: in progress
   - Priority: P0
   - Depends on: SF-A4-002
-  - Evidence: publication staging and native fresh-install manifests are ready from `7164e4c`; refreshed signed candidates and full native verification are recorded in `53dc695`/`c41454b`; no production download was changed
+  - Evidence: publication staging contains fresh phone/TV candidates and matching native fresh-install manifests; full deterministic native verification passed; phone/TV hardware, TV-emulator, and real-provider gates remain open; no production download was changed
   - Commit: —
   - Deployment: —
   - Next action: phone hardware, TV emulator, real-provider smoke tests, Vercel publication
