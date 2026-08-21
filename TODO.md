@@ -329,7 +329,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P1
   - Depends on: SF-A2-003
   - Evidence: `StreamCachePolicy` limits the app-private cache to 16–512 MiB, defaults to a 256 MiB LRU cache for native direct sources, excludes iframe sources, shares one process-wide `SimpleCache` instance across activity/service players, falls back to upstream on cache initialization failure, and keeps permanent offline playback behind an empty provider allowlist; `:core:player:test`, `:core:player:lintDebug`, and `git diff --check` passed
-  - Commit: pending
+  - Commit: `2c87537`
   - Completed: 2026-08-21
 
 - [ ] SF-A3-002 — Add AniList and MAL secure linking
