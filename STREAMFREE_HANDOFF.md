@@ -2219,3 +2219,8 @@ both reached `Browser media error` for the tested One Piece fixture after the
 documented cold-start window. StreamFree correctly offered consent-based
 recovery. Do not describe those two provider playbacks as certified until a
 later upstream/player investigation passes.
+### 73. Home hero top-edge framing — 2026-08-21
+
+The desktop Home hero artwork now uses top-anchored cover positioning (`object-position: 50% 0%`) so the upper edge of the source backdrop is not lost to centered cropping. The existing horizontal and vertical scrims were left unchanged, preserving the lower blend into the app background without adding letterbox bars or a duplicate artwork layer.
+
+Validation: `test:ui-composition`, `pnpm run build`, and `git diff --check` passed. Production deployment `7952312` reported Ready. Live 1440×900 Home geometry confirmed hero top `0`, image top `0`, `object-fit: cover`, `object-position: 50% 0%`, both scrims present, and no horizontal overflow. A 390×844 Home check also had no horizontal overflow; phone Home uses its separate poster-led ResumeHero composition.

@@ -6,19 +6,20 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 
 - Branch: `main`
 - Baseline: `28bea93`
-- Active task: none; Web Phase W6 is complete and `SF-A4-003` remains paused at its external hardware/provider gate
+- Active task: none; Web Phase W7 is complete and `SF-A4-003` remains paused at its external hardware/provider gate
 - Next command: when hardware is available, connect the physical phone and start the Android TV emulator before resuming native publication certification.
 - Reference policy: Media3 and Now in Android are approved architecture references; Aniyomi is pattern-only because it is archived; Dantotsu is excluded pending license/source verification.
 
 ## W7 — Home hero framing correction
 
-- [ ] SF-W7-001 — Anchor Home hero artwork to the top edge
-  - Status: in progress
+- [x] SF-W7-001 — Anchor Home hero artwork to the top edge
+  - Status: completed
   - Priority: P1
   - Depends on: SF-W6-004
-  - Evidence: production report indicates the hero’s upper artwork is cropped by centered cover positioning; the lower gradient should remain unchanged
-  - Commit: —
-  - Next action: run the UI composition contract, build, deploy, and verify desktop/mobile production geometry
+  - Evidence: `test:ui-composition`, `pnpm run build`, and `git diff --check` passed; production deployment `7952312` reported Ready; live desktop at 1440×900 reports `object-fit: cover`, `object-position: 50% 0%`, hero top `0`, preserved two scrims, and no horizontal overflow; live 390×844 Home has no horizontal overflow
+  - Commit: `7952312`
+  - Deployment: production Ready for `7952312`
+  - Completed: 2026-08-21
 
 ## W0 — Governance and baseline
 
