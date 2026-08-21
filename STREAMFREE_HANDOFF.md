@@ -2258,3 +2258,12 @@ deployment and public URL verification are the next steps. No ADB or physical
 device test was run because the user requested manual phone installation. TV
 emulator/physical-TV and real-provider smoke certification remain open and are
 not represented as passed.
+
+### 75. Native production publication complete — 2026-08-21
+
+Commit `e9f288a` was pushed to `main` and Vercel production deployment
+`e9f288a` reported Ready. Live verification returned HTTP 200 for both manifests
+and both APKs. The phone and TV APKs returned
+`application/vnd.android.package-archive`, attachment filenames, and byte sizes
+matching their manifests. The next acceptance action is manual installation of
+the phone APK; no ADB testing is required by the current release decision.
