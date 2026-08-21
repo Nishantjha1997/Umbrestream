@@ -2156,3 +2156,24 @@ the same route chrome treatment. Focused source, startup, Anivexa/Miruro mock,
 lint, TypeScript, mobile bundle, and diff checks passed. Production verification
 after deployment must confirm that the corrected Vercel environment is active;
 real provider playback remains a separate browser/device smoke gate.
+
+## 71. Anivexa catalogue-first resolution — 2026-08-21
+
+The first fan-out attempt was corrected after production testing showed that
+launching every direct provider route in parallel could stampede the free
+Anivexa API and return fewer sources. The resolver now reads Anivexa's
+documented episode catalogue first, resolves each returned provider-specific
+watch ID once, deduplicates provider IDs, and uses the all-provider direct
+watch route only when the catalogue is unavailable. The source API has a
+bounded 30-second Anime resolution budget and a versioned remote cache key so
+partial results from an earlier resolver cannot survive a release.
+
+The live production source route returned HTTP 200 after the final deployment.
+For AniList 21 episode 1 it exposed Anivexa AniBD, ReAnime, and AniKoto for
+Sub, and ReAnime, AniKoto, and AnimeGG for Dub in the observed run; exact
+availability is title/episode and upstream-latency dependent. Public Anime
+sources remained grouped by Sub/Dub, Cinezo was absent, and the Anivexa
+candidates were native HLS/MP4 rather than provider documentation pages.
+The direct-fallback regression fixture covers all known Anivexa provider keys,
+while the production result is deliberately treated as a live smoke result,
+not a guarantee that every upstream provider is available for every title.

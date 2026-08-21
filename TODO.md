@@ -6,8 +6,8 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 
 - Branch: `main`
 - Baseline: `28bea93`
-- Active task: `SF-P0-008`
-- Next command: deploy the expanded Anivexa direct-provider fan-out and verify the production Anime Sub/Dub manifests; then return to the native publication gates.
+- Active task: `SF-A4-003`
+- Next command: complete the physical-phone, TV-emulator, and real-provider gates for native publication; the Anime source recovery and Anivexa catalogue-first resolver are deployed and live-smoked.
 - Reference policy: Media3 and Now in Android are approved architecture references; Aniyomi is pattern-only because it is archived; Dantotsu is excluded pending license/source verification.
 
 ## W0 — Governance and baseline
@@ -500,13 +500,13 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Commit: `cad953f`
   - Completed: 2026-08-21
 
-- [ ] SF-P0-008 — Expand Anivexa direct provider fan-out
-  - Status: in progress
+- [x] SF-P0-008 — Expand Anivexa direct provider fan-out
+  - Status: completed
   - Priority: P0
   - Depends on: SF-P0-007
-  - Evidence: focused Anime integration, source registry, startup, lint, TypeScript, and diff checks pass; production verification pending
+  - Evidence: focused Anime integration (including all-provider direct fallback), source registry, startup, lint, TypeScript, and diff checks pass; production source route returned HTTP 200 after deployment with three observed Anivexa Sub providers and three observed Anivexa Dub providers, no Anime Cinezo entries, and same-audio native candidates
   - Commit: `96616c1`, `b30d352`, `62b0ae3`
-  - Next action: commit, push, wait for Vercel Ready, and verify live Sub/Dub Anivexa provider IDs
+  - Completed: 2026-08-21
 
 - [x] SF-A4-003a — Prepare reproducible native publication artifacts
   - Status: completed
