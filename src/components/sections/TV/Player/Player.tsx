@@ -97,6 +97,16 @@ const NextEpisodeCountdownDialog: React.FC<{
   );
 };
 
+/** Mirrors the shell's selected provider into the surrounding episode panel
+ * without setting parent state during the PlayerShell render-prop call. */
+const SelectedSourceObserver: React.FC<{
+  sourceId: string;
+  onChange: (sourceId: string) => void;
+}> = ({ sourceId, onChange }) => {
+  useEffect(() => onChange(sourceId), [onChange, sourceId]);
+  return null;
+};
+
 /**
  * TV playback on the shared `PlayerShell` (Phase 6, §10 — promoted from
  * Phase 0's TV-only direct-mount controller, which is why TV is the first
@@ -123,6 +133,7 @@ const TvShowPlayer: React.FC<TvShowPlayerProps> = ({
   const router = useRouter();
   const [episodeOpened, episodeHandlers] = useDisclosure(false);
   const [nextEpisodeCountdown, setNextEpisodeCountdown] = useState<number | null>(null);
+  const [selectedSourceId, setSelectedSourceId] = useState("");
   const selectedSourceRef = useRef<string>("");
   const season = episode.season_number;
   const episodeNumber = episode.episode_number;
@@ -147,6 +158,10 @@ const TvShowPlayer: React.FC<TvShowPlayerProps> = ({
     () => ({ mediaId: tv.id, mediaType: "tv" as const, season, episode: episodeNumber }),
     [tv.id, season, episodeNumber],
   );
+  const syncSelectedSource = useCallback((sourceId: string) => {
+    selectedSourceRef.current = sourceId;
+    setSelectedSourceId((current) => (current === sourceId ? current : sourceId));
+  }, []);
 
   const playNextEpisode = useCallback(() => {
     if (!nextEpisode) return;
@@ -191,17 +206,23 @@ const TvShowPlayer: React.FC<TvShowPlayerProps> = ({
             renderHeader={({ selectedSourceId, onOpenSource, chromeHidden }) => {
               selectedSourceRef.current = selectedSourceId;
               return (
-                <TvShowPlayerHeader
-                  id={id}
-                  episode={episode}
-                  selectedSource={selectedSourceId}
-                  onOpenSource={onOpenSource}
-                  onOpenEpisode={episodeHandlers.open}
-                  nextEpisode={nextEpisode}
-                  prevEpisode={prevEpisode}
-                  hidden={chromeHidden}
-                  {...headerProps}
-                />
+                <>
+                  <SelectedSourceObserver
+                    sourceId={selectedSourceId}
+                    onChange={syncSelectedSource}
+                  />
+                  <TvShowPlayerHeader
+                    id={id}
+                    episode={episode}
+                    selectedSource={selectedSourceId}
+                    onOpenSource={onOpenSource}
+                    onOpenEpisode={episodeHandlers.open}
+                    nextEpisode={nextEpisode}
+                    prevEpisode={prevEpisode}
+                    hidden={chromeHidden}
+                    {...headerProps}
+                  />
+                </>
               );
             }}
             renderControls={(controls: PlayerShellControlsContext) => (
@@ -217,6 +238,9 @@ const TvShowPlayer: React.FC<TvShowPlayerProps> = ({
                 opened={episodeOpened}
                 onClose={episodeHandlers.close}
                 episodes={episodes}
+                seasons={tv.seasons}
+                currentSeason={season}
+                currentEpisode={episodeNumber}
                 selectedSourceId={selectedSourceId}
               />
             )}
@@ -228,7 +252,10 @@ const TvShowPlayer: React.FC<TvShowPlayerProps> = ({
               opened
               onClose={() => undefined}
               episodes={episodes}
-              selectedSourceId={undefined}
+              seasons={tv.seasons}
+              currentSeason={season}
+              currentEpisode={episodeNumber}
+              selectedSourceId={selectedSourceId}
               inline
             />
           )}
@@ -241,7 +268,10 @@ const TvShowPlayer: React.FC<TvShowPlayerProps> = ({
               opened
               onClose={() => undefined}
               episodes={episodes}
-              selectedSourceId={undefined}
+              seasons={tv.seasons}
+              currentSeason={season}
+              currentEpisode={episodeNumber}
+              selectedSourceId={selectedSourceId}
               variant="sidebar"
             />
           </div>

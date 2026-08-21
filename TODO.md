@@ -6,8 +6,8 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 
 - Branch: `main`
 - Baseline: `28bea93`
-- Active task: `SF-W5-007`
-- Next command: commit and push the passing W5 implementation, confirm its Vercel deployment is Ready, and repeat the production smoke tests.
+- Active task: `SF-W6-004`
+- Next command: commit and push the passing correction, confirm its exact Vercel deployment is Ready, then exercise Outer Banks and One Piece on production.
 - Reference policy: Media3 and Now in Android are approved architecture references; Aniyomi is pattern-only because it is archived; Dantotsu is excluded pending license/source verification.
 
 ## W0 — Governance and baseline
@@ -537,14 +537,51 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Commit: `5268b48`
   - Completed: 2026-08-21
 
-- [ ] SF-W5-007 — Commit, push, deploy, and certify production
-  - Status: not started
+- [x] SF-W5-007 — Commit, push, deploy, and certify production
+  - Status: completed
   - Priority: P0
   - Depends on: SF-W5-006
-  - Evidence: —
+  - Evidence: pushed `5268b48` and `6ef0d6f`; Vercel production deployment for `6ef0d6f` reported Ready in 1m43s; production Home hero begins at top under the overlay header; 390×844 Anime detail/player have no overflow; continuation selection and fullscreen chrome passed; live Sub exposed AniBD/ReAnime/AniKoto/AnimeGG and Dub exposed ReAnime/AniKoto with no Cinezo; ReAnime and AniKoto direct browser media failed the One Piece fixture after resolution and correctly entered the consent-based recovery UI, so upstream/browser playback is not represented as certified
+  - Commit: `6ef0d6f`
+  - Deployment: production Ready for `6ef0d6f`
+  - Completed: 2026-08-21
+
+## W6 — Cross-media episode panel correction
+
+- [x] SF-W6-001 — Add in-player TV season selection and compact episode cards
+  - Status: completed
+  - Priority: P0
+  - Depends on: SF-W5-007
+  - Evidence: production screenshot shows no TV season selector and a 220px artwork column squeezing episode titles to unusable fragments in the 300–340px sidebar
+  - Evidence: all TV player episode surfaces receive real season metadata/current context; non-special season selection fetches in place through a stable TanStack query; current playback is not remounted until an episode is chosen; selected source is mirrored into episode links; compact cards cap art at 42%, guarantee a `minmax(0,1fr)` copy column, allow two-line titles, and mark the current episode; TypeScript, authored lint, `test:episode-panel-ux`, optimized build
+  - Commit: pending implementation commit
+  - Completed: 2026-08-21
+
+- [x] SF-W6-002 — Replace Anime range pills and tighten season semantics
+  - Status: completed
+  - Priority: P0
+  - Depends on: SF-W6-001
+  - Evidence: One Piece renders 23 compressed 50-episode buttons with a horizontal scrollbar; AniList ONA relations can be mislabeled as a previous season
+  - Commit: pending implementation commit
+  - Evidence: pure 50-episode range builder produces 24 labelled ranges for One Piece; one 44px `Choose episode range` select replaces horizontal pills in sidebar/inline/sheet/drawer; season relationships now permit only TV/TV_SHORT and exclude ONA/movie/OVA/special; `test:anime-episode-navigation`, `test:episode-panel-ux`, TypeScript, authored lint, optimized build
+  - Completed: 2026-08-21
+
+- [x] SF-W6-003 — Add contracts and responsive pre-deployment QA
+  - Status: completed
+  - Priority: P0
+  - Depends on: SF-W6-001, SF-W6-002
+  - Evidence: new cross-media episode-panel contract validates TV season fetching/context/source preservation/card proportions and Anime range/season semantics; complete `verify` passed authored lint, all playback/source/UI/history/native/update contracts, TypeScript, reproducible optimized build, performance/PWA/release-artifact checks, and leak scan; production-data responsive flow remains after deployment because local TMDB credentials are intentionally absent
+  - Commit: pending implementation commit
+  - Completed: 2026-08-21
+
+- [ ] SF-W6-004 — Push, deploy, and certify TV/Anime episode panels
+  - Status: in progress
+  - Priority: P0
+  - Depends on: SF-W6-003
+  - Evidence: deterministic and build gates pass; deployment not started
   - Commit: —
   - Deployment: —
-  - Next action: push passing main, confirm exact Vercel deployment Ready, and repeat production UI/source-flow smoke tests
+  - Next action: push passing main, confirm exact Vercel deployment Ready, and repeat both panel flows on production
 
 ## W4 — Desktop shell and movie-player workspace
 

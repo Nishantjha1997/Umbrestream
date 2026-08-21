@@ -10,7 +10,12 @@ const [types, api, helper, episodeSheet, historyAction, detailEpisodes] = await 
   read("src/actions/histories.ts"),
   read("src/components/sections/Anime/Detail/Episodes.tsx"),
 ]);
-const { buildAnimeEpisodeProgress, buildAnimeSeasonOptions, getAnimeEpisodeCount } =
+const {
+  buildAnimeEpisodeProgress,
+  buildAnimeEpisodeRanges,
+  buildAnimeSeasonOptions,
+  getAnimeEpisodeCount,
+} =
   await import("../src/lib/anime/episodeNavigation.ts");
 
 assert.match(types, /relations: AniListMediaRelation\[\]/);
@@ -20,6 +25,8 @@ assert.match(helper, /SEASON_FORMATS\.has\(relation\.media\.format\)/);
 assert.match(helper, /nextAiringEpisode\.episode - 1/);
 assert.doesNotMatch(episodeSheet, /anime\.episodes \|\| 12/);
 assert.match(episodeSheet, /aria-label="Choose Anime season or continuation"/);
+assert.match(episodeSheet, /aria-label="Choose episode range"/);
+assert.doesNotMatch(episodeSheet, /overflow-x-auto/);
 assert.match(episodeSheet, /setSelectedAnimeId\(Number\(event\.target\.value\)\)/);
 assert.match(episodeSheet, /listAnime\?\.id === anime\.id/);
 assert.match(episodeSheet, /Watched/);
@@ -50,6 +57,7 @@ const current = {
     { relationType: "PREQUEL", media: media(1, "Previous") },
     { relationType: "SEQUEL", media: media(3, "Next") },
     { relationType: "SEQUEL", media: media(4, "Movie continuation", "MOVIE") },
+    { relationType: "PREQUEL", media: media(5, "Unrelated ONA", "ONA") },
   ],
 };
 assert.deepEqual(
@@ -62,6 +70,20 @@ assert.deepEqual(
 );
 assert.equal(getAnimeEpisodeCount({ episodes: null, nextAiringEpisode: { episode: 1175 } }), 1174);
 assert.equal(getAnimeEpisodeCount({ episodes: null, nextAiringEpisode: null }), 0);
+const ranges = buildAnimeEpisodeRanges(1174);
+assert.equal(ranges.length, 24);
+assert.deepEqual(ranges[0], {
+  index: 0,
+  startEpisode: 1,
+  endEpisode: 50,
+  label: "Episodes 1–50",
+});
+assert.deepEqual(ranges.at(-1), {
+  index: 23,
+  startEpisode: 1151,
+  endEpisode: 1174,
+  label: "Episodes 1151–1174",
+});
 const progress = buildAnimeEpisodeProgress([
   { episode: 1, last_position: 950, duration: 1000, completed: false },
   { episode: 2, last_position: 350, duration: 1000, completed: false },

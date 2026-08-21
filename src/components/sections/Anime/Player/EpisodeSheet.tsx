@@ -27,6 +27,7 @@ import type { AniListMediaDetail } from "@/types/anilist";
 import type { AudioVariant } from "@/lib/sources/types";
 import {
   animeTitle,
+  buildAnimeEpisodeRanges,
   buildAnimeEpisodeProgress,
   buildAnimeSeasonOptions,
   getAnimeEpisodeCount,
@@ -86,7 +87,11 @@ const AnimePlayerEpisodeSheet: React.FC<AnimePlayerEpisodeSheetProps> = ({
     buildAnimeSeasonOptions(anime).find((option) => option.id === selectedAnimeId);
   const title = listAnime ? animeTitle(listAnime) : (selectedOption?.label ?? "Anime");
   const totalEpisodes = listAnime ? getAnimeEpisodeCount(listAnime) : 0;
-  const totalChunks = Math.ceil(totalEpisodes / CHUNK_SIZE);
+  const episodeRanges = useMemo(
+    () => buildAnimeEpisodeRanges(totalEpisodes, CHUNK_SIZE),
+    [totalEpisodes],
+  );
+  const totalChunks = episodeRanges.length;
 
   const allEpisodes = useMemo(
     () => Array.from({ length: totalEpisodes }, (_, i) => i + 1),
@@ -150,25 +155,24 @@ const AnimePlayerEpisodeSheet: React.FC<AnimePlayerEpisodeSheetProps> = ({
     </label>
   );
 
-  const chunkTabs = totalChunks > 1 && (
-    <div className="border-foreground-100 flex items-center gap-1 overflow-x-auto border-b pb-2">
-      {Array.from({ length: totalChunks }, (_, idx) => {
-        const startEp = idx * CHUNK_SIZE + 1;
-        const endEp = Math.min((idx + 1) * CHUNK_SIZE, totalEpisodes);
-        return (
-          <Button
-            key={idx}
-            size="sm"
-            variant={selectedChunk === idx ? "solid" : "flat"}
-            color={selectedChunk === idx ? "primary" : "default"}
-            className="h-7 min-w-0 px-2.5 text-xs"
-            onPress={() => setSelectedChunk(idx)}
-          >
-            {startEp}-{endEp}
-          </Button>
-        );
-      })}
-    </div>
+  const episodeRangeSelector = totalChunks > 1 && (
+    <label className="flex min-w-0 flex-col gap-1.5">
+      <span className="text-[10px] font-semibold tracking-[.12em] text-white/55 uppercase">
+        Episode range
+      </span>
+      <select
+        value={selectedChunk}
+        onChange={(event) => setSelectedChunk(Number(event.target.value))}
+        className="focus-visible:ring-primary/70 min-h-11 w-full min-w-0 rounded-xl border border-white/12 bg-[#17151c] px-3 text-xs font-semibold text-white outline-none focus-visible:ring-2"
+        aria-label="Choose episode range"
+      >
+        {episodeRanges.map((range) => (
+          <option key={range.index} value={range.index}>
+            {range.label}
+          </option>
+        ))}
+      </select>
+    </label>
   );
 
   const episodeGrid = (gridClassName: string) => (
@@ -306,7 +310,10 @@ const AnimePlayerEpisodeSheet: React.FC<AnimePlayerEpisodeSheetProps> = ({
             {audioVariant === "dub" ? "Dub" : "Sub"}
             {totalEpisodes ? ` · ${totalEpisodes} episodes` : ""}
           </p>
-          <div className="mt-3">{seasonSelector}</div>
+          <div className="mt-3 grid gap-2">
+            {seasonSelector}
+            {episodeRangeSelector}
+          </div>
           <p aria-live="polite" className="mt-2 text-[11px] text-white/45">
             {isHistoryPending
               ? "Checking watch history…"
@@ -317,7 +324,6 @@ const AnimePlayerEpisodeSheet: React.FC<AnimePlayerEpisodeSheetProps> = ({
         </div>
         {/* Episode list */}
         <div className="flex flex-col gap-2 overflow-y-auto p-3">
-          {chunkTabs}
           {episodeGrid("grid grid-cols-1 gap-2")}
         </div>
       </div>
@@ -338,7 +344,10 @@ const AnimePlayerEpisodeSheet: React.FC<AnimePlayerEpisodeSheetProps> = ({
                 ? "Choose an episode from this continuation"
                 : `Episode ${currentEpisode} · ${audioVariant === "dub" ? "Dub" : "Sub"}`}
             </p>
-            <div className="mt-3 max-w-md">{seasonSelector}</div>
+            <div className="mt-3 grid max-w-md gap-2 sm:grid-cols-2">
+              {seasonSelector}
+              {episodeRangeSelector}
+            </div>
           </div>
           {nextEpisodeHref ? (
             <Button
@@ -363,7 +372,6 @@ const AnimePlayerEpisodeSheet: React.FC<AnimePlayerEpisodeSheetProps> = ({
           )}
         </div>
         <div className="flex flex-col gap-3">
-          {chunkTabs}
           <div className="max-h-[min(62vh,38rem)] overflow-y-auto pr-1">
             {episodeGrid("grid grid-cols-1 gap-2.5 sm:grid-cols-2")}
           </div>
@@ -380,8 +388,10 @@ const AnimePlayerEpisodeSheet: React.FC<AnimePlayerEpisodeSheetProps> = ({
         title={`Select Episode (${totalEpisodes})`}
       >
         <div className="flex flex-col gap-3">
-          {seasonSelector}
-          {chunkTabs}
+          <div className="grid gap-2 sm:grid-cols-2">
+            {seasonSelector}
+            {episodeRangeSelector}
+          </div>
           <ScrollShadow className="max-h-[65vh] pr-1">
             {episodeGrid("grid grid-cols-2 gap-2.5")}
           </ScrollShadow>
@@ -401,8 +411,10 @@ const AnimePlayerEpisodeSheet: React.FC<AnimePlayerEpisodeSheetProps> = ({
       withCloseButton
     >
       <div className="flex flex-col gap-3 p-4">
-        {seasonSelector}
-        {chunkTabs}
+        <div className="grid gap-2 sm:grid-cols-2">
+          {seasonSelector}
+          {episodeRangeSelector}
+        </div>
         <ScrollShadow className="h-[600px] pr-1">
           {episodeGrid("grid grid-cols-1 gap-2.5")}
         </ScrollShadow>

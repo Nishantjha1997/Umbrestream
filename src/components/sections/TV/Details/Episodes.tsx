@@ -1,6 +1,5 @@
 import { tmdbBrowser } from "@/api/tmdb-browser";
 import ServiceRetryState from "@/components/ui/feedback/ServiceRetryState";
-import useBreakpoints from "@/hooks/useBreakpoints";
 import { cn, formatDate, isEmpty } from "@/utils/helpers";
 import { PlayOutline } from "@/utils/icons";
 import { getImageUrl, getLoadingLabel, movieDurationString } from "@/utils/movies";
@@ -33,6 +32,8 @@ interface EpisodeCardProps {
   order?: number;
   withAnimation?: boolean;
   sourceId?: string;
+  compact?: boolean;
+  isCurrent?: boolean;
 }
 
 const TvShowEpisodesSelection: React.FC<TvShowEpisodesSelectionProps> = ({
@@ -104,9 +105,10 @@ export const EpisodeListCard: React.FC<EpisodeCardProps> = ({
   id,
   withAnimation = true,
   sourceId,
+  compact = false,
+  isCurrent = false,
 }) => {
   const imageUrl = getImageUrl(episode.still_path);
-  const { mobile } = useBreakpoints();
   const isNotReleased = !episode.air_date || new Date(episode.air_date) > new Date();
   const isOdd = order % 2 !== 0;
   const sourceQuery = sourceId ? `?src=${encodeURIComponent(sourceId)}` : "";
@@ -119,25 +121,30 @@ export const EpisodeListCard: React.FC<EpisodeCardProps> = ({
       isPressable={!isNotReleased}
       as={(isNotReleased ? "div" : Link) as "a"}
       href={href}
+      aria-current={isCurrent ? "page" : undefined}
       shadow="none"
       className={cn(
-        "group motion-preset-blur-right border-white/10 bg-white/[0.025] motion-duration-300 grid grid-cols-[auto_1fr] gap-3 border transition-colors duration-(--duration-fast) ease-(--ease-out-quint) motion-reduce:animate-none motion-reduce:transition-none",
+        "group motion-preset-blur-right border-white/10 bg-white/[0.025] motion-duration-300 grid min-w-0 overflow-hidden border transition-colors duration-(--duration-fast) ease-(--ease-out-quint) motion-reduce:animate-none motion-reduce:transition-none",
+        compact
+          ? "grid-cols-[minmax(108px,42%)_minmax(0,1fr)] gap-0"
+          : "grid-cols-[minmax(132px,38%)_minmax(0,1fr)] gap-3",
         {
           // Accent hover styling
           "hover:border-white/20 hover:bg-white/[0.05]": !isNotReleased,
           "cursor-not-allowed opacity-50": isNotReleased,
           "motion-preset-slide-left": isOdd && withAnimation,
           "motion-preset-slide-right": !isOdd && withAnimation,
+          "border-primary/45 bg-primary/10": isCurrent,
         },
       )}
     >
-      <div className="relative">
+      <div className={cn("relative min-w-0 overflow-hidden", compact && "min-h-24")}>
         <Image
           alt={episode.name}
           src={imageUrl}
-          height={120}
-          width={mobile ? 180 : 220}
-          className="rounded-r-none object-cover"
+          height={124}
+          width={220}
+          className="h-full w-full max-w-none rounded-r-none object-cover"
         />
         {!isNotReleased && (
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
@@ -156,20 +163,32 @@ export const EpisodeListCard: React.FC<EpisodeCardProps> = ({
           {episode.episode_number}
         </Chip>
       </div>
-      <CardBody className="flex space-y-1">
+      <CardBody
+        className={cn(
+          "flex min-w-0 overflow-hidden",
+          compact ? "space-y-0.5 p-2.5" : "space-y-1",
+        )}
+      >
         <p
           title={episode.name}
           className={cn(
-            "line-clamp-1 text-xl font-semibold transition-colors duration-(--duration-fast) ease-(--ease-out-quint) motion-reduce:transition-none",
+            "line-clamp-2 min-w-0 font-semibold transition-colors duration-(--duration-fast) ease-(--ease-out-quint) motion-reduce:transition-none",
+            compact ? "text-sm leading-[1.25rem]" : "text-xl leading-tight",
             !isNotReleased && "group-hover:text-foreground",
           )}
         >
           {episode.name}
         </p>
-        <p className="text-white/60 line-clamp-1 text-xs">
+        <p className="line-clamp-1 text-[11px] text-white/60">
           {formatDate(episode.air_date, "en-US")}
         </p>
-        <p className="text-white/70 line-clamp-2 text-sm" title={episode.overview}>
+        <p
+          className={cn(
+            "line-clamp-2 text-white/70",
+            compact ? "text-xs leading-4" : "text-sm",
+          )}
+          title={episode.overview}
+        >
           {episode.overview}
         </p>
       </CardBody>

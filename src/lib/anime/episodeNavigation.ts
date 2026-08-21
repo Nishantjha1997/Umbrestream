@@ -1,6 +1,6 @@
 import type { AniListMediaDetail, AniListMediaRelation } from "@/types/anilist";
 
-const SEASON_FORMATS = new Set(["TV", "TV_SHORT", "ONA"]);
+const SEASON_FORMATS = new Set(["TV", "TV_SHORT"]);
 
 export interface AnimeSeasonOption {
   id: number;
@@ -11,6 +11,13 @@ export interface AnimeSeasonOption {
 export interface AnimeEpisodeProgress {
   completed: boolean;
   percent: number;
+}
+
+export interface AnimeEpisodeRange {
+  index: number;
+  startEpisode: number;
+  endEpisode: number;
+  label: string;
 }
 
 interface EpisodeHistoryLike {
@@ -57,6 +64,23 @@ export function getAnimeEpisodeCount(anime: AniListMediaDetail): number {
   if (anime.episodes !== null) return Math.max(0, anime.episodes);
   if (anime.nextAiringEpisode) return Math.max(0, anime.nextAiringEpisode.episode - 1);
   return 0;
+}
+
+export function buildAnimeEpisodeRanges(
+  totalEpisodes: number,
+  rangeSize = 50,
+): AnimeEpisodeRange[] {
+  if (totalEpisodes < 1 || rangeSize < 1) return [];
+  return Array.from({ length: Math.ceil(totalEpisodes / rangeSize) }, (_, index) => {
+    const startEpisode = index * rangeSize + 1;
+    const endEpisode = Math.min((index + 1) * rangeSize, totalEpisodes);
+    return {
+      index,
+      startEpisode,
+      endEpisode,
+      label: `Episodes ${startEpisode}–${endEpisode}`,
+    };
+  });
 }
 
 export function buildAnimeEpisodeProgress(

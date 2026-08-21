@@ -227,6 +227,21 @@ Complete this web release before resuming native publication:
 
 Acceptance: no separate Home header band; no blank player spacer; no clipped Anime detail action; no Anime Cinezo; the player panel can move to an adjacent AniList season and accurately marks completed/partial episodes; and at least one live Anivexa candidate is visible for each audio variant when the upstream API returns one. Provider variability is recorded honestly rather than hidden with fake options.
 
+## 5.2 Cross-media episode-panel correction (approved 2026-08-21)
+
+Treat episode navigation as one product capability across TV and Anime rather than implementing isolated media-specific controls:
+
+1. Add a TV season selector to every TV player episode surface: desktop sidebar, narrow inline panel, desktop episode sheet, and phone drawer. Use TMDB's real non-special seasons, load the chosen season in place, and retain the current source only when it remains compatible.
+2. Redesign TV player episode cards for narrow sidebars. Cap artwork near 42% of the row, guarantee the copy column a real minimum width, allow a two-line episode title, retain readable date/overview lines, and highlight the playing episode without making cards oversized.
+3. Replace Anime's horizontal 50-episode chip strip with a labelled episode-range selector. Long titles such as One Piece must render one compact `Episodes 1–50` control instead of dozens of compressed buttons and a horizontal scrollbar.
+4. Keep Anime season/continuation and episode-range controls visually separate, keyboard/touch/remote accessible, and contained within the panel at desktop and phone widths.
+5. Restrict Anime season navigation to genuine TV/TV Short entries. Do not present ONA, movie, OVA, or special relations as a season merely because AniList marks them as a prequel or sequel.
+6. Preserve current episode, Sub/Dub, watched/partial state, and clean episode URLs when either selector changes. Never carry an episode-specific source ID across a different Anime media record.
+7. Add deterministic contracts and responsive production-build checks for TV season switching, long titles, Anime range switching, overflow, and focusable labels before deployment.
+8. Commit, push, wait for the exact Vercel deployment to be Ready, and repeat the TV and Anime panel flows on production.
+
+Acceptance: TV users can change season without leaving the player; TV titles remain understandable in the sidebar; One Piece has no compressed range-pill overflow; Anime does not call unrelated ONA entries a season; both panels remain within the viewport and preserve compatible playback context.
+
 ## 6. Android phases
 
 ### A0 — Scaffold and migration safety
