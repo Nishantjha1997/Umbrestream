@@ -140,6 +140,8 @@ class AuthSessionManager(
     }
   }
 
+  suspend fun hasSession(): Boolean = store.current() != null
+
   suspend fun signOut() {
     store.current()?.let { client.signOut(it) }
     store.clear()

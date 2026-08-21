@@ -15,6 +15,8 @@ import online.streamfree.nativeapp.designsystem.StreamFreeTheme
 import online.streamfree.nativeapp.auth.AuthSessionManager
 import online.streamfree.nativeapp.auth.AnimeNotificationClient
 import online.streamfree.nativeapp.auth.HistorySyncClient
+import online.streamfree.nativeapp.auth.HistorySyncScheduler
+import online.streamfree.nativeapp.auth.EncryptedHistorySyncQueue
 import online.streamfree.nativeapp.auth.EncryptedAuthSessionStore
 import online.streamfree.nativeapp.auth.NativeAnimeLinkResult
 import online.streamfree.nativeapp.auth.SupabaseAuthClient
@@ -49,6 +51,11 @@ class MainActivity : ComponentActivity() {
     val sourcePreferenceStore = PreferencesSourcePreferenceStore(this)
     val regionPreferenceStore = PreferencesRegionPreferenceStore(this)
     val authManager = AuthSessionManager(SupabaseAuthClient(), EncryptedAuthSessionStore(this))
+    val historySyncClient = HistorySyncClient(
+      retryQueue = EncryptedHistorySyncQueue(this),
+      onRetryQueued = { HistorySyncScheduler.enqueue(this) },
+    )
+    HistorySyncScheduler.enqueue(this)
     val launchRequest = intent.toPlaybackRequest()
     playbackController = PlaybackSessionController(
       context = this,
@@ -66,7 +73,7 @@ class MainActivity : ComponentActivity() {
             onExit = { showPlayer = false; selectedRequest = null },
             sourcePreferenceStore = sourcePreferenceStore,
             authManager = authManager,
-            historySyncClient = HistorySyncClient(),
+            historySyncClient = historySyncClient,
             initialRequest = selectedRequest,
             sourceOrchestrator = sourceOrchestrator,
             episodeCatalogResolver = episodeCatalogResolver,

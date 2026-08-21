@@ -1872,10 +1872,9 @@ The browser `/api/anime/notifications` route and bearer-authenticated
 
 The native `core:auth` module includes `AnimeNotificationClient`; signed-in
 phone and TV Home surfaces show an unread episode banner and can mark all
-alerts read. This is foreground/in-app delivery only. Background WorkManager
-delivery, Android notification permission/channel UX, and the 85% AniList/MAL
-progress scrobbler remain open in `SF-A3-003`; no push or background
-notification capability is claimed yet.
+alerts read. This remains foreground/in-app delivery only. Android notification
+permission/channel UX, background airing refresh, and optional push controls
+remain open in `SF-A3-003`; no push capability is claimed yet.
 
 ## 55. Trusted native progress sync — 2026-08-21
 
@@ -1889,6 +1888,9 @@ artwork is trusted for persistence.
 Phone and TV player shells call `HistorySyncClient` only after trusted playback
 has reached 85% or the player has ended, and de-duplicate attempts for the
 current title/season/episode/audio scope. Opening a player, buffering, or an
-untrusted embed event does not create remote history. Retry queues and
-WorkManager delivery remain open in `SF-A3-003`; a network failure currently
-leaves the local Media3 progress intact and does not claim successful sync.
+untrusted embed event does not create remote history. `EncryptedHistorySyncQueue`
+stores only playback metadata encrypted under Android Keystore, deduplicates and
+caps pending events, and `HistorySyncWorker` retries them only on a connected
+network with exponential backoff after refreshing the encrypted Supabase session.
+WorkManager input contains no bearer token. A successful direct or queued sync
+removes its matching event; a signed-out account clears abandoned queue entries.

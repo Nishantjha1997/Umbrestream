@@ -338,7 +338,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Depends on: SF-A3-002
   - Evidence: —
   - Commit: —
-  - Next action: idempotent 85% sync, WorkManager retry, FCM controls
+  - Next action: Android notification permission/channel UX, background airing refresh, and optional FCM controls
 
 - [x] SF-A3-003a — Harden aired-episode notification sync and native in-app alerts
   - Status: completed
@@ -346,6 +346,14 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Depends on: none
   - Evidence: shared AniList past-airing schedule resolver no longer treats total `episodes` as aired; future and finished-title false positives are covered by `scripts/check-anime-notifications.mjs`; browser and bearer-native notification routes share the sync/read contract; native notification client and signed-in phone/TV Home banners parse and mark alerts read; trusted native playback sync posts once at 85% or validated end through the bearer history route; web TypeScript, targeted ESLint, `:core:auth:test`, both app Kotlin compilation, Android-test Kotlin compilation, and `git diff --check` pass
   - Commit: `1d6a3b9`
+  - Completed: 2026-08-21
+
+- [x] SF-A3-003b — Add encrypted native history-sync retry
+  - Status: completed
+  - Priority: P1
+  - Depends on: SF-A3-003a
+  - Evidence: `EncryptedHistorySyncQueue` stores only encrypted playback metadata under an Android Keystore AES-GCM key; WorkManager uses connected-network constraints, unique work, exponential backoff, a 50-event cap, deduplication, session refresh, and no bearer token in input data; failed trusted syncs enqueue and schedule recovery, successful syncs remove their matching event; auth retry tests, `scripts/verify.ps1`, phone/TV compilation, strict lint, and `git diff --check` passed
+  - Commit: `pending`
   - Completed: 2026-08-21
 
 - [ ] SF-A3-004 — Complete native Home/details/library/settings/onboarding parity

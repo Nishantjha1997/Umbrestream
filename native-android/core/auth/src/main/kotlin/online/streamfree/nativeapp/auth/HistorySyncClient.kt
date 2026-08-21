@@ -10,6 +10,8 @@ import online.streamfree.nativeapp.network.StreamFreeHttpTransport
 
 class HistorySyncClient(
   private val transport: StreamFreeHttpTransport = StreamFreeHttpClient(PRODUCTION_POLICY),
+  private val retryQueue: HistorySyncRetryQueue? = null,
+  private val onRetryQueued: (() -> Unit)? = null,
 ) {
   suspend fun sync(
     bearerToken: String,
@@ -23,16 +25,25 @@ class HistorySyncClient(
   ): Boolean = withContext(Dispatchers.IO) {
     if (bearerToken.isBlank() || mediaId.isBlank() || mediaType !in ALLOWED_TYPES) return@withContext false
     if (!currentTimeSeconds.isFinite() || currentTimeSeconds < 0.0 || !durationSeconds.isFinite() || durationSeconds <= 0.0) return@withContext false
-    runCatching {
+    val event = PendingHistorySync(
+      mediaType = mediaType,
+      mediaId = mediaId,
+      currentTimeSeconds = currentTimeSeconds.coerceAtMost(durationSeconds),
+      durationSeconds = durationSeconds,
+      season = season,
+      episode = episode,
+      completed = completed,
+    )
+    val synced = runCatching {
       val body = buildJsonObject {
         put("event", if (completed) "ended" else "timeupdate")
-        put("currentTime", currentTimeSeconds.coerceAtMost(durationSeconds))
-        put("duration", durationSeconds)
-        put("mediaId", mediaId)
-        put("mediaType", mediaType)
-        season?.let { put("season", it) }
-        episode?.let { put("episode", it) }
-        put("completed", completed)
+        put("currentTime", event.currentTimeSeconds)
+        put("duration", event.durationSeconds)
+        put("mediaId", event.mediaId)
+        put("mediaType", event.mediaType)
+        event.season?.let { put("season", it) }
+        event.episode?.let { put("episode", it) }
+        put("completed", event.completed)
       }.toString()
       val response = transport.post(
         "$DEFAULT_API_BASE_URL/api/mobile/history",
@@ -45,6 +56,9 @@ class HistorySyncClient(
       )
       response.statusCode in 200..299
     }.getOrDefault(false)
+    if (synced) retryQueue?.remove(event)
+    else retryQueue?.enqueue(event)?.also { onRetryQueued?.invoke() }
+    synced
   }
 
   companion object {
