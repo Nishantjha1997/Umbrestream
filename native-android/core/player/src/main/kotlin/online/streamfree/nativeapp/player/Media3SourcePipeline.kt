@@ -69,7 +69,13 @@ class Media3SourcePipeline(
       .setDefaultRequestProperties(headers)
       .setUserAgent(headers.userAgentOrNull() ?: policy.defaultUserAgent)
     val upstreamFactory: DataSource.Factory = DefaultDataSource.Factory(applicationContext, httpFactory)
-    val dataSourceFactory: DataSource.Factory = if (policy.streamCache.shouldCache(source)) {
+    val offlineCache = OfflineDownloadStore.cacheForPlayback(applicationContext, source)
+    val dataSourceFactory: DataSource.Factory = if (offlineCache != null) {
+      CacheDataSource.Factory()
+        .setCache(offlineCache)
+        .setUpstreamDataSourceFactory(upstreamFactory)
+        .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
+    } else if (policy.streamCache.shouldCache(source)) {
       StreamCacheStore.getOrCreate(applicationContext, policy.streamCache)?.let { cache ->
         CacheDataSource.Factory()
           .setCache(cache)

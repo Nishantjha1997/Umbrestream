@@ -359,6 +359,14 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Commit: `2c87537`
   - Completed: 2026-08-21
 
+- [x] SF-A3-001b — Add Media3 offline download service and persistent playback cache
+  - Status: completed
+  - Priority: P1
+  - Depends on: SF-A3-001a
+  - Evidence: persistent no-eviction Media3 download cache, Wi-Fi/unmetered requirement by default, one-at-a-time background DownloadService, foreground progress notification, pause/resume/remove commands, stable content IDs, offline-cache playback reuse, storage ceiling checks, phone/TV service declarations, and source-policy tests; `:core:player:test`, `:core:player:lintDebug`, both app debug Kotlin compiles, both app debug lint, and `git diff --check` passed
+  - Commit: pending
+  - Next action: build signed phone/TV release candidates; current third-party providers remain disabled for permanent downloads until an explicit provider-authorized allowlist is configured
+
 - [ ] SF-A3-002 — Add AniList and MAL secure linking
   - Status: pending external configuration
   - Priority: P1

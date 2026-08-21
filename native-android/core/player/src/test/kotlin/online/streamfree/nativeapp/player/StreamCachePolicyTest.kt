@@ -3,6 +3,7 @@ package online.streamfree.nativeapp.player
 import online.streamfree.nativeapp.source.ResolvedSource
 import online.streamfree.nativeapp.source.SourceKind
 import online.streamfree.nativeapp.source.StreamFormat
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -43,6 +44,29 @@ class StreamCachePolicyTest {
 
     assertTrue(policy.permitsOfflinePlayback(direct))
     assertFalse(policy.permitsOfflinePlayback(embed))
+  }
+
+  @Test
+  fun `offline policy rejects hotlink header sources and unsupported embeds`() {
+    val policy = OfflineDownloadPolicy(
+      enabled = true,
+      permittedProviderIds = setOf("direct-provider"),
+    )
+
+    assertTrue(policy.canDownload(direct))
+    assertFalse(policy.canDownload(direct.copy(headerPolicyId = "provider-origin")))
+    assertFalse(policy.canDownload(embed))
+  }
+
+  @Test
+  fun `offline download identity is stable and source-specific`() {
+    val policy = OfflineDownloadPolicy(
+      enabled = true,
+      permittedProviderIds = setOf("direct-provider"),
+    )
+    assertEquals(OfflineDownloadStore.contentId(direct), OfflineDownloadStore.contentId(direct.copy()))
+    assertFalse(OfflineDownloadStore.contentId(direct) == OfflineDownloadStore.contentId(direct.copy(providerId = "another")))
+    assertTrue(policy.canDownload(direct))
   }
 
   @Test(expected = IllegalArgumentException::class)

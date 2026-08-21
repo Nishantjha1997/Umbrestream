@@ -11,8 +11,8 @@ android {
     applicationId = "online.streamfree.tv"
     minSdk = libs.versions.minSdk.get().toInt()
     targetSdk = libs.versions.targetSdk.get().toInt()
-    versionCode = providers.gradleProperty("streamfree.tv.versionCode").orNull?.toIntOrNull() ?: 10
-    versionName = providers.gradleProperty("streamfree.tv.versionName").orNull ?: "1.3.2-native"
+    versionCode = providers.gradleProperty("streamfree.tv.versionCode").orNull?.toIntOrNull() ?: 11
+    versionName = providers.gradleProperty("streamfree.tv.versionName").orNull ?: "1.3.3-native"
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
 

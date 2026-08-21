@@ -101,6 +101,8 @@ import online.streamfree.nativeapp.player.PlaybackSessionController
 import online.streamfree.nativeapp.player.PlaybackUiState
 import online.streamfree.nativeapp.player.PlaybackDisplayModeStore
 import online.streamfree.nativeapp.player.SourcePreferenceStore
+import online.streamfree.nativeapp.player.OfflineDownloadPolicy
+import online.streamfree.nativeapp.player.OfflineDownloadStore
 import online.streamfree.nativeapp.player.RegionPreferenceStore
 import online.streamfree.nativeapp.player.OnboardingPreferenceStore
 import online.streamfree.nativeapp.model.MediaType
@@ -731,6 +733,8 @@ fun PhonePlayerScreen(
   onEnterPictureInPicture: (() -> Unit)? = null,
   authManager: AuthSessionManager? = null,
   historySyncClient: HistorySyncClient? = null,
+  offlineDownloadPolicy: OfflineDownloadPolicy = OfflineDownloadPolicy(),
+  onDownloadRequested: ((PlaybackRequest, ResolvedSource) -> Unit)? = null,
   sourceCandidates: List<ResolvedSource> = emptyList(),
   sourcePreferenceStore: SourcePreferenceStore,
   initialRequest: PlaybackRequest? = null,
@@ -884,6 +888,12 @@ fun PhonePlayerScreen(
         sourceCount = resolvedSourceCandidates.size,
         onOpenSources = { showSourcePicker = true },
         onOpenSettings = { showSettings = true },
+        downloadAvailable = state.source?.let { OfflineDownloadStore.canDownload(offlineDownloadPolicy, it) } == true,
+        onDownload = {
+          val request = state.request
+          val source = state.source
+          if (request != null && source != null) onDownloadRequested?.invoke(request, source)
+        },
         onDisplayModeChanged = { mode -> scope.launch { displayModeStore.set(mode) } },
          onFullscreenChanged = { fullscreen ->
            isFullscreen = fullscreen
@@ -1034,6 +1044,8 @@ private fun PlayerCinemaStage(
   sourceCount: Int,
   onOpenSources: () -> Unit,
   onOpenSettings: () -> Unit,
+  downloadAvailable: Boolean,
+  onDownload: () -> Unit,
   onDisplayModeChanged: (PlaybackDisplayMode) -> Unit,
   onFullscreenChanged: (Boolean) -> Unit,
   onEnterPictureInPicture: (() -> Unit)? = null,
@@ -1096,6 +1108,8 @@ private fun PlayerCinemaStage(
       sourceCount = sourceCount,
       onOpenSources = onOpenSources,
       onOpenSettings = onOpenSettings,
+      downloadAvailable = downloadAvailable,
+      onDownload = onDownload,
        onDisplayModeChanged = onDisplayModeChanged,
        onFullscreenChanged = onFullscreenChanged,
        onEnterPictureInPicture = onEnterPictureInPicture,
@@ -1116,6 +1130,8 @@ private fun PlayerOverlay(
   sourceCount: Int,
   onOpenSources: () -> Unit,
   onOpenSettings: () -> Unit,
+  downloadAvailable: Boolean,
+  onDownload: () -> Unit,
   onDisplayModeChanged: (PlaybackDisplayMode) -> Unit,
   onFullscreenChanged: (Boolean) -> Unit,
   onEnterPictureInPicture: (() -> Unit)? = null,
@@ -1229,6 +1245,16 @@ private fun PlayerOverlay(
             .semantics { contentDescription = "Open playback settings" },
         ) {
           Text("More")
+        }
+        if (downloadAvailable) {
+          Button(
+            onClick = onDownload,
+            modifier = Modifier
+              .sizeIn(minWidth = 88.dp, minHeight = 48.dp)
+              .semantics { contentDescription = "Download this episode for offline playback" },
+          ) {
+            Text("Download")
+          }
         }
         Text(
           text = playbackStatus(state),

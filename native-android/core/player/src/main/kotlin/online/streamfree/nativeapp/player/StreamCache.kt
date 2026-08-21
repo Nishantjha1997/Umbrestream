@@ -50,9 +50,26 @@ data class StreamCachePolicy(
 data class OfflineDownloadPolicy(
   val enabled: Boolean = false,
   val permittedProviderIds: Set<String> = emptySet(),
+  val maxStorageBytes: Long = 2L * 1024L * 1024L * 1024L,
+  val wifiOnly: Boolean = true,
 ) {
+  init {
+    require(maxStorageBytes in MIN_DOWNLOAD_BYTES..MAX_DOWNLOAD_BYTES) {
+      "Offline storage must be between 256 MiB and 8 GiB"
+    }
+  }
+
   fun canDownload(source: ResolvedSource): Boolean =
-    enabled && source.kind == SourceKind.NativeDirect && source.providerId in permittedProviderIds
+    enabled &&
+      source.kind == SourceKind.NativeDirect &&
+      source.format in setOf(online.streamfree.nativeapp.source.StreamFormat.Hls, online.streamfree.nativeapp.source.StreamFormat.Dash, online.streamfree.nativeapp.source.StreamFormat.Mp4) &&
+      source.headerPolicyId == null &&
+      source.providerId in permittedProviderIds
+
+  private companion object {
+    const val MIN_DOWNLOAD_BYTES = 256L * 1024L * 1024L
+    const val MAX_DOWNLOAD_BYTES = 8L * 1024L * 1024L * 1024L
+  }
 }
 
 /**

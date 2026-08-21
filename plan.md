@@ -307,6 +307,8 @@ Requirements: per-request allowlisted headers for manifests/chunks, no redirect 
 
 Separate bounded streaming LRU from persistent Media3 `DownloadService` storage. Support Wi-Fi-only, storage limits, pause/resume/remove, foreground notifications, and offline playback only for permitted stable sources. Never bypass DRM.
 
+Offline implementation gate: the native layer now owns a persistent no-eviction Media3 download cache and per-app DownloadService for background progress, but `OfflineDownloadPolicy` defaults to an empty provider allowlist. Only a provider explicitly approved for permanent storage may expose Download; embeds and sources requiring provider-specific hotlink headers remain ineligible.
+
 ### A5 — AniList, MAL, sync, notifications
 
 1. Keep provider secrets out of APK.

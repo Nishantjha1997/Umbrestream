@@ -13,8 +13,8 @@ android {
     applicationId = "online.streamfree.app"
     minSdk = libs.versions.minSdk.get().toInt()
     targetSdk = libs.versions.targetSdk.get().toInt()
-    versionCode = providers.gradleProperty("streamfree.phone.versionCode").orNull?.toIntOrNull() ?: 12
-    versionName = providers.gradleProperty("streamfree.phone.versionName").orNull ?: "1.4.2-native"
+    versionCode = providers.gradleProperty("streamfree.phone.versionCode").orNull?.toIntOrNull() ?: 13
+    versionName = providers.gradleProperty("streamfree.phone.versionName").orNull ?: "1.4.3-native"
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
 

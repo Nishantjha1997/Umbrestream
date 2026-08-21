@@ -5,6 +5,7 @@ import android.os.Build
 import android.content.pm.ActivityInfo
 import android.content.Intent
 import android.app.PictureInPictureParams
+import android.widget.Toast
 import android.graphics.Rect
 import android.util.Rational
 import java.io.File
@@ -40,6 +41,8 @@ import online.streamfree.nativeapp.player.PreferencesPlaybackStore
 import online.streamfree.nativeapp.player.PreferencesSourcePreferenceStore
 import online.streamfree.nativeapp.player.PreferencesRegionPreferenceStore
 import online.streamfree.nativeapp.player.PreferencesOnboardingPreferenceStore
+import online.streamfree.nativeapp.player.OfflineDownloadPolicy
+import online.streamfree.nativeapp.player.OfflineDownloadStore
 import online.streamfree.nativeapp.source.SourceResolverRegistry
 import online.streamfree.nativeapp.source.StreamFreeSourceApiResolver
 import online.streamfree.nativeapp.source.StreamFreeEpisodeCatalogResolver
@@ -68,6 +71,9 @@ class MainActivity : ComponentActivity() {
     val regionPreferenceStore = PreferencesRegionPreferenceStore(this)
     val authManager = AuthSessionManager(SupabaseAuthClient(), EncryptedAuthSessionStore(this))
     val notificationPreferenceStore = AnimeNotificationPreferenceStore(this)
+    // Empty by default. A provider must explicitly authorize offline storage
+    // before its native direct sources can expose the Download action.
+    val offlineDownloadPolicy = OfflineDownloadPolicy()
     val historySyncClient = HistorySyncClient(
       retryQueue = EncryptedHistorySyncQueue(this),
       onRetryQueued = { HistorySyncScheduler.enqueue(this) },
@@ -94,6 +100,26 @@ class MainActivity : ComponentActivity() {
             onEnterPictureInPicture = ::enterPictureInPicture,
             authManager = authManager,
             historySyncClient = historySyncClient,
+            offlineDownloadPolicy = offlineDownloadPolicy,
+            onDownloadRequested = { request, source ->
+              runCatching {
+                OfflineDownloadStore.enqueue(
+                  this@MainActivity,
+                  PhoneDownloadService::class.java,
+                  request,
+                  source,
+                  offlineDownloadPolicy,
+                )
+              }.onSuccess {
+                Toast.makeText(this@MainActivity, "Download queued", Toast.LENGTH_SHORT).show()
+              }.onFailure { error ->
+                Toast.makeText(
+                  this@MainActivity,
+                  error.message ?: "Offline download unavailable",
+                  Toast.LENGTH_LONG,
+                ).show()
+              }
+            },
             initialRequest = selectedRequest,
             sourceOrchestrator = sourceOrchestrator,
             episodeCatalogResolver = episodeCatalogResolver,
