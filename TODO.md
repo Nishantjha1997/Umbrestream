@@ -195,6 +195,14 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Deployment: `dpl_3wzcvTEEeQdk2eWsghNhGVnbdikx` (`READY`, aliases `streamfree.online`)
   - Completed: 2026-08-20
 
+- [x] SF-P0-006 — Reconfirm live production source contracts after native changes
+  - Status: completed
+  - Priority: P0
+  - Depends on: SF-P0-005
+  - Evidence: live `streamfree.online` smoke returned HTTP 200 for `/`, `/api/mobile/config`, `/robots.txt`, `/sitemap.xml`, movie fixture `tmdbId=1212763`, TV fixture `tmdbId=1399/1/1`, and anime fixture `anilistId=21/episode=1`; production policy is `2026-08-reliability-v5`, defaults are Filmu/movie, VidKing/TV, and labelled anime Sub/Dub candidates; this confirms the API contract and source metadata only, not real-provider playback certification
+  - Commit: pending
+  - Completed: 2026-08-21
+
 - [x] SF-W3-003 — Update exact APK download headers and security checks
   - Status: completed
   - Priority: P0
@@ -466,7 +474,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Status: in progress
   - Priority: P0
   - Depends on: SF-A4-002
-  - Evidence: publication staging contains fresh phone/TV candidates and matching native fresh-install manifests; full deterministic native verification passed; phone/TV hardware, TV-emulator, and real-provider gates remain open; no production download was changed
+  - Evidence: publication staging contains fresh phone/TV candidates and matching native fresh-install manifests; full deterministic native verification passed; live web/API smoke passed; `adb devices -l` currently reports no connected phone and no Android TV emulator/system image is available, so signed install/orientation/updater and real-provider playback gates remain open; no production download was changed
   - Commit: —
   - Deployment: —
   - Next action: phone hardware, TV emulator, real-provider smoke tests, Vercel publication

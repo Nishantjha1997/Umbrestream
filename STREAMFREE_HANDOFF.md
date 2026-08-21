@@ -2085,3 +2085,18 @@ code `10`. This prevents a future operator from invoking the release script
 without arguments and accidentally producing a lower version code. Explicit
 version properties remain available for a deliberate future release, and the
 public manifests remain unchanged until the release gates pass.
+
+## 68. Live production contract smoke — 2026-08-21
+
+The deployed web origin returned HTTP 200 for the home page, mobile config,
+robots, and sitemap. The live player-source route returned HTTP 200 for a movie
+fixture (`1212763`), a multi-episode TV fixture (`1399`, season 1 episode 1),
+and an anime fixture (AniList `21`, episode 1 with Sub preference). Production
+reported policy `2026-08-reliability-v5`, Filmu as the movie default, VidKing
+as the TV default, and labelled anime Sub/Dub candidates. This is a live API
+contract/source-metadata smoke only; it does not replace real iframe playback
+or signed-device certification.
+
+At the final gate check, `adb devices -l` reported no connected phone and no
+Android TV emulator/system image was available. The private native candidates
+therefore remain staged and the public APK manifests/downloads remain unchanged.
