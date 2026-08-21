@@ -17,6 +17,7 @@ import online.streamfree.nativeapp.auth.AnimeNotificationClient
 import online.streamfree.nativeapp.auth.HistorySyncClient
 import online.streamfree.nativeapp.auth.HistorySyncScheduler
 import online.streamfree.nativeapp.auth.EncryptedHistorySyncQueue
+import online.streamfree.nativeapp.auth.AnimeNotificationScheduler
 import online.streamfree.nativeapp.auth.EncryptedAuthSessionStore
 import online.streamfree.nativeapp.auth.NativeAnimeLinkResult
 import online.streamfree.nativeapp.auth.SupabaseAuthClient
@@ -56,6 +57,7 @@ class MainActivity : ComponentActivity() {
       onRetryQueued = { HistorySyncScheduler.enqueue(this) },
     )
     HistorySyncScheduler.enqueue(this)
+    AnimeNotificationScheduler.ensure(this)
     val launchRequest = intent.toPlaybackRequest()
     playbackController = PlaybackSessionController(
       context = this,

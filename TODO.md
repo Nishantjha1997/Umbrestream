@@ -356,6 +356,14 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Commit: `54cf078`
   - Completed: 2026-08-21
 
+- [x] SF-A3-003c — Add idempotent native new-episode notifications
+  - Status: completed
+  - Priority: P1
+  - Depends on: SF-A3-003b
+  - Evidence: Android notification permission is declared and requested after sign-in; a dedicated episode channel, per-user delivered-ID state, unread-only dedupe, periodic connected-network WorkManager refresh, and safe permission checks are implemented; delivery-state tests, `scripts/verify.ps1`, phone/TV compilation, strict lint, and `git diff --check` passed
+  - Commit: `pending`
+  - Completed: 2026-08-21
+
 - [ ] SF-A3-004 — Complete native Home/details/library/settings/onboarding parity
   - Status: not started
   - Priority: P1

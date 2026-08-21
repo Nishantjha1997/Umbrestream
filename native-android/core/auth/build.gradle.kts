@@ -26,6 +26,7 @@ kotlin {
 
 dependencies {
   implementation(project(":core:network"))
+  implementation(libs.androidx.core.ktx)
   implementation(libs.okhttp)
   implementation(libs.androidx.datastore.preferences)
   implementation(libs.androidx.work.runtime.ktx)

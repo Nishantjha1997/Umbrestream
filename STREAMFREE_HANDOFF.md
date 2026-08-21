@@ -1894,3 +1894,15 @@ caps pending events, and `HistorySyncWorker` retries them only on a connected
 network with exponential backoff after refreshing the encrypted Supabase session.
 WorkManager input contains no bearer token. A successful direct or queued sync
 removes its matching event; a signed-out account clears abandoned queue entries.
+
+## 56. Native new-episode notifications — 2026-08-21
+
+Native notification delivery now has a dedicated `anime-episodes` channel and
+requests `POST_NOTIFICATIONS` after a signed-in Home session on Android 13+.
+`AnimeNotificationWorker` refreshes the shared bearer notification route every
+six hours when connected, with WorkManager backoff. Per-user delivered IDs are
+deduplicated and capped locally, and notification delivery is skipped rather
+than marked delivered when permission is unavailable. The channel uses only
+title and episode metadata returned by the authenticated server; no provider
+URLs or tokens enter notification state. FCM/push delivery and user-configurable
+quiet hours remain future work under `SF-A3-003`.

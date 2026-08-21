@@ -2,7 +2,11 @@
 
 package online.streamfree.nativeapp.tv
 
+import android.Manifest
+import android.app.Activity
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -56,6 +60,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.net.toUri
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
@@ -137,6 +143,14 @@ fun TvHomeScreen(
       animeNotifications = null
     } else {
       animeNotifications = authManager.accessToken()?.let { notificationClient.load(it) }
+    }
+  }
+  LaunchedEffect(accountEmail) {
+    if (accountEmail != null && Build.VERSION.SDK_INT >= 33) {
+      val activity = context as? Activity
+      if (activity != null && ContextCompat.checkSelfPermission(activity, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+        ActivityCompat.requestPermissions(activity, arrayOf(Manifest.permission.POST_NOTIFICATIONS), NOTIFICATION_PERMISSION_REQUEST_CODE)
+      }
     }
   }
   LaunchedEffect(animeLinkResult) {
@@ -298,6 +312,8 @@ fun TvHomeScreen(
     )
   }
 }
+
+private const val NOTIFICATION_PERMISSION_REQUEST_CODE = 4108
 
 @Composable
 internal fun TvHomeFeed(

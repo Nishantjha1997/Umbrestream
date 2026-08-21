@@ -2,10 +2,13 @@
 
 package online.streamfree.nativeapp.phone
 
+import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.media.AudioManager
+import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -69,6 +72,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.net.toUri
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import androidx.media3.common.C
@@ -155,6 +160,14 @@ fun PhoneHomeScreen(
       animeNotifications = null
     } else {
       animeNotifications = authManager.accessToken()?.let { notificationClient.load(it) }
+    }
+  }
+  LaunchedEffect(accountEmail) {
+    if (accountEmail != null && Build.VERSION.SDK_INT >= 33) {
+      val activity = context as? Activity
+      if (activity != null && ContextCompat.checkSelfPermission(activity, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+        ActivityCompat.requestPermissions(activity, arrayOf(Manifest.permission.POST_NOTIFICATIONS), NOTIFICATION_PERMISSION_REQUEST_CODE)
+      }
     }
   }
   LaunchedEffect(animeLinkResult) {
@@ -320,6 +333,8 @@ fun PhoneHomeScreen(
     )
   }
 }
+
+private const val NOTIFICATION_PERMISSION_REQUEST_CODE = 4107
 
 @Composable
 internal fun PhoneHomeFeed(
