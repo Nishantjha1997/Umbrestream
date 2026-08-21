@@ -403,7 +403,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P0
   - Depends on: SF-A0-002
   - Evidence: native updater hardcodes the official phone/TV manifest paths; validates schema, package, version, path, size, checksum, signing certificate, and APK parseability; deletes temporary and finalized files on any verification failure; Home exposes user-confirmed Check for updates and Download & install via private FileProvider; `:core:auth:test`, both app compiles, strict lint, debug APK assembly, and `git diff --check` passed
-  - Commit: —
+  - Commit: `b89eafd`
   - Completed: 2026-08-21
 
 - [ ] SF-A4-003 — Publish manifests/APKs and certify production
