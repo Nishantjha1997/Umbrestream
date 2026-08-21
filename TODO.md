@@ -7,7 +7,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 - Branch: `main`
 - Baseline: `28bea93`
 - Active task: `SF-A3-002`
-- Next command: register native callback URLs, apply the OAuth transaction migration, and exercise provider linking on the connected phone; keep device/provider/release testing gated until that integration passes.
+- Next command: register native callback URLs, apply the OAuth transaction migration, and exercise provider linking on the connected phone; the onboarding slice is complete and device/provider/release testing remains gated until that integration passes.
 - Reference policy: Media3 and Now in Android are approved architecture references; Aniyomi is pattern-only because it is archived; Dantotsu is excluded pending license/source verification.
 
 ## W0 — Governance and baseline
@@ -290,6 +290,14 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Commit: `pending`
   - Next action: connect the resolver to the authenticated native session token in SF-A3-002, then execute cursor loading on a device with more than 24 incomplete titles.
 
+- [x] SF-A3-004a — Add persistent, replayable native onboarding tour
+  - Status: completed
+  - Priority: P1
+  - Depends on: SF-A2-007
+  - Evidence: shared DataStore-backed completion contract, four-step phone/TV Compose tour, Skip/Back/Next/Done actions, and replayable Home `Help & tour` action; `:core:player:test`, both app Kotlin compiles, `native-android/scripts/verify.ps1`, strict lint, debug APK assembly, and `git diff --check` passed
+  - Commit: pending
+  - Completed: 2026-08-21
+
 - [x] SF-A2-004 — Build independent native TV playback shell foundation
   - Status: completed
   - Priority: P0
@@ -338,7 +346,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Depends on: SF-A3-002
   - Evidence: —
   - Commit: —
-  - Next action: Android notification permission/channel UX, background airing refresh, and optional FCM controls
+  - Next action: verify background airing refresh policy, add quiet-hours controls if required, and decide whether FCM is needed; current permission/channel/periodic refresh work is complete in SF-A3-003c.
 
 - [x] SF-A3-003a — Harden aired-episode notification sync and native in-app alerts
   - Status: completed

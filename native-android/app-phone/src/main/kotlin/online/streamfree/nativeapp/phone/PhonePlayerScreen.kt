@@ -97,6 +97,7 @@ import online.streamfree.nativeapp.player.PlaybackUiState
 import online.streamfree.nativeapp.player.PlaybackDisplayModeStore
 import online.streamfree.nativeapp.player.SourcePreferenceStore
 import online.streamfree.nativeapp.player.RegionPreferenceStore
+import online.streamfree.nativeapp.player.OnboardingPreferenceStore
 import online.streamfree.nativeapp.model.MediaType
 import online.streamfree.nativeapp.model.AudioVariant
 import online.streamfree.nativeapp.model.AdjacentEpisodeResolver
@@ -121,6 +122,7 @@ fun PhoneHomeScreen(
   onOpenPlayer: () -> Unit,
   feedResolver: StreamFreeHomeFeedResolver? = null,
   regionPreferenceStore: RegionPreferenceStore? = null,
+  onboardingPreferenceStore: OnboardingPreferenceStore? = null,
   authManager: AuthSessionManager? = null,
   notificationClient: AnimeNotificationClient? = null,
   animeLinkResult: NativeAnimeLinkResult? = null,
@@ -141,6 +143,9 @@ fun PhoneHomeScreen(
   var animeNotifications by remember { mutableStateOf<NativeAnimeNotifications?>(null) }
   val context = LocalContext.current
   var showRegionDialog by rememberSaveable { mutableStateOf(false) }
+  var showTour by rememberSaveable { mutableStateOf(false) }
+  var tourStep by rememberSaveable { mutableStateOf(0) }
+  var onboardingCompleted by remember { mutableStateOf<Boolean?>(null) }
   val homeScope = rememberCoroutineScope()
   fun reloadHome() {
     homeScope.launch {
@@ -176,6 +181,12 @@ fun PhoneHomeScreen(
       if (result.success) reloadHome()
       onAnimeLinkResultHandled()
     }
+  }
+  LaunchedEffect(onboardingPreferenceStore) {
+    onboardingCompleted = onboardingPreferenceStore?.hasCompleted() ?: true
+  }
+  LaunchedEffect(onboardingCompleted) {
+    if (onboardingCompleted == false) showTour = true
   }
   fun loadMoreContinue(cursor: String) {
     if (loadingContinue || feedResolver == null) return
@@ -263,6 +274,10 @@ fun PhoneHomeScreen(
         onLoadMore = { row ->
           if (row.kind == "continue") row.nextCursor?.let(::loadMoreContinue)
         },
+        onOpenTour = {
+          tourStep = 0
+          showTour = true
+        },
         onOpenTitle = onOpenTitle,
       )
     }
@@ -332,6 +347,24 @@ fun PhoneHomeScreen(
       },
     )
   }
+  if (showTour) {
+    PhoneOnboardingDialog(
+      step = tourStep,
+      onSkip = {
+        showTour = false
+        homeScope.launch { onboardingPreferenceStore?.markCompleted() }
+      },
+      onBack = { tourStep = (tourStep - 1).coerceAtLeast(0) },
+      onNext = {
+        if (tourStep == PHONE_TOUR_STEPS.lastIndex) {
+          showTour = false
+          homeScope.launch { onboardingPreferenceStore?.markCompleted() }
+        } else {
+          tourStep += 1
+        }
+      },
+    )
+  }
 }
 
 private const val NOTIFICATION_PERMISSION_REQUEST_CODE = 4107
@@ -347,6 +380,7 @@ internal fun PhoneHomeFeed(
   linkMessage: String? = null,
   animeNotifications: NativeAnimeNotifications? = null,
   onMarkAnimeNotificationsRead: (() -> Unit)? = null,
+  onOpenTour: (() -> Unit)? = null,
   onLoadMore: (NativeHomeRow) -> Unit = {},
   onOpenTitle: (PlaybackRequest) -> Unit,
 ) {
@@ -374,6 +408,11 @@ internal fun PhoneHomeFeed(
           if (onAccountAction != null) {
             OutlinedButton(onClick = onAccountAction, modifier = Modifier.sizeIn(minHeight = 48.dp)) {
               Text(accountEmail?.let { "Sign out" } ?: "Sign in")
+            }
+          }
+          if (onOpenTour != null) {
+            OutlinedButton(onClick = onOpenTour, modifier = Modifier.sizeIn(minHeight = 48.dp)) {
+              Text("Help & tour")
             }
           }
         }
@@ -471,6 +510,48 @@ internal fun PhoneHomeFeed(
       }
     }
   }
+}
+
+private data class PhoneTourStep(val title: String, val body: String)
+
+private val PHONE_TOUR_STEPS = listOf(
+  PhoneTourStep("Find something to watch", "Browse movies, TV, and anime from Home. Region controls tune recommendations without changing your playback settings."),
+  PhoneTourStep("Choose how you watch", "Open a title to choose a playback source. Anime keeps Sub and Dub sources clearly separated."),
+  PhoneTourStep("Pick up where you left off", "Continue Watching and trusted playback progress keep your place across sessions when you sign in."),
+  PhoneTourStep("Stay in control", "Use Help & tour any time. Check the app for secure updates and retry sync when your connection returns."),
+)
+
+@Composable
+private fun PhoneOnboardingDialog(
+  step: Int,
+  onSkip: () -> Unit,
+  onBack: () -> Unit,
+  onNext: () -> Unit,
+) {
+  val current = PHONE_TOUR_STEPS[step.coerceIn(PHONE_TOUR_STEPS.indices)]
+  AlertDialog(
+    onDismissRequest = onSkip,
+    title = { Text(current.title) },
+    text = {
+      Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text("${step + 1} of ${PHONE_TOUR_STEPS.size}", style = MaterialTheme.typography.labelLarge)
+        Text(current.body, style = MaterialTheme.typography.bodyLarge)
+      }
+    },
+    confirmButton = {
+      Button(onClick = onNext, modifier = Modifier.sizeIn(minWidth = 96.dp, minHeight = 48.dp)) {
+        Text(if (step == PHONE_TOUR_STEPS.lastIndex) "Done" else "Next")
+      }
+    },
+    dismissButton = {
+      Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        if (step > 0) {
+          OutlinedButton(onClick = onBack, modifier = Modifier.sizeIn(minHeight = 48.dp)) { Text("Back") }
+        }
+        OutlinedButton(onClick = onSkip, modifier = Modifier.sizeIn(minHeight = 48.dp)) { Text("Skip") }
+      }
+    },
+  )
 }
 
 @Composable

@@ -35,6 +35,7 @@ import online.streamfree.nativeapp.model.AudioVariant
 import online.streamfree.nativeapp.model.MediaType
 import online.streamfree.nativeapp.player.PreferencesSourcePreferenceStore
 import online.streamfree.nativeapp.player.PreferencesRegionPreferenceStore
+import online.streamfree.nativeapp.player.PreferencesOnboardingPreferenceStore
 
 @UnstableApi
 class MainActivity : ComponentActivity() {
@@ -85,6 +86,7 @@ class MainActivity : ComponentActivity() {
             onOpenPlayer = { showPlayer = true },
             feedResolver = homeFeedResolver,
             regionPreferenceStore = regionPreferenceStore,
+            onboardingPreferenceStore = PreferencesOnboardingPreferenceStore(this@MainActivity),
             authManager = authManager,
             notificationClient = AnimeNotificationClient(),
             animeLinkResult = animeLinkResult,

@@ -1872,9 +1872,9 @@ The browser `/api/anime/notifications` route and bearer-authenticated
 
 The native `core:auth` module includes `AnimeNotificationClient`; signed-in
 phone and TV Home surfaces show an unread episode banner and can mark all
-alerts read. This remains foreground/in-app delivery only. Android notification
-permission/channel UX, background airing refresh, and optional push controls
-remain open in `SF-A3-003`; no push capability is claimed yet.
+alerts read. The follow-up native delivery path is documented in section 56;
+FCM/push capability and user-configurable quiet hours remain open in
+`SF-A3-003`.
 
 ## 55. Trusted native progress sync — 2026-08-21
 
@@ -1906,3 +1906,15 @@ than marked delivered when permission is unavailable. The channel uses only
 title and episode metadata returned by the authenticated server; no provider
 URLs or tokens enter notification state. FCM/push delivery and user-configurable
 quiet hours remain future work under `SF-A3-003`.
+
+## 57. Native onboarding tour — 2026-08-21
+
+Phone and TV now share a persistent first-launch tour preference backed by the
+native `core:player` DataStore contract. The tour has four short steps covering
+Home discovery, source and anime Sub/Dub selection, Continue Watching/history,
+and update/sync controls. It is skippable, has Back/Next/Done actions, and can
+be replayed from the Home `Help & tour` action. Phone buttons meet the existing
+48dp touch target, while TV uses the remote-focusable `TvFocusButton` path.
+The tour is static and does not add motion or provider/network work; actual
+device focus and first-install persistence remain part of the connected-device
+gate.

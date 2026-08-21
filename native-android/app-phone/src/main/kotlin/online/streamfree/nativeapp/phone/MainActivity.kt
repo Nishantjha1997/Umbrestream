@@ -31,6 +31,7 @@ import online.streamfree.nativeapp.player.PreferencesPlaybackDisplayModeStore
 import online.streamfree.nativeapp.player.PreferencesPlaybackStore
 import online.streamfree.nativeapp.player.PreferencesSourcePreferenceStore
 import online.streamfree.nativeapp.player.PreferencesRegionPreferenceStore
+import online.streamfree.nativeapp.player.PreferencesOnboardingPreferenceStore
 import online.streamfree.nativeapp.source.SourceResolverRegistry
 import online.streamfree.nativeapp.source.StreamFreeSourceApiResolver
 import online.streamfree.nativeapp.source.StreamFreeEpisodeCatalogResolver
@@ -92,6 +93,7 @@ class MainActivity : ComponentActivity() {
             onOpenPlayer = { showPlayer = true },
             feedResolver = homeFeedResolver,
             regionPreferenceStore = regionPreferenceStore,
+            onboardingPreferenceStore = PreferencesOnboardingPreferenceStore(this@MainActivity),
             authManager = authManager,
             notificationClient = AnimeNotificationClient(),
             animeLinkResult = animeLinkResult,

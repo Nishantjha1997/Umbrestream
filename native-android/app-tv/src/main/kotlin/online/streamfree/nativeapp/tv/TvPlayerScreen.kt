@@ -90,6 +90,7 @@ import online.streamfree.nativeapp.player.PlaybackPhase
 import online.streamfree.nativeapp.player.PlaybackSessionController
 import online.streamfree.nativeapp.player.SourcePreferenceStore
 import online.streamfree.nativeapp.player.RegionPreferenceStore
+import online.streamfree.nativeapp.player.OnboardingPreferenceStore
 import online.streamfree.nativeapp.source.PlaybackRequest
 import online.streamfree.nativeapp.source.EpisodeCatalogResolver
 import online.streamfree.nativeapp.source.EmbedSourcePolicy
@@ -104,6 +105,7 @@ fun TvHomeScreen(
   onOpenPlayer: () -> Unit,
   feedResolver: StreamFreeHomeFeedResolver? = null,
   regionPreferenceStore: RegionPreferenceStore? = null,
+  onboardingPreferenceStore: OnboardingPreferenceStore? = null,
   authManager: AuthSessionManager? = null,
   notificationClient: AnimeNotificationClient? = null,
   animeLinkResult: NativeAnimeLinkResult? = null,
@@ -124,6 +126,9 @@ fun TvHomeScreen(
   var animeNotifications by remember { mutableStateOf<NativeAnimeNotifications?>(null) }
   val context = LocalContext.current
   var showRegionDialog by rememberSaveable { mutableStateOf(false) }
+  var showTour by rememberSaveable { mutableStateOf(false) }
+  var tourStep by rememberSaveable { mutableStateOf(0) }
+  var onboardingCompleted by remember { mutableStateOf<Boolean?>(null) }
   val homeScope = rememberCoroutineScope()
   fun reloadHome() {
     homeScope.launch {
@@ -159,6 +164,12 @@ fun TvHomeScreen(
       if (result.success) reloadHome()
       onAnimeLinkResultHandled()
     }
+  }
+  LaunchedEffect(onboardingPreferenceStore) {
+    onboardingCompleted = onboardingPreferenceStore?.hasCompleted() ?: true
+  }
+  LaunchedEffect(onboardingCompleted) {
+    if (onboardingCompleted == false) showTour = true
   }
   fun loadMoreContinue(cursor: String) {
     if (loadingContinue || feedResolver == null) return
@@ -241,6 +252,10 @@ fun TvHomeScreen(
         onLoadMore = { row ->
           if (row.kind == "continue") row.nextCursor?.let(::loadMoreContinue)
         },
+        onOpenTour = {
+          tourStep = 0
+          showTour = true
+        },
         onOpenTitle = onOpenTitle,
       )
     }
@@ -311,6 +326,24 @@ fun TvHomeScreen(
       },
     )
   }
+  if (showTour) {
+    TvOnboardingDialog(
+      step = tourStep,
+      onSkip = {
+        showTour = false
+        homeScope.launch { onboardingPreferenceStore?.markCompleted() }
+      },
+      onBack = { tourStep = (tourStep - 1).coerceAtLeast(0) },
+      onNext = {
+        if (tourStep == TV_TOUR_STEPS.lastIndex) {
+          showTour = false
+          homeScope.launch { onboardingPreferenceStore?.markCompleted() }
+        } else {
+          tourStep += 1
+        }
+      },
+    )
+  }
 }
 
 private const val NOTIFICATION_PERMISSION_REQUEST_CODE = 4108
@@ -326,6 +359,7 @@ internal fun TvHomeFeed(
   linkMessage: String? = null,
   animeNotifications: NativeAnimeNotifications? = null,
   onMarkAnimeNotificationsRead: (() -> Unit)? = null,
+  onOpenTour: (() -> Unit)? = null,
   onLoadMore: (NativeHomeRow) -> Unit = {},
   onOpenTitle: (PlaybackRequest) -> Unit,
 ) {
@@ -358,6 +392,14 @@ internal fun TvHomeFeed(
               text = accountEmail?.let { "Sign out" } ?: "Sign in",
               onClick = onAccountAction,
               contentDescription = accountEmail?.let { "Sign out of StreamFree" } ?: "Sign in to StreamFree",
+              modifier = Modifier.widthIn(min = 220.dp, max = 300.dp),
+            )
+          }
+          if (onOpenTour != null) {
+            TvFocusButton(
+              text = "Help & tour",
+              onClick = onOpenTour,
+              contentDescription = "Open the StreamFree help and app tour",
               modifier = Modifier.widthIn(min = 220.dp, max = 300.dp),
             )
           }
@@ -431,6 +473,50 @@ internal fun TvHomeFeed(
       }
     }
   }
+}
+
+private data class TvTourStep(val title: String, val body: String)
+
+private val TV_TOUR_STEPS = listOf(
+  TvTourStep("Find something to watch", "Browse movies, TV, and anime from Home. Region controls tune recommendations without changing playback settings."),
+  TvTourStep("Choose how you watch", "Open a title to choose a playback source. Anime keeps Sub and Dub sources clearly separated."),
+  TvTourStep("Pick up where you left off", "Continue Watching and trusted playback progress keep your place across sessions when you sign in."),
+  TvTourStep("Stay in control", "Use Help & tour any time. Check the app for secure updates and retry sync when your connection returns."),
+)
+
+@Composable
+private fun TvOnboardingDialog(
+  step: Int,
+  onSkip: () -> Unit,
+  onBack: () -> Unit,
+  onNext: () -> Unit,
+) {
+  val current = TV_TOUR_STEPS[step.coerceIn(TV_TOUR_STEPS.indices)]
+  AlertDialog(
+    onDismissRequest = onSkip,
+    title = { Text(current.title) },
+    text = {
+      Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Text("${step + 1} of ${TV_TOUR_STEPS.size}", style = MaterialTheme.typography.titleMedium)
+        Text(current.body, style = MaterialTheme.typography.titleLarge)
+      }
+    },
+    confirmButton = {
+      TvFocusButton(
+        text = if (step == TV_TOUR_STEPS.lastIndex) "Done" else "Next",
+        onClick = onNext,
+        contentDescription = if (step == TV_TOUR_STEPS.lastIndex) "Finish app tour" else "Go to next tour step",
+      )
+    },
+    dismissButton = {
+      Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        if (step > 0) {
+          TvFocusButton(text = "Back", onClick = onBack, contentDescription = "Go to previous tour step")
+        }
+        TvFocusButton(text = "Skip", onClick = onSkip, contentDescription = "Skip app tour")
+      }
+    },
+  )
 }
 
 @Composable
