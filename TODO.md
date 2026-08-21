@@ -325,7 +325,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Next action: separate LRU and persistent download caches
 
 - [ ] SF-A3-002 — Add AniList and MAL secure linking
-  - Status: in progress
+  - Status: pending external configuration
   - Priority: P1
   - Depends on: SF-A2-003
   - Evidence: new `core:auth` module fetches only the official runtime Supabase URL/publishable key, rejects insecure/path-bearing config, performs password and refresh-token calls against the validated Supabase origin, never accepts service-role/provider secrets, and stores only AES-GCM ciphertext in DataStore with a non-exportable Android Keystore key; phone and TV Home expose sign-in/sign-out, refresh sessions before expiry, and pass the bearer token into the shared Home feed; native AniList/MAL linking uses a server-created, hashed, ten-minute state transaction, provider authorization URL validation, fixed `streamfree://anime-link` callbacks, a strict callback parser consumed by both Activities, Home refresh after success, and no provider secret in the APK; auth/config/network/link-result tests, web TypeScript, app compilation, Android-test compilation, strict lint, and `git diff --check` pass
@@ -370,6 +370,14 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Depends on: SF-A3-003b
   - Evidence: Android notification permission is declared and requested after sign-in; a dedicated episode channel, per-user delivered-ID state, unread-only dedupe, periodic connected-network WorkManager refresh, and safe permission checks are implemented; delivery-state tests, `scripts/verify.ps1`, phone/TV compilation, strict lint, and `git diff --check` passed
   - Commit: `da9f3a4`
+  - Completed: 2026-08-21
+
+- [x] SF-A3-003d — Respect local notification preferences and quiet hours
+  - Status: completed
+  - Priority: P1
+  - Depends on: SF-A3-003c
+  - Evidence: native episode delivery now reads a DataStore-backed enabled/quiet-hours policy before claiming notification IDs, so suppressed alerts remain available for a later refresh; overnight, disabled, equal-boundary, and invalid-value behavior covered by `AnimeNotificationPreferencesTest`; core auth tests and `git diff --check` passed
+  - Commit: pending
   - Completed: 2026-08-21
 
 - [ ] SF-A3-004 — Complete native Home/details/library/settings/onboarding parity

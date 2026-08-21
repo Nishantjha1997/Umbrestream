@@ -1992,3 +1992,14 @@ Publication remains gated on signed phone installation/playback/orientation/
 updater verification, TV emulator checks, real-provider smoke tests, and final
 Vercel verification. The native candidates remain private until those gates
 pass.
+
+## 61. Native episode-notification quiet hours — 2026-08-21
+
+Native episode alerts now use a small DataStore-backed preference contract with
+an enabled flag and local-time quiet window. The default quiet window is
+22:00–08:00, and the publisher checks it before claiming delivered IDs. A
+suppressed alert therefore remains unread and can be delivered on a later
+connected refresh. The policy is pure and unit-tested for overnight windows,
+disabled alerts, equal boundaries, and invalid values. A future Settings UI
+can call `AnimeNotificationPreferenceStore.update` without changing the
+delivery worker contract.

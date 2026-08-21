@@ -9,6 +9,8 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.work.BackoffPolicy
@@ -21,6 +23,7 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import kotlinx.coroutines.flow.first
 import java.security.MessageDigest
+import java.util.Calendar
 import java.util.concurrent.TimeUnit
 
 object AnimeNotificationDeliveryState {
@@ -34,6 +37,58 @@ object AnimeNotificationDeliveryState {
 }
 
 private val Context.animeNotificationDataStore by preferencesDataStore(name = "streamfree_anime_notification_state")
+
+data class AnimeNotificationPreferences(
+  val enabled: Boolean = true,
+  val quietStartMinute: Int = 22 * 60,
+  val quietEndMinute: Int = 8 * 60,
+) {
+  fun allows(minuteOfDay: Int): Boolean = enabled && !AnimeNotificationQuietHours.isQuiet(
+    minuteOfDay = minuteOfDay,
+    startMinute = quietStartMinute,
+    endMinute = quietEndMinute,
+  )
+}
+
+object AnimeNotificationQuietHours {
+  fun isQuiet(minuteOfDay: Int, startMinute: Int, endMinute: Int): Boolean {
+    if (minuteOfDay !in 0 until MINUTES_PER_DAY) return false
+    if (startMinute !in 0 until MINUTES_PER_DAY || endMinute !in 0 until MINUTES_PER_DAY) return false
+    if (startMinute == endMinute) return false
+    return if (startMinute < endMinute) {
+      minuteOfDay in startMinute until endMinute
+    } else {
+      minuteOfDay >= startMinute || minuteOfDay < endMinute
+    }
+  }
+
+  private const val MINUTES_PER_DAY = 24 * 60
+}
+
+class AnimeNotificationPreferenceStore(private val context: Context) {
+  suspend fun read(): AnimeNotificationPreferences {
+    val preferences = context.animeNotificationDataStore.data.first()
+    return AnimeNotificationPreferences(
+      enabled = preferences[ENABLED].let { value -> value ?: true },
+      quietStartMinute = preferences[QUIET_START].let { value -> value ?: 22 * 60 },
+      quietEndMinute = preferences[QUIET_END].let { value -> value ?: 8 * 60 },
+    )
+  }
+
+  suspend fun update(value: AnimeNotificationPreferences) {
+    context.animeNotificationDataStore.edit { preferences ->
+      preferences[ENABLED] = value.enabled
+      preferences[QUIET_START] = value.quietStartMinute
+      preferences[QUIET_END] = value.quietEndMinute
+    }
+  }
+
+  private companion object {
+    val ENABLED = booleanPreferencesKey("enabled")
+    val QUIET_START = intPreferencesKey("quiet_start_minute")
+    val QUIET_END = intPreferencesKey("quiet_end_minute")
+  }
+}
 
 private class AnimeNotificationDeliveryStore(private val context: Context) {
   suspend fun claim(userKey: String, notifications: List<NativeAnimeNotification>): List<NativeAnimeNotification> {
@@ -64,8 +119,13 @@ private class AnimeNotificationDeliveryStore(private val context: Context) {
 class AnimeEpisodeNotificationPublisher(private val context: Context) {
   private val deliveryStore = AnimeNotificationDeliveryStore(context)
 
-  suspend fun publish(userKey: String, notifications: List<NativeAnimeNotification>): Int {
+  suspend fun publish(
+    userKey: String,
+    notifications: List<NativeAnimeNotification>,
+    minuteOfDay: Int = currentMinuteOfDay(),
+  ): Int {
     if (notifications.isEmpty() || !notificationsAllowed()) return 0
+    if (!AnimeNotificationPreferenceStore(context).read().allows(minuteOfDay)) return 0
     ensureChannel()
     val claimed = deliveryStore.claim(userKey, notifications)
     val manager = NotificationManagerCompat.from(context)
@@ -96,6 +156,11 @@ class AnimeEpisodeNotificationPublisher(private val context: Context) {
       description = "New episodes for anime in your StreamFree library"
     }
     context.getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
+  }
+
+  private fun currentMinuteOfDay(): Int {
+    val calendar = Calendar.getInstance()
+    return calendar.get(Calendar.HOUR_OF_DAY) * 60 + calendar.get(Calendar.MINUTE)
   }
 
   private companion object {
