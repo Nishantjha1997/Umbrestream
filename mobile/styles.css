@@ -202,6 +202,8 @@ html.player-fullscreen .player-controls { right:max(16px,env(safe-area-inset-rig
 html.player-fullscreen .player-stage[data-display-mode="fill"] iframe,html.player-fullscreen .player-stage[data-display-mode="fill"] video { transform:scale(1.12); }
 
 /* Release player polish: app-owned fullscreen/orientation shell. */
+html.player-route:not(.player-fullscreen) .player-route-header{height:28px;margin:0 0 10px;border-bottom:1px solid rgba(255,255,255,.1);background:linear-gradient(180deg,rgba(18,16,22,.72),rgba(10,9,13,.2))}
+html.player-fullscreen .player-route-header{display:none}
 .player-fullscreen .player-page{position:fixed;z-index:100;inset:0;min-height:100dvh;margin:0;background:#000}
 .player-fullscreen .player-header{position:absolute;z-index:4;top:0;right:0;left:0;background:linear-gradient(180deg,rgba(0,0,0,.78),transparent);border:0}
 .player-fullscreen .player-stage{height:100dvh}

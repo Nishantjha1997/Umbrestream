@@ -80,27 +80,39 @@ for (const adapter of adapters) {
 
 assert.equal(
   (await resolveOne("cinezo", fixtures.movie)).url,
-  "https://player.cinezo.live/embed/movie/1212763?autoplay=false&poster=true&servericon=true&setting=true&pip=true&primarycolor=006fee&secondarycolor=0a0a12&iconcolor=ffffff",
+  "https://player.cinezo.live/embed/movie/1212763?autoplay=true&poster=true&servericon=true&setting=true&pip=true&primarycolor=006fee&secondarycolor=0a0a12&iconcolor=ffffff",
 );
 assert.equal(
   (await resolveOne("cinezo", fixtures.tv)).url,
-  "https://player.cinezo.live/embed/tv/97546/1/1?autoplay=false&poster=true&servericon=true&setting=true&pip=true&primarycolor=f5a524&secondarycolor=0a0a12&iconcolor=ffffff",
+  "https://player.cinezo.live/embed/tv/97546/1/1?autoplay=true&poster=true&servericon=true&setting=true&pip=true&primarycolor=f5a524&secondarycolor=0a0a12&iconcolor=ffffff",
 );
 assert.equal(
   (await resolveOne("anilink-sub", fixtures.anime)).url,
-  "https://anilink.cc/watch/21/1?variant=sub&autoplay=false&autoNext=true&startAt=137&primaryColor=a855f7&secondaryColor=0f1014&iconColor=ffffff",
+  "https://anilink.cc/watch/21/1?variant=sub&autoplay=true&autoNext=true&startAt=137&primaryColor=a855f7&secondaryColor=0f1014&iconColor=ffffff",
 );
 assert.equal(
   (await resolveOne("anilink-dub", fixtures.anime)).url,
-  "https://anilink.cc/watch/21/1?variant=dub&autoplay=false&autoNext=true&startAt=137&primaryColor=a855f7&secondaryColor=0f1014&iconColor=ffffff",
+  "https://anilink.cc/watch/21/1?variant=dub&autoplay=true&autoNext=true&startAt=137&primaryColor=a855f7&secondaryColor=0f1014&iconColor=ffffff",
 );
 assert.equal(
   (await resolveOne("vidnest-animepahe-sub", fixtures.anime)).url,
-  "https://vidnest.fun/animepahe/21/1/sub?startAt=137",
+  "https://vidnest.fun/animepahe/21/1/sub?startAt=137&autoplay=true",
 );
 assert.equal(
   (await resolveOne("vidnest-animepahe-dub", fixtures.anime)).url,
-  "https://vidnest.fun/animepahe/21/1/dub?startAt=137",
+  "https://vidnest.fun/animepahe/21/1/dub?startAt=137&autoplay=true",
+);
+assert.equal(
+  (await resolveOne("vidlink-anime-sub", fixtures.anime)).url,
+  "https://vidlink.pro/anime/21/1/sub?fallback=true&autoplay=true",
+);
+assert.equal(
+  (await resolveOne("vidlink-anime-dub", fixtures.anime)).url,
+  "https://vidlink.pro/anime/21/1/dub?fallback=true&autoplay=true",
+);
+assert.equal(
+  (await resolveOne("vidsrc-anime-sub", fixtures.anime)).url,
+  "https://vidsrc.me/embed/anime/21/1?autoplay=true",
 );
 assert.equal((await resolveOne("vidking", fixtures.movie)).capabilities.subtitles, "none");
 assert.equal((await resolveOne("cinezo", fixtures.movie)).capabilities.subtitles, "native");
@@ -150,13 +162,25 @@ assert.deepEqual(orderedIds(fixtures.tv), [
 ]);
 assert.deepEqual(orderedIds(fixtures.anime), [
   "vidnest-animepahe-sub",
+  "vidlink-anime-sub",
   "vidnest-animepahe-dub",
-  "cinezo-anime-sub",
-  "cinezo-anime-dub",
+  "vidlink-anime-dub",
   "anilink-sub",
   "anilink-dub",
   "vidsrc-anime-sub",
 ]);
+assert.equal(
+  orderedIds(fixtures.anime).some((id) => id.startsWith("cinezo-anime-")),
+  false,
+  "Cinezo must not be offered as an anime source",
+);
+for (const removedId of ["vidrift-anime", "vidbolt-anime", "videasy-anime", "filmu-anime"]) {
+  assert.equal(
+    orderedIds(fixtures.anime).some((id) => id === removedId),
+    false,
+    `${removedId} must not be offered as an unverified anime source`,
+  );
+}
 
 const instantStartedAt = performance.now();
 const instantMovie = createPublicEmbedSources(fixtures.movie);
@@ -170,10 +194,7 @@ assert.equal(PLAYBACK_POLICY.timeoutMs, 30_000);
 assert.equal(PLAYBACK_POLICY.fallbackMode, "automatic");
 assert.equal(findPreferredSource(instantMovie, { rememberedId: "cinezo" })?.id, "cinezo");
 assert.equal(findNextFallbackSource(instantMovie, "filmu", ["filmu"])?.id, "vidrift");
-assert.equal(
-  findNextAutomaticFallbackSource(instantMovie, "filmu", ["filmu"])?.id,
-  "vidking",
-);
+assert.equal(findNextAutomaticFallbackSource(instantMovie, "filmu", ["filmu"])?.id, "vidking");
 assert.equal(
   findNextAutomaticFallbackSource(instantMovie, "videasy", ["filmu", "videasy"])?.id,
   "vidking",

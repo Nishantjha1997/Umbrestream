@@ -96,12 +96,16 @@ export default function NativePlayer({
       const dashjs = await import("dashjs");
       if (cancelled) return;
       dashPlayer = dashjs.MediaPlayer().create();
-      dashPlayer.on(dashjs.MediaPlayer.events.ERROR, () => onErrorRef.current("DASH playback failed"));
+      dashPlayer.on(dashjs.MediaPlayer.events.ERROR, () =>
+        onErrorRef.current("DASH playback failed"),
+      );
       dashPlayer.initialize(video, src, false);
     };
 
     void load().catch((error) =>
-      onErrorRef.current(error instanceof Error ? error.message : "Native player failed to initialize"),
+      onErrorRef.current(
+        error instanceof Error ? error.message : "Native player failed to initialize",
+      ),
     );
 
     return () => {
@@ -133,6 +137,7 @@ export default function NativePlayer({
       <video
         ref={videoRef}
         controls
+        autoPlay
         playsInline
         preload="metadata"
         className="h-full w-full bg-black object-contain"

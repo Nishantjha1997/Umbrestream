@@ -5,8 +5,8 @@ Movie, TV, and Anime playback use one adapter registry. Public iframe sources ar
 ## Current registry
 
 - Movie/TV: Filmu is the trial default, followed by Cinezo, VidLink, VidKing, Vidrift, Vidbolt, and Videasy.
-- Anime: VidLink sub/dub via MAL ID and Cinezo sub/dub via AniList ID. Optional server-side Anivexa and MiruroAPI adapters can add ReAnime, AniKoto, AnimeGG, AniNeko, 2DHive, AniZone, AnimeCG, MegaPlay, and other documented provider entries while preserving separate Sub/Dub groups.
-- Experimental Anime routes for Vidrift, Vidbolt, Videasy, and Filmu require an explicit `animeTmdbId`; they are excluded when that mapping is unavailable.
+- Anime: AnimePahe via VidNest, VidLink sub/dub via MAL ID, AniLink sub/dub via AniList ID, and conditional VidSrc Sub via MAL ID. Cinezo is intentionally reserved for movies and TV; it is not an anime option. Optional server-side Anivexa and MiruroAPI adapters can add ReAnime, AniKoto, AnimeGG, AniNeko, 2DHive, AniZone, AnimeCG, MegaPlay, and other documented provider entries while preserving separate Sub/Dub groups.
+- Unverified experimental Anime routes are intentionally not exposed. They can be reintroduced only after a documented Sub/Dub playback fixture and a source-contract test pass.
 - Authorized direct HLS, DASH, and MP4 entries can be supplied with `PLAYER_DIRECT_SOURCES_JSON` and play in Umbra's native player.
 
 Cinezo, VidLink, and VidKing are stable adapters. Public providers without a developer contract are labelled experimental. VidLink player variants share one provider identity so a failed origin does not masquerade as two independent fallbacks.
@@ -55,17 +55,11 @@ Do not accept arbitrary stream URLs from requests, expose provider secrets, copy
 
 ## Optional Anime API configuration
 
-The Anivexa and Miruro adapters are disabled unless the server provides all of
-the following:
+The Anivexa and Miruro adapters are disabled unless the server provides all of the following:
 
 - `ANIVEXA_API_BASE_URL` and/or `MIRURO_API_BASE_URL`, using HTTPS.
-- `STREAMFREE_ANIME_ALLOWED_ORIGINS`, a comma-separated exact-origin allowlist
-  containing the API origin and every authorized stream/subtitle origin the
-  API is permitted to return.
+- `STREAMFREE_ANIME_ALLOWED_ORIGINS`, a comma-separated exact-origin allowlist containing the API origin and every authorized stream/subtitle origin the API is permitted to return.
 
-The adapters call only the documented episode/watch routes, reject non-HTTPS or
-non-allowlisted URLs, and return no candidate when configuration is incomplete.
-They do not copy provider resolvers, inspect protected HTML, or bypass provider
-access controls. Vercel deployment should use a separately operated,
-authorized API instance; free/serverless provider deployments may be blocked or
-too slow for reliable playback.
+The adapters call only the documented episode/watch routes, reject non-HTTPS or non-allowlisted URLs, and return no candidate when configuration is incomplete. They do not copy provider resolvers, inspect protected HTML, or bypass provider access controls. Vercel deployment should use a separately operated, authorized API instance; free/serverless provider deployments may be blocked or too slow for reliable playback.
+
+Anivexa's documented flow is `GET /episodes/{anilistId}` followed by `GET /watch/{provider}/{anilistId}/{sub|dub}/{provider}-{episode}`. The adapter uses the provider-specific episode ID returned by the API instead of guessing a slug. Do not set the allowlist to `*`: the policy rejects that value intentionally. Add the exact API origin and the HTTPS CDN origins returned by the authorized API deployment; wildcard subdomains are supported only when their parent domain is explicitly approved.

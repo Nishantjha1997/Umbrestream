@@ -67,8 +67,6 @@ const movieAndTvRequirements: EmbedDefinition["requirements"] = {
   tv: ["tmdbId", "season", "episode"],
 };
 
-const ANIME_SOURCES_V2_ENABLED = process.env.NEXT_PUBLIC_ANIME_SOURCES_V2 !== "false";
-
 const movieOrTv = (
   request: SourceRequest,
   movieBase: (id: number) => string,
@@ -104,7 +102,7 @@ const definitions: EmbedDefinition[] = [
       );
       if (!base) return null;
       return createUrl(base, {
-        autoplay: false,
+        autoplay: true,
         poster: true,
         servericon: true,
         setting: true,
@@ -142,7 +140,7 @@ const definitions: EmbedDefinition[] = [
         primaryColor: request.mediaType === "tv" ? "f5a524" : "006fee",
         secondaryColor: "a2a2a2",
         iconColor: "eefdec",
-        autoplay: false,
+        autoplay: true,
         startAt: seconds(request),
       });
     },
@@ -176,7 +174,7 @@ const definitions: EmbedDefinition[] = [
       return base
         ? createUrl(base, {
             primaryColor: request.mediaType === "tv" ? "f5a524" : "006fee",
-            autoplay: false,
+            autoplay: true,
             startAt: seconds(request),
           })
         : null;
@@ -209,7 +207,7 @@ const definitions: EmbedDefinition[] = [
       if (!base) return null;
       return createUrl(base, {
         color: request.mediaType === "tv" ? "f5a524" : "006fee",
-        autoPlay: false,
+        autoPlay: true,
         nextEpisode: request.mediaType === "tv" ? true : undefined,
         episodeSelector: request.mediaType === "tv" ? true : undefined,
         progress: seconds(request),
@@ -315,7 +313,7 @@ const legacyAnimeDefinitions: EmbedDefinition[] = [
       request.malId && request.episode
         ? createUrl(`https://vidlink.pro/anime/${request.malId}/${request.episode}/sub`, {
             fallback: true,
-            autoplay: false,
+            autoplay: true,
           })
         : null,
     capabilities: {
@@ -343,7 +341,7 @@ const legacyAnimeDefinitions: EmbedDefinition[] = [
       request.malId && request.episode
         ? createUrl(`https://vidlink.pro/anime/${request.malId}/${request.episode}/dub`, {
             fallback: true,
-            autoplay: false,
+            autoplay: true,
           })
         : null,
     capabilities: {
@@ -354,53 +352,6 @@ const legacyAnimeDefinitions: EmbedDefinition[] = [
       resumeParam: "startAt",
       subtitles: "native",
       ads: true,
-    },
-    audioVariant: "dub",
-  },
-  {
-    id: "cinezo-anime-sub",
-    providerId: "cinezo",
-    label: "Cinezo Sub",
-    origin: "https://player.cinezo.live",
-    tier: "stable",
-    variant: "anime-sub",
-    priorities: { anime: 20 },
-    requirements: { anime: ["anilistId", "episode"] },
-    build: (request) =>
-      request.anilistId && request.episode
-        ? createUrl(
-            `https://player.cinezo.live/embed/anime/${request.anilistId}/${request.episode}`,
-            { dub: false, autoplay: false, servericon: true, setting: true, pip: true },
-          )
-        : null,
-    capabilities: {
-      recommended: true,
-      events: true,
-      eventProtocol: "cinezo",
-      subtitles: "native",
-    },
-    audioVariant: "sub",
-  },
-  {
-    id: "cinezo-anime-dub",
-    providerId: "cinezo",
-    label: "Cinezo Dub",
-    origin: "https://player.cinezo.live",
-    tier: "stable",
-    variant: "anime-dub",
-    priorities: { anime: 21 },
-    requirements: { anime: ["anilistId", "episode"] },
-    build: (request) =>
-      request.anilistId && request.episode
-        ? createUrl(
-            `https://player.cinezo.live/embed/anime/${request.anilistId}/${request.episode}`,
-            { dub: true, autoplay: false, servericon: true, setting: true, pip: true },
-          )
-        : null,
-    capabilities: {
-      events: true,
-      eventProtocol: "cinezo",
-      subtitles: "native",
     },
     audioVariant: "dub",
   },
@@ -417,7 +368,9 @@ const recoveredAnimeDefinitions: EmbedDefinition[] = [
     requirements: { anime: ["malId", "episode"] },
     build: (request) =>
       request.malId && request.episode
-        ? `https://vidsrc.me/embed/anime/${request.malId}/${request.episode}`
+        ? createUrl(`https://vidsrc.me/embed/anime/${request.malId}/${request.episode}`, {
+            autoplay: true,
+          })
         : null,
     capabilities: {
       subtitles: "unverified",
@@ -437,7 +390,7 @@ const recoveredAnimeDefinitions: EmbedDefinition[] = [
       request.anilistId && request.episode
         ? createUrl(`https://anilink.cc/watch/${request.anilistId}/${request.episode}`, {
             variant: "sub",
-            autoplay: false,
+            autoplay: true,
             autoNext: true,
             startAt: seconds(request),
             primaryColor: "a855f7",
@@ -466,7 +419,7 @@ const recoveredAnimeDefinitions: EmbedDefinition[] = [
       request.anilistId && request.episode
         ? createUrl(`https://anilink.cc/watch/${request.anilistId}/${request.episode}`, {
             variant: "dub",
-            autoplay: false,
+            autoplay: true,
             autoNext: true,
             startAt: seconds(request),
             primaryColor: "a855f7",
@@ -494,6 +447,7 @@ const recoveredAnimeDefinitions: EmbedDefinition[] = [
       request.anilistId && request.episode
         ? createUrl(`https://vidnest.fun/animepahe/${request.anilistId}/${request.episode}/sub`, {
             startAt: seconds(request),
+            autoplay: true,
           })
         : null,
     capabilities: {
@@ -516,6 +470,7 @@ const recoveredAnimeDefinitions: EmbedDefinition[] = [
       request.anilistId && request.episode
         ? createUrl(`https://vidnest.fun/animepahe/${request.anilistId}/${request.episode}/dub`, {
             startAt: seconds(request),
+            autoplay: true,
           })
         : null,
     capabilities: {
@@ -527,87 +482,10 @@ const recoveredAnimeDefinitions: EmbedDefinition[] = [
   },
 ];
 
-const quarantinedAnimeDefinitions: EmbedDefinition[] = [
-  {
-    id: "vidrift-anime",
-    providerId: "vidrift",
-    label: "Vidrift Anime",
-    origin: "https://embed.vidrift.in",
-    tier: "experimental",
-    priorities: { anime: 40 },
-    requirements: { anime: ["animeTmdbId", "episode"] },
-    build: (request) =>
-      request.animeTmdbId && request.episode
-        ? `https://embed.vidrift.in/embed/tv/${request.animeTmdbId}/1/${request.episode}`
-        : null,
-    capabilities: { ads: true, subtitles: "unverified" },
-    audioVariant: "sub",
-  },
-  {
-    id: "vidbolt-anime",
-    providerId: "vidbolt",
-    label: "Vidbolt Anime",
-    origin: "https://vidbolt.xyz",
-    tier: "experimental",
-    priorities: { anime: 50 },
-    requirements: { anime: ["animeTmdbId", "episode"] },
-    build: (request) =>
-      request.animeTmdbId && request.episode
-        ? `https://vidbolt.xyz/anime/${request.animeTmdbId}/${request.episode}`
-        : null,
-    capabilities: { ads: true, subtitles: "unverified" },
-    audioVariant: "sub",
-  },
-  {
-    id: "videasy-anime",
-    providerId: "videasy",
-    label: "Videasy Anime",
-    origin: "https://player.videasy.to",
-    tier: "experimental",
-    priorities: { anime: 60 },
-    requirements: { anime: ["animeTmdbId", "episode"] },
-    build: (request) =>
-      request.animeTmdbId && request.episode
-        ? `https://player.videasy.to/anime/${request.animeTmdbId}/${request.episode}`
-        : null,
-    capabilities: {
-      events: true,
-      eventProtocol: "videasy",
-      ads: true,
-      subtitles: "unverified",
-    },
-    audioVariant: "sub",
-  },
-  {
-    id: "filmu-anime",
-    providerId: "filmu",
-    label: "Filmu Anime",
-    origin: "https://embed.filmu.in",
-    tier: "experimental",
-    priorities: { anime: 70 },
-    requirements: { anime: ["animeTmdbId", "episode"] },
-    build: (request) =>
-      request.animeTmdbId && request.episode
-        ? `https://embed.filmu.in/anime/${request.animeTmdbId}/${request.episode}`
-        : null,
-    capabilities: {
-      events: true,
-      eventProtocol: "filmu",
-      ads: true,
-      subtitles: "unverified",
-    },
-    audioVariant: "sub",
-  },
-];
-
 const allDefinitions = [
   ...definitions,
-  ...(ANIME_SOURCES_V2_ENABLED
-    ? [
-        ...recoveredAnimeDefinitions,
-        ...legacyAnimeDefinitions.filter((definition) => definition.id.startsWith("cinezo-anime-")),
-      ]
-    : [...legacyAnimeDefinitions, ...quarantinedAnimeDefinitions]),
+  ...recoveredAnimeDefinitions,
+  ...legacyAnimeDefinitions,
 ];
 
 const supportsDefinition = (definition: EmbedDefinition, request: SourceRequest): boolean => {

@@ -2128,3 +2128,31 @@ the poster-backed header marker. The deployment-list connector returned 403 for
 this account, so the live alias is verified but a dashboard/API `READY` label
 could not be independently recorded here. Native APK publication remains
 separately gated by the physical-phone, TV-emulator, and real-provider checks.
+
+## 70. Anime source recovery and startup hardening — 2026-08-21
+
+Anime source selection was narrowed to the verified public source set:
+VidNest AnimePahe Sub/Dub, VidLink Sub/Dub, AniLink Sub/Dub, and VidSrc Sub.
+Cinezo and the previously quarantined Vidrift, Vidbolt, Videasy, and Filmu
+Anime embeds are not active. Every public Anime embed now requests autoplay and
+grants the iframe autoplay capability; native direct candidates also use the
+native player's autoplay path. Autoplay remains subject to browser/provider
+policy, so a provider may still require one user gesture.
+
+The Anivexa adapter follows the documented two-step contract: it reads
+`/episodes/{anilistId}`, uses each provider's returned episode ID, then calls
+`/watch/{provider}/{anilistId}/{sub|dub}/{provider}-{episode}`. It surfaces
+validated native HLS/MP4 candidates grouped by the requested audio variant and
+keeps fallback within Sub or Dub. The production allowlist was corrected from
+the rejected wildcard `*` to exact approved API/CDN origins, which was the
+reason Anivexa candidates were previously absent. A live AniList 21 episode-1
+check returned five Sub providers (ReAnime, AniKoto, AnimeGG, AniNeko, AniBD)
+and four Dub providers (ReAnime, AniKoto, AnimeGG, AniNeko); provider
+availability is title/episode dependent.
+
+The mobile WebView bundle now has autoplay permissions/eager iframe loading and
+a thin player-route header that disappears in fullscreen. The web player has
+the same route chrome treatment. Focused source, startup, Anivexa/Miruro mock,
+lint, TypeScript, mobile bundle, and diff checks passed. Production verification
+after deployment must confirm that the corrected Vercel environment is active;
+real provider playback remains a separate browser/device smoke gate.

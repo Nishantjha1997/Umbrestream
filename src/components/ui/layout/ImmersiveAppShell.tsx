@@ -43,7 +43,8 @@ interface ImmersiveAppShellProps {
 
 export default function ImmersiveAppShell({ children, modal }: ImmersiveAppShellProps) {
   const pathname = usePathname();
-  const chromeHidden = pathname.includes("/player") || pathname.startsWith("/auth");
+  const playerRoute = pathname.includes("/player");
+  const chromeHidden = playerRoute || pathname.startsWith("/auth");
 
   return (
     <div className="relative min-h-dvh overflow-x-clip bg-[#0a090d] text-white">
@@ -68,6 +69,7 @@ export default function ImmersiveAppShell({ children, modal }: ImmersiveAppShell
             screens own the whole viewport. */}
         {!chromeHidden && <DesktopHeader isHome={pathname === "/"} />}
         {!chromeHidden && <PhoneAppHeader pathname={pathname} />}
+        {playerRoute && <div className="player-route-header" aria-hidden="true" />}
         <AppRouteMotion>{children}</AppRouteMotion>
         {!chromeHidden && <Footer className="hidden md:block" />}
       </main>
