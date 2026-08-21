@@ -11,6 +11,7 @@ import { useMemo } from "react";
 import type { MovieDetails } from "tmdb-ts/dist/types/movies";
 import MoviePlayerControls from "./MoviePlayerControls";
 import MoviePlayerInfo from "./MoviePlayerInfo";
+import MoviePlayerSuggestions from "./MoviePlayerSuggestions";
 import MoviePlayerHeader from "./Header";
 
 interface MoviePlayerProps {
@@ -22,13 +23,9 @@ interface MoviePlayerProps {
  * Movie playback on the shared `PlayerShell` (Phase 6, §10 — see
  * `Anime/Player/Player.tsx` for the reference layout this mirrors).
  *
- * Layout (web, not fullscreen):
- *   ┌─────────────────────────────────────┐
- *   │  16:9 video player (PlayerShell)    │
- *   ├─────────────────────────────────────┤
- *   │  Controls bar (below, not overlay)  │
- *   │  About-this-movie panel             │
- *   └─────────────────────────────────────┘
+ * Layout (web, not fullscreen): a responsive player workspace. The player
+ * column owns the stage, controls, and inline details; movies use the second
+ * column for lazy suggestions because they do not have an episode rail.
  *
  * `inlineLayout` keeps the stage in normal flow and `renderControls` moves
  * Source/Fit/Fill/Fullscreen below the video (instead of overlaying the
@@ -53,26 +50,30 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, startAt }) => {
   const identity = useMemo(() => ({ mediaId: movie.id, mediaType: "movie" as const }), [movie.id]);
 
   return (
-    <div className="mx-auto flex w-full max-w-[min(100vw,1600px)] flex-col">
-      <PlayerShell
-        request={request}
-        identity={identity}
-        inlineLayout
-        renderHeader={({ onOpenSource, chromeHidden, isFullscreen }) => (
-          <MoviePlayerHeader
-            id={movie.id}
-            movieName={title}
-            onOpenSource={onOpenSource}
-            hidden={chromeHidden}
-            isFullscreen={isFullscreen}
-          />
-        )}
-        renderControls={(controls: PlayerShellControlsContext) => (
-          <MoviePlayerControls {...controls} movie={movie} />
-        )}
-      />
+    <div className="mx-auto grid w-full max-w-[min(100vw,1600px)] items-start gap-5 lg:grid-cols-[minmax(0,1fr)_clamp(280px,24vw,360px)]">
+      <div className="min-w-0">
+        <PlayerShell
+          request={request}
+          identity={identity}
+          inlineLayout
+          renderHeader={({ onOpenSource, chromeHidden, isFullscreen }) => (
+            <MoviePlayerHeader
+              id={movie.id}
+              movieName={title}
+              onOpenSource={onOpenSource}
+              hidden={chromeHidden}
+              isFullscreen={isFullscreen}
+            />
+          )}
+          renderControls={(controls: PlayerShellControlsContext) => (
+            <MoviePlayerControls {...controls} movie={movie} />
+          )}
+        />
 
-      <MoviePlayerInfo movie={movie} />
+        <MoviePlayerInfo movie={movie} />
+      </div>
+
+      <MoviePlayerSuggestions movie={movie} />
     </div>
   );
 };

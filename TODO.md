@@ -6,8 +6,8 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 
 - Branch: `main`
 - Baseline: `28bea93`
-- Active task: `SF-A4-003`
-- Next command: connect the physical phone for signed install/playback/orientation/updater checks; do not replace production manifests or APKs until that gate and the TV-emulator/real-provider checks pass.
+- Active task: `SF-W4-001`
+- Next command: inspect and implement the poster-backed desktop shell and inline movie-player workspace; then run the focused web gate and deploy without changing native publication artifacts.
 - Reference policy: Media3 and Now in Android are approved architecture references; Aniyomi is pattern-only because it is archived; Dantotsu is excluded pending license/source verification.
 
 ## W0 — Governance and baseline
@@ -471,13 +471,23 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Completed: 2026-08-21
 
 - [ ] SF-A4-003 — Publish manifests/APKs and certify production
-  - Status: in progress
+  - Status: pending external release gate
   - Priority: P0
   - Depends on: SF-A4-002
   - Evidence: publication staging contains fresh phone/TV candidates and matching native fresh-install manifests; full deterministic native verification passed; live web/API smoke passed; `adb devices -l` currently reports no connected phone and no Android TV emulator/system image is available, so signed install/orientation/updater and real-provider playback gates remain open; no production download was changed
   - Commit: —
   - Deployment: —
   - Next action: phone hardware, TV emulator, real-provider smoke tests, Vercel publication
+
+## W4 — Desktop shell and movie-player workspace
+
+- [ ] SF-W4-001 — Add poster-backed home chrome and inline movie-player workspace
+  - Status: in progress
+  - Priority: P1
+  - Depends on: SF-P0-006, SF-W3-004a
+  - Evidence: —
+  - Commit: —
+  - Next action: commit the implementation, record the handoff checkpoint, then push and verify the Vercel production deployment
 
 - [x] SF-A4-003a — Prepare reproducible native publication artifacts
   - Status: completed

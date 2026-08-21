@@ -15,10 +15,9 @@ import Genres from "@/components/ui/other/Genres";
 import Rating from "@/components/ui/other/Rating";
 import { SavedMovieDetails } from "@/types/movie";
 import { cn } from "@/utils/helpers";
-import { ArrowLeft } from "@/utils/icons";
+import { Info } from "@/utils/icons";
 import { getImageUrl, movieDurationString, mutateMovieTitle } from "@/utils/movies";
 import { Image } from "@heroui/react";
-import Link from "next/link";
 import { useState } from "react";
 import type { MovieDetails } from "tmdb-ts/dist/types/movies";
 
@@ -40,7 +39,8 @@ interface MoviePlayerInfoProps {
 }
 
 const MoviePlayerInfo: React.FC<MoviePlayerInfoProps> = ({ movie }) => {
-  const [expanded, setExpanded] = useState(false);
+  const [synopsisExpanded, setSynopsisExpanded] = useState(false);
+  const [detailsExpanded, setDetailsExpanded] = useState(false);
 
   const title = mutateMovieTitle(movie);
   const posterImage = getImageUrl(movie.poster_path);
@@ -117,7 +117,7 @@ const MoviePlayerInfo: React.FC<MoviePlayerInfoProps> = ({ movie }) => {
               <p
                 className={cn(
                   "max-w-[68ch] text-sm leading-relaxed whitespace-pre-line text-white/75",
-                  isLongSynopsis && !expanded && "line-clamp-4",
+                  isLongSynopsis && !synopsisExpanded && "line-clamp-4",
                 )}
               >
                 {synopsis}
@@ -125,11 +125,11 @@ const MoviePlayerInfo: React.FC<MoviePlayerInfoProps> = ({ movie }) => {
               {isLongSynopsis && (
                 <button
                   type="button"
-                  aria-expanded={expanded}
-                  onClick={() => setExpanded((value) => !value)}
+                  aria-expanded={synopsisExpanded}
+                  onClick={() => setSynopsisExpanded((value) => !value)}
                   className="w-fit rounded-full text-xs font-semibold tracking-wide text-white/70 uppercase transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
                 >
-                  {expanded ? "Show less" : "Show more"}
+                  {synopsisExpanded ? "Show less" : "Show more"}
                 </button>
               )}
             </div>
@@ -138,15 +138,61 @@ const MoviePlayerInfo: React.FC<MoviePlayerInfoProps> = ({ movie }) => {
           <Genres genres={movie.genres} chipProps={GENRE_CHIP_PROPS} />
 
           <div className="flex flex-wrap items-center gap-2 pt-1">
-            <Link href={`/movie/${movie.id}`} className={backBtn} aria-label="Back to movie details">
-              <ArrowLeft size={14} />
-              Details
-            </Link>
+            <button
+              type="button"
+              className={backBtn}
+              aria-expanded={detailsExpanded}
+              aria-controls="movie-player-details"
+              onClick={() => setDetailsExpanded((value) => !value)}
+            >
+              <Info size={14} aria-hidden="true" />
+              {detailsExpanded ? "Hide details" : "Details"}
+            </button>
             <ShareButton id={movie.id} title={title} />
             <BookmarkButton data={bookmarkData} />
           </div>
         </div>
       </div>
+
+      {detailsExpanded && (
+        <div
+          id="movie-player-details"
+          className="mt-5 grid gap-4 border-t border-white/10 pt-5 sm:grid-cols-[minmax(0,1.3fr)_minmax(220px,0.7fr)]"
+        >
+          <div className="flex flex-col gap-2">
+            <p className="text-[10px] font-semibold tracking-[0.18em] text-white/50 uppercase">
+              About this movie
+            </p>
+            <p className="max-w-[72ch] text-sm leading-relaxed whitespace-pre-line text-white/78">
+              {synopsis || "No synopsis available."}
+            </p>
+          </div>
+          <dl className="grid grid-cols-2 gap-x-4 gap-y-3 rounded-2xl border border-white/8 bg-black/15 p-4 text-xs">
+            {movie.tagline && (
+              <div className="col-span-2">
+                <dt className="text-white/45">Tagline</dt>
+                <dd className="mt-1 text-white/80">{movie.tagline}</dd>
+              </div>
+            )}
+            <div>
+              <dt className="text-white/45">Release</dt>
+              <dd className="mt-1 text-white/80">{releaseYear ?? "—"}</dd>
+            </div>
+            <div>
+              <dt className="text-white/45">Runtime</dt>
+              <dd className="mt-1 text-white/80">
+                {movie.runtime ? movieDurationString(movie.runtime) : "—"}
+              </dd>
+            </div>
+            <div className="col-span-2">
+              <dt className="text-white/45">Genres</dt>
+              <dd className="mt-1 text-white/80">
+                {movie.genres?.map((genre) => genre.name).join(" · ") || "—"}
+              </dd>
+            </div>
+          </dl>
+        </div>
+      )}
     </section>
   );
 };

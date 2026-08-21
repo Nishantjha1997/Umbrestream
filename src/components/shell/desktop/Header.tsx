@@ -20,7 +20,9 @@
  * this renders nothing below the `md` breakpoint.
  */
 
+import { useHomeHero } from "@/hooks/useHomeHero";
 import { cn } from "@/utils/helpers";
+import { getHighResolutionImageUrl } from "@/utils/movies";
 import { useRouter } from "@bprogress/next";
 import { useHotkeys } from "@mantine/hooks";
 import Link from "next/link";
@@ -30,9 +32,38 @@ interface DesktopHeaderProps {
   /** Escape hatch for whoever mounts this at the top of `<main>`
       (`ImmersiveAppShell.tsx`) — not read internally. */
   className?: string;
+  /** Home can use the active hero artwork as a cinematic backdrop for the
+      otherwise-empty top chrome. */
+  isHome?: boolean;
 }
 
-export default function DesktopHeader({ className }: DesktopHeaderProps) {
+function HomeHeaderBackdrop() {
+  const { pick } = useHomeHero();
+  const artwork = getHighResolutionImageUrl(pick?.media.backdropUrl ?? pick?.media.posterUrl);
+
+  if (!artwork) return null;
+
+  return (
+    <>
+      {/* Decorative only; the hero remains the primary content surface. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={artwork}
+        alt=""
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 size-full object-cover object-[center_28%] opacity-75"
+        decoding="async"
+        fetchPriority="high"
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(10,9,13,0.9)_0%,rgba(10,9,13,0.48)_48%,rgba(10,9,13,0.75)_100%),linear-gradient(180deg,rgba(10,9,13,0.2)_0%,rgba(10,9,13,0.92)_100%)]"
+      />
+    </>
+  );
+}
+
+export default function DesktopHeader({ className, isHome = false }: DesktopHeaderProps) {
   const router = useRouter();
 
   // ⌘K (Mac) / Ctrl+K (Windows/Linux) opens Search from any desktop screen —
@@ -50,9 +81,13 @@ export default function DesktopHeader({ className }: DesktopHeaderProps) {
     <header
       className={cn(
         "hidden items-center justify-end gap-3 px-3 py-4 sm:px-5 md:flex",
+        isHome &&
+          "relative min-h-24 overflow-hidden rounded-b-[2rem] border-b border-white/8 px-4 py-4 shadow-[0_20px_60px_rgba(0,0,0,0.28)] sm:min-h-[108px] sm:px-6",
         className,
       )}
     >
+      {isHome && <HomeHeaderBackdrop />}
+      <div className="relative z-10 flex w-full items-center justify-end gap-3">
       {/* "My Space" entry point, promoted from the rail footer to the persistent
           desktop header so /space is one obvious click from every screen. */}
       <Link
@@ -109,6 +144,7 @@ export default function DesktopHeader({ className }: DesktopHeaderProps) {
           ⌘K
         </kbd>
       </Link>
+      </div>
     </header>
   );
 }

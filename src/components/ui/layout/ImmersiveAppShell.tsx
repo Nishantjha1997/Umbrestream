@@ -66,7 +66,7 @@ export default function ImmersiveAppShell({ children, modal }: ImmersiveAppShell
         {/* Persistent desktop search header (Phase 3, §7). Hidden on
             player/auth routes along with the rail and tab bar — those
             screens own the whole viewport. */}
-        {!chromeHidden && <DesktopHeader />}
+        {!chromeHidden && <DesktopHeader isHome={pathname === "/"} />}
         {!chromeHidden && <PhoneAppHeader pathname={pathname} />}
         <AppRouteMotion>{children}</AppRouteMotion>
         {!chromeHidden && <Footer className="hidden md:block" />}
