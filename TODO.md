@@ -7,7 +7,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 - Branch: `main`
 - Baseline: `28bea93`
 - Active task: `SF-A3-002`
-- Next command: register native callback URLs, apply the OAuth transaction migration, and exercise provider linking on the connected phone; the onboarding slice is complete and device/provider/release testing remains gated until that integration passes.
+- Next command: register native callback URLs, apply the OAuth transaction migration, and exercise provider linking on the connected phone; the native updater contract is complete, but release-manifest publication and installer exercise remain under `SF-A4-002`/`SF-A4-003`.
 - Reference policy: Media3 and Now in Android are approved architecture references; Aniyomi is pattern-only because it is archived; Dantotsu is excluded pending license/source verification.
 
 ## W0 — Governance and baseline
@@ -397,6 +397,14 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Evidence: —
   - Commit: —
   - Next action: release builds, signatures, packages, versions, hashes, updater tests
+
+- [x] SF-A4-002a — Implement native official-manifest update verification
+  - Status: completed
+  - Priority: P0
+  - Depends on: SF-A0-002
+  - Evidence: native updater hardcodes the official phone/TV manifest paths; validates schema, package, version, path, size, checksum, signing certificate, and APK parseability; deletes temporary and finalized files on any verification failure; Home exposes user-confirmed Check for updates and Download & install via private FileProvider; `:core:auth:test`, both app compiles, strict lint, debug APK assembly, and `git diff --check` passed
+  - Commit: —
+  - Completed: 2026-08-21
 
 - [ ] SF-A4-003 — Publish manifests/APKs and certify production
   - Status: not started

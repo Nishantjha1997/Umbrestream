@@ -3,6 +3,7 @@ package online.streamfree.nativeapp.phone
 import android.os.Bundle
 import android.content.pm.ActivityInfo
 import android.content.Intent
+import java.io.File
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -14,6 +15,7 @@ import androidx.compose.runtime.setValue
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.core.content.FileProvider
 import androidx.media3.common.util.UnstableApi
 import online.streamfree.nativeapp.designsystem.StreamFreeTheme
 import online.streamfree.nativeapp.auth.AuthSessionManager
@@ -24,6 +26,7 @@ import online.streamfree.nativeapp.auth.EncryptedHistorySyncQueue
 import online.streamfree.nativeapp.auth.AnimeNotificationScheduler
 import online.streamfree.nativeapp.auth.EncryptedAuthSessionStore
 import online.streamfree.nativeapp.auth.NativeAnimeLinkResult
+import online.streamfree.nativeapp.auth.NativeUpdateClient
 import online.streamfree.nativeapp.auth.SupabaseAuthClient
 import online.streamfree.nativeapp.player.Media3SourcePipeline
 import online.streamfree.nativeapp.player.PlaybackSessionController
@@ -94,6 +97,13 @@ class MainActivity : ComponentActivity() {
             feedResolver = homeFeedResolver,
             regionPreferenceStore = regionPreferenceStore,
             onboardingPreferenceStore = PreferencesOnboardingPreferenceStore(this@MainActivity),
+            updateClient = NativeUpdateClient(
+              packageId = "online.streamfree.app",
+              currentVersionCode = BuildConfig.VERSION_CODE.toLong(),
+              expectedSigningCertificateSha256 = "8D66F79FF18C0A842D689C4214DF1D84D74402F8866707658DF47B2AC4D7A112",
+              manifestFileName = NativeUpdateClient.PHONE_MANIFEST,
+            ),
+            onInstallUpdate = ::installUpdate,
             authManager = authManager,
             notificationClient = AnimeNotificationClient(),
             animeLinkResult = animeLinkResult,
@@ -144,6 +154,16 @@ class MainActivity : ComponentActivity() {
 
   private fun handleAnimeLinkIntent(intent: Intent?) {
     animeLinkResult = NativeAnimeLinkResult.parse(intent?.data?.toString())
+  }
+
+  private fun installUpdate(apk: File) {
+    val uri = FileProvider.getUriForFile(this, "$packageName.update-provider", apk)
+    startActivity(
+      Intent(Intent.ACTION_VIEW).apply {
+        setDataAndType(uri, "application/vnd.android.package-archive")
+        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
+      },
+    )
   }
 }
 

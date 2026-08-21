@@ -7,6 +7,7 @@ import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import java.io.File
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -85,6 +86,9 @@ import online.streamfree.nativeapp.auth.HistorySyncClient
 import online.streamfree.nativeapp.auth.NativeAnimeNotifications
 import online.streamfree.nativeapp.auth.NativeAnimeProvider
 import online.streamfree.nativeapp.auth.NativeAnimeLinkResult
+import online.streamfree.nativeapp.auth.NativeUpdateCheck
+import online.streamfree.nativeapp.auth.NativeUpdateClient
+import online.streamfree.nativeapp.auth.NativeUpdateStatus
 import online.streamfree.nativeapp.player.PlaybackDisplayModeStore
 import online.streamfree.nativeapp.player.PlaybackPhase
 import online.streamfree.nativeapp.player.PlaybackSessionController
@@ -106,6 +110,8 @@ fun TvHomeScreen(
   feedResolver: StreamFreeHomeFeedResolver? = null,
   regionPreferenceStore: RegionPreferenceStore? = null,
   onboardingPreferenceStore: OnboardingPreferenceStore? = null,
+  updateClient: NativeUpdateClient? = null,
+  onInstallUpdate: (File) -> Unit = {},
   authManager: AuthSessionManager? = null,
   notificationClient: AnimeNotificationClient? = null,
   animeLinkResult: NativeAnimeLinkResult? = null,
@@ -129,6 +135,8 @@ fun TvHomeScreen(
   var showTour by rememberSaveable { mutableStateOf(false) }
   var tourStep by rememberSaveable { mutableStateOf(0) }
   var onboardingCompleted by remember { mutableStateOf<Boolean?>(null) }
+  var updateCheck by remember { mutableStateOf<NativeUpdateCheck?>(null) }
+  var updateBusy by remember { mutableStateOf(false) }
   val homeScope = rememberCoroutineScope()
   fun reloadHome() {
     homeScope.launch {
@@ -196,6 +204,17 @@ fun TvHomeScreen(
       }
     }
   }
+  fun checkForUpdate() {
+    if (updateBusy) return
+    homeScope.launch {
+      updateBusy = true
+      updateCheck = updateClient?.check() ?: NativeUpdateCheck(
+        status = NativeUpdateStatus.Error,
+        message = "Updates are unavailable in this build.",
+      )
+      updateBusy = false
+    }
+  }
   LaunchedEffect(feedResolver, regionPreferenceStore) { reloadHome() }
   Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
     if (feedResolver == null || feedFailed) {
@@ -256,6 +275,7 @@ fun TvHomeScreen(
           tourStep = 0
           showTour = true
         },
+        onCheckForUpdates = ::checkForUpdate,
         onOpenTitle = onOpenTitle,
       )
     }
@@ -344,6 +364,31 @@ fun TvHomeScreen(
       },
     )
   }
+  updateCheck?.let { result ->
+    TvUpdateDialog(
+      result = result,
+      busy = updateBusy,
+      onDismiss = { if (!updateBusy) updateCheck = null },
+      onDownloadAndInstall = download@{
+        val manifest = result.manifest ?: return@download
+        homeScope.launch {
+          updateBusy = true
+          runCatching { updateClient?.downloadAndVerify(context, manifest) }
+            .onSuccess { apk ->
+              updateCheck = null
+              if (apk != null) onInstallUpdate(apk)
+            }
+            .onFailure { error ->
+              updateCheck = NativeUpdateCheck(
+                status = NativeUpdateStatus.Error,
+                message = error.message ?: "Update verification failed",
+              )
+            }
+          updateBusy = false
+        }
+      },
+    )
+  }
 }
 
 private const val NOTIFICATION_PERMISSION_REQUEST_CODE = 4108
@@ -360,6 +405,7 @@ internal fun TvHomeFeed(
   animeNotifications: NativeAnimeNotifications? = null,
   onMarkAnimeNotificationsRead: (() -> Unit)? = null,
   onOpenTour: (() -> Unit)? = null,
+  onCheckForUpdates: (() -> Unit)? = null,
   onLoadMore: (NativeHomeRow) -> Unit = {},
   onOpenTitle: (PlaybackRequest) -> Unit,
 ) {
@@ -431,6 +477,15 @@ internal fun TvHomeFeed(
               TvFocusButton(text = "Mark anime notifications read", onClick = onRead, contentDescription = "Mark anime episode notifications as read", modifier = Modifier.padding(top = 8.dp))
             }
           }
+        }
+      }
+      if (onCheckForUpdates != null) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+          TvFocusButton(
+            text = "Check for updates",
+            onClick = onCheckForUpdates,
+            contentDescription = "Check for secure StreamFree updates",
+          )
         }
       }
     }
@@ -516,6 +571,48 @@ private fun TvOnboardingDialog(
         TvFocusButton(text = "Skip", onClick = onSkip, contentDescription = "Skip app tour")
       }
     },
+  )
+}
+
+@Composable
+private fun TvUpdateDialog(
+  result: NativeUpdateCheck,
+  busy: Boolean,
+  onDismiss: () -> Unit,
+  onDownloadAndInstall: () -> Unit,
+) {
+  val title = when (result.status) {
+    NativeUpdateStatus.Available -> "Update available"
+    NativeUpdateStatus.Current -> "You’re up to date"
+    NativeUpdateStatus.Error -> "Update check failed"
+  }
+  AlertDialog(
+    onDismissRequest = onDismiss,
+    title = { Text(title) },
+    text = {
+      Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Text(result.message, style = MaterialTheme.typography.titleMedium)
+        result.manifest?.releaseNotes?.takeIf { it.isNotEmpty() }?.let { notes ->
+          Text("What’s new", style = MaterialTheme.typography.titleLarge)
+          notes.take(4).forEach { Text("• $it", style = MaterialTheme.typography.bodyLarge) }
+        }
+        if (busy) Text("Verifying the signed APK…", style = MaterialTheme.typography.titleMedium)
+      }
+    },
+    confirmButton = {
+      when (result.status) {
+        NativeUpdateStatus.Available -> TvFocusButton(
+          text = if (busy) "Working…" else "Download & install",
+          onClick = onDownloadAndInstall,
+          contentDescription = "Download and install the verified StreamFree update",
+          enabled = !busy,
+        )
+        else -> TvFocusButton(text = "Close", onClick = onDismiss, contentDescription = "Close update dialog")
+      }
+    },
+    dismissButton = if (result.status == NativeUpdateStatus.Available) {
+      { TvFocusButton(text = "Later", onClick = onDismiss, contentDescription = "Install the update later", enabled = !busy) }
+    } else null,
   )
 }
 

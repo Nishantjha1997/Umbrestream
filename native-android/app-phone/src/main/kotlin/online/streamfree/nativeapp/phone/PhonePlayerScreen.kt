@@ -9,6 +9,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.AudioManager
 import android.os.Build
+import java.io.File
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -90,6 +91,9 @@ import online.streamfree.nativeapp.auth.NativeAnimeNotifications
 import online.streamfree.nativeapp.auth.AuthSessionManager
 import online.streamfree.nativeapp.auth.NativeAnimeProvider
 import online.streamfree.nativeapp.auth.NativeAnimeLinkResult
+import online.streamfree.nativeapp.auth.NativeUpdateCheck
+import online.streamfree.nativeapp.auth.NativeUpdateClient
+import online.streamfree.nativeapp.auth.NativeUpdateStatus
 import online.streamfree.nativeapp.player.PlaybackDisplayMode
 import online.streamfree.nativeapp.player.PlaybackPhase
 import online.streamfree.nativeapp.player.PlaybackSessionController
@@ -123,6 +127,8 @@ fun PhoneHomeScreen(
   feedResolver: StreamFreeHomeFeedResolver? = null,
   regionPreferenceStore: RegionPreferenceStore? = null,
   onboardingPreferenceStore: OnboardingPreferenceStore? = null,
+  updateClient: NativeUpdateClient? = null,
+  onInstallUpdate: (File) -> Unit = {},
   authManager: AuthSessionManager? = null,
   notificationClient: AnimeNotificationClient? = null,
   animeLinkResult: NativeAnimeLinkResult? = null,
@@ -146,6 +152,8 @@ fun PhoneHomeScreen(
   var showTour by rememberSaveable { mutableStateOf(false) }
   var tourStep by rememberSaveable { mutableStateOf(0) }
   var onboardingCompleted by remember { mutableStateOf<Boolean?>(null) }
+  var updateCheck by remember { mutableStateOf<NativeUpdateCheck?>(null) }
+  var updateBusy by remember { mutableStateOf(false) }
   val homeScope = rememberCoroutineScope()
   fun reloadHome() {
     homeScope.launch {
@@ -213,6 +221,17 @@ fun PhoneHomeScreen(
       }
     }
   }
+  fun checkForUpdate() {
+    if (updateBusy) return
+    homeScope.launch {
+      updateBusy = true
+      updateCheck = updateClient?.check() ?: NativeUpdateCheck(
+        status = NativeUpdateStatus.Error,
+        message = "Updates are unavailable in this build.",
+      )
+      updateBusy = false
+    }
+  }
   LaunchedEffect(feedResolver, regionPreferenceStore) { reloadHome() }
   Surface(
     modifier = Modifier.fillMaxSize(),
@@ -278,6 +297,7 @@ fun PhoneHomeScreen(
           tourStep = 0
           showTour = true
         },
+        onCheckForUpdates = ::checkForUpdate,
         onOpenTitle = onOpenTitle,
       )
     }
@@ -365,6 +385,31 @@ fun PhoneHomeScreen(
       },
     )
   }
+  updateCheck?.let { result ->
+    PhoneUpdateDialog(
+      result = result,
+      busy = updateBusy,
+      onDismiss = { if (!updateBusy) updateCheck = null },
+      onDownloadAndInstall = {
+        val manifest = result.manifest ?: return@PhoneUpdateDialog
+        homeScope.launch {
+          updateBusy = true
+          runCatching { updateClient?.downloadAndVerify(context, manifest) }
+            .onSuccess { apk ->
+              updateCheck = null
+              if (apk != null) onInstallUpdate(apk)
+            }
+            .onFailure { error ->
+              updateCheck = NativeUpdateCheck(
+                status = NativeUpdateStatus.Error,
+                message = error.message ?: "Update verification failed",
+              )
+            }
+          updateBusy = false
+        }
+      },
+    )
+  }
 }
 
 private const val NOTIFICATION_PERMISSION_REQUEST_CODE = 4107
@@ -381,6 +426,7 @@ internal fun PhoneHomeFeed(
   animeNotifications: NativeAnimeNotifications? = null,
   onMarkAnimeNotificationsRead: (() -> Unit)? = null,
   onOpenTour: (() -> Unit)? = null,
+  onCheckForUpdates: (() -> Unit)? = null,
   onLoadMore: (NativeHomeRow) -> Unit = {},
   onOpenTitle: (PlaybackRequest) -> Unit,
 ) {
@@ -414,6 +460,13 @@ internal fun PhoneHomeFeed(
             OutlinedButton(onClick = onOpenTour, modifier = Modifier.sizeIn(minHeight = 48.dp)) {
               Text("Help & tour")
             }
+          }
+        }
+      }
+      if (onCheckForUpdates != null) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+          OutlinedButton(onClick = onCheckForUpdates, modifier = Modifier.sizeIn(minHeight = 48.dp)) {
+            Text("Check for updates")
           }
         }
       }
@@ -551,6 +604,47 @@ private fun PhoneOnboardingDialog(
         OutlinedButton(onClick = onSkip, modifier = Modifier.sizeIn(minHeight = 48.dp)) { Text("Skip") }
       }
     },
+  )
+}
+
+@Composable
+private fun PhoneUpdateDialog(
+  result: NativeUpdateCheck,
+  busy: Boolean,
+  onDismiss: () -> Unit,
+  onDownloadAndInstall: () -> Unit,
+) {
+  val title = when (result.status) {
+    NativeUpdateStatus.Available -> "Update available"
+    NativeUpdateStatus.Current -> "You’re up to date"
+    NativeUpdateStatus.Error -> "Update check failed"
+  }
+  AlertDialog(
+    onDismissRequest = onDismiss,
+    title = { Text(title) },
+    text = {
+      Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Text(result.message)
+        result.manifest?.releaseNotes?.takeIf { it.isNotEmpty() }?.let { notes ->
+          Text("What’s new", style = MaterialTheme.typography.titleMedium)
+          notes.take(4).forEach { Text("• $it", style = MaterialTheme.typography.bodyMedium) }
+        }
+        if (busy) Text("Verifying the signed APK…", style = MaterialTheme.typography.labelLarge)
+      }
+    },
+    confirmButton = {
+      when (result.status) {
+        NativeUpdateStatus.Available -> Button(
+          enabled = !busy,
+          onClick = onDownloadAndInstall,
+          modifier = Modifier.sizeIn(minWidth = 150.dp, minHeight = 48.dp),
+        ) { Text(if (busy) "Working…" else "Download & install") }
+        else -> Button(onClick = onDismiss, modifier = Modifier.sizeIn(minHeight = 48.dp)) { Text("Close") }
+      }
+    },
+    dismissButton = if (result.status == NativeUpdateStatus.Available) {
+      { OutlinedButton(enabled = !busy, onClick = onDismiss, modifier = Modifier.sizeIn(minHeight = 48.dp)) { Text("Later") } }
+    } else null,
   )
 }
 

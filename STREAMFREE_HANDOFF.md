@@ -1907,6 +1907,29 @@ title and episode metadata returned by the authenticated server; no provider
 URLs or tokens enter notification state. FCM/push delivery and user-configurable
 quiet hours remain future work under `SF-A3-003`.
 
+## 58. Native updater verification — 2026-08-21
+
+The native `core:auth` updater now selects only the hardcoded official
+manifests `/downloads/streamfree-android.json` and
+`/downloads/streamfree-android-tv.json`; no JavaScript, page URL, APK URL,
+package ID, or certificate value is accepted from the WebView. Manifest
+validation requires schema 1, the canonical package, a newer version for
+installation, an exact `streamfree.online` HTTPS APK path under
+`/downloads/*.apk`, bounded size, SHA-256, published metadata, and the native
+release certificate pin. The downloaded bytes are checked against size and
+checksum, parsed by Android's package manager, checked for package/version,
+and checked against the expected signing certificate before an installer is
+opened. Both temporary and finalized cache files are deleted on any failure.
+
+Phone and TV Home now expose `Check for updates`; installation remains a
+user-confirmed Android package-installer action through a private FileProvider.
+The codebase records the native fresh-install certificate pins in
+`release/signing-certificates.json`. The currently published website manifests
+still carry the retired published-app certificate pins, so the native updater
+correctly fails closed against them until the next native release artifacts and
+matching manifests are published. A signed release build and connected-phone
+installer exercise remain open in `SF-A4-002`/`SF-A4-003`.
+
 ## 57. Native onboarding tour — 2026-08-21
 
 Phone and TV now share a persistent first-launch tour preference backed by the
