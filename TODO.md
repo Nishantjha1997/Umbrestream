@@ -505,7 +505,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P0
   - Depends on: SF-P0-007
   - Evidence: focused Anime integration, source registry, startup, lint, TypeScript, and diff checks pass; production verification pending
-  - Commit: `96616c1`
+  - Commit: `96616c1`, `b30d352`
   - Next action: commit, push, wait for Vercel Ready, and verify live Sub/Dub Anivexa provider IDs
 
 - [x] SF-A4-003a — Prepare reproducible native publication artifacts
