@@ -554,7 +554,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Depends on: SF-W5-007
   - Evidence: production screenshot shows no TV season selector and a 220px artwork column squeezing episode titles to unusable fragments in the 300–340px sidebar
   - Evidence: all TV player episode surfaces receive real season metadata/current context; non-special season selection fetches in place through a stable TanStack query; current playback is not remounted until an episode is chosen; selected source is mirrored into episode links; compact cards cap art at 42%, guarantee a `minmax(0,1fr)` copy column, allow two-line titles, and mark the current episode; TypeScript, authored lint, `test:episode-panel-ux`, optimized build
-  - Commit: pending implementation commit
+  - Commit: `73552f9`
   - Completed: 2026-08-21
 
 - [x] SF-W6-002 — Replace Anime range pills and tighten season semantics
@@ -562,7 +562,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P0
   - Depends on: SF-W6-001
   - Evidence: One Piece renders 23 compressed 50-episode buttons with a horizontal scrollbar; AniList ONA relations can be mislabeled as a previous season
-  - Commit: pending implementation commit
+  - Commit: `73552f9`
   - Evidence: pure 50-episode range builder produces 24 labelled ranges for One Piece; one 44px `Choose episode range` select replaces horizontal pills in sidebar/inline/sheet/drawer; season relationships now permit only TV/TV_SHORT and exclude ONA/movie/OVA/special; `test:anime-episode-navigation`, `test:episode-panel-ux`, TypeScript, authored lint, optimized build
   - Completed: 2026-08-21
 
@@ -571,7 +571,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P0
   - Depends on: SF-W6-001, SF-W6-002
   - Evidence: new cross-media episode-panel contract validates TV season fetching/context/source preservation/card proportions and Anime range/season semantics; complete `verify` passed authored lint, all playback/source/UI/history/native/update contracts, TypeScript, reproducible optimized build, performance/PWA/release-artifact checks, and leak scan; production-data responsive flow remains after deployment because local TMDB credentials are intentionally absent
-  - Commit: pending implementation commit
+  - Commit: `73552f9`
   - Completed: 2026-08-21
 
 - [ ] SF-W6-004 — Push, deploy, and certify TV/Anime episode panels
