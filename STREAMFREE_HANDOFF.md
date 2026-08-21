@@ -2177,3 +2177,45 @@ candidates were native HLS/MP4 rather than provider documentation pages.
 The direct-fallback regression fixture covers all known Anivexa provider keys,
 while the production result is deliberately treated as a live smoke result,
 not a guarantee that every upstream provider is available for every title.
+
+## 72. Unified TV/Anime episode panels — 2026-08-21
+
+TV and Anime episode navigation are now treated as one product capability. The
+TV player sidebar, inline narrow layout, desktop episode sheet, and phone drawer
+all receive TMDB season metadata and expose a labelled season selector. Changing
+season fetches that season through a keyed TanStack query and updates the list
+in place without remounting or interrupting the current player. Only selecting
+an episode navigates. The selected compatible TV source is mirrored into every
+episode URL, and the playing episode receives `aria-current` plus restrained
+visual emphasis.
+
+TV player cards now use a compact responsive grid: artwork is capped near 42%
+and the text column is `minmax(0,1fr)`. Titles can occupy two lines, while date
+and overview remain legible without enlarging the panel. On production Outer
+Banks at 1280×720, a 314px card allocated approximately 131px to artwork and
+161px to the title; the former implementation allocated 220px to artwork and
+reduced titles to fragments. Seasons 1–5 appeared, switching to Season 2
+replaced the list in place, `src=vidking` was retained, and S1E1 was marked
+current. The 390×844 flow remained inside the viewport without horizontal
+overflow.
+
+Anime's horizontal 50-episode button strip was replaced with one 44px labelled
+episode-range select across sidebar, inline, desktop sheet, and phone drawer.
+A pure range builder returns 24 options for One Piece (1–50 through 1151–1174).
+Production switching to the final range displayed episodes 1151–1174 with no
+horizontal range scroller. AniList season navigation now accepts only TV and
+TV Short relations; ONA/movie/OVA/special relations are not mislabeled as
+seasons, which removed the unrelated MONSTERS entry from One Piece.
+
+Validation: complete `verify` passed lint, all source/player/UI/history/native
+and updater contracts, TypeScript, optimized build, performance/PWA/release
+artifact checks, and leak scan. Commits: `73552f9` and `c8292c7`. Vercel
+production deployment `c8292c7` reported Ready in 1m12s and passed the live
+Outer Banks/One Piece checks above.
+
+Anivexa status remains separate from this UI release: live Sub/Dub candidates
+resolved and mounted the native browser player, but ReAnime Dub and AniKoto Dub
+both reached `Browser media error` for the tested One Piece fixture after the
+documented cold-start window. StreamFree correctly offered consent-based
+recovery. Do not describe those two provider playbacks as certified until a
+later upstream/player investigation passes.

@@ -6,8 +6,8 @@ Read `plan.md` first. Update this board with every state change. Only one task i
 
 - Branch: `main`
 - Baseline: `28bea93`
-- Active task: `SF-W6-004`
-- Next command: commit and push the passing correction, confirm its exact Vercel deployment is Ready, then exercise Outer Banks and One Piece on production.
+- Active task: none; Web Phase W6 is complete and `SF-A4-003` remains paused at its external hardware/provider gate
+- Next command: when hardware is available, connect the physical phone and start the Android TV emulator before resuming native publication certification.
 - Reference policy: Media3 and Now in Android are approved architecture references; Aniyomi is pattern-only because it is archived; Dantotsu is excluded pending license/source verification.
 
 ## W0 — Governance and baseline
@@ -574,14 +574,14 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Commit: `73552f9`
   - Completed: 2026-08-21
 
-- [ ] SF-W6-004 — Push, deploy, and certify TV/Anime episode panels
-  - Status: in progress
+- [x] SF-W6-004 — Push, deploy, and certify TV/Anime episode panels
+  - Status: completed
   - Priority: P0
   - Depends on: SF-W6-003
-  - Evidence: deterministic and build gates pass; deployment not started
-  - Commit: —
-  - Deployment: —
-  - Next action: push passing main, confirm exact Vercel deployment Ready, and repeat both panel flows on production
+  - Evidence: pushed `73552f9` and `c8292c7`; exact Vercel production deployment `c8292c7` reported Ready in 1m12s; live Outer Banks exposed five season options, switched from Season 1 to Season 2 in place, retained `src=vidking`, marked S1E1 current, allocated ~131px art/~161px title width in a 314px card, and had no overflow at 1280×720 or 390×844; live One Piece exposed one 24-option episode-range select, no horizontal range scroller, no unrelated MONSTERS ONA season, and switched to episodes 1151–1174 in place
+  - Commit: `c8292c7`
+  - Deployment: production Ready for `c8292c7`
+  - Completed: 2026-08-21
 
 ## W4 — Desktop shell and movie-player workspace
 
