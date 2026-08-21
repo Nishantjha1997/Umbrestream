@@ -361,7 +361,7 @@ Read `plan.md` first. Update this board with every state change. Only one task i
   - Priority: P1
   - Depends on: SF-A3-003b
   - Evidence: Android notification permission is declared and requested after sign-in; a dedicated episode channel, per-user delivered-ID state, unread-only dedupe, periodic connected-network WorkManager refresh, and safe permission checks are implemented; delivery-state tests, `scripts/verify.ps1`, phone/TV compilation, strict lint, and `git diff --check` passed
-  - Commit: `pending`
+  - Commit: `da9f3a4`
   - Completed: 2026-08-21
 
 - [ ] SF-A3-004 — Complete native Home/details/library/settings/onboarding parity
